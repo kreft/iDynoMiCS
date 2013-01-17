@@ -174,7 +174,7 @@ public class AgentContainer {
 	/**
 	 * Call each grid cell of the agentGrid
 	 */
-	public void step() {
+	public void step(Simulator aSim) {
 
 		SpecialisedAgent anAgent;
 		int nDead, nAgent, nBirth;
