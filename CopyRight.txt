@@ -1,0 +1,47 @@
+Copyright holders for iDynoMiCS:
+ 
+ * Laurent Lardon lardonl@supagro.inra.fr, DTU Environment, Technical University of Denmark (Denmark) & Laboratory of Environmental Biotechnology, INRA (France)
+ * Brian Merkey, brim@env.dtu.dk (DTU Environment, Technical University of Denmark, Denmark) & bvm@northwestern.edu (Department of Engineering Sciences and Applied Mathematics, Northwestern University, USA)
+ * Andreas Dötsch andreas.doetsch@helmholtz-hzi.de, Chronic Pseudomonas Infections Group, Helmholtz Centre for Infection Research (Germany)
+ * João Xavier xavierj@mskcc.org, Computational biology research, Memorial Sloan-Kettering Cancer Center, New York (USA)
+ * Sónia Martins SCM808@bham.ac.uk, Centre for Systems Biology,School of Biosciences, University of Birmingham (UK)
+ * Cristian Picioreanu C.Picioreanu@tudelft.nl, The Biofilm Research Group, Technical University of Delft (Netherlands)
+ * Jan-Ulrich Kreft j.kreft@bham.ac.uk, Centre for Systems Biology, School of Biosciences, University of Birmingham (UK)
+ * Barth Smets bfs@env.dtu.dk, DTU Environment, Technical University of Denmark (Denmark)
+ 
+ This software is a computer program whose purpose is to model and simulate 
+ microbial communities in an individual-based way. It is described in detail in this paper:
+ 
+ Lardon LA, Merkey BV, Martins S, Dötsch A, Picioreanu C, Kreft JU & Smets BF (2011).
+ iDynoMiCS: next-generation individual-based modelling of biofilms.
+ Environmental Microbiology: in press
+ http://dx.doi.org/10.1111/j.1462-2920.2011.02414.x
+
+ This software is governed by the CeCILL license under French law and
+ abiding by the rules of distribution of free software. You can use, 
+ modify and/ or redistribute the software under the terms of the CeCILL
+ license as circulated by CEA, CNRS and INRIA at the following URL
+ "http://www.cecill.info". 
+
+ As a counterpart to the access to the source code and rights to copy,
+ modify and redistribute granted by the license, users are provided only
+ with a limited warranty and the software's author, the holder of the
+ economic rights, and the successive licensors have only limited
+ liability. 
+
+ In this respect, the user's attention is drawn to the risks associated
+ with loading, using, modifying and/or developing or reproducing the
+ software by the user in light of its specific status of free software,
+ that may mean that it is complicated to manipulate, and that also
+ therefore means that it is reserved for developers and experienced
+ professionals having in-depth computer knowledge. Users are therefore
+ encouraged to load and test the software's suitability as regards their
+ requirements in conditions enabling the security of their systems and/or 
+ data to be ensured and, more generally, to use and operate it in the 
+ same conditions as regards security. 
+
+ The fact that you are presently reading this means that you have had
+ knowledge of the CeCILL license and that you accept its terms.
+
+ Moreover authors ask to be acknowledged in any scientific publications based on 
+ or using some part of that software by citing the above paper describing iDynoMiCS.
