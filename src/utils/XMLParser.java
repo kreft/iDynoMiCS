@@ -58,7 +58,8 @@ public class XMLParser implements Serializable {
 			document = (new SAXBuilder(testDTD)).build(new File(fileName));
 		} catch (Exception e) {
 			LogFile.writeLog("XMLParser.openXMLdocument(): Initialisation of the XML parser failed");
-			LogFile.writeLog("File does not exist: "+fileName);
+			LogFile.writeLog("Error: "+e);
+			//LogFile.writeLog("File does not exist: "+fileName);
 			System.exit(-1);
 		}
 	}
