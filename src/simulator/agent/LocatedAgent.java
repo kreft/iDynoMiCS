@@ -434,6 +434,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		baby.registerBirth();
 		baby._netVolumeRate = 0;
 
+		
 	}
 
 	/**
@@ -451,9 +452,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			this.particleMass[i] *= 1-babyMassFrac;
 		}
 
-		// Update radius, mass and volumes
+		// Update radius, mass, volumes and growth rates
 		updateSize();
 		baby.updateSize();
+		
+		updateGrowthRates();
+		baby.updateGrowthRates();
 	}
 
 	/**
