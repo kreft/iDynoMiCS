@@ -438,12 +438,19 @@ public class LocatedGroup {
 
 	/**
 	 * Comparator used by the detachment levelset algorithm
-	 * @author lal
+	 * @author Chaodong Zhang
 	 */
 	public static class TValueComparator implements java.util.Comparator<Object> {
 
 		public int compare(Object b1, Object b2) {
-			return (((LocatedGroup) b1).erosionTime>((LocatedGroup) b2).erosionTime ? 1 : -1);
+	        double f1=((LocatedGroup) b1).erosionTime;
+	        double f2=((LocatedGroup) b2).erosionTime;
+	        if(f1==f2)
+	           return 0;
+	        else if(f1 > f2)
+	            return 1;
+	        else
+	             return -1;
 		}
 	}
 
