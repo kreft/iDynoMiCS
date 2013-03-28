@@ -143,11 +143,9 @@ public class Simulator {
 			// Describe initial conditions
 			if (!Simulator.isChemostat)
 				povRayWriter.write(SimTimer.getCurrentIter());
-			//if (invComp) {
-			//	writeInvReport();
-			//} else {
+			
 			writeReport();
-			//}
+			
 
 		} catch (Exception e) {
 			LogFile.writeLog("Simulator.CreateSystem(): error met: "+e);
@@ -570,7 +568,7 @@ public class Simulator {
 		}
 
 		System.out.println("\t done");
-		}catch(Exception e){LogFile.writeLog("Error in Simulator.creatSolvers()");}
+		}catch(Exception e){LogFile.writeLog("Error in Simulator.creatSolvers(): "+e);}
 	}
 
 	/**
@@ -833,29 +831,6 @@ public class Simulator {
 
 	}
 
-	public void writeInvReport() {
-		// Update saving counters and file index
-		_lastOutput = SimTimer.getCurrentTime();
-		int currentIter = SimTimer.getCurrentIter(); // bvm added 26.1.2009
-
-		// first restart log file to avoid non-write trouble
-		LogFile.reopenFile();
-		try {
-			result[0].openFile(currentIter); // agent_
-			result[1].openFile(currentIter); // agent_
-
-			agentGrid.writeReport(this, result[0], result[1]);
-
-			result[0].closeFile();
-			result[1].closeFile();
-
-		} catch (Exception e) {
-			LogFile.writeError("System description of agents failed:"+e.getMessage(),
-			"Simulator.writeReport()");
-		}
-
-
-	}
 
 	/* ____________________ ACCESSORS & MUTATORS ___________________________ */
 	/**

@@ -81,6 +81,16 @@ public final class ExtraMath {
 	 * @param x
 	 * @return 2^x
 	 */
+	public static final long exp2long(int x) {
+		return (long) Math.pow(2, x);
+	}
+	
+	/**
+	 * power of 2
+	 * 
+	 * @param x
+	 * @return 2^x
+	 */
 	public static final double exp2(double x) {
 		return Math.pow(2, x);
 	}
