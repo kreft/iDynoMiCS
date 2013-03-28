@@ -28,7 +28,9 @@ imPATH    = getProgramPath('ImageMagick');
 
 % Start POV-Ray
 %eval(['!',POVPATH,'pvengine &']);
-dos(sprintf('"%s\\pvengine.exe" &',POVPATH));
+if ispc
+    dos(sprintf('"%s\\pvengine.exe" &',POVPATH));
+end
 
 pause(1);
 
@@ -107,9 +109,12 @@ fprintf('Rendering file %s\n',theFile);
 %dos([QuietPATH,'quietpov -start ',theFile]);
 %dos(sprintf('"%s\\quietpov" -start %s',QuietPATH,theFile));
 
-
- dos(sprintf('"%s\\pvengine.exe" /RENDER %s', POVPATH, theFile));
- pause(5)
+if ispc
+    dos(sprintf('"%s\\pvengine.exe" /RENDER %s', POVPATH, theFile));
+elseif isunix
+    unix(sprintf('povray "%s"', theFile));
+end
+pause(5)
     
 bmp2png(theFile);
 
@@ -123,7 +128,10 @@ if isnumeric(nFile)
 else
     newName = 'it(last).png';
 	% moves the image file into the base directory
-	movefile('lastIter/it(last).png','.');
+    % if it isn't there already
+    if exist('lastIter/it(last).png','file')
+    	movefile('lastIter/it(last).png','.');
+    end
 end
 
 imgfile = newName;
@@ -133,16 +141,25 @@ imgfile = newName;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function bmp2png(povfile)
 % this converts the output .bmp file to .png if it doesn't exist
-
 global imPATH;
 
-bmpfile = strrep(povfile,'pov','bmp');
-pngfile = strrep(povfile,'pov','png');
+[pathstr, name, ~] = fileparts(povfile);
+bmpfile = strrep(pathstr, name,'.bmp');
+if ~exist(bmpfile,'file')
+    bmpfile = strcat(name,'.bmp');
+end
+pngfile = strrep(pathstr, name,'.png');
+if ~exist(pngfile,'file')
+    pngfile = strcat(name,'.png');
+end
 
 if ~exist(pngfile,'file')
 	% now call the convert command to convert the image
-	dos(sprintf('"%s\\convert" %s  %s',...
-		imPATH,bmpfile,pngfile));
+    if ispc
+    	dos(sprintf('"%s\\convert" %s  %s', imPATH,bmpfile,pngfile));
+    elseif isunix
+        unix(sprintf('%s/convert "%s" "%s"', imPATH, bmpfile, pngfile));
+    end
 	delete(bmpfile);
 end
 

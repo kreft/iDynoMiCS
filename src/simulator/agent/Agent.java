@@ -34,7 +34,7 @@ public abstract class Agent implements Cloneable {
 	 * Lineage management
 	 * @field _generation is the number of generations between the progenitor
 	 * and the current agent,
-	 * @field _genealogy is the integer for the binar reading of the 0 and 1
+	 * @field _genealogy is the (long) integer for the binary reading of the 0 and 1
 	 * coding the lineage. When a cells divides, one daughter has the index
 	 * value 1, the other the index value 0, then this index is added on the
 	 * left of the lineage description
@@ -135,7 +135,7 @@ public abstract class Agent implements Cloneable {
 	 */
 	protected void recordGenealogy(Agent baby) {
 		// Rob 18/1/11: Shuffled around slightly to include odd numbers
-		baby._genealogy = _genealogy+ExtraMath.exp2(this._generation);
+		baby._genealogy = _genealogy+ExtraMath.exp2long(this._generation);
 
 		this._generation++;
 		baby._generation = this._generation;
