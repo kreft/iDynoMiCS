@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="iDynoMiCS/updater/Update_IDynomics.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/iDynoMiCS/src/soft_update/Export_IDynomics_Updater.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" manifestLocation="/iDynoMiCS/src/soft_update/Updater_Manifest" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=iDynoMiCS/src&lt;soft_update{Update_IDynomics.java"/>
+    </selectedElements>
+</jardesc>
