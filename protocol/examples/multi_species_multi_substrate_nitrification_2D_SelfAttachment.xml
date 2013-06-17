@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+#########################################################################
+ iDynoMiCS: individual-based Dynamics of Microbial Communities Simulator
+#########################################################################
+
+This is a sample protocol file for iDynoMiCS that is meant to show the many
+options that may be specified in defining a simulation. The model system
+in this example is a simple mixed autotroph/heterotroph population growing
+in a typical wastewater treatment system, with growth kinetics based on the
+ASM models of Henze et al (2000).
+
+The comments in this file are meant to be a brief reference, and a more
+complete description of the protocol file is found in the iDynoMiCS tutorial.
+More complete details are also found in the paper introducing iDynoMiCS
+by Lardon et al (2009, In preparation).
+
+A few general points about protocol files:
+- There is NO automatic checking for consistency in the protocol file.
+  Sometimes an inconsistency will cause an error in a simulation, and the
+  code will attempt to tell you where in the protocol file the error
+  occurred. However, the code WILL NOT catch errors in mass balances or
+  units, so you must be the watch.
+
+- Repeat: there is NO automatic checking for consistency - YOU must be careful!
+
+- In general, for entering parameter values it is best to use the units given
+  in the protocol file already, rather than change the described unit. The
+  common units used are hour or day for time, g/L for concentrations, fg for
+  mass, and meter for spatial scale.
+
+- Repeat: to be safe, CONVERT ALL PARAMETERS TO THE UNITS USED IN THIS EXAMPLE.
+
+- Some keywords are reserved for special use by the software, such as:
+  biomass, inert, capsule, pressure. In this example protocol file these
+  are pointed out.
+
+- When you create a name for a variable, you are allowed to use upper and lower
+  case and numbers, but no other symbols (and no spaces, either). Examples of
+  valid names include: MyParameter, anotherParameter, parameter3.
+
+- Any label that is prefixed with 'My' in this example is free to be changed
+  by you, the user, but take care not to use reserved keywords unless you
+  are sure the usage is correct.
+
+
+  Authors:
+	Laurent Lardon
+	Andreas Doetsch
+	Jan-Ulrich Kreft
+	Brian Merkey
+	Cristian Picioreanu
+	Barth F. Smets
+	Joao Xavier
+	Sonia Martins
+	Rob Clegg
+	Kieran Alden
+
+  Website: http://www.idynomics.org
+
+-->
+
+
+<!-- The entire simulation description is contained within the <idynomics> mark-up tags. -->
+<idynomics>
+
+	<!--#####################################################################
+		SIMULATOR SECTION
+	######################################################################-->
+
+	<!-- the <simulator> mark-up defines some global simulation parameters for the run. -->
+
+	<simulator>
+        <!-- Set "quietMode" to true if you don't need the log file (saves space and simulation runs slightly faster) -->
+        <param name="quietMode">false</param>
+		<!-- change this parameter to 'true' for restarting runs from within
+			a results folder-->
+		<param name="restartPreviousRun">false</param>
+		<!-- defining this value allows the simulation to be re-run deterministically -->
+		<param name="randomSeed">42</param>
+		<!-- this specifies how often the output files should be written -->
+		<param name="outputPeriod" unit="hour">0.1</param>
+		
+		<!-- Specifies whether the simulation should check as to whether a new release is available -->
+		<param name="checkForReleaseUpdate">true</param>
+
+		<!-- iDynoMiCS may use a fixed or an adaptive global timestep. If 'adaptive' is true,
+			then the three 'timeStep***' parameters control the initial, minimum, and maximum
+			values the timestep may take. If 'adaptive' is false, then the value for
+			'timeStepIni' is used always.
+			When the simulation has reached the time specified by 'endOfSimulation', the
+			simulation will end. -->
+		<timeStep>
+			<param name="adaptive">true</param>
+			<param name="timeStepIni" unit="hour">0.1</param>
+			<param name="timeStepMin" unit="hour">0.05</param>
+			<param name="timeStepMax" unit="hour">1</param>
+			<param name="endOfSimulation" unit="day">3</param>
+		</timeStep>
+
+		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
+		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
+		<param name="attachment">selfattach</param>
+		
+		<!-- The 'agentTimeStep' parameter allows you to define a smaller timestep for agent
+			behaviors and interactions. And should always be EQUAL or LOWER than the global time step -->
+		<param name="agentTimeStep" unit="hour">0.05</param>
+		<!-- Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system -->
+        <param name="invComp">false</param> 
+	</simulator>
+
+
+	<!--#####################################################################
+		INPUT SECTION
+	######################################################################-->
+
+	<!-- You may define the initial condition from which to start a simulation
+		by specifying an agent and/or bulk conditions file to read in. Often,
+		the files listed are taken from an evolved state of a similar simulation.
+
+		Note that any input files MUST be in the same directory as this protocol file. -->
+
+	<input>
+		<param name="useAgentFile">false</param>
+		<param name="inputAgentFileURL">agent_State(last).xml</param>
+		<param name="useBulkFile">false</param>
+		<param name="inputBulkFileURL">env_Sum(last).xml</param>
+	</input>
+
+
+
+	<!--#####################################################################
+		SOLUTES AND BIOMASS TYPES SECTION
+	######################################################################-->
+
+	<!-- This section is where any solutes included in the simulation are defined. Each
+		solute must be assigned to a domain (which will be defined later in the protocol
+		file), given a name, and must have its diffusivity parameter set.
+
+		Note that the solute name 'pressure' is treated specially in the code:
+		- 'pressure' is used to calculate the biomass pressure that leads to biomass
+			spreading in the biofilm, and should generally be left as-is.
+
+		Diffusion coefficients are expressed in units of m2.day-1.
+	-->
+
+	<solute domain="MyBiofilm" name="o2d">
+		<param name="diffusivity" unit="m2.day-1">2e-4</param>
+	</solute>
+	<solute domain="MyBiofilm" name="MyNH4">
+		<param name="diffusivity" unit="m2.day-1">1.7e-4</param>
+	</solute>
+	<solute domain="MyBiofilm" name="MyNO3">
+		<param name="diffusivity" unit="m2.day-1">1.7e-4</param>
+	</solute>
+	<solute domain="MyBiofilm" name="MyCOD">
+		<param name="diffusivity" unit="m2.day-1">1e-4</param>
+	</solute>
+	<solute domain="MyBiofilm" name="pressure">
+		<param name="diffusivity" unit="m2.day-1">1</param>
+	</solute>
+
+	<!-- This section defines the biomass types (NOT species types) that will be used in
+		the simulation. The possible types are 'biomass', 'inert', and 'capsule', representing
+		active biomass, inert biomass, and capsular material (generally EPS), respectively.
+		At a minimum 'biomass' must be defined. The species defined later will be made up of
+		these biomass types.
+
+		The densities are expressed in g.L-1 ( = kg.m-3 = fg.um-3).
+	-->
+
+	<particle name="biomass">
+		<param name="density" unit="g.L-1">150</param>
+	</particle>
+	<particle name="inert">
+		<param name="density" unit="g.L-1">150</param>
+	</particle>
+	<particle name="capsule">
+		<param name="density" unit="g.L-1">75</param>
+	</particle>
+
+
+
+	<!--#####################################################################
+		WORLD SECTION
+	######################################################################-->
+
+	<!-- The <world> mark-up describes the overall environment the simulation will model, and
+		is made up of several mark-ups:
+		- <bulk> for defining a bulk solute compartment that is a source or sink for solutes
+			involved in biofilm growth.
+		- <computationDomain> for defining the spatial region the biofilm will grow in.
+	-->
+
+	<world>
+		<bulk name="MyTank">
+
+			<!-- If 'isConstant' is set to false, then solute concentrations in the bulk will
+				change in time due to production and consumption by the biofilm and by dilution
+				at the rate 'D' -->
+			<param name="isConstant">true</param>
+			<param name="D" unit="h-1">0.6</param>
+
+			<!-- List the solutes that reside in this bulk compartment, along with the initial
+				concentration ('Sbulk') and influent concentration ('Sin'). Additionally, you may
+				specify the 'Spulse' and 'pulseRate' parameters to spike the concentration to the
+				given value at the given rate.
+
+				Concentrations should be given as g.L-1 ( = kg.m-3 = fg.um-3 ).
+				
+				The 'pressure' solute parameters should be left as-is.
+			-->
+
+			<solute name="o2d">
+				<param name="Sbulk" unit="g.L-1">10e-3</param>
+				<param name="Sin" unit="g.L-1">10e-3</param>
+			<!-- If you want a solute's concentration to remain constant even if the bulk is dynamic (i.e. the 
+			bulk isConstant parameter=false) set the parameter isConstant to true. -->	
+				<param name="isConstant">true</param>
+			</solute>
+			<solute name="MyNH4">
+				<param name="Sbulk" unit="g.L-1">6e-3</param>
+				<param name="Sin" unit="g.L-1">6e-3</param>
+			</solute>
+			<solute name="MyNO3">
+				<param name="Sbulk" unit="g.L-1">0</param>
+				<param name="Sin" unit="g.L-1">0</param>
+			</solute>
+			<solute name="MyCOD">
+				<param name="Sbulk" unit="g.L-1">10e-6</param>
+				<param name="Sin" unit="g.L-1">10e-6</param>
+				<param name="Spulse" unit="g.L-1">15e-6</param>
+				<param name="pulseRate" unit="h-1">0.1</param>
+			</solute>
+			<solute name="pressure">
+				<param name="Sbulk" unit="g.L-1">0</param>
+				<param name="Sin" unit="g.L-1">0</param>
+			</solute>
+		</bulk>
+
+		<!-- The computation domain is a physical region that will contain the biofilm,
+			and has a more complex setup. -->
+
+		<computationDomain name="MyBiofilm">
+
+			<!-- These parameters define whether the domain is 2D or 3D, and the number of
+				grid elements in each direction. 'nI', 'nJ', and 'nK' should be a power of two +1
+				(i.e. 33, 65, 129, etc.), and if 'nDim' is 3, then 'nK' should not be 1.
+
+				The 'resolution' parameter defines the size of an element edge, and so the
+				global domain size in a direction is the number of elements times the resolution:
+					nI*resolution
+			-->
+			<grid nDim="2" nI="33" nJ="33" nK="1"/>
+			<param name="resolution" unit="um">8</param>
+
+			<!-- 'boundaryLayer' sets the distance above the biofilm/liquid interface that the
+				liquid is assumed to be spatially invariant; within this distance from the biofilm the
+				solute concentration will vary because of diffusion. -->
+			<param name="boundaryLayer" unit="um">40</param>
+
+			<!-- The 'biofilmDiffusivity' sets the relative diffusivity of the biofilm compared
+				to water; because the biofilm is slightly more dense than water, the diffusivity
+				will be lower. -->
+			<param name="biofilmDiffusivity">0.8</param>
+
+			<!-- The 'specificArea' is the surface-to-volume ratio of the reactor or world system, and
+				is used to scale up the limited computation domain to the global scale. -->
+			<param name="specificArea" unit="m2.m-3">80</param>
+
+
+			<!-- Now comes the definition of the behavior at the boundaries. In general, there are 6
+				boundaries that must be addressed: y0z, yNz, x0z, xNz, x0y, xNy. These represent
+				the edges of the domain along the non-named direction (i.e. y0z is the face at x=0,
+				and yNz is the face at x=N). (For 2D simulations the x0y and xNy directions are
+				included, but are made periodic.)
+				
+				Each <boundaryCondition> also includes a <shape> mark-up to define the shape of the boundary.
+				In this release only the 'Planar' class is available, and it requires specification of
+				a point on the boundary and a vector pointing outside the domain. These shape parameters
+				must be given in index coordinates (0 to 33 for 33 gridpoints).
+				
+				The possible boundary types and any particular parameters that need to be given are:
+
+				- BoundaryZeroFlux: a boundary impermeable to solutes and agents
+					(no parameters)
+				- BoundaryBulk: a boundary connected to a <bulk> region, with a spatial region within
+					the domain representing the entire compartment. If agents cross this boundary
+					they are treated as having left the computation domain. Other parameters include:
+					* 'activeForSolute': set to 'yes' to allow solutes to interact with the bulk
+						<param name="activeForSolute">yes</param>
+					* 'bulk': this specifies wich <bulk> compartment to connect to.
+						<param name="bulk">MyTank</param>
+				- BoundaryCyclic: the boundary is periodic with anothe boundary, so that agents leaving
+					this boundary will enter through the other, and vice-versa; solute concentrations
+					are constant across the two boundaries. You must specify the two faces (<shape>s)
+					that are to be connected this way.
+				- BoundaryGasMembrane: a boundary that is impermeable to agents and most solutes, but
+					permeable to a specified solute (used to represent gas transfer membranes).
+					Parameters include:
+					* You must specify a bulk compartment and the solute able to permeate:
+						<param name="isPermeableTo" detail="o2d" unit="m2.day-1">1</param>
+					* 'bulk': this will be different than the 'bulk' for BoundaryBulk:
+						<param name="bulk">MyGasMembraneBulk</param>
+
+			-->
+
+			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
+				<shape class="Planar">
+					<param name="pointIn" x="-1" y="0" z="0"/>
+					<param name="vectorOut" x="-1" y="0" z="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryBulk" name="yNz">
+				<param name="activeForSolute">yes</param>
+				<param name="bulk">MyTank</param>
+				<shape class="Planar">
+					<param name="pointIn" x="33" y="0" z="0"/>
+					<param name="vectorOut" x="1" y="0" z="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryCyclic" name="x0z">
+				<shape class="Planar">
+					<param name="pointIn" x="0" y="-1" z="0"/>
+					<param name="vectorOut" x="0" y="-1" z="0"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" x="0" y="33" z="0"/>
+					<param name="vectorOut" x="0" y="1" z="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryCyclic" name="x0y">
+				<shape class="Planar">
+					<param name="pointIn" x="0" y="0" z="-1"/>
+					<param name="vectorOut" x="0" y="0" z="-1"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" x="0" y="0" z="1"/>
+					<param name="vectorOut" x="0" y="0" z="1"/>
+				</shape>
+			</boundaryCondition>
+		</computationDomain>
+	</world>
+
+
+
+	<!--#####################################################################
+		REACTION SECTION
+	######################################################################-->
+
+	<!-- In this next section all the reactions included in the simulation should be defined.
+		The <reaction> mark-up defines which type of biomass carries out the reaction. The
+		parameter for 'catalyzedBy' should be 'biomass', 'inert', or 'capsule'), and the 'name'
+		parameter should be unique to this reaction. The class should be kept as 'ReactionFactor'.
+
+		Then each reaction has a 'muMax' parameter, which is the maximum rate at which the reaction
+		may proceed.
+
+		Next are one or more <kineticFactor> mark-ups that define multiplicative factors affecting
+		the reaction rate and decreasing the overall rate from muMax to something lower. There are
+		several possible types for <kineticFactor>, and each may take a parameter as well as a
+		solute that will set the term's value:
+			* Monod kinetic: S/(Ks+S)
+				<kineticFactor class="MonodKinetic" solute="MyNH4">
+					<param name="Ks" unit="g.L-1">1.5e-3</param>
+				</kineticFactor>
+
+			* Simple inhibition kinetic: Ki/(Ki+S)
+				<kineticFactor class="SimpleInhibition" solute="o2d">
+					<param name="Ki" unit="g.L-1">1.5e-3</param>
+				</kineticFactor>
+
+			* Haldane kinetic: S/(Ks + S + S^2/Ki)
+				<kineticFactor class="HaldaneKinetic" solute="MyNO3">
+					<param name="Ks" unit="g.L-1">0.05e-3</param>
+					<param name="Ki" unit="g.L-1">0.25e-3</param>
+				</kineticFactor>
+
+			* Hill kinetic: S^h/(Ks^h + S^h)
+				<kineticFactor class="HillKinetic" solute="MyCOD">
+					<param name="Ks" unit="g.L-1">0.05e-3</param>
+					<param name="h" unit="-">0.5</param>
+				</kineticFactor>
+			
+			* First-order kinetic: always gives value 1, for nonvarying rates
+				<kineticFactor class="FirstOrderKinetic"/>
+
+
+		After specifying the reaction kinetic factors, you must specify the coefficients
+		of solute and biomass production and consumption; these are in the <yield> mark-up.
+		The affected solutes and biomass are each listed with a coefficient, and positive
+		values indicate production while negative values indicate consumption. A line such as:
+			<param name="MyNH4" unit="g.g-1">-1.587</param>
+		specifies the consumption of 'MyNH4' during the reaction on a gram-per-gram basis
+		with the catalyzing ('catalyzedBy') biomass type. In the above line, production of
+		a total of one gram of biomass will consume 1.587 grams of 'MyNH4'.
+
+	-->
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyGrowthAutotrophs">
+		<param name="muMax" unit="hour-1">0.0417</param>
+		<kineticFactor class="MonodKinetic" solute="MyNH4">
+			<param name="Ks" unit="g.L-1">1.5e-3</param>
+		</kineticFactor>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="g.L-1">0.5e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="MyNH4" unit="g.g-1">-1.587</param>
+			<param name="MyNO3" unit="g.g-1">1.587</param>
+			<param name="o2d" unit="g.g-1">-6.25</param>
+			<param name="biomass" unit="g.g-1">0.9</param>
+			<param name="capsule" unit="g.g-1">0.1</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyMaintenanceAutotrophs">
+		<param name="muMax" unit="hour-1">0.005</param>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="g.L-1">0.5e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1</param>
+			<param name="o2d" unit="g.g-1">-1</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyInactivationAutotrophs">
+		<param name="muMax" unit="hour-1">0.0013</param>
+		<kineticFactor class="FirstOrderKinetic"/>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1</param>
+			<param name="inert" unit="g.g-1">1</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyGrowthHeterotrophs">
+		<param name="muMax" unit="hour-1">0.25</param>
+		<kineticFactor class="MonodKinetic" solute="MyCOD">
+			<param name="Ks" unit="g.L-1">4e-3</param>
+		</kineticFactor>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="g.L-1">0.2e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="MyCOD" unit="g.g-1">-1.5873</param>
+			<param name="o2d" unit="g.g-1">-0.5873</param>
+			<param name="biomass" unit="g.g-1">0.8</param>
+			<param name="capsule" unit="g.g-1">0.2</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyAnaerobicGrowthHeterotrophs">
+		<param name="muMax" unit="hour-1">0.2</param>
+		<kineticFactor class="MonodKinetic" solute="MyCOD">
+			<param name="Ks" unit="g.L-1">4e-3</param>
+		</kineticFactor>
+		<kineticFactor class="MonodKinetic" solute="MyNO3">
+			<param name="Ks" unit="g.L-1">0.5e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="MyCOD" unit="g.g-1">-1.5873</param>
+			<param name="MyNO3" unit="g.g-1">-0.1285</param>
+			<param name="biomass" unit="g.g-1">0.8</param>
+			<param name="capsule" unit="g.g-1">0.2</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyMaintenanceHeterotrophs">
+		<param name="muMax" unit="hour-1">0.0133</param>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="g.L-1">0.2e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1</param>
+			<param name="o2d" unit="g.g-1">-1</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyAnaerobicMaintenanceHeterotrophs">
+		<param name="muMax" unit="hour-1">0.0133</param>
+		<kineticFactor class="MonodKinetic" solute="MyNO3">
+			<param name="Ks" unit="g.L-1">0.5e-3</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1</param>
+			<param name="MyNO3" unit="g.g-1">-0.2188</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyInactivationHeterotrophs">
+		<param name="muMax" unit="hour-1">0.0033</param>
+		<kineticFactor class="FirstOrderKinetic"/>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1</param>
+			<param name="inert" unit="g.g-1">1</param>
+		</yield>
+	</reaction>
+
+
+
+
+	<!--#####################################################################
+		SOLVER SECTION
+	######################################################################-->
+
+	<!-- The <solver> mark-ups define the solvers to be used in calculating different
+		aspects of the simulation -->
+
+	<!-- The 'Solver_multigrid' solver will compute solute concentrations in the
+		given computational domain. The given parameters pertain to details of
+		the multigrid algorithm and should generally be left as-is. The list of
+		<reaction> mark-ups should include ALL reactions that affect solute concentrations
+		in the domain through production or consumption. -->
+
+	<solver class="Solver_multigrid" name="solutes" domain="MyBiofilm">
+		<param name="active">true</param>registerBirth
+		<param name="preStep">150</param>
+		<param name="postStep">150</param>
+		<param name="coarseStep">1500</param>
+		<param name="nCycles">5</param>
+
+		<reaction name="MyGrowthHeterotrophs"/>
+		<reaction name="MyMaintenanceHeterotrophs"/>
+		<reaction name="MyGrowthAutotrophs"/>
+		<reaction name="MyMaintenanceAutotrophs"/>
+
+	</solver>
+
+	<!-- The 'Solver_pressure' solver is used to compute the pressure field in the biofilm
+		that is used to spread biomass due to growth. -->
+
+	<solver class="Solver_pressure" name="pressure" domain="MyBiofilm">
+		<param name="active">true</param>
+	</solver>
+
+
+
+	<!--#####################################################################
+		AGENT GRID SECTION
+	######################################################################-->
+
+	<!-- The agent grid contains and manages all agents living in the given domain.
+		The parameters should be adjusted to match the simulation conditions. -->
+
+	<agentGrid>
+		<!-- domain of agents to manage -->
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="erosionMethod">false</param>
+
+		<!-- The resolution should be a multiple of two of the computationDomain resolution,
+			and should be on the order of the diameter of the largest species. -->
+		<param name="resolution" unit="um">8</param>
+
+		<!-- The <detachment> mark-up defines the erosion forces that act on the biofilm surface.
+			Detachment works by removing a layer of biomass based on the detachment speed and
+			the timestep, with the detachment speed calculated via one of the given forms.
+			The possible detachment types are:
+			* quadratic: kDet*L^2, where L is the local biomass thickness
+				<detachment class="DS_Quadratic">
+					<param name="kDet" unit="um-1.hour-1">5e-6</param>
+					<param name="maxTh" unit="um">200</param>
+				</detachment>
+			* biomass: kDet*L^2/X, where L is the local biomass thickness and X the local biomass
+				concentration.
+				<detachment class="DS_Biomass">
+					<param name="kDet" unit="fg.um-4.hour-1.">2e-4</param>
+					<param name="maxTh" unit="um">300</param>
+				</detachment>
+
+			In addition, a maximum biofilm thickness may be given via the 'maxTh' parameter.
+		-->
+		<detachment class="DS_Quadratic">
+			<param name="kDet" unit="um-1.hour-1">5e-6</param>
+			<param name="maxTh" unit="um">200</param>
+		</detachment>
+
+		<!-- The 'sloughDetachedBiomass' parameter sets whether biomass that is no longer
+			connected to the substratum will be removed. In general this should be true, but
+			set it to false if you want to consider a different structure, e.g. granules. -->
+		<param name="sloughDetachedBiomass">true</param>
+		
+		<!-- These parameters relate to particle shoving and are generally okay as-is. -->
+		<param name="shovingMaxNodes">2e6</param>
+		<param name="shovingFraction">0.025</param>
+		<param name="shovingMaxIter">250</param>
+		<param name="shovingMutual">true</param>
+	</agentGrid>
+
+
+	<!--#####################################################################
+		SPECIES SECTION
+	######################################################################-->
+
+	<!-- The final part of the protocol file is used to define the species involved
+		in the current simulation using <species> mark-ups. Each species is defined
+		from one of several different classes, and each is given a name and
+		has some defining parameters. These are described in detail here.
+		
+		Following the opening mark-up is the list of <particle> types that make up this
+		species; bacteria species will generally have biomass, inert, and
+		capsule <particle>s, while EPS will have only capsule. You may specify the
+		initial mass of the compartment, or set it to 0 to allow a random value.  
+
+		Now we show the parameters that are common to most species:
+		* the color is used to distinguish agents in POV-Ray output images
+			<param name="color">yellow</param>
+		* you must define which domain the agents will live in
+			<param name="computationDomain">MyBiofilm</param>
+		* you must specify how large the agents may be before dividing; the actual
+			division decision will be based on a standard deviation around this value
+			<param name="divRadius" unit="um">2</param>
+		* you must specify the size below which the agent is removed from the simulation
+			<param name="deathRadius" unit="um">0.1</param>
+		* the 'shoveFactor' parameter controls how much overlap there is for agents of
+			this species; =1 is touching, <1 is overlap, and >1 provides space around
+			the agent
+			<param name="shoveFactor" unit="um">1</param>
+		* the 'shoveLimit' parameter sets the overlap allowed before shoving occurs,
+			and is usally kept at 0
+			<param name="shoveLimit" unit="um">0.</param>
+
+		Next come the parameters unique to a species, and we explain those below.
+
+		After the unique parameters comes a list of reactions that this species is
+		involved with, using the <reaction> mark-ups. If the 'status' is set to 'inactive',
+		then the reaction will not be carried out by the species for this simulation.
+
+		Finally, you need to declare parameters on how each species begins life in the simulaton.
+		This will depend on whether you are using traditional one-time attachment or the new self-attachment
+		scenario. You set this in the ATTACHMENT tag in the SIMULATOR section
+
+		FOR ONETIME ATTACHMENT (AS IN TRADITIONAL VERSIONS OF IDYNOMICS):
+		The <initArea> mark-up defines the rectangular region within which
+		the given number of individuals of this species should be placed; the agents
+		will be placed randomly in this region. The coordinates should be given in spatial
+		(micron) units, not element # (unitless). The 'birthday' parameter sets when
+		in the simulation the agents should be introduced. You may define any number
+		of <initArea> regions, and if <initArea> is omitted, no agents will be created
+		automatically.
+
+		FOR SELF-ATTACHMENT SCENARIOS (NEW TO IDYNOMICS VERSION 1.2):
+		- Specify the hour that cell injection begins in parameter "cellInjectionStartHour" - this can be set to 0 if from the start of the simulation
+		- Specify the cell attachment frequency during injection (per hour) in parameter "injectionOnAttachmentFrequency" - i.e. number of cells that 
+			attach to the substratum or biofilm per hour when injection on
+		- Specify the hour at which cell injection stops, in parameter "cellInjectionEndHour". No more cells will be introduced in the simulation from that point
+		- Specify the cell attachment frequency during injection (per hour) in parameter "injectionOffAttachmentFrequency" - i.e. number of cells that 
+			attach to the substratum or biofilm per hour when injection off
+
+		POSSIBLE SPECIES TYPES:
+
+		ParticulateEPS: this represents generic extracellular polymers and contains only
+			the 'capsule' <particle> type. This <species> has no unique parameters.
+
+		Bacterium: this is a generic bacteria species that is generally composed of
+			biomass, inert, and capsule compartments. If the <particle> type 'capsule' is
+			included, you must specify the type of EPS that will be excreted using the
+			'class' parameter; the argument should be one of the EPS <species> you have
+			PREVIOUSLY defined in the mark-up. (If you use a <species> here that appears
+			later in the protocol file, an error will results.)
+		
+			The unique parameter you may define is 'epsMax', which sets the maximum
+			fraction (by volume) of the agent that may be taken up by EPS:
+			<param name="epsMax">0.1</param>
+
+		BactEPS: this <species> is the same as Bacterium, but with the additional
+			functionality of a first-order hydrolysis of bound EPS in the 'capsule' compartment.
+			You may specify the hydrolysis rate:
+			<param name="kHyd" unit="hr-1">0.007</param>
+
+		BactAdaptable: this <species> derives from BactEPS, but adds the ability to turn
+			reactions on or off depending on different conditions. After specifying ALL
+			reactions that this species may carry out in the <reaction> mark-ups, the
+			<reactionSwitch> mark-up defines when those reactions will be utilized. The
+			mark-up is shown here and explained below:
+
+			<reactionSwitch>
+				<whenOff>
+					<reaction name="HetGrowthAerobic" status="active"/>
+					<reaction name="HetMaintenanceAerobic" status="active"/>
+					<param name="color">white</param>
+					<param name="switchLag" unit="hour">0</param>
+				</whenOff>
+				<whenOn>
+					<reaction name="HetGrowthAnaerobicInsensitive" status="active"/>
+					<reaction name="HetMaintenanceAnaerobicInsensitive" status="active"/>
+					<param name="color">black</param>
+					<param name="switchLag" unit="hour">1</param>
+				</whenOn>
+				<onCondition type="solute" name="o2d">
+					<param name="switch">lessThan</param>
+					<param name="concentration" unit="g.L-1">0.2e-3</param>
+				</onCondition>
+			</reactionSwitch>
+
+			The <whenOff> and <whenOn> mark-ups set the conditions when the switch is in the
+			OFF and ON state, respectively. Included are which reactions are active, the color
+			the agents should be drawn in POV-Ray files, and the lag before the conditions
+			actually take effect after the conditions are right for this switch position.
+
+			The <onCondition> mark-up defines when the switch should be in the ON state; the
+			OFF state is defined opposite of the given condition. Shown above is the 'solute'
+			type, where the agent changes the switch state based on a local solute concentration.
+			For this type you must specify the name of the solute, whether the switch is ON
+			when the solute is 'lessThan' or 'greaterThan' a given concentration, and finally the
+			concentration that will trigger the switch. The biomass switch type is similar:
+				<onCondition type="biomass" name="biomass">
+					<param name="switch">lessThan</param>
+					<param name="mass" unit="fg">2000</param>
+				</onCondition>
+			Here, 'type' should ALWAYS be 'biomass' for this switch type, while 'name' refers
+			to one of the 'biomass', 'inert', or 'capsule' types. The 'switch' parameter may
+			again be 'lessThan' or 'greaterThan', and for this type you must specify the 'mass'
+			value in femtograms (1 fg = 1e-15 g) that will trigger the switch.
+
+
+		-->
+
+	<species class="Bacterium" name="MyAutotrophs">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+
+		<param name="color">red</param>
+		<param name="distMethod">true</param>
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="divRadius" unit="um">2</param>
+		<param name="divRadiusCV">0.1</param>
+		<param name="deathRadius" unit="um">0.2</param>
+		<param name="deathRadiusCV">0.1</param>
+		<param name="babyMassFrac">0.5</param>
+		<param name="babyMassFracCV">0.05</param>
+		<param name="shoveFactor" unit="um">1.15</param>
+		<param name="shoveLimit" unit="um">0.</param>
+
+		<param name="cellRunSpeed" unit="um/sec">30.0</param>
+		<param name="tumbleInt" unit="seconds">2</param>
+		<param name="stickinessAddition" unit="um">0.5</param>
+
+		<param name="epsMax">0.1</param>
+
+		<reaction name="MyGrowthAutotrophs" status="active"/>
+		<reaction name="MyMaintenanceAutotrophs" status="active"/>
+		<reaction name="MyInactivationAutotrophs" status="active"/>
+		
+		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
+		
+		<!-- Hour to start cell injection-->
+		<param name="cellInjectionStartHour" unit="hour">0</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+
+		<!-- Hour to stop cell injection -->
+		<param name="cellInjectionEndHour" unit="hour">72</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+
+	</species>
+
+	<species class="BactEPS" name="MyHeterotroph">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+
+		<param name="color">blue</param>
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="divRadius" unit="um">2</param>
+		<param name="divRadiusCV">0.1</param>
+		<param name="deathRadius" unit="um">0.2</param>
+		<param name="deathRadiusCV">0.1</param>
+		<param name="babyMassFrac">0.5</param>
+		<param name="babyMassFracCV">0.05</param>
+		<param name="shoveFactor" unit="um">1.15</param>
+		<param name="shoveLimit" unit="um">0.</param>
+
+		<param name="cellRunSpeed" unit="um/sec">30.0</param>
+		<param name="tumbleInt" unit="seconds">5</param>dist
+		<param name="stickinessRadius" unit="um">0.5</param>
+
+		<param name="epsMax">0.1</param>
+		<param name="kHyd" unit="hr-1">0.007</param>
+
+		<reaction name="MyGrowthHeterotrophs" status="active"/>
+		<reaction name="MyMaintenanceHeterotrophs" status="active"/>
+		<reaction name="MyInactivationHeterotrophs" status="active"/>
+
+		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
+		
+		<!-- Hour to start cell injection-->
+		<param name="cellInjectionStartHour" unit="hour">0</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+
+		<!-- Hour to stop cell injection -->
+		<param name="cellInjectionEndHour" unit="hour">72</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+	</species>
+
+
+	<species class="BactAdaptable" name="MySwitchHeterotroph">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+
+		<param name="color">white</param>
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="divRadius" unit="um">3</param>
+		<param name="divRadiusCV">0.1</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="deathRadiusCV">0.1</param>
+		<param name="babyMassFrac">0.5</param>
+		<param name="babyMassFracCV">0.05</param>
+		<param name="shoveFactor" unit="um">1.15</param>
+		<param name="shoveLimit" unit="um">0</param>
+
+		<param name="epsMax">0.1</param>
+		<param name="kHyd" unit="hr-1">0.007</param>
+
+		<reaction name="MyGrowthHeterotrophs" status="active"/>
+		<reaction name="MyMaintenanceHeterotrophs" status="active"/>
+		<reaction name="MyAnaerobicGrowthHeterotrophs" status="active"/>
+		<reaction name="MyAnaerobicMaintenanceHeterotrophs" status="active"/>
+		<reaction name="MyInactivationHeterotrophs" status="active"/>
+
+		<reactionSwitch>
+			<whenOff>
+				<reaction name="MyGrowthHeterotrophs" status="active"/>
+				<reaction name="MyMaintenanceHeterotrophs" status="active"/>
+				<param name="switchLag" unit="hour">0</param>
+				<param name="color">white</param>
+			</whenOff>
+			<whenOn>
+				<reaction name="MyAnaerobicGrowthHeterotrophs" status="active"/>
+				<reaction name="MyAnaerobicMaintenanceHeterotrophs" status="active"/>
+				<param name="switchLag" unit="hour">3</param>
+				<param name="color">black</param>
+			</whenOn>
+			<onCondition type="solute" name="o2d">
+				<param name="switch">lessThan</param>
+				<param name="concentration" unit="g.L-1">0.2e-3</param>
+			</onCondition>
+			-->
+			<!--
+			<onCondition type="biomass" name="biomass">
+				<param name="switch">lessThan</param>
+				<param name="mass" unit="fg">5000</param>
+			</onCondition>-->
+		</reactionSwitch>
+
+		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
+		
+		<!-- Hour to start cell injection-->
+		<param name="cellInjectionStartHour" unit="hour">0</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+
+		<!-- Hour to stop cell injection -->
+		<param name="cellInjectionEndHour" unit="hour">72</param>
+
+		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+
+	</species>
+	
+</idynomics>
