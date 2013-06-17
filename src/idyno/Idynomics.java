@@ -796,7 +796,7 @@ public class Idynomics
 	 * The best place to start with iDynoMiCS is to complete the tutorial. This can be found in our  <a href="http://www.github.com/kreft">Github repository</a> 
 	 * and a PDF can be found in the 'Tutorial' folder in the iDynoMiCS download.
 	 * 
-	 * Should you have any issues with using iDynoMiCS, you can seek support in two ways. 
+	 * Should there be any issues with using iDynoMiCS, you can seek support in two ways. 
 	 * 
 	 * The first of these is to ask your question via the <a href="https://github.com/kreft/iDynoMiCS/issues">Issue tracking system</a> 
 	 * on our <a href="http://www.github.com/kreft">GitHub repository</a>.  There is more information on how to use the Issue tracking 
@@ -806,7 +806,7 @@ public class Idynomics
 	 * respond via email as swiftly as time allows. Your query will also be logged as an Issue in our GitHub repository with the 
 	 * appropriate reply, in order that this remains available for other users who may have the same question. 
 	 *   
-	 *   
+	 *    
 	 */
 	
 	/**
