@@ -14,6 +14,10 @@ Time : hour
 		<param name="restartPreviousRun">false</param>
 		<param name="randomSeed">35</param>
 		<param name="outputPeriod" unit="hour">2</param>
+
+		<!-- Specifies whether the simulation should check as to whether a new release is available -->
+		<param name="checkForReleaseUpdate">true</param>
+
 		<!-- CHEMOSTAT SITUATION: when simulating a chemostat one should set the global timeStep (timeStepIni)
 	to be around 0.10*(1/D), so that in average 10% of the agents will be removed from the system in each 
 	time step. But according to the tests performed, better results will be obtained with lower time steps
@@ -25,6 +29,11 @@ Time : hour
 			<param name="timeStepMax" unit="hour">1</param>
 			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
+
+		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
+		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
+		<param name="attachment">selfattach</param>
+
 		<!-- Set the flag "chemostat" to true. The default is false, i.e., if nothing is said a biofilm scenario is simulated-->
 		<param name="chemostat">true</param>
 		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->

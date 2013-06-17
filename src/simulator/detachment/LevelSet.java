@@ -1,16 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
+ * \package simulator.detachment
  * 
- */
-
-/**
- * @since June 2006
- * @version 1.0
- * @author  * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ * \brief Package of classes that capture detachment of agents from the biomass
  * 
+ * Package of classes that capture detachment of agents from the biomass. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
 package simulator.detachment;
 
 import idyno.SimTimer;
@@ -25,29 +21,65 @@ import simulator.agent.LocatedGroup;
 import utils.ExtraMath;
 import utils.XMLParser;
 
+/**
+ * \brief Solver used for modelling detachment
+ * 
+ * Solver used for modelling detachment
+ *  
+ * @author  * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ *
+ */
 public abstract class LevelSet {
 
+	/**
+	 * Grid dimensions of the associated agent grid
+	 */
 	private int[]                    _gridDim;
 
+	/**
+	 * Resolution of the associated agent grid
+	 */
 	private double                   _res;
-	private LocatedGroup[]           _shovingGrid;
-	// _close is a list of agent groups on the biofilm/liquid border
-	private LinkedList<LocatedGroup> _close, _alive;
+	
+	/**
+	 * Shoving grid associated with the agent grid associated with this object
+	 */
+	public LocatedGroup[]           _shovingGrid;
+	
+	/**
+	 * List of agent groups on the biofilm/liquid border
+	 */
+	private LinkedList<LocatedGroup> _close;
+	
+	private LinkedList<LocatedGroup> _alive;
 
 	private double                   INF = Double.POSITIVE_INFINITY;
 	private double                   timeStep;
 
 	/**
-	 * Generic constructor called to dynamically instantiate a child class
-	 * object
+	 * \brief Generic constructor called to dynamically instantiate a child class object
+	 * 
+	 * Generic constructor called to dynamically instantiate a child class object
+	 * 
+	 * @param root	XML tags that contain parameters relating to detachment
+	 * @param anAgentGrid	Agent grid associated with this solver
 	 */
-	public static LevelSet staticBuilder(XMLParser root, AgentContainer anAgentGrid) {
+	public static LevelSet staticBuilder(XMLParser root, AgentContainer anAgentGrid) 
+	{
 		LevelSet out = (LevelSet) root.instanceCreator("simulator.detachment");
 
 		out.init(anAgentGrid, root);
 		return out;
 	}
 
+	/**
+	 * \brief Initialise this LevelSet object by taking information from the associated grid and protocol file
+	 * 
+	 * Initialise this LevelSet object by taking information from the associated grid and protocol file
+	 * 
+	 * @param anAgentGrid	Agent grid which this solver is associated to
+	 * @param root	XML tags that contain parameters relating to detachment
+	 */
 	public void init(AgentContainer anAgentGrid, XMLParser root) {
 
 		_gridDim = anAgentGrid.getGridDescription();
@@ -59,18 +91,24 @@ public abstract class LevelSet {
 	}
 
 	/**
-	 * Identifies biofilm border
+	 * \brief Identify the biofilm border
+	 * 
+	 * Identify the biofilm border
+	 * 
+	 * @param evalErosion	Boolean noting whether biofilm erosion should be considered
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 */
-	public void refreshBorder(boolean evalErosion, Simulator aSim) {
-
+	public void refreshBorder(boolean evalErosion, Simulator aSim) 
+	{
 		_close.clear();
 		_alive.clear();
 		timeStep = SimTimer.getCurrentTimeStep();
 
 		// go through all elements
-		for (LocatedGroup aGroup : _shovingGrid) {
-
-			if (aGroup.isOutside) {
+		for (LocatedGroup aGroup : _shovingGrid) 
+		{
+			if (aGroup.isOutside) 
+			{
 				if (aGroup.status!=1) aGroup.erosionTime = INF;
 				continue;
 			}
@@ -116,15 +154,21 @@ public abstract class LevelSet {
 	}
 
 	/**
-	 * @return a random grid element of the shoving grid where a attaching agent
-	 * could land
+	 * \brief Return a random LocatedGroup grid element of the shoving grid where a attaching agent could land
+	 * 
+	 * Return a random LocatedGroup  grid element of the shoving grid where a attaching agent could land
+	 * 
+	 * @return	LocatedGroup from a random element of the shoving grid
 	 */
 	public LocatedGroup getLandingPoint() {
 		return _close.get((int) ExtraMath.getUniRand()*_close.size());
 	}
 
 	/**
+	 * \brief Build list of groups belonging to the carrier
+	 * 
 	 * Build list of groups belonging to the carrier
+	 * 
 	 */
 	public void refreshCarrier() {
 		_close.clear();
@@ -142,15 +186,20 @@ public abstract class LevelSet {
 	}
 
 	/**
+	 * \brief Compute erosion time for the whole biofilm
+	 * 
 	 * Compute erosion time for the whole biofilm
 	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 */
-	public void computeLevelSet(Simulator aSim) {
+	public void computeLevelSet(Simulator aSim) 
+	{
 
 		LocatedGroup trial;
 		int index;
 
-		while (_close.size()>0) {
+		while (_close.size()>0) 
+		{
 			// Order the elements in _close in respect to the T value
 			Collections.sort(_close, new LocatedGroup.TValueComparator());
 			trial = _close.removeFirst();
@@ -176,8 +225,12 @@ public abstract class LevelSet {
 	}
 
 	/**
+	 * \brief Test erosion time of a neighbour and consider it as a future element to compute
+	 * 
 	 * Test erosion time of a neighbour and consider it as a future element to compute
-	 * @param index
+	 * 
+	 * @param aGroup	Located group containing neighbours to examine
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 */
 	private void addToCloseAndUpdate(LocatedGroup aGroup, Simulator aSim) {
 		// If this element is not in the biofilm, get out;
@@ -197,20 +250,24 @@ public abstract class LevelSet {
 	}
 
 	/**
+	 * \brief Return the local detachment speed
 	 * 
-	 * @param index
-	 * @return an erosion speed (micrometer by hour)
+	 * Return the local detachment speed
+	 * 
+	 * @param aGroup	Group of located agents on the grid
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @return An erosion speed (micrometer by hour)
 	 */
 	protected abstract double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim);
 
 	/**
-	 * Get the new T value for level set as based on the values of the
-	 * neighbours and marks the particle for detachment if t is less than the
-	 * time step
+	 * \brief Get the new T value for level set as based on the values of the neighbours and marks the particle for detachment if it is less than the time step
 	 * 
-	 * @param i
-	 * @param j
-	 * @param k
+	 * Get the new T value for level set as based on the values of the neighbours and marks the particle for detachment if it is less 
+	 * than the time step
+	 * 
+	 * @param aGroup	Group of located agents to process
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file 
 	 * @return next levelset value
 	 */
 	private double computeTValue(LocatedGroup aGroup, Simulator aSim) {
@@ -287,10 +344,13 @@ public abstract class LevelSet {
 	}
 
 	/**
+	 * \brief Check the validity of a solution
+	 * 
 	 * Check the validity of a solution
-	 * @param s:solution value (tmp)
-	 * @param f:the present f (t or INF)
-	 * @param t:the present t (min(tplus, tminus)
+	 * 
+	 * @param s	solution value (tmp)
+	 * @param f	the present f (t or INF)
+	 * @param t	the present t (min(tplus, tminus)
 	 * @return true if solution is not valid
 	 */
 	private boolean solutionValid(double s, double f, double t) {
@@ -301,13 +361,15 @@ public abstract class LevelSet {
 	}
 
 	/**
-	 * compute the maximum value of roots
+	 * \brief Compute the maximum value of roots
 	 * 
-	 * @param tX
-	 * @param tY
-	 * @param tZ
-	 * @param detachmentRate
-	 * @return
+	 * Compute the maximum value of roots
+	 * 
+	 * @param tX	Erosion Time
+	 * @param tY	Erosion Time
+	 * @param tZ	Erosion Time
+	 * @param detachmentRate	Local detachment speed
+	 * @return	Solution of quadratic equation
 	 */
 	private double computeRoots(double tX, double tY, double tZ, double detachmentRate) {
 		// parameters for solving quadratic equation
@@ -325,6 +387,13 @@ public abstract class LevelSet {
 		return (-b+aux)/(2.0f*a);
 	}
 
+	/**
+	 * \brief Return list of agent groups on the biofilm/liquid border
+	 * 
+	 * Return list of agent groups on the biofilm/liquid border
+	 * 
+	 * @return LinkedList of agent groups on the biofilm/liquid border
+	 */
 	public LinkedList<LocatedGroup> getBorder() {
 		return _close;
 	}

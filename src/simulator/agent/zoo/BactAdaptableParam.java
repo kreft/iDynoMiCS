@@ -1,18 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- * ___________________________________________________________________________
- * BactAdaptable: a species that can change its reaction based on local conditions 
+ * \package simulator.agent.zoo
+ * \brief Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types
  * 
+ * Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
-/**
- * 
- * @since Nov 2008
- * @version 1.0
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * ____________________________________________________________________________
- */
-
 package simulator.agent.zoo;
 
 import java.util.ArrayList;
@@ -24,39 +18,98 @@ import simulator.Simulator;
 import simulator.SoluteGrid;
 import utils.XMLParser;
 
-public class BactAdaptableParam extends BactEPSParam {
+/**
+ * \brief Creates a parameter object for BactAdaptable, a Bacterium agent object that can change its reaction based on local conditions
+ * 
+ * Creates a parameter object for BactAdaptable, a Bacterium agent object that can change its reaction based on local conditions
+ * 
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ *
+ */
+public class BactAdaptableParam extends BactEPSParam 
+{
 
-	// this array is used to read the solute concentrations
+	/**
+	 * Array used to read the solute concentrations
+	 */
 	protected SoluteGrid[] _soluteList;
 
-	// these arrays contain subsets of all known reactions based on which
-	// reactions are active for the given state
-	// (these arrays contain indices to be used in referencing the allReactions array)
+	
+	/**
+	 * Subsets of all known reactions which take place when the switch is set to on. Contains indices to be used in referencing the allReactions array
+	 */
 	protected ArrayList<Integer> onStateReactions;
+	
+	/**
+	 * Subsets of all known reactions which take place when the switch is set to off. Contains indices to be used in referencing the allReactions array
+	 */
 	protected ArrayList<Integer> offStateReactions;
 
-	// biomass or solute
+	/**
+	 * The factor controlling what changes the value of this switch - the local solute concentration or agents biomass amount
+	 */
 	protected String switchType;
-
-	// the component controlling the switch and the value and
-	// state that set the transition
+	
+	/**
+	 * The name of the component that is controlling the value of this switch (e.g. o2d) 
+	 */
 	protected String switchControl;
+	
+	/**
+	 * Integer index of the particle or reaction in the simulation dictionary
+	 */
 	protected int switchControlIndex;
-	protected String switchCondition; // lessThan or greaterThan
+	
+	/**
+	 * Used in the onCondtion reaction mark-up - tests switch changing thresholds. Can be lessThan or greaterThan
+	 */
+	protected String switchCondition; 
+	
+	/**
+	 * The value (concentration or mass) that will prompt the changing of the reaction switch
+	 */
 	protected double switchValue;
-
-	// different lags for different switch positions
+	
+	/**
+	 * Lag time before switch actually changes after a request to change it, to capture microbial metabolic delays
+	 */
 	protected double lagSwitchOn  = 1.0;
+	
+	/**
+	 * Lag time before switch actually changes after a request to change it, to capture microbial metabolic delays
+	 */
 	protected double lagSwitchOff = 1.0;
 
-	// colors for povray output
-	public Color onColor, offColor;
+	/**
+	 * Colour to be used by POV-Ray to show objects of this species when the reaction switch is on
+	 */
+	public Color onColor;
+	
+	/**
+	 * Colour to be used by POV-Ray to show objects of this species when the reaction switch is off
+	 */
+	public Color offColor;
 
-	public BactAdaptableParam() {
+	/**
+	 * \brief Creates a parameter storage object for the BactAdaptable species type
+	 * 
+	 * Creates a parameter storage object for the BactAdaptable species type
+	 */
+	public BactAdaptableParam() 
+	{
 		super();
 	}
 
-	public void init(Simulator aSim, XMLParser aSpeciesRoot){
+	/**
+	 * \brief Initialises BactAdaptable Species parameters, calling the relevant superclasses to initialise common parameters and then setting up the reaction switch
+	 * 
+	 * Initialises Bacterium EPS Species parameters, calling the relevant superclasses to initialise common parameters and then setting up the reaction switch
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
+	 */
+	public void init(Simulator aSim, XMLParser aSpeciesRoot)
+	{
 		String colorName;
 
 		super.init(aSim,aSpeciesRoot);

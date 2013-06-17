@@ -1,18 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- * ______________________________________________________
- */
-
-/**
+ * \package agent
+ * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
  * 
- * @since April 2007
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * 
+ * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
 package simulator.agent;
 
 import java.util.*;
@@ -25,42 +19,132 @@ import simulator.geometry.boundaryConditions.AllBC;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
 
+/**
+ * \brief Object to hold a group of agents in one location on the agent grid
+ * 
+ * Object to hold a group of agents in one location on the agent grid
+ * 
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ *
+ */
 public class LocatedGroup {
 
+	/**
+	 * Agent container this located group is within
+	 */
 	public AgentContainer           agentGrid;
+	
+	/**
+	 * Linked list to hold members of this group
+	 */
 	public LinkedList<LocatedAgent> group              = new LinkedList<LocatedAgent>();
 
+	/**
+	 * Concentration of species in this group, thus area represented
+	 */
 	public double[]                 speciesConcentration;
+	
+	/**
+	 * Total volume of agents in this group
+	 */
 	public double                   totalVolume        = 0;
+	
 	public double                   deltaV             = 0;
+	
+	/**
+	 * Total concentration of agents in this group
+	 */
 	public double                   totalConcentration = 0;
+	
+	/**
+	 * Total mass of agents in this group
+	 */
 	public double                   totalMass          = 0;
+	
 	public double                   erosionTime        = Double.NaN;
-	public double                   distanceFromCarrier, distanceFromBulk;
+	
+	/**
+	 * Distance of the group at this location from the carrier
+	 */
+	public double                   distanceFromCarrier;
+	
+	/**
+	 * Distance of the group at this location from the bulk
+	 */
+	public double 					distanceFromBulk;
+	
 	public double 					ratio;
 
+	/**
+	 * The index of the grid at which this located group represents
+	 */
 	public int                      gridIndex;
+	
+	/**
+	 * Coordinates of this location as a continuous vector
+	 */
 	public ContinuousVector         cc;
+	
+	/**
+	 * Coordinates of this location as a discrete
+	 */
 	public DiscreteVector           dc;
+	
+	/**
+	 * Index of the neighbours of this group
+	 */
 	public int[][][]                nbhIndex           = new int[3][3][3];
+	
+	/**
+	 * Neighbouring groups around this group
+	 */
 	public LocatedGroup[][][]       nbhGroup           = new LocatedGroup[3][3][3];
 
-	// Space occupation (-1->outside, 0->carrier, 1->biofilm, 2->liquid,
-	// 3->bulk)
+	/**
+	 * Space occupation (-1->outside, 0->carrier, 1->biofilm, 2->liquid, 3->bulk)
+	 */ 
 	public int                      status             = 2;
+	
+	/**
+	 * Boolean stating whether this location is in the bulk
+	 */
 	public boolean                  isBulk             = false;
+	
+	/**
+	 * Boolean stating whether this location is in the carrier
+	 */
 	public boolean                  isCarrier          = false;
+	
+	/**
+	 * Boolean stating whether this location is outside the grid
+	 */
 	public boolean                  isOutside;
 
+	/**
+	 * Number of free neighbours around this location
+	 */
 	public int                      nFreeNbh;
+	
+	/**
+	 * Vector to hold an amount of distance an agent is to move
+	 */
 	public ContinuousVector         move               = new ContinuousVector();
 
-	/* ___________________ CONSTRUCTOR ______________________ */
+	
 
 	/**
-	 * Set coordinates and check inside/outside
+	 * \brief Set the coordinates of this group and check these are inside the grid
+	 * 
+	 *  Set the coordinates of this group and check these are inside the grid 
+	 *  
+	 *  @param index	Index of the grid in which this group is located
+	 *  @param anAgentGrid	The agent grid associated with this index
+	 *  @param aSimulator	The current simulation object 
 	 */
-	public LocatedGroup(int index, AgentContainer anAgentGrid, Simulator aSimulator) {
+	public LocatedGroup(int index, AgentContainer anAgentGrid, Simulator aSimulator) 
+	{
 		agentGrid = anAgentGrid;
 		// Spatial location of the group
 		gridIndex = index;
@@ -88,7 +172,9 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * Build neighbourhood reference map
+	 * \brief Builds neighbourhood reference map
+	 * 
+	 * Builds neighbourhood reference map
 	 */
 	public void init() {
 		if (isOutside) return;
@@ -102,6 +188,8 @@ public class LocatedGroup {
 	}
 
 	/**
+	 * \brief Refresh status and concentration of the group
+	 * 
 	 * Refresh status and concentration of the group
 	 * 
 	 */
@@ -133,6 +221,13 @@ public class LocatedGroup {
 		}
 	}
 
+	/**
+	 * \brief Refresh the volume statistics of this group
+	 * 
+	 * Refresh the volume statistics of this group
+	 * 
+	 * @return	Double noting the total volume of agents in this group
+	 */
 	public double refreshVolume() {
 		totalVolume = 0;
 		for (LocatedAgent aLoc : group) {
@@ -142,20 +237,16 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * Not currently used
-	 * @return volume variation of sum of particles
+	 * \brief Compute the gradient due to pressure and use it to set the advective affect
+	 * 
+	 * Compute the gradient due to pressure and use it to set the advective affect
+	 * 
+	 * @param pressure	Pressure grid
+	 * @param deltaT	DeltaT
+	 * @return	Norm of the movement vector under the affect of the pressure gradient
 	 */
-	public double updateDeltaVolume() {
-		deltaV = 0;
-		for (LocatedAgent aLoc : group) {			
-			deltaV += aLoc._netVolumeRate;
-		}
-		return deltaV;
-	}
-
-	// compute the gradient of the pressure and use it to set the advective
-	// movement vector; return norm of the movement vector
-	public double computeMove(SoluteGrid pressure, double deltaT) {
+	public double computeMove(SoluteGrid pressure, double deltaT) 
+	{
 		if (this.isOutside) move.reset();
 		else {
 			move = pressure.getGradient(this.cc);
@@ -169,8 +260,13 @@ public class LocatedGroup {
 		move.reset();
 	}
 
-	// scale the movement vector for the grid element and apply to each agent
-	// in the element
+	/**
+	 * \brief Scale the movement vector for the grid element and apply to each agent
+	 * 
+	 * Scale the movement vector for the grid element and apply to each agent
+	 * 
+	 * @param alpha	Scaling factor to be applied to a move
+	 */
 	public void addMoveToAgents(double alpha) {
 		for (LocatedAgent aLoc : group) {
 			//if (aLoc.isAttached()) move.x = 0;
@@ -180,7 +276,10 @@ public class LocatedGroup {
 	}
 
 	/**
+	 * \brief Safely remove located agent from agentList & agentGrid
+	 * 
 	 * Safely remove located agent from agentList & agentGrid
+	 * 
 	 */
 	public void killAll() {
 		ListIterator<LocatedAgent> iter = group.listIterator();
@@ -196,6 +295,12 @@ public class LocatedGroup {
 		}
 	}
 
+	/**
+	 * \brief Remove an agent from this LocatedGroup
+	 * 
+	 * Remove an agent from this LocatedGroup
+	 * @param anAgent	LocatedAgent to remove from this group
+	 */
 	public void remove(LocatedAgent anAgent) {
 		group.remove(anAgent);
 		//sonia:chemostat
@@ -207,15 +312,25 @@ public class LocatedGroup {
 		}
 	}
 
-	public void add(LocatedAgent anAgent) {
+	/**
+	 * \brief Add an agent to this LocatedGroup
+	 * 
+	 * Add an agent to this LocatedGroup
+	 * @param anAgent	LocatedAgent to add to this group
+	 */
+	public void add(LocatedAgent anAgent) 
+	{
 		group.add(anAgent);
 		status = 1;
 		anAgent.setGridIndex(gridIndex);
 	}
 
 	/**
-	 * Shuffle coordinates inside the group
-	 * @param aLoc
+	 * \brief Shuffle coordinates of an agent inside the group
+	 * 
+	 * Shuffle coordinates of an agent inside the group.
+	 * 
+	 * @param aLoc	LocatedAgent which is to be shuffled
 	 */
 	public void host(LocatedAgent aLoc) {
 		double res = agentGrid.getResolution();
@@ -226,16 +341,14 @@ public class LocatedGroup {
 		add(aLoc);
 	}
 
-	public void printLevelSet(double[][][] mat) {
-		if (!isOutside) {
-			double value;
-			value = erosionTime;
-			if (Double.isInfinite(value)) value = Double.MAX_VALUE;
-			// make sure padding is accounted for
-			mat[dc.i+1][dc.j+1][dc.k+1] = value;
-		}
-	}
-
+	/**
+	 * \brief Move the X parameter by a specified amount
+	 * 
+	 * Move the X parameter by a specified amount
+	 * 
+	 * @param i	The current I grid element
+	 * @return	Located group reached by that move
+	 */
 	public LocatedGroup moveX(int i) {
 		int delta = (int) Math.signum(i);
 		LocatedGroup out = nbhGroup[delta+1][1][1];
@@ -247,6 +360,14 @@ public class LocatedGroup {
 		return out;
 	}
 
+	/**
+	 * \brief Move the Y parameter by a specified amount
+	 * 
+	 * Move the Y parameter by a specified amount
+	 * 
+	 * @param i	The current grid element
+	 * @return	Located group reached by that move
+	 */
 	public LocatedGroup moveY(int i) {
 		int delta = (int) Math.signum(i);
 		LocatedGroup out = nbhGroup[1][delta+1][1];
@@ -258,6 +379,14 @@ public class LocatedGroup {
 		return out;
 	}
 
+	/**
+	 * \brief Move the Z parameter by a specified amount
+	 * 
+	 * Move the Z parameter by a specified amount
+	 * 
+	 * @param i	The current grid element
+	 * @return	Located group reached by that move
+	 */
 	public LocatedGroup moveZ(int i) {
 		int delta = (int) Math.signum(i);
 		LocatedGroup out = nbhGroup[1][1][delta+1];
@@ -269,6 +398,17 @@ public class LocatedGroup {
 		return out;
 	}
 
+	/**
+	 * \brief Compute the difference vector between two continuous vectors
+	 * 
+	 * Compute the difference vector between two continuous vectors
+	 * 
+	 * @param me	Location of one agent expressed as continuous vector
+	 * @param him	Location of second agent expressed as continuous vector
+	 * @param move	ContinuousVector to hold the difference between the two vectors
+	 * @return	Double distance between the two points
+	 * @deprecated
+	 */
 	public double computeDifferenceVector(ContinuousVector me, ContinuousVector him,
 			ContinuousVector move) {
 		double gridLength;
@@ -304,6 +444,8 @@ public class LocatedGroup {
 	}
 
 	/**
+	 * \brief Compute distance to closest carrier and closest bulk
+	 * 
 	 * Compute distance to closest carrier and closest bulk
 	 */
 	public void distanceFromBorders() {
@@ -322,7 +464,11 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * Use the boundary conditions to build neighbourhood reference map
+	 * \brief Use the boundary conditions to build 3D neighbourhood reference map
+	 * 
+	 * Use the boundary conditions to build 3D neighbourhood reference map
+	 * 
+	 * @param shovGrid	The shoving grid used to build reference map
 	 */
 	protected void testNbh_3D(LocatedGroup[] shovGrid) {
 		AllBC aBC;
@@ -365,9 +511,14 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * Use the boundary conditions to build neighbourhood reference map
+	 * \brief Use the boundary conditions to build 3D neighbourhood reference map
+	 * 
+	 * Use the boundary conditions to build 3D neighbourhood reference map
+	 * 
+	 * @param shovGrid	The shoving grid used to build reference map
 	 */
-	protected void testNbh_2D(LocatedGroup[] shovGrid) {
+	protected void testNbh_2D(LocatedGroup[] shovGrid) 
+	{
 		AllBC aBC;
 		int index;
 		DiscreteVector nbhDC = new DiscreteVector();
@@ -406,10 +557,10 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * The number of neighbours that contains no biomass
-	 * @param l
-	 * @param m
-	 * @param n
+	 * \brief Calculate the number of neighbours that contains no biomass
+	 * 
+	 * Calculate the number of neighbours that contains no biomass
+	 * 
 	 * @return the number of empty neighbours
 	 */
 	public int freeNbh() {
@@ -437,18 +588,34 @@ public class LocatedGroup {
 	}
 
 	/**
+	 * \brief Comparator used by the detachment levelset algorithm
+	 * 
 	 * Comparator used by the detachment levelset algorithm
+	 * 
 	 * @author lal
 	 */
-	public static class TValueComparator implements java.util.Comparator<Object> {
+	public static class TValueComparator implements java.util.Comparator<Object> 
+	{
 
-		public int compare(Object b1, Object b2) {
-			return (((LocatedGroup) b1).erosionTime>((LocatedGroup) b2).erosionTime ? 1 : -1);
+		public int compare(Object b1, Object b2) 
+		{
+			double f1=((LocatedGroup) b1).erosionTime;
+			double f2=((LocatedGroup) b2).erosionTime;
+			
+			if(f1==f2)
+				return 0;
+			else if(f1 > f2)
+				return 1;
+			else
+				return -1;
 		}
 	}
 
 	/**
+	 * \brief Comparator used by the shrinking levelset algorithm
+	 * 
 	 * Comparator used by the shrinking levelset algorithm
+	 * 
 	 * @author lal
 	 */
 	public static class DistanceValueComparator implements java.util.Comparator<LocatedGroup> {

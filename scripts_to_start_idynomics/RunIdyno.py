@@ -7,7 +7,7 @@ import __main__ as main
 
 
 # Please set this to the directory where the iDynoMiCS java class files are
-srcpath = 'set_to_source_directory'
+srcpath = '/kreftj/aldenkj/idynomics/bin/'
 
 if srcpath == 'set_to_source_directory':
     #get name of current file, so we can get the location in case -s is not provided

@@ -1,20 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
- *_____________________________________________________
- * Implements static utility functions for used in multigrid method.
+ * \package diffusionSolver.multigrid
+ * \brief Package of classes used to aid solver calculation for multi-grid scenarios.
  * 
+ * Package of classes used to capture the diffusion solvers that can be defined in the protocol file. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
- 
-/**
- * @since June 2006
- * @version 1.0
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- * 
- */
-
-
-
 package simulator.diffusionSolver.multigrid;
 
 import java.io.BufferedReader;
@@ -45,26 +37,12 @@ public abstract class MultigridUtils {
 	}
 
 	/**
-	 * Return the size of grid o orders smaller then n. Only to be used in
-	 * initialization of multigrid variables
+	 * \brief Restricts the data in matrix u to a grid one order coarser. Restriction excludes border points.
 	 * 
-	 * @param n
-	 * @return the size of coarsest grid
-	 */
-	public static int coarserSize(int n, int o) {
-		try {
-			return ExtraMath.exp2(order(n)-o)+1;
-		} catch (Exception e) {
-			return 1;
-		}
-	}
-
-	/**
-	 * Restricts the data in matrix u to a grid one order coarser. Restriction
-	 * excludes border points.
+	 * Restricts the data in matrix u to a grid one order coarser. Restriction excludes border points.
 	 * 
-	 * @param u finer grid
-	 * @param uc coarser grid
+	 * @param fineGrid finer grid
+	 * @param coarsegrid coarser grid
 	 */
 	public static void restrict2(SoluteGrid fineGrid, SoluteGrid coarsegrid) {
 
@@ -143,9 +121,9 @@ public abstract class MultigridUtils {
 	 * boundary layer (where bl >= 0.5). Points outside boundary layer are
 	 * skipped and, therefore, preserve their original value.
 	 * 
-	 * @param u finer grid
-	 * @param uc coarser grid
-	 * @param blc boundary layer at corser grid
+	 * @param fineGrid	finer grid
+	 * @param coarseGrid	coarser grid
+	 * @param bl	boundary layer at coarser grid
 	 */
 	public static void restrictBoundaryLayer2(SoluteGrid fineGrid, SoluteGrid coarseGrid,
 	        double[][][] bl) {

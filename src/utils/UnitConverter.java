@@ -1,30 +1,32 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java) 
- *_______________________________________________________
- * Static class used to convert units
- * Internal units :
- * Mass = femtograms (=1e-15 grams)
- * Length = micrometer (=1e-6 meter)
- * Time = hour
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
  * 
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * _______________________________________________________
- * @since Feb 2007
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- */
-
 package utils;
 import java.awt.Color;
 
-public class UnitConverter {
+/**
+ * \brief Static class used to convert units (mass, length, time)
+ * 
+ * Static class used to convert units (mass, length, time). Internal units: Mass = femtograms (=1e-15 grams), Length = micrometer (=1e-6 meter), 
+ * Time = hour
+ * 
+ * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ */
+public class UnitConverter 
+{
 
 	/**
+     * \brief Takes a unit of time and returns a factor to multiply a parameter by to obtain the correct unit (hour)
      * 
-     * @param timeUnit
+     * Takes a unit of time and returns a factor to multiply a parameter by to obtain the correct unit (hour)
+     * 
+     * @param timeUnit	Unit of time for which a conversion is required
      * @return a factor to multiply to obtain the correct unit (hour)
      */
 	public static double time(String timeUnit) {
@@ -55,6 +57,14 @@ public class UnitConverter {
 		return out;
 	}
 
+	/**
+	 * \brief Takes a length unit and returns a double value of length for that unit
+	 * 
+	 * Takes a length unit and returns a length value of mass for that unit
+	 * 
+	 * @param lengthUnit	String containing a unit of length (m,cm,etc)
+	 * @return	Double value of length for that unit
+	 */
 	public static double length(String lengthUnit) {
 		double out = 1;
 		String unit = "";
@@ -71,7 +81,7 @@ public class UnitConverter {
 			out = 1e3;
 			unit = "mm";
 		}
-		if (lengthUnit.contains("µm")) {
+		if (lengthUnit.contains("ï¿½m")) {
 			out = 1;
 			unit = "microm";
 		}
@@ -92,10 +102,13 @@ public class UnitConverter {
 	}
 
 	/**
-     * 
-     * @param massUnit
-     * @return
-     */
+	 * \brief Takes a mass unit and returns a double value of mass for that unit
+	 * 
+	 * Takes a mass unit and returns a double value of mass for that unit
+	 * 
+	 * @param massUnit	String containing a unit of mass (g,kg,etc)
+	 * @return	Double value of mass for that unit
+	 */
 	public static double mass(String massUnit) {
 		double out = 1;
 		String unit = "";
@@ -115,13 +128,13 @@ public class UnitConverter {
 			unit = "mg";
 		}
 
-		if (massUnit.contains("µg")) {
+		if (massUnit.contains("ï¿½g")) {
 			out = 1e9;
-			unit = "µg";
+			unit = "ï¿½g";
 		}
 		if (massUnit.contains("ug")) {
 			out = 1e9;
-			unit = "µg";
+			unit = "ï¿½g";
 		}
 		if (massUnit.contains("fg")) {
 			out = 1;
@@ -134,7 +147,16 @@ public class UnitConverter {
 		return out;
 	}
 
-	public static double volume(String massUnit) {
+	/**
+	 * \brief Takes a mass unit and returns a double value of volume for that unit
+	 * 
+	 * Takes a mass unit and returns a double value of volume for that unit
+	 * 
+	 * @param massUnit	String containing a unit of mass (m,L,etc)
+	 * @return	Double value of mass for that unit
+	 */
+	public static double volume(String massUnit) 
+	{
 		double out = 1;
 		String unit = "";
 
@@ -147,13 +169,13 @@ public class UnitConverter {
 			unit = "L";
 		}
 
-		if (massUnit.contains("µm")) {
+		if (massUnit.contains("ï¿½m")) {
 			out = 1;
-			unit = "µm";
+			unit = "ï¿½m";
 		}
 		if (massUnit.contains("um")) {
 			out = 1;
-			unit = "µm";
+			unit = "ï¿½m";
 		}
 
 		if (massUnit.contains(unit+"-")) {
@@ -162,7 +184,16 @@ public class UnitConverter {
 		return out;
 	}
 
-	public static Color getColor(String colorName) {
+	/**
+	 * \brief For a given colour name, returns a colour object
+	 * 
+	 * For a given colour name, returns a colour object
+	 * 
+	 * @param colorName	String name of a colour, for which a colour object is required
+	 * @return	A Color object for that specified colour name
+	 */
+	public static Color getColor(String colorName) 
+	{
 		if (colorName.equals("red")) return Color.red;
 		if (colorName.equals("blue")) return Color.blue;
 		if (colorName.equals("cyan")) return Color.cyan;

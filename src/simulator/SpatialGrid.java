@@ -1,19 +1,11 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package simulator
+ * \brief Package of classes that create a simulator object and capture simulation time.
  * 
- * ________________________________________________________
- * Class defining a spatial grid, i.e. a matrix of double.
- * The grid is padded, 3D grid
+ * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * @since june 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- */
-
 package simulator;
 
 import java.io.Serializable;
@@ -26,37 +18,82 @@ import simulator.agent.LocatedAgent;
 import utils.ExtraMath;
 import utils.MatrixOperations;
 import utils.ResultFile;
-import utils.XMLParser;
 
+/**
+ * \brief Class defining a spatial grid, i.e. a matrix of double. The grid is padded, 3D grid
+ * 
+ * Class defining a spatial grid, i.e. a matrix of double. The grid is padded, 3D grid
+ * 
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ *
+ */
 public class SpatialGrid implements Serializable {
 
-	// Serial version used for the serialisation of the class
+	/**
+	 * Serial version used for the serialisation of the class
+	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Name assigned to this spacial grid. Taken from an XML tag in the protocol file
+	 */
 	public String             gridName;
+	
+	/**
+	 * The unit for all values stored on this grid
+	 */
 	public String			  gridUnit = "g.L-1";
 
-	// the grid
+	/**
+	 * The solute grid - a three dimesional array of double values
+	 */
 	public double[][][]       grid;
 
-	// size of original grid
-	protected int             _nI, _nJ, _nK;
+	/**
+	 * Number of grid voxels in I direction
+	 */
+	protected int             _nI;
+	
+	/**
+	 * Number of grid voxels in J direction
+	 */
+	protected int 			  _nJ;
+	
+	/**
+	 * Number of grid voxels in K direction
+	 */
+	protected int			  _nK;
 
-	// grid resolution = side length of a voxel
+	/**
+	 * Grid resolution = side length of a voxel
+	 */
 	protected double          _reso;
 
+	/**
+	 * Boolean noting whether this grid is 3D (true) or 2D (false)
+	 */
 	protected boolean         _is3D;
 
-	/* ______________________________ CONSTRUCTOR ___________________________ */
-
+	
+	/**
+	 * \brief Blank constructor
+	 * 
+	 * Blank constructor
+	 */
 	public SpatialGrid() {
 	}
 
 	/**
-	 * Default constructor for an empty array
+	 * \brief Default constructor for an empty spatial grid
 	 * 
+	 * Default constructor for an empty spatial grid. Sets the grid resolution and dimensions as provided in the simulation protocol file
+	 * 
+	 * @param nI	The number of grid locations in the I direction
+	 * @param nJ	The number of grid locations in the J direction
+	 * @param nK	The number of grid locations in the K direction
 	 * @param resolution the grid resolution
-	 * @param nI,nJ,nK the original grid size
 	 */
 	public SpatialGrid(int nI, int nJ, int nK, double resolution) {
 
@@ -77,42 +114,14 @@ public class SpatialGrid implements Serializable {
 
 	}
 
-	public SpatialGrid(XMLParser cdRoot) {
-		//sonia:chemostat
-		// Rob (17/8/2011): this doesn't seem to be called by anything 
-
-		if(Simulator.isChemostat){
-			_nI = 1;
-			_nJ = 1;
-			_nK = 1;
-		}else{
-
-			// First test number of dimensions (2 or 3)
-			_is3D = (cdRoot.getAttributeDbl("nDim")==3);
-
-			_nI = (int) cdRoot.getAttributeDbl("nI");
-			_nJ = (int) cdRoot.getAttributeDbl("nJ");
-			if (_is3D) {
-				_nK = (int) cdRoot.getAttributeDbl("nK");
-			} else {
-				_nK = 1;
-			}
-		}
-		_reso = cdRoot.getParamLength("resolution");
-
-		// Create a padded grid
-		//sonia:chemostat
-		//I've changed initGrids() to avoid padding
-		initGrids();
-
-	}
-
 	/**
-	 * Empty 2D-grid buidler
+	 * \brief Default constructor for an empty 2D spatial grid
 	 * 
-	 * @param nI
-	 * @param nJ
-	 * @param res
+	 * Default constructor for an empty 2D spatial grid. Sets the grid resolution and dimensions as provided in the simulation protocol file
+	 * 
+	 * @param nI	The number of grid locations in the I direction
+	 * @param nJ	The number of grid locations in the J direction
+	 * @param resolution the grid resolution
 	 */
 	public SpatialGrid(int nI, int nJ, double resolution) {
 		//sonia:chemostat
@@ -134,35 +143,43 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Create the grid and fill the value to 0
+	 * \brief Creates the solute grid at the required size
+	 * 
+	 * Creates the solute grid at the required size. If this is a chemostat, this will simple be a 1x1x1, if not there are further
+	 * checks to determine whether we are simulating 3D or not
 	 */
-	protected void initGrids() {
-		//sonia:chemostat
-		//set the size of the grid to be 1,1,1 and not a padded grid
-		if(Simulator.isChemostat){
+	protected void initGrids() 
+	{
+		if(Simulator.isChemostat)
+		{
+			//sonia:chemostat
+			//set the size of the grid to be 1,1,1 and not a padded grid
+			
 			_is3D = false;
 			grid = new double [1][1][1];
 
-		}else{
-			// Obviously if we create only one cell in the Z dimension, the grid is
-			// 2D
+		}
+		else
+		{
+			// Obviously if we create only one cell in the Z dimension, the grid is 2D
 			_is3D = !(_nK==1);
 
 			grid = new double[_nI+2][_nJ+2][_nK+2];
 		}
+	
+		// KA 28/3/13 - this was turned off when I started recommenting iDynoMiCS - no reason given here but may need checking
 		// At the creation the table is automatically filled by 0
-		// setAllValueAt(0);
+		//setAllValueAt(0);
 
 	}
 
-	/* _______________________ TOOLS __________________________________ */
-
 	/**
-	 * Test if a position is defined or outside the grid, here padding bands are
-	 * not considered as valid coordinates
+	 * \brief Determine if a given discrete position is valid or outside the grid (Padding excluded)
 	 * 
-	 * @param cc
-	 * @return
+	 * Determine if a given discrete position is valid or outside the grid (Padding excluded)
+	 * 
+	 * @param dC	DiscreteVector to validate
+	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
 	public boolean isValid(DiscreteVector dC) {
 		boolean out = true;
@@ -173,11 +190,12 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Test if a position is defined or outside the grid, padding bands are now
-	 * valid coordinates
+	 * \brief Determine if a given discrete position is valid or outside the grid (Padding included)
 	 * 
-	 * @param cc
-	 * @return
+	 * Determine if a given discrete position is valid or outside the grid
+	 * 
+	 * @param dC	DiscreteVector to validate
+	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
 	public boolean isValidOrPadded(DiscreteVector dC) {
 		boolean out = true;
@@ -187,6 +205,16 @@ public class SpatialGrid implements Serializable {
 		return out;
 	}
 
+	/**
+	 * \brief Determine if a given voxel coordinate is valid or outside the grid
+	 * 
+	 * Determine if a given voxel coordinate is valid or outside the grid
+	 * 
+	 * @param i	I Coordinate of the grid location
+	 * @param j	J Coordinate of the grid location
+	 * @param k K Coordinate of the grid location
+	 * @return Boolean stating whether this location is valid (true) or outside the grid
+	 */
 	public boolean isValidorPadded(int i, int j, int k) {
 		boolean out = true;
 		out &= (i>=0)&(i<=_nI);
@@ -196,42 +224,36 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Test if a location is defined or outside the grid, padding bands are not
-	 * considered as valid coordinates
+	 * \brief Determine if a given continuous location is valid or outside the grid
 	 * 
-	 * @param cc
-	 * @return
+	 * Determine if a given continuous location is valid or outside the grid
+	 * 
+	 * @param cc	ContinuousVector to validate
+	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
 	public boolean isValid(ContinuousVector cc) {
 		return isValid(getDiscreteCoordinates(cc));
 	}
 
 	/**
-	 * Test if a location is defined or outside the grid, padding bands are now
-	 * considered as valid coordinates
+	 * \brief Test if a location is valid or is outside the grid. Note padding is included as valid
 	 * 
-	 * @param cc
-	 * @return
+	 * Test if a location is valid or is outside the grid. Note padding is included as valid
+	 * 
+	 * @param cc	ContinuousVector containing the location to be tested
+	 * @return	Boolean stating whether this location is valid (true) or outside the grid
 	 */
 	public boolean isValidOrPadded(ContinuousVector cc) {
 		return isValidOrPadded(getDiscreteCoordinates(cc));
 	}
 
-	public void readGrid(SpatialGrid aSpG) {
-		for (int i = 0; i<_nI+2; i++) {
-			for (int j = 0; j<_nJ+2; j++) {
-				for (int k = 0; k<_nK+2; k++) {
-					grid[i][j][k] = aSpG.grid[i][j][k];
-				}
-			}
-		}
-	}
-
-	/* ____________________ USEFULL TOOLS ______________________________ */
-
 	/**
-	 * Transform a location (continuous) in a position (discrete) on the basis
-	 * of the resolution of the grid
+	 * \brief Transform a location, expressed as a continuous vector into a discrete position on the basis of the resolution of the grid
+	 * 
+	 * Transform a location, expressed as a continuous vector into a discrete position on the basis of the resolution of the grid
+	 * 
+	 * @param cC	ContinuousVector to be transformed
+	 * @return	DiscreteVector created from this continuous location
 	 */
 	public DiscreteVector getDiscreteCoordinates(ContinuousVector cC) {
 		int i = (int) Math.floor(cC.x/_reso);
@@ -242,61 +264,85 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Transform a position (discrete) in a location (continuous) on the basis
-	 * of the resolution of the grid
+	 * \brief Transform a position, expressed as a discrete vector into a continuous location on the basis of the resolution of the grid
+	 * 
+	 * Transform a position, expressed as a discrete vector into a continuous location on the basis of the resolution of the grid
+	 * 
+	 * @param dC	DiscreteVector to be transformed
+	 * @return	ContinuousVector created from this discrete position
 	 */
 	public ContinuousVector getContinuousCoordinates(DiscreteVector dC) {
 		ContinuousVector cc = new ContinuousVector(dC, _reso);
 		return cc;
 	}
 
+	/**
+	 * \brief Convert a set of voxel coordinates into a continuous vector
+	 * 
+	 * Convert a set of voxel coordinates into a continuous vector
+	 * 
+	 * @param i	I Coordinate of the grid location
+	 * @param j	J Coordinate of the grid location
+	 * @param k K Coordinate of the grid location
+	 * @return	ContinuousVector created from these voxel coordinates
+	 */
 	public ContinuousVector getContinuousCoordinates(int i, int j, int k) {
 		ContinuousVector cc = new ContinuousVector((i+.5)*_reso, (j+.5)*_reso, (k+.5)*_reso);
 		return cc;
 	}
 
 	/**
-	 * @return the maximal value on a grid (padding bande included)
+	 * \brief Return the maximum value on this grid (padding included)
+	 * 
+	 * Return the maximum value on this grid (padding included)
+	 * 
+	 * @return Maximum value of the grid
 	 */
 	public double getMax() {
 		return MatrixOperations.max(grid);
 	}
 
 	/**
-	 * @return the average value on the grid padding is excluded
+	 * \brief Return the average value on this grid (padding included)
+	 * 
+	 * Return the average value on this grid (padding included)
+	 * 
+	 * @return Average value of the grid
 	 */
 	public double getAverage() {
 		return MatrixOperations.computeSum(grid)/(_nI)/(_nJ)/(_nK);
 	}
 
-	/*//sonia:chemostat 19.02.2010
-	public double getAverageChemo() {
-		return MatrixOperations.computeSumChemo(grid)/(_nI)/(_nJ)/(_nK);
-	}*/
-
-
+	/**
+	 * \brief Return the sum of this grid
+	 * 
+	 * Return the sum of this grid
+	 * 
+	 * @return	The sum of the values in this spatial grid
+	 */
 	public double getSum() {
 		return MatrixOperations.computeSum(grid);
 	}
 
 	/**
-	 * @return the value divided by the surface (in L-2)
-	 */
-	public double getAreaConc() {
-		return MatrixOperations.computeSum(grid)/(_nJ*_reso*_nK*_reso);
-	}
-
-	/**
-	 * @return the minimum value of the grid (padding bande included)
+	 * \brief Return the minimum value on this grid (padding included)
+	 * 
+	 * Return the minimum value on this grid (padding included)
+	 * 
+	 * @return Minimum value of the grid
 	 */
 	public double getMin() {
 		return MatrixOperations.min(grid);
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
+	 * \brief For a given location, calculate the 2nd spatial derivative according to X
+	 * 
+	 * For a given location, calculate the 2nd spatial derivative according to X
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
 	 * @return 2nd spatial derivative according X
 	 */
 	public double diff2X(int i, int j, int k) {
@@ -304,62 +350,113 @@ public class SpatialGrid implements Serializable {
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
+	/**
+	 * \brief For a given location, expressed as a discrete vector, calculate the 2nd spatial derivative according to X
+	 * 
+	 * For a given location, expressed as a discrete vector, calculate the 2nd spatial derivative according to X
+	 * 
+	 * @param dV	DiscreteVector containing the position of a grid location
+	 * @return 2nd spatial derivative according X
+	 */
 	public double diff2X(DiscreteVector dV) {
 		double value = (grid[dV.i+1][dV.j][dV.k]+grid[dV.i-1][dV.j][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);		
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @return 1st spatial derivative according X axe
-	 */	
+	 * \brief For a given location, calculate the 1st spatial derivative according to X
+	 * 
+	 * For a given location, calculate the 1st spatial derivative according to X
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
+	 * @return 1st spatial derivative according X
+	 */
 	public double diffX(int i, int j, int k) {
 		double value = (grid[i+1][j][k]-grid[i-1][j][k])/(2*_reso);		
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
+	/**
+	 * \brief For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to X
+	 * 
+	 * For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to X
+	 * 
+	 * @param dV	DiscreteVector containing the position of a grid location
+	 * @return 1st spatial derivative according X
+	 */
 	public double diffX(DiscreteVector dV) {
 		double value = (grid[dV.i+1][dV.j][dV.k]-grid[dV.i-1][dV.j][dV.k])/(2*_reso);		
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @return 2nd spatial derivative according Y axe
+	 * \brief For a given location, calculate the 2nd spatial derivative according to Y
+	 * 
+	 * For a given location, calculate the 2nd spatial derivative according to Y
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
+	 * @return 2nd spatial derivative according Y
 	 */
 	public double diff2Y(int i, int j, int k) {
 		double value =  (grid[i][j+1][k]+grid[i][j-1][k]-2*grid[i][j][k])/ExtraMath.sq(_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
+	/**
+	 * \brief For a given location, expressed as a discrete vector, calculate the 2nd spatial derivative according to Y
+	 * 
+	 * For a given location, expressed as a discrete vector, calculate the 2nd spatial derivative according to Y
+	 * 
+	 * @param dV	DiscreteVector containing the position of a grid location
+	 * @return 2nd spatial derivative according Y
+	 */
 	public double diff2Y(DiscreteVector dV) {
 		double value =  (grid[dV.i][dV.j+1][dV.k]+grid[dV.i][dV.j-1][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @return 1st spatial derivative according Y axe
+	 * \brief For a given location, calculate the 1st spatial derivative according to Y
+	 * 
+	 * For a given location, calculate the 1st spatial derivative according to Y
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
+	 * @return 1st spatial derivative according Y
 	 */
 	public double diffY(int i, int j, int k) {
 		double value =  (grid[i][j+1][k]-grid[i][j-1][k])/(2*_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
+	
+	/**
+	 * \brief For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to Y
+	 * 
+	 * For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to Y
+	 * 
+	 * @param dV	DiscreteVector containing the position of a grid location
+	 * @return 1st spatial derivative according Y
+	 */
 	public double diffY(DiscreteVector dV) {
 		double value =  (grid[dV.i][dV.j+1][dV.k]-grid[dV.i][dV.j-1][dV.k])/(2*_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
+	
+
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @return 2nd spatial derivative according Z axe
+	 * \brief For a given location, calculate the 2nd spatial derivative according to Z
+	 * 
+	 * For a given location, calculate the 2nd spatial derivative according to Z
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
+	 * @return 2nd spatial derivative according Z
 	 */
 	public double diff2Z(int i, int j, int k) {
 		double value =  (grid[i][j][k+1]+grid[i][j][k-1]-2*grid[i][j][k])/(_reso*_reso);
@@ -367,25 +464,40 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @return 1st spatial derivative according Z axe
+	 * \brief For a given location, calculate the 1st spatial derivative according to Z
+	 * 
+	 * For a given location, calculate the 1st spatial derivative according to Z
+	 * 
+	 * @param i	I position on the spatial grid
+	 * @param j	J position on the spatial grid
+	 * @param k	K position on the spatial grid
+	 * @return 1st spatial derivative according Z
 	 */
 	public double diffZ(int i, int j, int k) {
 		double value =  (grid[i][j][k+1]-grid[i][j][k-1])/(2*_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
+	
+	/**
+	 * \brief For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to Z
+	 * 
+	 * For a given location, expressed as a discrete vector, calculate the 1st spatial derivative according to Z
+	 * 
+	 * @param dV	DiscreteVector containing the position of a grid location
+	 * @return 1st spatial derivative according Z
+	 */
 	public double diffZ(DiscreteVector dV) {
 		double value =  (grid[dV.i][dV.j][dV.k+1]-grid[dV.i][dV.j][dV.k-1])/(2*_reso);
 		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 	/**
-	 * Computes the average concentration seen in a sphere (or cube) centered in
-	 * cc
-	 * @param cc
-	 * @param res
-	 * @return
+	 * \brief Computes the average concentration seen in a sphere (or cube) centered around a given point
+	 * 
+	 * Computes the average concentration seen in a sphere (or cube) centered around a given point
+	 * 
+	 * @param cC	ContinuousVector containing the point to use as the centre of this search
+	 * @param extReso	Resolution to use in this search
+	 * @return	Average grid value seen around this point
 	 */
 	public double getValueAround(ContinuousVector cC, double extReso) {
 
@@ -398,50 +510,29 @@ public class SpatialGrid implements Serializable {
 		}
 	}
 
-	// TODO
-	public void setValueAround(double value, ContinuousVector cC, double extReso) {
-		setValueAt(value, cC);
-	}
 
-	// TODO
-	public void addValueAround(double value, ContinuousVector cC, double extReso) {
-		addValueAt(value, cC);
-	}
+	
 
 	/**
-	 * Send the average value saw by a located agent on this grid
+	 * \brief Returns the average grid value seen in a sphere (or cube) located around a given agent
 	 * 
-	 * @param aLocAgent
-	 * @return
+	 * Returns the average grid value seen in a sphere (or cube) located around a given agent
+	 * 
+	 * @param aLocAgent	The agent to use as the centre of the search
+	 * @return	Average grid value seen around this point
 	 */
 	public double getValueAround(LocatedAgent aLocAgent) {
 		return getValueAround(aLocAgent.getLocation(), aLocAgent.getRadius(true));
 	}
 
+
 	/**
-	 * Set the average value saw by a located agent on this grid
+	 * \brief Return the value stored at the location given by the stated continuous vector
 	 * 
-	 * @param aLocAgent
-	 * @return
-	 */
-	public void setValueAround(double value, LocatedAgent aLocAgent) {
-		setValueAround(value, aLocAgent.getLocation(), aLocAgent.getRadius(true));
-	}
-
-	/**
-	 * Add the average value saw by a located agent on this grid
+	 * Return the value stored at the location given by the stated continuous vector
 	 * 
-	 * @param aLocAgent
-	 * @return
-	 */
-	public void addValueAround(double value, LocatedAgent aLocAgent) {
-		addValueAround(value, aLocAgent.getLocation(), aLocAgent.getRadius(true));
-	}
-
-	/* ______________________ GET & SET _____________________________________ */
-
-	/**
-	 * Send the value on the padded grid at a given location
+	 * @param cC	ContinuousVector containing the grid location to return
+	 * @return	Double value stored at that grid location
 	 */
 	public double getValueAt(ContinuousVector cC) {
 		DiscreteVector dc = getDiscreteCoordinates(cC);
@@ -455,8 +546,10 @@ public class SpatialGrid implements Serializable {
 			}
 		}else{
 
-			if (isValid(dc)) {
+			if (isValid(dc)) 
+			{
 				return grid[dc.i+1][dc.j+1][dc.k+1];
+				
 			} else {
 				return Double.NaN;
 			}
@@ -464,30 +557,47 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Returns a vector of the first spatial derivatives in x, y & z 
-	 * (nabla cC - see http://en.wikipedia.org/wiki/Del).
-	 * Does this by first converting the ContinuousVector to a DiscreteVector and
-	 * then estimating then gradient using the Mean Value Theorem 
+	 * \brief Returns a vector of the first spatial derivatives in x, y & z 
+	 * 
+	 * Returns a vector of the first spatial derivatives in x, y & z (nabla cC - see http://en.wikipedia.org/wiki/Del). Does this by 
+	 * first converting the ContinuousVector to a DiscreteVector and then estimating then gradient using the Mean Value Theorem 
 	 * (http://en.wikipedia.org/wiki/Mean_value_theorem).
-	 * @param cC
-	 * @return
+	 * 
+	 * @param cC	ContinuousVector position used to calculate the gradient
+	 * @return	Vector of spatial derivatives in X,Y,Z
 	 */
 	public ContinuousVector getGradient(ContinuousVector cC) {
 		DiscreteVector dV = new DiscreteVector(cC,_reso);
 		return new ContinuousVector(diffX(dV), diffY(dV), diffZ(dV));
 	}
 
-	public ContinuousVector getGradient2D(ContinuousVector cC) {
+	/**
+	 * \brief Returns a vector of the first spatial derivatives in x and y, for 2D simulations 
+	 * 
+	 * Returns a vector of the first spatial derivatives in x and y (nabla cC - see http://en.wikipedia.org/wiki/Del). Does this by 
+	 * first converting the ContinuousVector to a DiscreteVector and then estimating then gradient using the Mean Value Theorem 
+	 * (http://en.wikipedia.org/wiki/Mean_value_theorem).
+	 * 
+	 * @param cC	ContinuousVector position used to calculate the gradient
+	 * @return	Vector of spatial derivatives in X and Y
+	 */
+	public ContinuousVector getGradient2D(ContinuousVector cC) 
+	{
 		DiscreteVector dV = new DiscreteVector(cC,_reso);
 		return new ContinuousVector(diffX(dV), diffY(dV), diffY(dV));
 	}
 
-	public ContinuousVector getGradient(DiscreteVector dV) {
-		return new ContinuousVector(diffX(dV), diffY(dV), diffZ(dV));
-	}
+	//public ContinuousVector getGradient(DiscreteVector dV) {
+	//	return new ContinuousVector(diffX(dV), diffY(dV), diffZ(dV));
+	//}
 
 	/**
-	 * Send the value on the padded grid at a given position
+	 * \brief Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * 
+	 * Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * 
+	 * @param dV	DiscreteVector containing the location of the grid whos value should be returned
+	 * @return The double value at that location
 	 */
 	public double getValueAt(DiscreteVector dV) {
 		//sonia:chemostat
@@ -495,26 +605,41 @@ public class SpatialGrid implements Serializable {
 		if(Simulator.isChemostat){
 			if (isValid(dV)) return grid[dV.i][dV.j][dV.k];
 			else return Double.NaN;	
-		}else{
-			if (isValid(dV)) return grid[dV.i+1][dV.j+1][dV.k+1];
-			else return Double.NaN;
+		}else
+		{
+				if (isValid(dV)) return grid[dV.i+1][dV.j+1][dV.k+1];
+				else return Double.NaN;
+			
+			
 		}
 	}
 
 	/**
-	 * Send the value on the padded grid at a given position (the coordinates
-	 * are NOT corrected)
+	 * \brief Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * 
+	 * Return the value on the padded grid at a given position (the coordinates are NOT corrected)
+	 * 
+	 * @param i	I Coordinate of the grid location to set
+	 * @param j	J Coordinate of the grid location to set
+	 * @param k K Coordinate of the grid location to set
+	 * @return The double value at that location
 	 */
-	public double getValueAt(int i, int j, int k) {
-		if (isValidorPadded(i, j, k)) return grid[i][j][k];
-		else return Double.NaN;
+	public double getValueAt(int i, int j, int k) 
+	{
+		
+			if (isValidorPadded(i, j, k)) return grid[i][j][k];
+			else return Double.NaN;
+		
+		
 	}
 
 	/**
-	 * Set a value on the padded grid (the coordinates are corrected)
+	 * \brief Set a grid location, expressed as a ContinuousVector, to a specified value. The coordinates are corrected
 	 * 
-	 * @param value
-	 * @param cc
+	 * Set a grid location, expressed as a ContinuousVector, to a specified value. The coordinates are corrected
+	 * 
+	 * @param value	Value to set the specified location to
+	 * @param cC	Continuous vector stating the location of the grid to be set to the given value
 	 */
 	public void setValueAt(double value, ContinuousVector cC) {
 		DiscreteVector dC = getDiscreteCoordinates(cC);
@@ -522,69 +647,77 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Set a value on the padded grid (the coordinates are corrected)
+	 * \brief Set a grid location, expressed as a DiscreteVector, to a specified value. The coordinates are corrected
 	 * 
-	 * @param value
-	 * @param cc
+	 * Set a grid location, expressed as a DiscreteVector, to a specified value. The coordinates are corrected
+	 * 
+	 * @param value	Value to set the specified location to
+	 * @param dC	Discrete vector stating the location of the grid to be set to the given value
 	 */
-	public void setValueAt(double value, DiscreteVector dC) {
+	public void setValueAt(double value, DiscreteVector dC) 
+	{
 		//sonia:chemostat
 		if(Simulator.isChemostat){
 			grid[dC.i][dC.j][dC.k] = value;
-		}else{
+		}else
+		{
 			grid[dC.i+1][dC.j+1][dC.k+1] = value;
 		}
 	}
 
 	/**
-	 * Set a value on the padded grid (the coordinates are NOT corrected)
+	 * \brief Set a grid location to a specified value. Note the coordinates are NOT corrected
 	 * 
-	 * @param value
-	 * @param i,j,k
+	 * Set a grid location to a specified value. Note the coordinates are NOT corrected
+	 * 
+	 * @param value	Value to set the grid location to
+	 * @param i	I Coordinate of the grid location to set
+	 * @param j	J Coordinate of the grid location to set
+	 * @param k K Coordinate of the grid location to set
 	 */
-	public void setValueAt(double value, int i, int j, int k) {
+	public void setValueAt(double value, int i, int j, int k) 
+	{
 		grid[i][j][k] = value;
 	}
 
 	/**
-	 * Set a value on the padded grid (the coordinates are corrected)
+	 * \brief Add a value to that contained at the given discrete coordinates of this grid. Coordinates are corrected for padding
 	 * 
-	 * @param value
-	 * @param cC
+	 * Add a value to that contained at the given discrete coordinates of this grid. Coordinates are corrected for padding
+	 * 
+	 * @param value	Value to add to the specified grid location
+	 * @param cC	Continuous vector expressing the location of the grid to be increased
 	 */
-	public void addValueAt(double value, ContinuousVector cC) {
+	public void addValueAt(double value, ContinuousVector cC) 
+	{
 		addValueAt(value, getDiscreteCoordinates(cC));
 	}
 
 	/**
-	 * Set a value on the padded grid (the coordinates are corrected)
+	 * \brief Add a value to that contained at the given discrete coordinates of this grid. Coordinates are corrected for padding
 	 * 
-	 * @param value
-	 * @param dC
+	 * Add a value to that contained at the given discrete coordinates of this grid. Coordinates are corrected for padding
+	 * 
+	 * @param value	Value to add to the specified grid location
+	 * @param dC	Discrete vector expressing the location of the grid to be increased
 	 */
 	public void addValueAt(double value, DiscreteVector dC) {
 		//sonia:chemostat
 		if(Simulator.isChemostat){
 			grid[dC.i][dC.j][dC.k] += value;
-		}else{
+		}else
+		{
 			grid[dC.i+1][dC.j+1][dC.k+1] += value;
+			
 		}
 	}
 
 	/**
-	 * Add a value on the padded grid (the coordinates are NOT corrected)
+	 * \brief Add a value to all locations on this grid (including the padding)
 	 * 
-	 * @param value
-	 * @param i,j,k
-	 */
-	public void addValueAt(double value, int i, int j, int k) {
-		grid[i][j][k] += value;
-	}
-
-	/**
-	 * Add value to all grid locations (including the padding)
+	 * Add a value to all locations on this grid (including the padding)
 	 * 
-	 * @param value
+	 * @param value	Value to be added to the contents of all grid voxels
 	 */
 	public void addAllValues(double value) {
 		//sonia:chemostat
@@ -610,33 +743,47 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * Set to zero negative values in the grid
+	 * \brief Checks a value at a given location and sets it to zero if the value is negative
 	 * 
-	 * @param i
-	 * @param j
-	 * @param k
+	 * Checks a value at a given location and sets it to zero if the value is negative
+	 * 
+	 * @param i	Voxel coordinate in I direction
+	 * @param j	Voxel coordinate in J direction
+	 * @param k	Voxel coordinate in K direction
 	 */
 	public void truncateValueAt(int i, int j, int k) {
 		grid[i][j][k] = (grid[i][j][k]<0 ? 0 : grid[i][j][k]);
 	}
 
 	/**
-	 * Set all meshes of a grid with the same value (including the padding)
+	 * \brief Set all meshes of a grid with the same value (including the padding - if not a chemostat run)
 	 * 
-	 * @param value
+	 * Set all meshes of a grid with the same value (including the padding if not a chemostat simulation)
+	 * 
+	 * @param value	Value at which to set all the elements of the grid
 	 */
-	public void setAllValueAt(double value) {
+	public void setAllValueAt(double value) 
+	{
 
-		//sonia:chemostat 
-		//in this case we have no padding
+		if(Simulator.isChemostat)
+		{
+			//sonia:chemostat 
+			//in this case we have no padding
 
-		if(Simulator.isChemostat){
 			Arrays.fill(grid[0][0],value);
-
-		}else{
-			for (int i = 0; i<_nI+2; i++) {
-				for (int j = 0; j<_nJ+2; j++) {
-					Arrays.fill(grid[i][j], value);
+		}
+		else
+		{
+			for (int i = 0; i<_nI+2; i++) 
+			{
+				for (int j = 0; j<_nJ+2; j++) 
+				{
+					// KA - why isn't the third dimension initialised to zero too?
+					for (int k =0; k<_nK+2;k++)
+					{
+						//Arrays.fill(grid[i][j], value);
+						grid[i][j][k] = 0.0;
+					}
 				}
 			}
 		}
@@ -644,31 +791,51 @@ public class SpatialGrid implements Serializable {
 
 
 	/**
-	 * @return number of real voxels along X (ignore the padding)
+	 * \brief Return the number of voxels in the X direction
+	 * 
+	 * Return the number of voxels in the X direction (ignoring the padding)
+	 * 
+	 * @return Number of real voxels along X 
 	 */
-	public int getGridSizeI() {
+	public int getGridSizeI() 
+	{
 		return _nI;
 	}
-
+	
 	/**
-	 * @return number of real voxels along Y (ignore the padding)
+	 * \brief Return the number of voxels in the Y direction
+	 * 
+	 * Return the number of voxels in the Y direction (ignoring the padding)
+	 * 
+	 * @return Number of real voxels along Y 
 	 */
-	public int getGridSizeJ() {
+	public int getGridSizeJ() 
+	{
 		return _nJ;
 	}
 
 	/**
-	 * @return number of real voxels along Z (ignore the padding)
+	 * \brief Return the number of voxels in the Z direction
+	 * 
+	 * Return the number of voxels in the Z direction (ignoring the padding)
+	 * 
+	 * @return Number of real voxels along Z 
 	 */
-	public int getGridSizeK() {
+	public int getGridSizeK() 
+	{
 		return _nK;
 	}
 
 	/**
-	 * @param axeCode : 1-X, 2-Y,3-Z
+	 * \brief Return the number of voxels along a given direction (axeCode)
+	 * 
+	 * Return the number of voxels along a given direction (axeCode):  1-X, 2-Y,3-Z
+	 * 
+	 * @param axeCode Integer noting the direction to query
 	 * @return : the number of voxels along a direction including padding bands
 	 */
-	public int getGridTotalSize(int axeCode) {
+	public int getGridTotalSize(int axeCode) 
+	{
 		//sonia:chemostat
 		if(Simulator.isChemostat){
 			switch (axeCode) {
@@ -696,11 +863,15 @@ public class SpatialGrid implements Serializable {
 	}
 
 	/**
-	 * @param axeCode : 1-X, 2-Y, 3-Z
-	 * @return : the length (in distance unit) along a direction ignoring
-	 * padding bands
-	 */
-	public double getGridLength(int axeCode) {
+	 * \brief Returns the length (in distance unit) along a given direction
+	 * 
+	 * Returns the length (in distance unit) along a given direction. The direction is stated as an integer: 1 for X, 2 for Y, 3 for Z
+	 * 
+	 * @param axeCode	The direction of which the length is required: 1-X, 2-Y, 3-Z
+	 * @return Double value stating the length (in distance unit) along a direction ignoring padding bands
+	 */ 
+	public double getGridLength(int axeCode) 
+	{
 		switch (axeCode) {
 		case 1:
 			return _nI*_reso;
@@ -713,25 +884,58 @@ public class SpatialGrid implements Serializable {
 		}
 	}
 
+	/**
+	 * \brief Return the volume of one voxel of the spatial grid
+	 * 
+	 * Return the volume of one voxel of the spatial grid
+	 * 
+	 * @return	Double value stating the volume of one voxel of the spatial grid
+	 */
 	public double getVoxelVolume() {
 		return ExtraMath.cube(_reso);
 	}
 
 	/**
-	 * @return the whole grid including padding band
+	 * \brief Return the whole grid including the padding
+	 * 
+	 * Return the whole grid including the padding
+	 * 
+	 * @return the spatial grid
 	 */
 	public double[][][] getGrid() {
 		return grid;
 	}
 
+	/**
+	 * \brief Return a clone of this spatial grid
+	 * 
+	 * Return a clone of this spatial grid
+	 * 
+	 * @return	A clone of this spatial grid
+	 */
 	public double[][][] getCloneGrid(){
 		return grid.clone();
 	}
 
-	public double getResolution() {
+	/**
+	 * \brief Returns the resolution of this spatial grid
+	 * 
+	 * Returns the resolution of this spatial grid
+	 * 
+	 * @return	Double value stating the resolution (in micrometers) of this grid
+	 */
+	public double getResolution() 
+	{
 		return _reso;
 	}
 
+	/**
+	 * \brief Determine if this spatial grid is 3D or 2D
+	 * 
+	 * Determine if this spatial grid is 3D or 2D
+	 * 
+	 * @return	Boolean noting whether this grid is 3D (true) or 2D (false)
+	 */
 	public boolean is3D() {
 		//sonia:chemostat
 		if(Simulator.isChemostat){
@@ -741,15 +945,24 @@ public class SpatialGrid implements Serializable {
 		}
 	}
 
+	/**
+	 * \brief Set the values of this spatial grid to those contained in the supplied grid
+	 * 
+	 * @param u	Matrix of values which to set the spatial grid to
+	 */
 	public void setGrid(double[][][] u) {
 		utils.MatrixOperations.copyValuesTo(grid,u);
 	}
 
-	public void setGrid(double[][][] u, double v) {
-		utils.MatrixOperations.muliplyBy(u, v);
-		grid = u;
-	}
-
+	/**
+	 * \brief Write the contents of this grid to the XML results files
+	 * 
+	 * Write the contents of this grid to the XML results files. This shows the level of solute in each of the grid spaces
+	 * 
+	 * @param bufferState	The output buffer writing the env_state file for this iteration
+	 * @param bufferSummary	The output buffer writing the env_sum file for this iteration
+	 * @throws Exception	Exception thrown if these buffers cannot be opened for writing to
+	 */
 	public void writeReport(ResultFile bufferState, ResultFile bufferSummary) throws Exception {
 
 		// Edit the markup for the solute grid
@@ -780,11 +993,14 @@ public class SpatialGrid implements Serializable {
 
 		}else{
 
+			// KA 06062013 - turned off the printing of the padding. Will need to ensure this is clear from v1.2
 			// Fill the mark-up
 			if (_nK==1) {
 				// We have a 2D grid
-				for (int i = 0; i<_nI+2; i++) {
-					for (int j = 0; j<_nJ+2; j++) {
+				
+				
+				for (int i = 1; i<_nI+1; i++) {
+					for (int j = 1; j<_nJ+1; j++) {
 						//bufferState.write(Arrays.toString(grid[i][j]));
 						bufferState.write(Double.toString(grid[i][j][1]));
 						bufferState.write(";\n");
@@ -792,9 +1008,9 @@ public class SpatialGrid implements Serializable {
 				}
 			} else {
 				// We have a 3D grid 
-				for (int i = 0; i<_nI+2; i++) {
-					for (int j = 0; j<_nJ+2; j++) {
-						for (int k=0; k<_nK+2; k++) {
+				for (int i = 1; i<_nI+1; i++) {
+					for (int j = 1; j<_nJ+1; j++) {
+						for (int k=1; k<_nK+1; k++) {
 							// bufferState.write(Arrays.toString(grid[i][j]));
 							bufferState.write(Double.toString(grid[i][j][k]));
 							bufferState.write(";\n");

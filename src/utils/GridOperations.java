@@ -1,31 +1,33 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- * ______________________________________________________
- * Collection of static methods to deal with spatial grids that are used in the
- * MicroCoSm model. Includes methods for dealing with the vectorized array data
- * structure and for checking consistency of different cubic grids.
- */
-
-/**
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
  * 
- * @since August 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
 package utils;
 
 import exceptions.ModelRuntimeException;
 
+/**
+ * \brief Collection of static methods to deal with spatial grids that are used in the MicroCoSm model. 
+ * 
+ * Collection of static methods to deal with spatial grids that are used in the MicroCoSm model. Includes methods for dealing with 
+ * the vectorized array data structure and for checking consistency of different cubic grids. 
+ * 
+ * @author Andreas Dotsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ *
+ */
 public abstract class GridOperations {
 
 	/**
+	 * \brief Transforms a 3D array to a 1D array
+	 * 
 	 * Transforms a 3D array to a 1D array
 	 * 
-	 * @param originalArray
-	 *            3 dimensional array to transform
-	 * @return the vectorized array
+	 * @param originalArray	3 dimensional array to transform
+	 * @return Vectorized array in one dimension
 	 * @deprecated
 	 */
 	public static double[] vectorizeArray(double[][][] originalArray) {
@@ -44,11 +46,12 @@ public abstract class GridOperations {
 	}
 
 	/**
+	 * \brief Transforms a 2D array to a 1D array
+	 * 
 	 * Transforms a 2D array to a 1D array
 	 * 
-	 * @param originalArray
-	 *            2 dimensional array to transform
-	 * @return the vectorized array
+	 * @param originalArray	2 dimensional array to transform
+	 * @return Vectorized array in one dimension
 	 * @deprecated
 	 */
 	public static double[] vectorizeArray(double[][] originalArray) {
@@ -63,12 +66,14 @@ public abstract class GridOperations {
 	}
 
 	/**
+	 * \brief Reshape a vectorized array to 3 dimensional array
+	 * 
 	 * Reshape a vectorized array to 3 dimensional array
 	 * 
-	 * @param vectorized
-	 *            the vectorized array
-	 * @param nI,nJ,nK
-	 *            the size of the reshaped array
+	 * @param vectorized	the vectorized array
+	 * @param nI	Array size in I direction
+	 * @param nJ	Array size in J direction
+	 * @param nK	Array size in K direction
 	 * @return the reshaped array
 	 * @deprecated
 	 */
@@ -92,10 +97,12 @@ public abstract class GridOperations {
 	}
 
 	/**
-	 * Finding the greatest common divisor of two integer numbers
+	 * \brief Find the greatest common divisor of two integer numbers
 	 * 
-	 * @param a,b
-	 *            the two numbers
+	 * Find the greatest common divisor of two integer numbers
+	 * 
+	 * @param a	Integer one
+	 * @param b	Integer two
 	 * @return the greatest common divisor (int)
 	 * @deprecated
 	 */
@@ -106,14 +113,13 @@ public abstract class GridOperations {
 	}
 
 	/**
-	 * Check the consistency of two grid sizes. Two grids of cubic voxels are
-	 * consistent if one could be transformed to the other by dividing and then
-	 * multipliying the number of voxels in each dimension by an integer number,
-	 * respectively.
+	 * \brief Check the consistency of two grid sizes.
 	 * 
-	 * @param a,b
-	 *            the grid sizes of the two grids as an array of integer
-	 *            {nI,nJ,nK}
+	 * Check the consistency of two grid sizes. Two grids of cubic voxels are consistent if one could be transformed to the other 
+	 * by dividing and then multipliying the number of voxels in each dimension by an integer number, respectively.
+	 * 
+	 * @param a	Grid sizes of first grid as an array of integers {nI,nJ,nK}
+	 * @param b	Grid sizes of second grid as an array of integers {nI,nJ,nK}
 	 * @return true if grids are consistent
 	 */
 	public static boolean isConsistent(int[] a, int[] b) {
@@ -146,9 +152,12 @@ public abstract class GridOperations {
 	}
 
 	/**
+	 * \brief Add every entry of array b to the corresponding entry in array a
+	 * 
 	 * Add every entry of array b to the corresponding entry in array a
 	 * 
-	 * @param a,b
+	 * @param a	Target array
+	 * @param b	Array of values being added to a
 	 */
 	public static void addTo(double[] a, double[] b) {
 		if (a.length != b.length)
@@ -159,10 +168,12 @@ public abstract class GridOperations {
 	}
 
 	/**
-	 * Subtract every entry of matrix b from the corresponding entry in matrix
-	 * a. (Perform a-b)
+	 * \brief Subtract every entry of matrix b from the corresponding entry in matrix a. (Perform a-b)
 	 * 
-	 * @param a,b
+	 * Subtract every entry of matrix b from the corresponding entry in matrix a. (Perform a-b)
+	 * 
+	 * @param a	Target array
+	 * @param b	Array of values being subtracted from a
 	 */
 	public static void subtractFrom(double[] a, double[] b) {
 		if (a.length != b.length)
@@ -173,7 +184,11 @@ public abstract class GridOperations {
 	}
 
 	/**
-	 * @param a
+	 * \brief Return the sum of all elements in a double array
+	 * 
+	 * Return the sum of all elements in a double array
+	 * 
+	 * @param a	Double array to sum
 	 * @return the sum of all elements of a
 	 */
 	public static double computeSum(double[] a) {

@@ -304,11 +304,11 @@ public class Episome extends InfoAgent {
 		return tempString.toString();
 	}
 
-	@Override
-	protected void conjugate(double elapsedHGTtime) {
-		// TODO Auto-generated method stub
+	//@Override
+	//protected void conjugate(double elapsedHGTtime) {
+		/// TODO Auto-generated method stub
 		
-	}
+	//}
 	
 //	public String sendHeader() {
 //		return "locationX,locationY,locationZ,mass,radius,growthRate";

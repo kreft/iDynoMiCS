@@ -1,19 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
- *_____________________________________________________
- * Implements static utility functions for used in multigrid method.
+ * \package diffusionSolver.multigrid
+ * \brief Package of classes used to aid solver calculation for multi-grid scenarios.
  * 
+ * Package of classes used to capture the diffusion solvers that can be defined in the protocol file. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
- 
-/**
- * @since June 2006
- * @version 1.0
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- * 
- */
-
-
 package simulator.diffusionSolver.multigrid;
 
 import simulator.geometry.Domain;
@@ -23,32 +16,106 @@ import simulator.SoluteGrid;
 import utils.ExtraMath;
 import utils.MatrixOperations;
 
-public class MultigridSolute {
+/**
+ * \brief Implements static utility functions for used in multigrid method.
+ * 
+ * Implements static utility functions for used in multigrid method.
+ * 
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ */
+public class MultigridSolute 
+{
 
+	/**
+	 * Name of the solute in this multigrid
+	 */
 	public String                     soluteName;
+	
+	/**
+	 * The simulation solute grid containing the concentrations of this solute
+	 */
 	public SoluteGrid                 realGrid;
+	
+	
 	protected double                  _referenceSystemSide;
+	
 	protected double                  _diffusivity;
-	protected Domain     _domain;
-	protected double                  sBulkMax, sBulk;
+	
+	/**
+	 * The computational domain that this solute grid is associated with
+	 */
+	protected Domain    			  _domain;
+	
+	/**
+	 * Maximum solute level in the connected bulk
+	 */
+	protected double                  sBulkMax;
+	
+	/**
+	 * Solute level in the connected bulk
+	 */
+	protected double					sBulk;
 
-	protected SoluteGrid[]            _relDiff, _bLayer;
-	public SoluteGrid[]               _conc, _reac, _diffReac;
-	protected SoluteGrid[]            _rhs, _itemp, _itau;
+	protected SoluteGrid[]            _relDiff;
+	
+	protected SoluteGrid[]			   _bLayer;
+	
+	/**
+	 * Concentration of this solute
+	 */
+	public SoluteGrid[]               _conc;
+	
+	public SoluteGrid[]					_reac;
+	
+	public SoluteGrid[]					_diffReac;
+	
+	protected SoluteGrid[]            _rhs, _itemp;
+	
+	protected SoluteGrid[]			 _itau;
 
 	public double                     truncationError;
 
 	private static final double[][][] _diff    = new double[3][3][3];
 
-	private static double[][][]       u, rd, bl;
-	private static int                _i, _j, _k;
+	private static double[][][]       u;
+	
+	private static double[][][]		   rd;
+	
+	private static double[][][]			bl;
+	private static int                _i;
+	private static int					_j;
+	private static int					_k;
 	public static final double        BLTHRESH = 0.1;
 	private static int                maxOrder;
-	private static int                _nI, _nJ, _nK;
+	
+	/**
+	 * Size of original solute grid in I direction
+	 */
+	private static int                _nI;
+	
+	/**
+	 * Size of original solute grid in J direction
+	 */
+	private static int					_nJ;
+	
+	/**
+	 * Size of original solute grid in K direction
+	 */
+	private static int					_nK;
 
-	/* ____________ ______________________ */
+	/**
+	 * \brief Create a Multigrid solute for each solute being processed by a solver
+	 * 
+	 * Create a Multigrid solute for each solute being processed by a solver
+	 * 
+	 * @param aSolute	The solute grid containing the concentrations of this solute
+	 * @param relDiff	Diffusivity grid for this solute
+	 * @param bLayer	Boundary layer
+	 * @param sBulk	Max level of this solute in the bulk
+	 */
 	public MultigridSolute(SoluteGrid aSolute, MultigridSolute relDiff, MultigridSolute bLayer,
-	        double sBulk) {
+	        double sBulk) 
+	{
 
 		realGrid = aSolute;
 		soluteName = realGrid.gridName;
@@ -90,8 +157,12 @@ public class MultigridSolute {
 	}
 
 	/**
+	 * \brief Constructor used for biomass, bLayer and relative diffusivity grids
+	 * 
 	 * Constructor used for biomass, bLayer and relative diffusivity grids
-	 * @param aSolute
+	 * 
+	 * @param aSolute	SoluteGrid to be used by the Multigrid
+	 * @param gridName	Name of the solute grid
 	 */
 	public MultigridSolute(SoluteGrid aSolute, String gridName) {
 
@@ -125,11 +196,12 @@ public class MultigridSolute {
 		}
 	}
 
-	/* _______________ ______________________________________ */
-
 	/**
+	 * \brief Beginning of each nested loop
+	 * 
 	 * Beginning of each nested loop
-	 * @param order
+	 * 
+	 * @param order	Integer noting the order of process
 	 */
 	public void initLoop(int order) {
 		MultigridUtils.interpolateBoundaryLayer(_conc[order], _conc[order-1], _bLayer[order].grid);
@@ -197,8 +269,8 @@ public class MultigridSolute {
 		float res = MultigridUtils.computeNorm(_itemp[order].grid);
 		// confirm that criterium is met for each solute
 		if (v>0&order==maxOrder-1) {
-			System.out.println("grid "+order+"; v "+v+"; "+soluteName+" res "+res+"; truncerr "
-			        +truncationError);
+			//System.out.println("grid "+order+"; v "+v+"; "+soluteName+" res "+res+"; truncerr "
+			 //       +truncationError);
 		}
 
 		// confirm that criterium is met for each solute
@@ -411,7 +483,8 @@ public class MultigridSolute {
 		int maxK = _conc[order].getGridSizeK();
 
 		for (_i = 1; _i<=maxI; _i++) {
-			for (_j = 1; _j<=maxJ; _j++) {
+			for (_j = 1; _j<=maxJ; _j++) 
+			{
 				for (_k = 1; _k<=maxK; _k++) {
 					if (_bLayer[order].grid[_i][_j][_k]<=BLTHRESH) {
 						// outside the boundary layer (will not be solved)

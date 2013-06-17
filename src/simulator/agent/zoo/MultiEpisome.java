@@ -435,11 +435,11 @@ public class MultiEpisome extends InfoAgent {
 
 
 
-	@Override
-	protected void conjugate(double elapsedHGTtime) {
+	//@Override
+	//protected void conjugate(double elapsedHGTtime) {
 		// TODO Auto-generated method stub
 		
-	}
+	//}
 	
 	
 	

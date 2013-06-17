@@ -3,9 +3,13 @@
  * \brief Package of classes required to detect whether a new release of iDynomics is available, and to perform the update
  *  
  * This package contains classes that are used to detect whether a new release of iDynomics is available, and to perform a software 
- * update that downloads this new version and makes the required changes that ensures the user is running the latest version
+ * update that downloads this new version and makes the required changes that ensures the user is running the latest version. This 
+ * package is part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free 
+ * software.  You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and 
+ * INRIA at the following URL  "http://www.cecill.info".
  */
 package soft_update;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -92,8 +96,8 @@ public class Update_IDynomics extends JFrame
 	/**
 	 * \brief Constructor to launch the procedure of an iDynomics update
 	 * 
-	 * This contructor begins the update procedure by calling the methods to create a status window that specifies update progress, 
-	 * and the methods to perfom the download of the update and copying of the relevant files
+	 * This constructor begins the update procedure by calling the methods to create a status window that specifies update progress, 
+	 * and the methods to perform the download of the update and copying of the relevant files
 	 */
 	public Update_IDynomics() 
 	{
@@ -238,7 +242,7 @@ public class Update_IDynomics extends JFrame
 	 * 
 	 * @param dirFiles	The name of the update directory being examined
 	 * @param dir	The absolute path to the simulation directory
-	 * @throws IOException
+	 * @throws IOException	Exception thrown should there be a problem copying these files
 	 */
 	private void copyFiles(File dirFiles, String dir) throws IOException 
 	{
@@ -364,8 +368,8 @@ public class Update_IDynomics extends JFrame
 	private void downloadFile(String link) throws MalformedURLException,IOException 
 	{
 		// Store the link to the update file as a URL
-		URL url = new URL(link);
-		//URL url = new URL("http://www.kieranalden.info/update/iDynoMiCSv1_3.zip");
+		//URL url = new URL(link);
+		URL url = new URL("http://www.kieranalden.info/update/iDynoMiCSv1_3.zip");
 		
 		// Open this connection
 		URLConnection conn = url.openConnection();

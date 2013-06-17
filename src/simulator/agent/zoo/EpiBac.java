@@ -12,18 +12,14 @@
 package simulator.agent.zoo;
 
 import idyno.SimTimer;
-
 import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-
 import org.jdom.Element;
-
 import utils.ExtraMath;
 import utils.XMLParser;
 import utils.LogFile;
-
 import simulator.Simulator;
 import simulator.agent.*;
 import simulator.geometry.ContinuousVector;

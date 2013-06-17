@@ -1,19 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- * ______________________________________________________
+ * \package povray
+ * \brief Package of classes used to create output files that can be processed using POV-Ray software.
  * 
- * Creates a union with a box (the biofilm carrier) and spheres (the bacteria)
- * Create a 3D scene for the PovRay rendering engine
- * 
+ * Package of classes used to create output files that can be processed using POV-Ray software. This package is part of iDynoMiCS v1.2, 
+ * governed by the CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ 
+ * or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  
+ * "http://www.cecill.info".
  */
-
-/**
- * @since Feb 2007
- * @version 1.0
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- */
-
 package povray;
 
 import java.awt.Color;
@@ -27,29 +20,82 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.boundaryConditions.*;
 import simulator.agent.*;
 
-
-public class Biofilm3D implements Serializable {
-	// Serial version used for the serialisation of the class
+/**
+ * \brief Creates a union with a box (the biofilm carrier) and spheres (the bacteria), creating a 3D scene for the PovRay rendering engine
+ * 
+ * Creates a union with a box (the biofilm carrier) and spheres (the bacteria), creating a 3D scene for the PovRay rendering engine
+ * 
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ */
+public class Biofilm3D implements Serializable 
+{
+	/**
+	 *  Serial version used for the serialisation of the class
+	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * A POV-Ray 3D scene in which the display will be created
+	 */
 	private Povray3DScene         _pov;
-	private VectorProperty        translate, rotate;
+	
+	/**
+	 * Translation used to set the agent coordinates to the correct output angle
+	 */
+	private VectorProperty        translate;
+	
+	/**
+	 * Rotation used to set the agent coordinates to the correct output angle
+	 */
+	private VectorProperty		rotate;
+	
+	/**
+	 * Linked list of box objects that will be drawn in the output
+	 */
 	private LinkedList<Box>        _biofilmCarrier = new LinkedList<Box>();
+	
+	/**
+	 * Array of all cells to be displayed, stored as ParticleWithCapsule objects
+	 */
 	private ParticleWithCapsule[] _cells;
+	
+	/**
+	 * Reference to the next cell to be processed in the _cells array
+	 */
 	private int                   _next;
 
-	/* ________________ CONSTRUCTOR _______________________ */
+	/**
+	 * \brief Create a Biofilm3D scene from a specified POV-Ray 3D scene and initialise the output
+	 * 
+	 * Create a Biofilm3D scene from a specified POV-Ray 3D scene and initialise the output
+	 * 
+	 * @param pov	A specific POV-Ray 3D scene to generate
+	 */
 	protected Biofilm3D(Povray3DScene pov) {
 		_pov = pov;
 		initializeAll();
 	}
 
+	/**
+	 * \brief Create a Biofilm3D scene from a specified POV-Ray 3D scene and initialise the output and the array of cells to include
+	 * 
+	 * Create a Biofilm3D scene from a specified POV-Ray 3D scene and initialise the output and the array of cells to include
+	 * 
+	 * @param pov	A specific POV-Ray 3D scene to generate
+	 * @param n	The number of cells that will be included in this scene
+	 */
 	protected Biofilm3D(Povray3DScene pov, int n) {
 		_pov = pov;
 		initializeAll();
 		_cells = new ParticleWithCapsule[n];
 	}
 
+	/**
+	 * \brief Initialise the POV-Ray scene, setting up required angles of translation and rotation if 3D, and establishing each of the domain boundaries in the scene
+	 * 
+	 * Initialise the POV-Ray scene, setting up required angles of translation and rotation if 3D, and establishing each of the domain boundaries in the scene
+	 */
 	private void initializeAll() {
 		if (_pov.getDomain().is3D()) {
 			translate = new VectorProperty("translate");
@@ -149,17 +195,20 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
-	 * Add a new cell
+	 * \brief Add a new cell to the POV-Ray 3D output
 	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param rad
-	 * @param r
-	 * @param g
-	 * @param b
+	 * Add a new cell to the POV-Ray 3D output
+	 * 
+	 * @param x	X coordinate of the cell to add
+	 * @param y	Y coordinate of the cell to add
+	 * @param z	Z coordinate of the cell to add
+	 * @param rad	Radius of the cell to add
+	 * @param r	Amount of red colour to use in creating the colour of this cell
+	 * @param g	Amount of green colour to use in creating the colour of this cell
+	 * @param b	Amount of blue colour to use in creating the colour of this cell
 	 */
-	protected void addCell(float x, float y, float z, float rad, int r, int g, int b) {
+	protected void addCell(float x, float y, float z, float rad, int r, int g, int b) 
+	{
 		Color color = new Color(r, g, b);
 		_cells[_next] = new ParticleWithCapsule();
 		_cells[_next].setCenter(new ContinuousVector(x, y, z));
@@ -169,10 +218,12 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
-	 * Writes the cell positions to pov file
+	 * \brief Writes the cell positions to the POV-Ray file output stream
 	 * 
-	 * @param f
-	 * @throws IOException
+	 * Writes the cell positions to the POV-Ray file output stream
+	 * 
+	 * @param f	POV-Ray output file stream to be written to
+	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void toFile(FileWriter f) throws IOException {
 		f.write("union {\n");
@@ -186,11 +237,12 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
-	 * Writes the current cells position in model to file not using the _cells
-	 * array, wich is too memory consuming
+	 * \brief Writes the current cells position in model to the POV-Ray file output stream by not using the _cells array, which is too memory consuming
 	 * 
-	 * @param f
-	 * @throws IOException
+	 * Writes the current cells position in model to the POV-Ray file output stream by not using the _cells array, which is too memory consuming
+	 * 
+	 * @param f	POV-Ray output file stream to be written to
+	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void modelStateToFile(FileWriter f) throws IOException {
 		biofilmHeaderToFile(f);
@@ -199,10 +251,12 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
+	 * \brief Writes the union open and the carrier to file
+	 * 
 	 * Writes the union open and the carrier to file
 	 * 
-	 * @param f
-	 * @throws IOException
+	 * @param f	POV-Ray output file stream to be written to
+	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void biofilmHeaderToFile(FileWriter f) throws IOException {
 		f.write("union {\n");
@@ -214,10 +268,12 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
-	 * writes the union tranlations and rotations and close to file
+	 * \brief Writes the union translations and rotations to the POV-Ray file stream and closes the file
 	 * 
-	 * @param f
-	 * @throws IOException
+	 * Writes the union translations and rotations to the POV-Ray file stream and closes the file
+	 * 
+	 * @param f	POV-Ray output file stream to be written to
+	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void biofilmFooterToFile(FileWriter f) throws IOException {
 		f.write("\t"+translate+"\n");
@@ -226,10 +282,12 @@ public class Biofilm3D implements Serializable {
 	}
 
 	/**
-	 * Write the particles only to file
+	 * \brief Write the particles only to the POV-Ray file output stream
 	 * 
-	 * @param f
-	 * @throws IOException
+	 * Write the particles only to the POV-Ray file output stream
+	 * 
+	 * @param f	POV-Ray output file stream to be written to
+	 * @throws IOException	Exception that is thrown if there are problems with this output stream
 	 */
 	protected void particlesToFile(FileWriter f) throws IOException {
 		for (Agent anAgent : _pov.mySim.agentGrid.agentList) {

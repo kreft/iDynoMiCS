@@ -1,27 +1,34 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
  * 
- * ______________________________________________________
- * Tool for performing fast fourier transfrom (FFT) on grids of Complex and real
- * numbers. Algorithms for FFT based on "Numerical Recipes in C, 2nd ed."
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * 
- * @since August 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- */
-
-
 package utils;
 
+/**
+ * \brief Tool for performing fast fourier transform (FFT) on grids of Complex and real numbers. 
+ * 
+ * Tool for performing fast fourier transform (FFT) on grids of Complex and real numbers. Algorithms for FFT based on 
+ * "Numerical Recipes in C, 2nd ed."
+ * 
+ * @author Andreas Dotsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ *
+ */
+public class FftOperations 
+{
 
-public class FftOperations {
 
-	// TODO: check orginalData transformedData, is it the same because of
-    // references?
-
+	/**
+	 * \brief Transform a 1D array of real numbers into an array of complex numbers
+	 * 
+	 * Transform a 1D array of real numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[] transform(double[] originalData) {
 		// transform a 1D-array of real numbers
 		// initializing
@@ -46,6 +53,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Transform a 2D array of real numbers into an array of complex numbers
+	 * 
+	 * Transform a 2D array of real numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[][] transform(double[][] originalData) {
 		// transform a 2D-array of real numbers
 		// initializing
@@ -82,6 +97,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Transform a 3D array of real numbers into an array of complex numbers
+	 * 
+	 * Transform a 3D array of real numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[][][] transform(double[][][] originalData) {
 		// transform a 3D-array of real numbers
 		// initializing
@@ -123,6 +146,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Transform a 1D array of Complex numbers into an array of complex numbers
+	 * 
+	 * Transform a 1D array of Complex numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[] transform(Complex[] originalData) {
 		// transform a 1D-array of complex numbers
 		// initializing
@@ -147,6 +178,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Transform a 2D array of Complex numbers into an array of complex numbers
+	 * 
+	 * Transform a 2D array of Complex numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[][] transform(Complex[][] originalData) {
 		// transform a 2D-array of real numbers
 		// initializing
@@ -183,6 +222,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Transform a 3D array of Complex numbers into an array of complex numbers
+	 * 
+	 * Transform a 3D array of Complex numbers into an array of complex numbers
+	 * 
+	 * @param originalData	Original data
+	 * @return	Array of complex numbers representing this data
+	 */
 	public static Complex[][][] transform(Complex[][][] originalData) {
 		// transform a 3D-array of complex numbers
 		// initializing
@@ -224,6 +271,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Inverse transform a 1D array of complex numbers
+	 * 
+	 * Inverse transform a 1D array of complex numbers
+	 * 
+	 * @param originalData	Data of complex numbers to be transformed
+	 * @return	Inverse of the original data array
+	 */
 	public static Complex[] inverse(Complex[] originalData) {
 		// inverse transform a 1D-array of Complex numbers
 		// initializing
@@ -248,6 +303,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Inverse transform a 2D array of complex numbers
+	 * 
+	 * Inverse transform a 2D array of complex numbers
+	 * 
+	 * @param originalData	Data of complex numbers to be transformed
+	 * @return	Inverse of the original data array
+	 */
 	public static Complex[][] inverse(Complex[][] originalData) {
 		// inverse transform a 2D-array of complex numbers
 		// initializing
@@ -285,6 +348,14 @@ public class FftOperations {
 		return transformedData;
 	}
 
+	/**
+	 * \brief Inverse transform a 3D array of complex numbers
+	 * 
+	 * Inverse transform a 3D array of complex numbers
+	 * 
+	 * @param originalData	Data of complex numbers to be transformed
+	 * @return	Inverse of the original data array
+	 */
 	public static Complex[][][] inverse(Complex[][][] originalData) {
 		// inverse transform a 3D-array of complex numbers
 		// initializing
@@ -328,14 +399,13 @@ public class FftOperations {
 	}
 
 	/**
+     * \brief Perform a Fast Fourier Transformation on 1D data array.
+     * 
      * Perform a Fast Fourier Transformation on 1D data array.
      * 
-     * 
      * @param data data array to perform FFT on
-     * @param isign 1 for regular FFT, -1 for inverse (result is NOT normalized
-     * by N!)
-     * 
-     * @return string output
+     * @param isign 1 for regular FFT, -1 for inverse (result is NOT normalized by N!)
+     * @return Double array of transformed data
      */
 	public static double[] fft(double[] data, int isign) {
 		double dtemp = 0.0D, wtemp = 0.0D, tempr = 0.0D, tempi = 0.0D;
@@ -389,16 +459,15 @@ public class FftOperations {
 	}
 
 	/**
+     * \brief Perform a Fast Fourier Transformation on n-D data array .
+     * 
      * Perform a Fast Fourier Transformation on n-D data array .
      * 
-     * 
      * @param data data array to perform FFT on
-     * @param dim number of dimensions
+     * @param ndim number of dimensions
      * @param nn size of the array data in all directions
-     * @param isign 1 for regular FFT, -1 for inverse (result is NOT normalized
-     * by N!)
-     * 
-     * @return string output
+     * @param isign 1 for regular FFT, -1 for inverse (result is NOT normalized by N!)
+     * @return Double array of the data transformed to a 1D array of doubles
      */
 	public static double[] fftn(double[] data, int ndim, int[] nn, int isign) {
 		int idim, i1, i2, i3, i2rev, i3rev, ip1, ip2, ip3, ifp1, ifp2;
@@ -471,9 +540,12 @@ public class FftOperations {
 	}
 
 	/**
-     * checks whether n is an integer power of 2
-     * @param n
-     * @return
+     * \brief Checks whether n is an integer power of 2
+     * 
+     * Checks whether n is an integer power of 2
+     * 
+     * @param n	Integer to check
+     * @return	Boolean noting whether this number is a power of 2
      */
 	public static boolean checkPowerOfTwo(int n) {
 		int temp = n;

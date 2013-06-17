@@ -1,6 +1,11 @@
 /**
  * \package idyno
  * \brief Package of classes used to launch iDynomics
+ * 
+ * Package of classes used to launch and iDynoMiCS simulation, and to update the package to the latest stable release. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the 
+ * following URL  "http://www.cecill.info".
  */
 package idyno;
 
@@ -16,6 +21,7 @@ import javax.swing.JScrollPane;
 import de.schlichtherle.io.FileOutputStream;
 import simulator.Simulator;
 import soft_update.Check_Release_Status;
+import utils.InitialisationErrorLog;
 import utils.XMLParser;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -30,15 +36,16 @@ import utils.ResultFile;
 /** \brief Main class to run to launch the iDynoMiCS tool
 *
 * Launch iDynomics using this class. Syntax: To launch a single simulation idyno.Idynomics
-* \protocol\protocolFileURL - To launch a batch of simulations idyno.Idynomics
-* \protocol\FilesDirectory
-* Please make sure you are aware of the licensing agreement when you are running the iDynomics tool.
-* This software is governed by the CeCILL license under French law and  abiding by the rules of distribution 
-* of free software.  You can  use, modify and/ or redistribute the software under the terms of the CeCILL 
-* license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info". 
+* \\protocol\\protocolFileURL - To launch a batch of simulations idyno.Idynomics
+* \\protocol\\FilesDirectory
+* 
+* Please make sure you are aware of the licensing agreement when you are running the iDynomics tool. This software is governed by 
+* the CeCILL license under French law and  abiding by the rules of distribution of free software.  You can  use, modify and/ or 
+* redistribute the software under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  
+* "http://www.cecill.info". 
 * 
 * @since June 2006
-* @version 1.1
+* @version 1.2
 * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de)
 * @author Laurent Lardon (lardonl@supagro.inra.fr)
 * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
@@ -51,10 +58,11 @@ import utils.ResultFile;
 **/
 public class Idynomics 
 {
+	
 	/**
 	 * Version number of this iteration of iDynoMiCS - required by update procedure
 	 */
-	public static double version_number  = 1.1;
+	public static double version_number  = 1.2;
 	
 	/**
 	 * Frame to display information regarding a software update, if there is one available
@@ -131,6 +139,11 @@ public class Idynomics
 	 * parameter set such that the simulator knows the current path to read/write the random number file
 	 */
 	public static String currentPath;
+	
+	/**
+	 * Log to hold any issues with simulation initialisation. Created as initialisation happens prior to creation of any log file
+	 */
+	public static InitialisationErrorLog initErrorLog;
 
 	/**
 	 * \brief - Main method used to start iDynoMiCS
@@ -146,12 +159,19 @@ public class Idynomics
 	 */
 	public static void main(String[] args) 
 	{
+		
 		try
 		{
+			initErrorLog = new InitialisationErrorLog();
+			
 			processArguments(args);
 			
 			// Now set the current path to that of the first protocol file to be processed (activePath is set by processArguments)
 			currentPath = _activePath[0];
+			System.out.println(currentPath);
+			// Open the initialisation error log
+			
+			InitialisationErrorLog.openInitialisationErrorFile(currentPath);
 			
 			// The first thing we're going to do is check for an iDynoMiCS stable release update - if the user has specified this.
 			// The user can determine whether this is done or not in the protocol files they are submitting to iDynoMiCS.
@@ -165,7 +185,7 @@ public class Idynomics
 			// latest version. If not, this returns true. If it is the latest version or the update check is set to false, 
 			// false is returned
 			
-			boolean updateCheck = checkForReleaseUpdate(_activePath[0]+_protocolFile[0]);
+			boolean updateCheck = checkForReleaseUpdate(_activePath[0],_protocolFile[0]);
 			
 			if(updateCheck)
 			{
@@ -197,7 +217,6 @@ public class Idynomics
 	 * 
 	 * @param args	The program arguments sent in to iDynomics
 	 * @param updateInfoMessage	The list of changes in this update, from history.html
-	 * @param latestVersion	The number of the new version. This is useful for sending to the jar which gets the new release
 	 * 
 	 */
 	public static void show_Update_Box(String[] args, String updateInfoMessage)
@@ -231,7 +250,7 @@ public class Idynomics
 			public void actionPerformed(ActionEvent e) 
 			{
 				// Run the updater
-				String[] run = {"java","-jar","updater/Update_IDynomics.jar"};
+				String[] run = {"java","-jar","src/lib/Update_IDynomics.jar"};
 				try 
 				{
 					Runtime.getRuntime().exec(run);
@@ -272,7 +291,7 @@ public class Idynomics
 		updateFrame.add(pan1);
 		updateFrame.pack();
 		updateFrame.setVisible(true);
-		updateFrame.setSize(300, 200);
+		updateFrame.setSize(500, 500);
 	}
 	
 	
@@ -295,11 +314,26 @@ public class Idynomics
 		{
 			if (initSimulation(iSimul)) 
 			{
+				// If open, close the initialisation error log
+				try
+				{
+					InitialisationErrorLog.closeFile();
+					InitialisationErrorLog.deleteFile();
+					
+				}
+				catch(Exception e)
+				{
+					// No need to perform an action
+				}
+				
 				launchSimulation(iSimul);
-							
+				
+				
+						
 				/* The following lines write out the random number state file at the end of each simulation
 				 * The reason this is done here, is because it is guaranteed to be the absolute last thing that's done before
 				 * the next simulation is called. Chinmay 11/8/2009 */
+				
 				try 
 				{
 					FileOutputStream randomFileOutputStream = new FileOutputStream(currentPath+File.separator+"random.state");
@@ -316,6 +350,9 @@ public class Idynomics
 					LogFile.closeFile();
 					System.exit(-1);					
 				}
+				
+				
+				
 				
 			}
 		}
@@ -483,7 +520,7 @@ public class Idynomics
 		String resultDir;
 		String resultFullURL;
 
-		if (checkForRestart(_activePath[iSimul]+_protocolFile[iSimul])) 
+		if (checkForRestart(_activePath[iSimul],_protocolFile[iSimul])) 
 		{
 			resultDir = _activePath[iSimul];
 			resultFullURL = resultDir+File.separator+_protocolFile[iSimul];
@@ -514,6 +551,7 @@ public class Idynomics
 			// Create a log file
 			LogFile.openFile(resultDir);
 		}
+		
 
 		// Check whether QuietMode has been specified - if so note this in the log file
 		quietMode = checkForQuietMode(_activePath[iSimul]+_protocolFile[iSimul]);
@@ -523,6 +561,7 @@ public class Idynomics
 		}
 		
 		// Create the simulator
+		
 		try 
 		{
 			aSimulator = new Simulator(_activePath[iSimul]+_protocolFile[iSimul], resultDir);
@@ -534,6 +573,7 @@ public class Idynomics
 			LogFile.writeLogAlways("Initialization ("+resultFullURL+"):ERROR");
 			return false;
 		}
+		
 	}
 
 	/**
@@ -542,14 +582,18 @@ public class Idynomics
 	 * This method checks the protocol file provided to determine whether a previous run is being restarted. If this is the case, the 
 	 * original results file folder and log files are resused
 	 * 
-	 * @added 26.1.2009
 	 * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
-	 * @param protocolFile	The path of the protocol file that is being checked
+	 * 
+	 * @param activePath	Path to the first protocol file being processed
+	 * @param protocolFile	Name of the protocol file that is being checked
 	 * @return boolean stating whether this is a restarted simulation or not
 	 */
-	public static boolean checkForRestart(String protocolFile) 
+	public static boolean checkForRestart(String activePath,String protocolFile) 
 	{
-		XMLParser inputFile = new XMLParser(protocolFile);
+		// KA June 2013 - error was occuring here if XML file was incorrect - the log hasn't yet been opened
+		// As it is difficult to open the log without the result address, the call has been changed to one that tries to open the XML
+		// file but outputs an error message to the screen if this is incorrect
+		XMLParser inputFile = new XMLParser(activePath,protocolFile);
 		XMLParser restartInfo = new XMLParser(inputFile.getChildElement("simulator"));
 
 		return restartInfo.getParamBool("restartPreviousRun");
@@ -582,14 +626,15 @@ public class Idynomics
 	 * the latest version or the user has turned updating off, false will be returned. Note that if checkForReleaseUpdate is not in the
 	 * protocol file, FALSE is returned and no check will be performed
 	 * 
-	 * @added 26.3.2013
 	 * @author Kieran Alden (k.j.alden@bham.ac.uk)
+	 * 
+	 * @param activePath	Path to the first protocol file being processed
 	 * @param protocolFile	The path to the protocol file that is being checked
 	 * @return	boolean stating whether an update needs to be installed (true) or whether the software is up to date or update checking is off (false)
 	 */
-	public static boolean checkForReleaseUpdate(String protocolFile) throws Exception
+	public static boolean checkForReleaseUpdate(String activePath,String protocolFile) throws Exception
 	{
-		XMLParser inputFile = new XMLParser(protocolFile);
+		XMLParser inputFile = new XMLParser(activePath,protocolFile);
 		XMLParser info = new XMLParser(inputFile.getChildElement("simulator"));
 		
 		if(info.getParamBool("checkForReleaseUpdate"))
@@ -610,7 +655,6 @@ public class Idynomics
 	 * is returned and the user will be prompted to update iDynoMiCS if they wish. If this is the latest version, false will be returned 
 	 * and the simulation starts as normal
 	 * 
-	 * @added 26.3.2013
 	 * @author Kieran Alden (k.j.alden@bham.ac.uk)
 	 * @return	boolean stating whether an update is required (true) or not (false)
 	 * @throws Exception	Exception generated if a problem checking release status online (but this is dealt with elsewhere should this occur)
@@ -653,6 +697,8 @@ public class Idynomics
 			begin = System.currentTimeMillis();
 			// Start the simulation
 			aSimulator.run();
+			
+			
 			begin = Math.round(System.currentTimeMillis()-begin);
 
 			// Calculate how long the simulation took
@@ -660,6 +706,7 @@ public class Idynomics
 			
 			// Log this in the log file
 			LogFile.writeLogAlways("Simulation succesfully achieved in "+time+" minutes.");
+			
 
 		} 
 		catch (Exception e) 
@@ -702,8 +749,88 @@ public class Idynomics
 			for (int i = 0; i<list.length; i++) 
 			{
 				fileList.addLast(list[i]);
-				System.out.println(list[i]);
 			}
 		}
 	}
+	
+	/**
+	 * \mainpage iDynoMiCS Version 1.2 Code Reference Manual
+	 * 
+	 * The iDynoMiCS software simulates the growth of microbial communities. iDynoMiCS is written in Java, and uses XML files for input 
+	 * and output. Input files allow the users to specify conditions, microbial species, and other parameters without the need to 
+	 * become a programmer. Also the positions and other variables of all individual microbes can be specified in another input file. 
+	 * This allows one to easily specify many different types of simulations. iDynoMiCS writes plain-text XML files as output, and these 
+	 * may be processed using any number of software tools (though we provide some general post-processing routines that run in Matlab 
+	 * and are working on R scripts). In addition to XML files, iDynoMiCS also writes scene description input files for POV-Ray, a 
+	 * virtual photography software which is used to render 3-D images of the simulated communities.
+	 *
+	 * iDynoMiCS is under constant development by several different teams working in the realm of microbial ecology. If you are 
+	 * interested in contributing to the further development of this software, whether this be through the addition of new 
+	 * functionality, new routines for post-processing simulations, or additional PDE solvers or other numerical algorithms, 
+	 * please read the information in our <a href="http://www.github.com/kreft">Github repository wiki</a>
+	 *
+	 * iDynoMiCS has been a collaborative effort between an increasing number of people: Laurent Lardon, Brian Merkey, Joao Xavier, 
+	 * Andreas Dötsch, Barth F Smets, Cristian Picioreanu, Rob Clegg, Sonia Martins, Katrin Bohl, Kieran Alden, Jan-Ulrich Kreft 
+	 * and others.
+	 *   
+	 *   <br>
+	 *  \section getiDyno Getting iDynoMiCS
+	 *   
+	 * The tool can be downloaded in two different ways. Should you wish to use the tool to perform experimentation, then download 
+	 * the Latest Stable release <a href="http://www.biosciences-labs.bham.ac.uk/kreftlab"> here </a>. If however you wish to contribute to the 
+	 * future development of the tool (which we encourage), you can download the most up to date version of the source code from our 
+	 * <a href="http://www.github.com/kreft">Github repository</a>. Full documentation that details how to contribute to iDynoMiCS development using 
+	 * this repository is available on the iDynoMiCS wiki, also located in the Github repository. 
+	 *   
+	 *   <br>
+	 * \section iDynoMail Join the iDynoMiCS Mailing List
+	 * 
+	 * While we make the code available under a GNU GPL type open source licence called CeCILL, we kindly request that you join the iDynoMiCS mailing 
+	 * lists when you download the code. This will help us find out how many scientists are using iDynoMiCS, which we will use to 
+	 * support future grant applications to further develop the code, which in turn is in your interest. We will also use the email 
+	 * lists to send updates concerning the ongoing development of iDynoMiCS. <a href="http://www.birmingham.ac.uk/generic/idynomics/mailing-list.aspx">Click here for information on joining these lists</a> 
+	 *   
+	 * <br>  
+	 * \section idyno Help with Using iDynoMiCS
+	 * 
+	 * The best place to start with iDynoMiCS is to complete the tutorial. This can be found in our  <a href="http://www.github.com/kreft">Github repository</a> 
+	 * and a PDF can be found in the 'Tutorial' folder in the iDynoMiCS download.
+	 * 
+	 * Should you have any issues with using iDynoMiCS, you can seek support in two ways. 
+	 * 
+	 * The first of these is to ask your question via the <a href="https://github.com/kreft/iDynoMiCS/issues">Issue tracking system</a> 
+	 * on our <a href="http://www.github.com/kreft">GitHub repository</a>.  There is more information on how to use the Issue tracking 
+	 * system in our wiki part of the GitHub repository. 
+	 * 
+	 * Secondly, you may send questions to the developers via the mailing list idynomics@lists.bham.ac.uk. The developers will aim to 
+	 * respond via email as swiftly as time allows. Your query will also be logged as an Issue in our GitHub repository with the 
+	 * appropriate reply, in order that this remains available for other users who may have the same question. 
+	 *   
+	 *   
+	 */
+	
+	/**
+	 * \page page1 Useful Links
+	 * 
+	 * \section links Useful Links
+	 * 
+	 * <a href="http://www.idynomics.org">1. The iDynoMiCS Website</a>
+	 * 
+	 * <a href="https://github.com/kreft">2.. iDynoMiCS GitHub Repository</a>
+	 * 
+	 * <a href="https://github.com/kreft/iDynoMiCS/wiki">3. iDynoMiCS Wiki</a>
+	 * 
+	 * <a href="https://github.com/kreft/iDynoMiCS/wiki/iDynomics-Tutorial">4. iDynoMiCS Tutorial</a>
+	 * 
+	 * <a href="https://github.com/kreft/iDynoMiCS/issues">5. iDynoMiCS Issue Tracking System</a>
+	 * 
+	 * <a href="http://www.birmingham.ac.uk/generic/idynomics/mailing-list.aspx">6. iDynoMiCS Mailing List</a>
+	 * 
+	 * <a href="http://www.birmingham.ac.uk/generic/idynomics/projects/index.aspx">7. Projects and Publications</a>
+	 * 
+	 * <a href="http://www.biosciences-labs.bham.ac.uk/kreftlab">7. Kreft Lab Website</a>
+	 * 
+	 * 
+	 */
+	
 }

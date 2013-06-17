@@ -1,18 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- * ___________________________________________________________________________
- * BactAdaptable: a species that can change its reaction based on local conditions 
+ * \package simulator.agent.zoo
+ * \brief Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types
  * 
+ * Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
-/**
- * 
- * @since Nov 2008
- * @version 1.0
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * ____________________________________________________________________________
- */
-
 package simulator.agent.zoo;
 
 import java.awt.Color;
@@ -28,30 +22,65 @@ import simulator.geometry.boundaryConditions.AllBC;
 //import utils.LogFile;
 import utils.XMLParser;
 
-public class BactAdaptable extends BactEPS {
-
-	// false for off, true for on
+/**
+ * \brief Creates a Bacterium agent object that can change its reaction based on local conditions
+ * 
+ * Creates a Bacterium agent object that can change its reaction based on local conditions. The BactAdaptable species derives from the 
+ * BactEPS species, but adds the ability to change its set of active reactions based on definable conditions. The mechanism for this 
+ * switching behaviour is an ON/OFF state switch, with each state having a particular set of active reactions that are set as inactive 
+ * when the switch is in the opposite state. You may use local solute concentrations or agent biomass amounts as switch conditions; 
+ * this example mark-up uses the local oxygen (MyO2) concentration as the switch condition.
+ * 
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ *
+ */
+public class BactAdaptable extends BactEPS 
+{
+	/**
+	 * Boolean that notes whether this switch is set to be on (true) or false (off)
+	 */
 	protected Boolean switchState;
-
-	// flag for whether we need to change the state of the switch
+	
+	/**
+	 * Boolean flag noting whether we need to change the state of the switch to on
+	 */
 	protected Boolean turnSwitchOn = false;
+	
+	/**
+	 * Boolean flag noting whether we need to change the state of the switch to off
+	 */
 	protected Boolean turnSwitchOff = false;
 
-	// used in conjunction with lag parameters
+	/**
+	 * Used in conjunction with lag parameters, notes the time that the simulation requested the switch be set to on
+	 */
 	protected double timeOfRequestToSwitchOn;
+	
+	/**
+	 * Used in conjunction with lag parameters, notes the time that the simulation requested the switch be set to off
+	 */
 	protected double timeOfRequestToSwitchOff;
 
-
+	/**
+	 * \brief Constructor used to generate progenitor and initialise an object to store relevant parameters
+	 * 
+	 * Constructor used to generate progenitor and initialise an object to store relevant parameters
+	 */
 	public BactAdaptable() {
 		super();
 		_speciesParam = new BactAdaptableParam();
 	}
 
 	/**
-	 * Initialises the progenitor
-	 * (This code borrowed from Bacterium class)
+	 * \brief Creates a BactAdaptable agent from the parameters specified in the XML protocol file
+	 *
+	 * Creates a BactAdaptable agent from the parameters specified in the XML protocol file
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
 	 */
-	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) {
+	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) 
+	{
 		// Initialisation of the Bacterium
 		super.initFromProtocolFile(aSim, aSpeciesRoot);
 
@@ -66,7 +95,16 @@ public class BactAdaptable extends BactEPS {
 		timeOfRequestToSwitchOn = 0;
 	}
 
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
+	/**
+	 * \brief Create an agent using information in a previous state or initialisation file
+	 * 
+	 * Create an agent using information in a previous state or initialisation file
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
+	 */
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
+	{
 		// find the position to start at by using length and number of values read
 		int nValsRead = 5;
 		int iDataStart = singleAgentData.length - nValsRead;
@@ -74,9 +112,6 @@ public class BactAdaptable extends BactEPS {
 		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
 
 		// switch state parameters
-		//switchState   = Boolean.parseBoolean(singleAgentData[iDataStart]);
-		//turnSwitchOn  = Boolean.parseBoolean(singleAgentData[iDataStart+1]);
-		//turnSwitchOff = Boolean.parseBoolean(singleAgentData[iDataStart+2]);
 		int val;
 		val = Integer.parseInt(singleAgentData[iDataStart]);
 		if (val==1) switchState = true;
@@ -98,10 +133,14 @@ public class BactAdaptable extends BactEPS {
 	}
 
 	/**
-	 * Called at each time step (under the control of the method Step of the
-	 * class Agent to avoid multiple calls
+	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. In this case also checks switch state
+	 * 
+	 * Called at each time step of the simulation (under the control of the method Step of the class Agent) to compute mass growth 
+	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
+	 * monitors agent death. In this case also checks switch state
 	 */
-	protected void internalStep() {
+	protected void internalStep() 
+	{
 		// check whether we will need to change the switch state
 		respondToConditions();
 		
@@ -113,20 +152,15 @@ public class BactAdaptable extends BactEPS {
 	}
 
 	/**
-	 * Look in the local region and set whether to change the switch state
-	 * (but it will actually be switched later)
+	 * \brief Examines the local region and determines whether to set the flag noting the switch should be changed
 	 * 
-	 * the switch may be in two states: ON or OFF, and when in each state may be in an
-	 * additional two states: waiting to switch, or not waiting to switch. While we are
-	 * in the waiting-to-switch state, we treat the switch as if it has already switched
-	 * for purposes of testing local conditions (i.e. the planned switch will be cancelled
-	 * if the conditions go back to a state not requiring a switch to occur).
+	 * Look in the local region and set whether to change the switch state (but it will actually be switched later). The switch may be 
+	 * in two states: ON or OFF, and when in each state may be in an additional two states: waiting to switch, or not waiting to switch. 
+	 * While we are in the waiting-to-switch state, we treat the switch as if it has already switched for purposes of testing local 
+	 * conditions (i.e. the planned switch will be cancelled if the conditions go back to a state not requiring a switch to occur).
 	 * 
-	 * The four states are:
-	 * ON and staying ON
-	 * ON and waiting to switch to OFF
-	 * OFF and staying OFF
-	 * OFF and waiting to switch to ON
+	 * The four states are: A. ON and staying ON; B. ON and waiting to switch to OFF; C. OFF and staying OFF; D. OFF and waiting to 
+	 * switch to ON
 	 */
 	public void respondToConditions() {
 
@@ -217,7 +251,13 @@ public class BactAdaptable extends BactEPS {
 		}
 	}
 	
-	public void updateActiveReactions() {
+	/**
+	 * \brief Used by the internal step to update the active reactions dependent on the state of the switch. Checks to ensure adherence to lag time
+	 * 
+	 * Used by the internal step to update the active reactions dependent on the state of the switch. Checks to ensure adherence to lag time
+	 */
+	public void updateActiveReactions() 
+	{
 		// leave if we don't need to change the state right now
 		if (switchIsOn() && !turnSwitchOff) return;
 		if (!switchIsOn() && !turnSwitchOn) return;
@@ -237,7 +277,11 @@ public class BactAdaptable extends BactEPS {
 		}
 	}
 
-	// this changes the switch state by turning reactions on or off
+	/**
+	 * \brief Changes the switch state to on by turning reactions on or off, dependent on the state the reaction should be in when the switch is on
+	 * 
+	 * Changes the switch state to  on by turning reactions on or off, dependent on the state the reaction should be in when the switch is on
+	 */
 	public void setSwitchToOn() {
 		// turn off the reactions that were previously on
 		for (int aReac : getSpeciesParam().offStateReactions) {
@@ -246,16 +290,18 @@ public class BactAdaptable extends BactEPS {
 
 		// turn on the reactions that should now be on
 		for (int aReac : getSpeciesParam().onStateReactions) {
-//			
+			
 			switchOnReaction(allReactions[aReac]);
 		}
 
-		setSwitchState(true);
-		
-		
+		setSwitchState(true);	
 	}
 	
-	// this changes the switch state by turning reactions on or off
+	/**
+	 * \brief Changes the switch state to off by turning reactions on or off, dependent on the state the reaction should be in when the switch is off
+	 * 
+	 * Changes the switch state to  on by turning reactions on or off, dependent on the state the reaction should be in when the switch is off
+	 */
 	public void setSwitchToOff() {
 
 		// turn off the reactions that were previously on
@@ -272,19 +318,37 @@ public class BactAdaptable extends BactEPS {
 	
 	}
 
-	// returns false when off, true when on
+	/**
+	 * \brief Return a boolean noting whether the switch is on
+	 * 
+	 * Return a boolean noting whether the switch is on
+	 * 
+	 * @return	Boolean stating the current switch state
+	 */
 	public Boolean switchIsOn() {
 		return switchState;
 	}
 	
-	// set the state to true or false
+	/**
+	 * \brief Set the switch to the state in the specified boolean input parameter
+	 * 
+	 * Set the switch to the state in the specified boolean input parameter
+	 * 
+	 * @param newState	The state which the switch should be set to (true for on, false for off)
+	 */
 	public void setSwitchState(Boolean newState) {
 		switchState = newState;
 	}
 	
-	// return true or false if ready to switch
-	// this prevents switching during the initial adaptation lag period
-	public Boolean readyToSwitch() {
+	/**
+	 * \brief Prevention of switching during the initial adaption lag period. Returns false if this lag needs to be implemented, or true if ready to switch
+	 * 
+	 * Prevention of switching during the initial adaption lag period. Returns false if this lag needs to be implemented, or true if ready to switch
+	 * 
+	 * @return	Boolean noting whether the reaction switch value can be changed
+	 */
+	public Boolean readyToSwitch() 
+	{
 		// don't switch if we're still within the lag
 
 		// TODO: make this a distribution around the time rather than discrete decision
@@ -301,13 +365,27 @@ public class BactAdaptable extends BactEPS {
 		return true;
 	}
 
-	public BactAdaptableParam getSpeciesParam() {
+	/**
+	 * \brief Return the set of parameters that is associated with the object of this species
+	 * 
+	 * Return the set of parameters that is associated with the object of this species
+	 * 
+	 * @return Object of BacteriumParam that stores the parameters associated with this species
+	 */
+	public BactAdaptableParam getSpeciesParam() 
+	{
 		return (BactAdaptableParam) _speciesParam;
 	}
 	
 
-	/* _______________ FILE OUTPUT _____________________ */
-
+	
+	/**
+	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * @return	String specifying the header of each column of results associated with this agent
+	 */
 	public String sendHeader() {
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
@@ -319,6 +397,13 @@ public class BactAdaptable extends BactEPS {
 		return tempString.toString();
 	}
 
+	/**
+	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * @return	String containing results associated with this agent
+	 */
 	public String writeOutput() {
 		// write the data matching the header file
 		StringBuffer tempString = new StringBuffer(super.writeOutput());
@@ -339,7 +424,11 @@ public class BactAdaptable extends BactEPS {
 	
 	
 	/**
-	 * Used to write povray files (replaces the version in LocatedAgent)
+	 * \brief Used in the creation of POV-Ray files, replacing the version in LocatedAgent, so that information on the switch is included
+	 * 
+	 * Used in the creation of POV-Ray files, replacing the version in LocatedAgent, so that information on the switch is included
+	 * 
+	 * @return	String to be included in the POV-Ray output file, consisting of species name and state of reaction switch
 	 */
 	public String getName() {
 		if (switchIsOn())
@@ -347,8 +436,13 @@ public class BactAdaptable extends BactEPS {
 
 		return _species.speciesName+"_OFF";
 	}
-/**
-	 * Used to write povray files
+
+	/**
+	 * \brief Used for POV-Ray output, defines the colour that this species of BactAdaptable has been assigned
+	 * 
+	 * Used for POV-Ray output, defines the colour that this species of BactAdaptable has been assigned
+	 * 
+	 * @return Color object that this species of BactAdaptable has been assigned
 	 */
 	public Color getColor() {
 		if (switchIsOn())
@@ -358,12 +452,16 @@ public class BactAdaptable extends BactEPS {
 	}
 
 	/**
-	 * this writes a color definition to the passed-in file; meant for later use in macros
-	 * This overrules the version in SpecialisedAgent
+	 * \brief Writes a colour definition to the passed-in POV-Ray output stream, ensuring switch state can be represented by a different colour
 	 * 
-	 * @param theFile
+	 * Writes a colour definition to the passed-in POV-Ray output stream, ensuring switch state can be represented by a different colour. 
+	 * Meant for later use in macros. This overrules the version in SpecialisedAgent
+	 * 
+	 * @param fr	POV-Ray output stream where this definition should be written to
+	 * @throws IOException	Exception thrown if this stream is not open
 	 */
-	public void writePOVColorDefinition(FileWriter fr) throws IOException {
+	public void writePOVColorDefinition(FileWriter fr) throws IOException 
+	{
 		BactAdaptableParam param = getSpeciesParam();
 		
 		fr.write("#declare "+_species.speciesName+"_ON = color rgb < ");

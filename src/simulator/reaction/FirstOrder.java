@@ -1,16 +1,11 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package reaction
+ * \brief Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS
+ * 
+ * Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * @since June 2006
- * @version 1.0
- * @author Andreas D�tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- */
-
-
 package simulator.reaction;
 
 import Jama.Matrix;
@@ -20,6 +15,15 @@ import simulator.agent.*;
 import utils.XMLParser;
 
 @Deprecated
+/**
+ * \brief Modelled First-Order reactions. This class is deprecated
+ * 
+ * Modelled First-Order reactions. This class is deprecated
+ * 
+ * @author Andreas D�tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ *
+ */
 public class FirstOrder extends Reaction {
 
 	// Serial version used for the serialisation of the class
@@ -63,8 +67,8 @@ public class FirstOrder extends Reaction {
 	}
 
 	/**
-     * @param double[] s : array of concentration
-     * @param mass : concentration of reactant
+     * @param s	Array of concentration
+     * @param mass	Concentration of reactant
      */
 	public void computeUptakeRate(double[] s, double mass) {
 
@@ -78,22 +82,30 @@ public class FirstOrder extends Reaction {
 	}
 	
 	/**
+     * \brief Return the specific reaction rate
+     * 
      * Return the specific reaction rate
-     * @see ActiveAgent.grow()
-     * @see Episome.computeRate(EpiBac)
+     * @param anAgent	The agent
+     * @deprecated
      */
 	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
 	
+	/**
+	 * @param s	Double array
+	 * @deprecated
+	 * 
+	 */
 	public void computeSpecificGrowthRate(double[] s) {
 		_specRate = this._k;
 	}
 	
 	/**
      * Compute specific growth rate in fonction to concentrations sent
-     * @param double[] s : aray of solute concentration
+     * @param s	array of solute concentration
      * @param anAgent Parameters used are those defined for THIS agent
+     * @deprecated
      */
 	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
@@ -116,19 +128,14 @@ public class FirstOrder extends Reaction {
 	}
 
 	@Override
+	/**
+	 * @param s	Double array
+	 * @param conc	Concentration factor
+	 * @param h	Double
+	 * @deprecated
+	 * 
+	 */
 	public void computeUptakeRate(double[] s, double conc, double h) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public double[] getMarginalDiffMu() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void computeUptakeRate(double[] s, double mass, Matrix dFdY) {
 		// TODO Auto-generated method stub
 		
 	}

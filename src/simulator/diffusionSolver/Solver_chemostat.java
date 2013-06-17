@@ -1,3 +1,12 @@
+/**
+ * \package diffusionSolver
+ * \brief Package of classes used to capture the diffusion solvers that can be defined in the protocol file
+ * 
+ * Package of classes used to capture the diffusion solvers that can be defined in the protocol file. Solvers are used to compute 
+ * the steady-state solute profile within the computational domains. This package is  part of iDynoMiCS v1.2, governed by the CeCILL 
+ * license under French law and abides by the rules of distribution of free software. You can use, modify and/ or redistribute iDynoMiCS 
+ * under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ */
 package simulator.diffusionSolver;
 
 import java.util.ArrayList;
@@ -13,53 +22,110 @@ import utils.XMLParser;
 import idyno.Idynomics;
 import idyno.SimTimer;
 
-public class Solver_chemostat extends DiffusionSolver {
-
-	/** Number of solutes in simulation */
+public class Solver_chemostat extends DiffusionSolver 
+{
+	/** 
+	 * Number of solutes in simulation 
+	 * */
 	protected int nSolute;
-	/** Number of reactions in simulation */
+	
+	/** 
+	 * Number of reactions in simulation 
+	 * */
 	protected int nReaction;
 
-	/**The solute grid of solute concentrations. As we are in a chemostat this has only
-	 * one grid position (0,0,0). Note that y will be the vector containing the actual 
-	 * concentrations during odeSolver()... here allSolute will be a temporary variable
-	 * used for calculating potential reaction rates, etc, in calcReacAndDiffReacRates().
+	/**
+	 * The solute grid of solute concentrations. As we are in a chemostat this has only one grid position (0,0,0). Note that y will be 
+	 * the vector containing the actual concentrations during odeSolver()... here allSolute will be a temporary variable used for 
+	 * calculating potential reaction rates, etc, in calcReacAndDiffReacRates().
 	 */
 	protected  SoluteGrid[]      	allSolute;
-	/**The solute grid of reaction rates for each solute. */
+	
+	/**
+	 * The solute grid of reaction rates for each solute. 
+	 * */
 	protected  SoluteGrid[] 		allReac;
+	
+	/**
+	 * Computational domain that this solver is associated with
+	 */
 	protected Domain                _domain;
+	
+	/**
+	 * Array of reactive biomasses
+	 */
 	protected MultigridSolute []    _reactiveBiomass;
+	
+	/**
+	 * Boolean stating whether the bulk concentration remains constant
+	 */
 	protected Boolean[] isConstSol;
 
-	// Constants used by the ODE solvers
+	/**
+	 * Constant used by the ODE solvers
+	 */
 	protected double d    = 1.0 / (2.0 + Math.sqrt(2.0));
+	
+	/**
+	 * Constant used by the ODE solvers
+	 */
 	protected double e32  = 6.0 + Math.sqrt(2.0);
+	
+	/**
+	 * Constant used by the ODE solvers
+	 */
 	protected double power = 1.0/3.0;
-	/**Numerical accuracy for EPS (error per step) */
+	
+	/**
+	 * Numerical accuracy for EPS (error per step) 
+	 */
 	protected double sqrtE = Math.sqrt(2.22e-16);
-	/**The smallest positive floating-point number such that 1.0+EPS > 1.0 */
+	
+	/**
+	 * The smallest positive floating-point number such that 1.0+EPS > 1.0 
+	 */
 	protected double EPS = 2.22e-16;
-	/**The chemostat dilution rate. This will be set when init() calls setDilutionAndY0() */
+	
+	/**
+	 * The chemostat dilution rate. This will be set when init() calls setDilutionAndY0() 
+	 */
 	protected double Dilution; 
 
-	// Parameters used by the ODE solvers
-	protected double hmax, rtol;
-
-
-	/** 1D array of arraylists containing the list of reactions in which each of the solutes participates. */
-	protected ArrayList<Integer> solReacInd = new ArrayList<Integer>();
-	/** For each reaction (first index) this stores the yield of each solute (second index). Used in calculating 
-	 * the Jacobian */
-	protected double[][] soluteYield;
-	/**The Jacobian matrix: on each row an "F" (the rate of change of a substrate concentration)
-	 * is differentiated with respect to each of the substrate concentrations (arranged on the 
-	 * columns).
+	/**
+	 * Maximum internal step of the solver. Used in the ODE solver
 	 */
+	protected double hmax;
+	
+	/**
+	 * Relative tolerance of the calculated error. Used in the ODE solver
+	 */
+	protected double rtol;
+
+	/** 
+	 * 1D array of arraylists containing the list of reactions in which each of the solutes participates. 
+	 */
+	protected ArrayList<Integer> solReacInd = new ArrayList<Integer>();
+	
+	/** 
+	 * For each reaction (first index) this stores the yield of each solute (second index). Used in calculating the Jacobian. The 
+	 * Jacobian matrix: on each row an "F" (the rate of change of a substrate concentration) is differentiated with respect to each 
+	 * of the substrate concentrations (arranged on the columns).
+	 */ 
+	protected double[][] soluteYield;
+	
+	
 
 
-
-	public void init(Simulator aSimulator, XMLParser xmlRoot) {
+	/**
+	 * \brief Initialise the chemostat: the solute and reaction list, and all variables used by the ODE solvers
+	 * 
+	 * Initialise the chemostat: the solute and reaction list, and all variables used by the ODE solvers
+	 * 
+	 * @param aSimulator	The current simulation object
+	 * @param xmlRoot	Root element of XML tags containing chemostat related parameters
+	 */
+	public void init(Simulator aSimulator, XMLParser xmlRoot) 
+	{
 
 		super.init(aSimulator, xmlRoot);
 
@@ -99,8 +165,10 @@ public class Solver_chemostat extends DiffusionSolver {
 	}
 
 	/**
-	 * Set the dilution rate and the initial substrate concentration to those specified in
-	 * the bulk compartment [Rob: one assumption here is that the dilution rate is constant].
+	 * \brief Set the dilution rate and the initial substrate concentration to those specified in the bulk compartment
+	 * 
+	 * Set the dilution rate and the initial substrate concentration to those specified in the bulk compartment 
+	 * [Rob: one assumption here is that the dilution rate is constant].
 	 */
 	public void setDilutionAndY0() {
 		try {
@@ -126,6 +194,11 @@ public class Solver_chemostat extends DiffusionSolver {
 			LogFile.writeLogAlways("Error in Solver_chemostat.updateReacRateAndDiffRate() : " + e);}
 	}
 
+	/**
+	 * \brief Initialise the concentration fields within the chemostat, getting concentration of any catalysts and storing this on a grid
+	 * 
+	 * Initialise the concentration fields within the chemostat, getting concentration of any catalysts and storing this on a grid
+	 */
 	public void initializeConcentrationFields() {
 		try {
 			//reset biomass concentration in the grid
@@ -143,12 +216,28 @@ public class Solver_chemostat extends DiffusionSolver {
 			LogFile.writeLogAlways("Error in Solver_chemostat.initializeConcentrationFields() : " + e);}
 	}
 
-	public void solveDiffusionReaction() {
+	/**
+	 * \brief Use the ODE solver to solve the diffusion reaction and update the bulk 
+	 * 
+	 * Use the ODE solver to solve the diffusion reaction and update the bulk
+	 * 
+	 */
+	public void solveDiffusionReaction() 
+	{
 		//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
 		odeSolver(SimTimer.getCurrentTime(), rtol, hmax);
 		updateBulk();
 	}
 
+	/**
+	 * \brief ODE solver for calculating the diffusion reactions
+	 * 
+	 * ODE solver for calculating the diffusion reactions
+	 * 
+	 * @param t0	Simulation time
+	 * @param rtol	Relative tolerance of the calculated error
+	 * @param hmax	Maximum internal step of the solver
+	 */
 	public void odeSolver(double t0, double rtol, double hmax) {
 
 		Matrix y       = new Matrix(nSolute,1,0);
@@ -397,14 +486,21 @@ public class Solver_chemostat extends DiffusionSolver {
 	}
 
 	/**
-	 * Calculates the derivative of substrate concentration (a function parameter) with respect to
-	 * time. As part of this process the allReac and allDiffReac values are set according to the 
-	 * (possibly hypothetical) values at substrate concentration S - you'll probably want to rerun 
-	 * calcReacRateAndDiffRate(y); afterwards to get allReac and allDiffReac to the correct values.
+	 * \brief Calculates the derivative of substrate concentration (a function parameter) with respect to time. 
+	 * 
+	 * Calculates the derivative of substrate concentration (a function parameter) with respect to time. As part of this process the 
+	 * allReac and allDiffReac values are set according to the (possibly hypothetical) values at substrate concentration S - you'll 
+	 * probably want to rerun calcReacRateAndDiffRate(y); afterwards to get allReac and allDiffReac to the correct values.
+	 * 
+	 * @param S	Temporary container for solute concentration
+	 * @param sInflow	Matrix of solute flow information (if solutes are pulsed)
+	 * @param dYdT	Matrix to store the derivatives of substrate concentration
+	 * @return Matrix of the derivatives of substrate concentration
 	 */
-	public Matrix calcdYdT(Matrix S, Matrix sInflow, Matrix dYdT) {
-		try {
-
+	public Matrix calcdYdT(Matrix S, Matrix sInflow, Matrix dYdT) 
+	{
+		try 
+		{
 			dYdT = sInflow.minus(S).times(Dilution);
 			//LogFile.writeMatrix("D(Sin - S) = ", dYdT);
 
@@ -418,12 +514,18 @@ public class Solver_chemostat extends DiffusionSolver {
 		return dYdT;
 	}
 
-	/** Provides an estimate of how F (the derivative of S w.r.t. time) is changing 
-	 * (i.e. the second derivative). Note that calcdYdT is called with the hypothetical
-	 * S-value of y + dYdT * tdel, so we'll need to recall calcReacRateAndDiffRate(S)
-	 * with S as just y.
+	/** \brief Provides an estimate of how F (the derivative of S w.r.t. time) is changing (i.e. the second derivative).
+	 * 
+	 * Provides an estimate of how F (the derivative of S w.r.t. time) is changing (i.e. the second derivative). Note that calcdYdT 
+	 * is called with the hypothetical S-value of y + dYdT * tdel, so we'll need to recall calcReacRateAndDiffRate(S) with S as just y.
+	 * 	
+	 * @param S	Temporary container for solute concentration
+	 * @param dFdT	Estimation of how the derivative of solutes with regard to time is changing
+	 * @param sInflow	Matrix of solute flow information (if solutes are pulsed)
+	 * @param tdel	Mini time-step used for calculating the value of dFdT 
 	 */
-	public Matrix calcdFdT(Matrix S, Matrix dFdT, Matrix sInflow, double tdel) {
+	public Matrix calcdFdT(Matrix S, Matrix dFdT, Matrix sInflow, double tdel) 
+	{
 		Matrix Snext = new Matrix (nSolute, 1, 0);
 		Matrix dYdT = new Matrix (nSolute, 1, 0);
 
@@ -442,67 +544,17 @@ public class Solver_chemostat extends DiffusionSolver {
 		return dFdT;
 	}
 
-
-	/*	public Matrix Jacobian() {
-		try {
-
-			double tempDbl =0;
-
-			// First reset the Jacobian matrix
-			dFdY.timesEquals(0);
-
-	 *//**A matrix of the Jacobian for each reaction*//*
-			Matrix tempMatrix = new Matrix(nSolute, nSolute);
-
-			// For each reaction...
-			for (int iReac = 0; iReac < nReaction; iReac++){
-				// changing solute j has this much effect on solute i
-				//LogFile.writeLog("Reaction "+iReac);
-				for (int iSol = 0; iSol < nSolute; iSol++){
-					for (int jSol = 0; jSol < nSolute; jSol++){
-						//LogFile.writeLog("SoluteYield of "+iSol+" is "+soluteYield[iReac][iSol]+" and allDiffReac of "+jSol+" is "+allDiffReac[iReac][jSol]);
-						tempDbl = soluteYield[iReac][iSol]*allDiffReac[iReac][jSol];
-						tempMatrix.set(iSol, jSol, tempDbl);
-					}
-				}
-				dFdY.plusEquals(tempMatrix);
-			}
-			// Finally, subtract the dilution rate from dFdY
-			dFdY.minusEquals(Matrix.identity(nSolute,nSolute).times(Dilution));
-			//LogFile.writeLog("dFdY = "+dFdY.get(0,0)+", "+dFdY.get(1,0)+"; "+dFdY.get(0,1)+", "+dFdY.get(1,1));
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Solver_chemostat.Jacobian() : " + e);}
-
-		return dFdY;
-	}
-	  */
-	/*	*//** Sets the allReac and allDiffReac grids for a given solute vector S *//*
-	public void updateDerivatives(Matrix S, Matrix dFdY) {
-		try {
-			dFdY.timesEquals(0);
-			dFdY = Matrix.identity(nSolute,nSolute).times(-Dilution);
-
-			for (int iSol = 0; iSol < nSolute; iSol++) {
-				allSolute[iSol].grid[0][0][0] = S.get(iSol,0);
-				allReac[iSol].grid[0][0][0] = 0;
-			}
-
-			// Calls the agents of the guild and calculates the reaction and diff uptake rates
-			for (int iReac = 0; iReac < nReaction; iReac++) {
-				_reactions.get(iReac).applyChemostatReaction(allSolute, allReac, dFdY,
-						_reactiveBiomass[iReac]._conc[0]);
-			}
-
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Solver_chemostat.calcReacRateAndDiffRate() " + e);}
-	}*/
-
 	/**
-	 * The Jacobian matrix dFdY gives the partial derivatives of the rate of change of
-	 * each substrate (F = dYdT, or equivalently, dSdT) with respect to each substrate. Rows
-	 * correspond to substrates being differentiated (first by time to give F, then by other
-	 * substrate concentrations to give the elements of this matrix) and columns to the substrate
-	 * with respect to which we are differentiating.
+	 * \brief Calculate the Jacobian matrix - the partial derivatives of the rate of change of each substrate
+	 * 
+	 * The Jacobian matrix dFdY gives the partial derivatives of the rate of change of each substrate (F = dYdT, or equivalently, dSdT) 
+	 * with respect to each substrate. Rows correspond to substrates being differentiated (first by time to give F, then by other 
+	 * substrate concentrations to give the elements of this matrix) and columns to the substrate with respect to which we are 
+	 * differentiating.
+	 * 
+	 * @param S	Temporary container for solute concentration
+	 * @param dFdY	Jacobian matrix being calculated
+	 * @return Matrix containing partial derivatives of rate of change of each substrate
 	 */
 	public Matrix calcJacobian(Matrix S, Matrix dFdY) {
 
@@ -519,15 +571,28 @@ public class Solver_chemostat extends DiffusionSolver {
 		return dFdY;
 	}
 
-	public void updateBulk() {
+	/**
+	 * \brief Find the connected bulks and update their concentrations
+	 * 
+	 * Find the connected bulks and update their concentrations
+	 */
+	public void updateBulk() 
+	{
 		try {
-			// Find the connected bulks and update their concentrations
 			for (AllBC aBC : myDomain.getAllBoundaries())
 				if (aBC.hasBulk()) aBC.updateBulk(allSolute, allReac, 0);
 		} catch (Exception e) {
 			LogFile.writeLog("Error in Solver_chemostat.updateBulk() : " + e);}
 	}
 
+	/**
+	 * \brief Check if the Sinflow has changed (solutes may be pulsed)
+	 * 
+	 * Check if the Sinflow has changed (solutes may be pulsed)
+	 * 
+	 * @param sInflow	Matrix of solutes in flow
+	 * @return	Updated matrix showing solute flow levels
+	 */
 	public Matrix updateSInflow(Matrix sInflow) {
 		try {
 

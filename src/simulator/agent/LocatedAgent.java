@@ -1,17 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package agent
+ * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
  * 
+ * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
-/**
- * ______________________________________________________
- * @since June 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- */
-
 package simulator.agent;
 
 import idyno.SimTimer;
@@ -29,45 +24,118 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.Domain;
 import simulator.geometry.boundaryConditions.AllBC;
 
-public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
+/**
+ * \brief Extends ActiveAgent by adding functionality to control agent grid location, agent shoving, agent death and division, and agent movement
+ * 
+ * Extends ActiveAgent by adding functionality to control agent grid location, agent shoving, agent death and division, and agent movement. 
+ * During each global timestep, agent divisions and agent growth lead to many cases where neighbouring agents will overlap. A relaxation 
+ * algorithm is used to find iteratively the new overlap-minimising steady state configuration of agent locations at the end of each 
+ * timestep. 
+ * 
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ *
+ */
+public abstract class LocatedAgent extends ActiveAgent implements Cloneable 
+{
 
-	/* Temporary variables stored in static fields __________________________ */
+	/**
+	 * Temporary variable storing the distance between two agents
+	 */
 	protected static ContinuousVector  _diff              = new ContinuousVector();
+	
+	/**
+	 * Temporary store of the new location this cell will move to
+	 */
 	protected static ContinuousVector  _newLoc            = new ContinuousVector();
 
-	/* Parameters specific to the agent _____________________________________ */
-	protected double                   _radius, _totalRadius;
-	protected double				   _myDivRadius, _myDeathRadius;
-	protected double                   _volume, _totalVolume;
-
-	/* Agent's location ____________________________________________________ */
-	// Agent position and agent movement are expressed with continuous
-	// coordinates
+	/**
+	 * Radius of this agent
+	 */
+	protected double                   _radius;
+	
+	/**
+	 * Cell radius including any capsules
+	 */
+	protected double					_totalRadius;
+	
+	/**
+	 * Radius at which this agent will divide
+	 */
+	protected double				   _myDivRadius;
+	
+	/**
+	 * Radius at which agent death is triggered
+	 */
+	protected double					_myDeathRadius;
+	
+	/**
+	 * Volume of this agent
+	 */
+	protected double                   _volume;
+	
+	/**
+	 * Cell volume including any capsules
+	 */
+	protected double					_totalVolume;
+	
+	/**
+	 * Agent position - continuous coordinates
+	 */
 	protected ContinuousVector         _location          = new ContinuousVector();
+	
+	/**
+	 * ContinuousVector noting the move that will be applied to the agents position
+	 */
 	protected ContinuousVector         _movement          = new ContinuousVector();
+	
+	/**
+	 * Direction in which this cell divides
+	 */
 	protected ContinuousVector         _divisionDirection = new ContinuousVector();
+	
+	/**
+	 * List of neighbouring agents in this agents vicinity
+	 */
 	protected LinkedList<LocatedAgent> _myNeighbors       = new LinkedList<LocatedAgent>();
 
-	// Index of the agent position on the vectorized grid
+	/**
+	 * Index of the agent position on the vectorized grid
+	 */
 	protected int                      _agentGridIndex;
+	
+	/**
+	 * Boolean noting whether this agent is interacting with a surface (true) or not (false)
+	 */
 	protected boolean                  _isAttached        = false;
 
-	// Detachment priority
+	/**
+	 * Detachment priority
+	 */
 	public double                       detPriority = 0;
 
-	// for timestep issues
+	/**
+	 * Stores the simulation time since the last division check
+	 */
 	public double                      _timeSinceLastDivisionCheck = Double.MAX_VALUE;
 
-	//sonia 8-12-2010
-	// distance based probability from a given neighbour (used in HGT)
+	/**
+	 * Distance based probability from a given neighbour (used in HGT). Sonia 8-12-2010
+	 */
 	public double					_distProb = 0; 								
+	
+	/**
+	 * Cumulative probability as to whether the plasmid will be transferred 
+	 */
 	public double					_distCumProb = 0; 	
 
 
-	/* _______________________ CONSTRUCTOR _________________________________ */
-
 	/**
-	 * Empty constructor
+	 * \brief Constructor used to generate progenitor and initialise an object to store relevant parameters
+	 * 
+	 * Constructor used to generate progenitor and initialise an object to store relevant parameters
 	 */
 	public LocatedAgent() {
 		super();
@@ -75,6 +143,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * \brief Creates a daughter Located Agent by cloning this agent and parameter objects
+	 * 
+	 * Creates a daughter Located Agent by cloning this agent and parameter objects
+	 * 
+	 * @throws CloneNotSupportedException 	Thrown if the agent cannot be cloned
+	 */
 	public Object clone() throws CloneNotSupportedException {
 		LocatedAgent o = (LocatedAgent) super.clone();
 
@@ -90,21 +165,23 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Create a new agent with mutated parameters based on species default
-	 * values and specifies its position
+	 * \brief Create a new agent in a specified position
+	 * 
+	 * Create a new agent in a specified position
+	 * 
+	 * @param position	Vector stating where this agent should be located
 	 */
-	/**
-	 * Create an agent (who a priori is registered in at least one container;
-	 * this agent is located !
-	 */
-	public void createNewAgent(ContinuousVector position) {
-		try {
+	public void createNewAgent(ContinuousVector position) 
+	{
+		try 
+		{
 			// Get a clone of the progenitor
 			LocatedAgent baby = (LocatedAgent) sendNewAgent();
 			baby.giveName();
 
 			// randomize its mass
 			baby.mutatePop();
+			
 			baby.updateSize();
 			
 			this._myDivRadius = getDivRadius();
@@ -113,24 +190,40 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 
 			// Just to avoid to be in the carrier
 			position.x += this._totalRadius;
+			
 			baby.setLocation(position);
 
 			baby.registerBirth();
 
-		} catch (CloneNotSupportedException e) {
+		} 
+		catch (CloneNotSupportedException e) 
+		{
 			utils.LogFile.writeLog("Error met in LocAgent:createNewAgent()");
 		}
 	}
 
 	/**
-	 * Register the agent on the agent grid and on the guilds
+	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container.
+	 *  
+	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
+	 * species is registered into the agent grid
 	 */
 	public void registerBirth() {
 		// Register on species and reaction guilds
 		super.registerBirth();
 	}
 
-	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) {
+
+	/**
+	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
+	 *
+	 * Creates an agent of the specified species and notes the grid in which this is assigned
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param xmlMarkUp	A species mark-up within the specified protocol file
+	 */
+	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) 
+	{	
 		super.initFromProtocolFile(aSim, xmlMarkUp);
 		
 		_myDivRadius = getDivRadius();
@@ -138,7 +231,16 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		
 	}
 	
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
+	/**
+	 * \brief Create an agent using information in a previous state or initialisation file
+	 * 
+	 * Create an agent using information in a previous state or initialisation file
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
+	 */
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
+	{
 		// this routine will read data from the end of the singleAgentData array
 		// and then pass the remaining values onto the super class
 
@@ -180,11 +282,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		super.initFromResultFile(aSim, remainingSingleAgentData);
 	}
 
-	/* _____________________HIGH-LEVEL METHODS _____________________________ */
-
+	
 	/**
-	 * Called at each time step (under the control of the method Step of the
-	 * class Agent to avoid multiple calls
+	 * \brief Called at each time step of the simulation to compute cell growth, update size, and monitor cell death and division
+	 * 
+	 * Called at each time step of the simulation to compute cell growth, update size, and monitor cell death. Also determines whether 
+	 * the agent has reached the size at which it must divide
 	 */
 	protected void internalStep() {
 		// Compute mass growth over all compartments
@@ -203,12 +306,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Update the radius of the agent from the current mass (and then the
-	 * volume) of the agent (EPS included)
+	 * \brief Update the radius of the agent from the current mass (and then the volume) of the agent (EPS included)
+	 * 
+	 * Update the radius of the agent from the current mass (and then the volume) of the agent (EPS included)
 	 */
-	public void updateSize() {
+	public void updateSize() 
+	{
 		// Update the totalMass field (sum of the particles masses)
 		updateMass();
+		
 		if (_totalMass < 0)
 			LogFile.writeLog("Warning: negative mass on agent "+_family+", "+_genealogy);
 
@@ -232,7 +338,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
+	 * \brief Captures cell division by making a clone of this agent using the makeKid method
 	 * 
+	 * Captures cell division by making a clone of this agent using the makeKid method
 	 */
 	public void divide() {
 		try {
@@ -243,10 +351,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		}
 	}
 
-	public boolean willDivide() {
-		//jan: commented out since the logic of our simple cell division rule is divide if big enough
-		//if (_netGrowthRate<=0) return false;
-
+	/**
+	 * \brief Determines whether or not a cell has reached the radius where cell division can be triggered
+	 * 
+	 * Determines whether or not a cell has reached the radius where cell division can be triggered
+	 * 
+	 * @return	Boolean stating whether cell division should be triggered (true) or not (false)
+	 */
+	public boolean willDivide() 
+	{
 		// this ensures that the checks for when to divide don't occur too often;
 		// at most they will occur at the rate of AGENTTIMESTEP
 		_timeSinceLastDivisionCheck += SimTimer.getCurrentTimeStep();
@@ -259,6 +372,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		return getRadius(false) > this._myDivRadius;
 	}
 
+	/**
+	 * \brief Determines whether or not a cell has reached the radius where cell death can be triggered
+	 * 
+	 * Determines whether or not a cell has reached the radius where cell death can be triggered
+	 * 
+	 * @return	Boolean stating whether cell death should be triggered (true) or not (false)
+	 */
 	public boolean willDie() {
 		if (_totalMass < 0)
 			return true;
@@ -266,18 +386,20 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Kill an agent. Called by detachment and starving test
+	 * \brief Kills an agent. Called by detachment and starving test
+	 * 
+	 * Kills an agent. Called by detachment and starving test
 	 */
 	public void die(boolean isStarving) {
 		super.die(isStarving);
 	}
 
-	/* ________________________________________________________________ */
 	/**
-	 * Create a new agent from an existing one
+	 * \brief With it determined that cell division will occur, create a new agent from the existing one
 	 * 
-	 * @throws CloneNotSupportedException
-	 *             Called by LocatedAGent.divide()
+	 * With it determined that cell division will occur, create a new agent from the existing one
+	 * 
+	 * @throws CloneNotSupportedException	Thrown if the agent cannot be cloned
 	 */
 	public void makeKid() throws CloneNotSupportedException {
 
@@ -314,6 +436,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 
 	}
 
+	/**
+	 * \brief On agent division, divides the mass between the old and new agent, at a specified fraction
+	 * 
+	 * On agent division, divides the mass between the old and new agent, at a specified fraction
+	 * 
+	 * @param baby	The new agent, which is inheriting mass
+	 * @param babyMassFrac	The fraction of this agents mass that should be transferred to the new agent
+	 */
 	public void divideCompounds(LocatedAgent baby, double babyMassFrac) {
 		// Choose the division plan and apply position modifications
 		for (int i = 0; i<particleMass.length; i++) {
@@ -326,6 +456,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		baby.updateSize();
 	}
 
+	/**
+	 * \brief On agent division, transfers EPS between the old and new agent, at a specified ratio
+	 * 
+	 * On agent division, transfers EPS between the old and new agent, at a specified ratio
+	 * 
+	 * @param baby	The new agent, which is inheriting mass
+	 * @param splitRatio	The ratio of the EPS that should be transferred to the new agent
+	 */
 	public void transferCompounds(LocatedAgent baby, double splitRatio) {
 		// Choose the division plan and apply position modifications
 		double m;
@@ -340,17 +478,24 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		baby.updateSize();
 	}
 
-	public void mutatePop() {
+	/**
+	 * \brief Mutate any inherited parameters for a population of agents
+	 * 
+	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
+	 */
+	public void mutatePop() 
+	{
 		// Mutate parameters inherited
 		super.mutatePop();
 		// Now mutate your parameters
 	}
 
 	/**
-	 * Set movement vector to put a new-created particle
+	 * \brief Set the movement vector that states where to put a newly-created particle
 	 * 
-	 * @param myBaby
-	 * @param distance
+	 * Set the movement vector that states where to put a newly-created particle
+	 * 
+	 * @param distance	Distance between the this agent and the new agent
 	 */
 	public void setDivisionDirection(double distance) {
 		double phi, theta;
@@ -366,14 +511,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	/* ______________________ SHOVING ___________________________________ */
 
 	/**
-	 * Mechanical interaction between two located agents
+	 * \brief Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
 	 * 
-	 * @param aGroup :
-	 *            neighbourhood of the agent
-	 * @param MUTUAL :
-	 *            movement shared between 2 agents or applied only to this one
-	 * @pull : false for shoving, true for pulling (shrinking biofilm)
-	 * @seq : apply immediately the movement or waits the end of the step
+	 * Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
+	 * 
+	 * @param MUTUAL	Whether movement is shared between two agents or applied only to this one
+	 * @param shoveOnly	Boolean noting whether this action is shoving (false) or pulling (shrinking biofilm) (true)
+	 * @param seq	Whether the move should be applied immediately or wait until the end of the step
+	 * @param gain	Double noting change in position
+	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
 	public double interact(boolean MUTUAL, boolean shoveOnly, boolean seq,
 			double gain) {
@@ -411,13 +557,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Mutual shoving : The movement by shoving of an agent is calculated based
-	 * on the cell overlap and added to the agents movement vector. Both agents
-	 * are moved of half the overlapping distance in opposite directions.
+	 * \brief Mutual shoving : The movement by shoving of an agent is calculated based on the cell overlap and added to the agents movement vector.
 	 * 
-	 * @param aNeighbour
-	 *            reference to the potentially shoving neighbour
-	 * @return true, if a shoving is detected
+	 * Mutual shoving : The movement by shoving of an agent is calculated based on the cell overlap and added to the agents movement vector. 
+	 * Both agents are moved of half the overlapping distance in opposite directions.
+	 * 
+	 * @param aNeighbour	 Reference to the potentially shoving neighbour
+	 * @param isMutual	Whether movement is shared between two agents or applied only to this one
+	 * @param gain	Double noting change in position
+	 * @return Boolean stating whether shoving is detected (true) or not (false)
 	 */
 	public boolean addPushMovement(LocatedAgent aNeighbour, boolean isMutual,
 			double gain) {
@@ -456,10 +604,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
+	 * \brief Pulling : The movement of agents by a shrinking biofilm. Move calculated and added to the agents movement vector.
 	 * 
-	 * @param aNeighbor
-	 * @param isMutual
-	 * @return
+	 * The movement of agents by a shrinking biofilm. Move calculated and added to the agents movement vector. 
+	 * 
+	 * @param aNeighbor	 Reference to the potentially shoving neighbour
+	 * @param isMutual	Whether movement is shared between two agents or applied only to this one
+	 * @param gain	Double noting change in position
+	 * @return Boolean stating whether pulling is detected (true) or not (false)
 	 */
 	public boolean addSpringMovement(LocatedAgent aNeighbor, boolean isMutual,
 			double gain) {
@@ -500,46 +652,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
+	 * \brief Computes the shortest distance between this agent and another, stored as ContinuousVectors. This may be around the cyclic boundary
 	 * 
-	 * @return
-	 */
-	public boolean addSpringAttachment() {
-		AllBC mySupport = updateAttachment();
-		double d, distance, delta;
-
-		d = computeDifferenceVector(_location, mySupport
-				.getOrthoProj(_location));
-		_diff.normalizeVector();
-
-		distance = _totalRadius*getShoveFactor();
-		delta = d-distance;
-
-		/* Apply elastic interaction _______________________________________ */
-		double gain = 0.1;
-		if (delta < 0)
-			gain = 0.1;
-		if (delta > 0)
-			gain = 0.1;
-		if (delta > _totalRadius)
-			gain = 0;
-
-		_diff.times(-delta*gain);
-		this._movement.add(_diff);
-
-		if (_movement.norm()>_radius*0.1) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @param ContinuousVector
-	 *            a location
-	 * @param ContinuousVector
-	 *            a location
-	 * @return the shortest movement vector to go from a to b, take into account
-	 * the cyclic boundary
+	 * Computes the distance between this agent and another, stored as ContinuousVectors. This may be around the cyclic boundary
+	 * 
+	 * @param me	ContinuousVector stating first agent location
+	 * @param him	ContinuousVector stating other agent location
+	 * @return the shortest movement vector to go from a to b, take into account the cyclic boundary
 	 * @see addOverlapMovement
 	 * @see addPullMovement works in 2 and 3D
 	 */
@@ -582,16 +701,22 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Look for neighbours in a range around you
+	 * \brief Find neighbouring agents in a range around you
+	 * 
+	 * Find neighbouring agents in a range around you
+	 * 
+	 * @param radius	The distance to search around the agent location
 	 */
 	public void getPotentialShovers(double radius) {
 		_agentGrid.getPotentialShovers(_agentGridIndex, radius, _myNeighbors);
 	}
 
 	/**
-	 * Pick randomly a Neighbor from the _myNeigbors collection
+	 * \brief Pick a random neighbour from the _myNeigbors collection
 	 * 
-	 * @return
+	 * Pick a random neighbour from the _myNeigbors collection
+	 * 
+	 * @return	A randomly picked neighbour (LocatedAgent object) from the list of neighbours
 	 */
 	public LocatedAgent pickNeighbor() {
 		if (_myNeighbors.isEmpty())
@@ -602,12 +727,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Find a sibling
+	 * \brief Find a sibling of this agent
 	 * 
-	 * @param indexSpecies
-	 * @return
+	 * Find a sibling of this agent
+	 * 
+	 * @param indexSpecies	The index used to reference this species in the simulation dictionary
 	 */
-	public void findCloseSiblings(int indexSpecies) {
+	public void findCloseSiblings(int indexSpecies) 
+	{
 		int nNb;
 		boolean test;
 		double shoveDist;
@@ -632,7 +759,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Apply the movement stored taking care to respect boundary conditions
+	 * \brief With the agent move calculated, apply this movement, taking care to respect boundary conditions
+	 * 
+	 * With the agent move calculated, apply this movement, taking care to respect boundary conditions
+	 * 
 	 */
 	public double move() {
 		if (!_movement.isValid()) {
@@ -663,7 +793,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		return delta/_totalRadius;
 	}
 
-	public void checkBoundaries() {
+	/**
+	 * \brief Used by the move method to determine if an agents move crosses any of the domain's boundaries
+	 * 
+	 * Used by the move method to determine if an agents move crosses any of the domain's boundaries
+	 */
+	public void checkBoundaries() 
+	{
 		// Search a boundary which will be crossed
 		_newLoc.set(_location);
 		_newLoc.add(_movement);
@@ -685,14 +821,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		}
 	}
 
-	/* ____________________CELL DIVISION __________________________________ */
-
 	/**
-	 * Mutation Function If you don't want apply a mutation in a specified
-	 * class, do not redefine this method. If you want, you are free to choose
-	 * which fields to mutate for each different class by a simple redefinition
+	 * \brief Mutate inherited agent parameters after agent division.
 	 * 
-	 * @param alea
+	 * Mutation Function. If you don't want apply a mutation in a specified class, do not redefine this method. If you want, you are 
+	 * free to choose which fields to mutate for each different class by a simple redefinition
+	 * 
 	 */
 	public void mutateAgent() {
 		// Mutate parameters inherited
@@ -701,13 +835,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Add the reacting CONCENTRATION of an agent on the received grid
+	 * \brief Add the reacting concentration of an agent to the received grid
 	 * 
-	 * @param aSpG :
-	 *            grid used to sum catalysing mass
-	 * @param catalyst
-	 *            index : index of the compartment of the cell supporting the
-	 *            reaction
+	 * Add the reacting concentration of an agent to the received grid
+	 * 
+	 * @param aSpG	Spatial grid used to sum catalysing mass
+	 * @param catalystIndex	Index of the compartment of the cell supporting the reaction
 	 */
 	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
 		if (isDead)
@@ -720,12 +853,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Add the total CONCENTRATION of an agent on received grid
+	 * \brief Add the total concentration of an agent on received grid
 	 * 
-	 * @param aSpG :
-	 *            grid used to sum catalysing mass
+	 * Add the total concentration of an agent on received grid
+	 * 
+	 * @param aSpG	Spatial grid used to sum total mass
 	 */
-	public void fitMassOnGrid(SpatialGrid aSpG) {
+	public void fitMassOnGrid(SpatialGrid aSpG) 
+	{
 		if (isDead)
 			return;
 
@@ -735,6 +870,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		aSpG.addValueAt(value, _location);
 	}
 
+	/**
+	 * \brief Add the total volume rate of an agent on received grid
+	 * 
+	 * Add the total volume rate of an agent on received grid
+	 * 
+	 * @param aSpG	Spatial grid used to sum volume
+	 */
 	public void fitVolRateOnGrid(SpatialGrid aSpG) {
 		double value;
 		value = _netVolumeRate/aSpG.getVoxelVolume();
@@ -743,6 +885,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		aSpG.addValueAt(value, _location);
 	}
 
+	/**
+	 * \brief Add the reaction/growth rate of an agent on received grid, for a specified reaction
+	 * 
+	 * Add the total reaction/growth rate of an agent on received grid, for a specified reaction
+	 * 
+	 * @param aRateGrid	Spatial grid used to store total reaction rate
+	 * @param reactionIndex	Index of this declared reaction in the simulation dictionary
+	 */
 	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
 		if (isDead)
 			return;
@@ -759,7 +909,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 
 	/* _______________ FILE OUTPUT _____________________ */
 
-
+	/**
+	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * @return	String specifying the header of each column of results associated with this agent
+	 */
 	public String sendHeader() {
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
@@ -771,6 +927,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		return tempString.toString();
 	}
 
+	/**
+	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * @return	String containing results associated with this agent
+	 */
 	public String writeOutput() {
 		// write the data matching the header file
 		StringBuffer tempString = new StringBuffer(super.writeOutput());
@@ -786,8 +949,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	/* _______________ RADIUS, MASS AND VOLUME _____________________ */
 
 	/**
-	 * Compute the volume on the basis of the mass and density of different
-	 * compounds defined in the cell
+	 * \brief Compute the volume on the basis of the mass and density of different compounds defined in the cell
+	 * 
+	 * Compute the volume on the basis of the mass and density of different compounds defined in the cell
 	 */
 	public void updateVolume() {
 		_volume = 0;
@@ -798,8 +962,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * Compute the radius on the basis of the volume The radius evolution is
-	 * stored in deltaRadius (used for shrinking)
+	 * \brief Compute the radius on the basis of the volume The radius evolution is stored in deltaRadius (used for shrinking)
+	 * 
+	 * Compute the radius on the basis of the volume The radius evolution is stored in deltaRadius (used for shrinking)
 	 */
 	public void updateRadius() {
 
@@ -815,6 +980,13 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		}
 	}
 
+	/**
+	 * \brief Update the attachment, determining if an agent location crosses any boundaries
+	 * 
+	 * Update the attachment, determining if an agent location crosses any boundaries	 
+	 *  
+	 * @return	Boundary that has been crossed
+	 */
 	public AllBC updateAttachment() {
 		// Search a boundary which will be crossed
 		double distance;
@@ -828,23 +1000,60 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		return null;
 	}
 
+	/**
+	 * \brief Add movement to the ContinuousVector storing the agents move
+	 * 
+	 * Add movement to the ContinuousVector storing the agents move
+	 * 
+	 * @param aMove	ContinuousVector to add to the movement vector
+	 */
 	public void addMovement(ContinuousVector aMove) {
 		this._movement.add(aMove);
 	}
 
-	/* __________________ ACCESSORS ___________________________________ */
+	/**
+	 * \brief Return the set of parameters associated with this agent (LocatedParam object)
+	 * 
+	 * Return the set of parameters associated with this agent (LocatedParam object)
+	 * 
+	 * @return LocatedParam object of parameters associated with this agent
+	 */
 	public LocatedParam getSpeciesParam() {
 		return (LocatedParam) _speciesParam;
 	}
 
+	/**
+	 * \brief Return the volume of this agent, with or without the capsule
+	 * 
+	 *  Return the volume of this agent, with or without the capsule 
+	 *  
+	 * @param withCapsule	Boolean noting whether any capsule should be included in this calculation
+	 * @return	Double specifying the volume of this agent
+	 */
 	public double getVolume(boolean withCapsule) {
 		return (withCapsule ? _totalVolume : _volume);
 	}
 
+	/**
+	 * \brief Return the radius of this agent, with or without the capsule
+	 * 
+	 *  Return the radius of this agent, with or without the capsule 
+	 *  
+	 * @param withCapsule	Boolean noting whether any capsule should be included in this calculation
+	 * @return	Double specifying the radius of this agent
+	 */
 	public double getRadius(boolean withCapsule) {
 		return (withCapsule ? _totalRadius : _radius);
 	}
 
+	/**
+	 * \brief Return the mass of this agent, with or without the capsule
+	 * 
+	 *  Return the mass of this agent, with or without the capsule 
+	 *  
+	 * @param withCapsule	Boolean noting whether any capsule should be included in this calculation
+	 * @return	Double specifying the mass of this agent
+	 */
 	public double getMass(boolean withCapsule) {
 		return (withCapsule ? _totalMass : _totalMass);
 	}
@@ -854,69 +1063,177 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		* (1 + getSpeciesParam().divRadiusCV);
 	}
 
-	public boolean hasEPS() {
+	/**
+	 * \brief Determine whether this cell has any EPS
+	 * 
+	 * Determine whether this cell has any EPS
+	 * 
+	 * @return	Boolean noting whether this cell has any EPS
+	 */
+	public boolean hasEPS() 
+	{
 		return false;
 	}
 
+	/**
+	 * \brief Determine whether this agent contains any inert particles
+	 * 
+	 * Determine whether this agent contains any inert particles
+	 * 
+	 * @return	Boolean noting whether this agent contains any inert particles
+	 */
 	public boolean hasInert() {
 		return false;
 	}
 
+	/**
+	 * \brief Return the shove factor to be used in shoving for this species of agent
+	 * 
+	 * Return the shove factor to be used in shoving for this species of agent
+	 * 
+	 * @return	Double specifying the shove factor that will be applied
+	 */
 	public double getShoveFactor() {
 		return ((LocatedParam) _speciesParam).shoveFactor;
 	}
 
+	/**
+	 * \brief Return the shove radius to be used in shoving for this species of agent
+	 * 
+	 * Return the shove radius to be used in shoving for this species of agent
+	 * 
+	 * @return	Double specifying the shove radius that will be applied
+	 */
 	public double getShoveRadius() {
 		return _totalRadius*((LocatedParam) _speciesParam).shoveFactor;
 	}
 
+	/**
+	 * \brief Return the shoving interaction distance to be used in shoving for this species of agent
+	 * 
+	 * Return the shoving interaction distance to be used in shoving for this species of agent
+	 * 
+	 * @return	Double specifying the shoving interaction distance that will be applied
+	 */
 	public double getInteractDistance() {
 		return 2*getShoveRadius()+((LocatedParam) _speciesParam).shoveLimit;
 	}
 
+	/**
+	 * \brief Return the shoving interaction distance to be used in shoving against a specified agent
+	 * 
+	 * Return the shoving interaction distance to be used in shoving against a specified agent
+	 * 
+	 * @return	Double specifying the shoving interaction distance that will be applied
+	 */
 	public double getInteractDistance(LocatedAgent baby) {
 		return getShoveRadius() + baby.getShoveRadius()
 		+ ((LocatedParam) _speciesParam).shoveLimit;
 	}
 
+	/**
+	 * \brief Return the fraction of mass that is transferred to the new agent on cell division
+	 * 
+	 * Return the fraction of mass that is transferred to the new agent on cell division
+	 * 
+	 * @return	Double stating the fraction of mass that is transferred to the new agent on cell division
+	 */
 	public double getBabyMassFrac() {
 		return ExtraMath.deviateFrom(getSpeciesParam().babyMassFrac,
 				getSpeciesParam().babyMassFracCV);
 	}
 	
+	/**
+	 * \brief Return the agent radius at which cell division is triggered
+	 * 
+	 * Return the agent radius at which cell division is triggered
+	 * 
+	 * @return	Double stating the agent radius at which cell division is triggered
+	 */
 	public double getDivRadius() {
 		return ExtraMath.deviateFrom(getSpeciesParam().divRadius, getSpeciesParam().divRadiusCV);
 	}
 	
+	/**
+	 * \brief Return the agent radius at which cell death is triggered
+	 * 
+	 * Return the agent radius at which cell death is triggered
+	 * 
+	 * @return	Double stating the agent radius at which cell death is triggered
+	 */
 	public double getDeathRadius() {
 		return ExtraMath.deviateFrom(getSpeciesParam().deathRadius, getSpeciesParam().deathRadiusCV);
 	}
 
+	/**
+	 * \brief Determine if an agent has a move to perform
+	 * 
+	 * Determine if an agent has a move to perform
+	 * 
+	 * @return Boolean noting whether the agent has a move to perform
+	 */
 	public boolean isMoving() {
 		return (_movement.norm()>_totalRadius/10);
 	}
 
+	/**
+	 * \brief Determine if an agent is attached to a surface
+	 * 
+	 * Determine if an agent is attached to a surface
+	 * 
+	 * @return Boolean noting whether the agent is attached to a surface
+	 */
 	public boolean isAttached() {
 		return _isAttached;
 	}
 
+	/**
+	 * \brief Return the active fraction of this agent
+	 * 
+	 * Return the active fraction of this agent
+	 * 
+	 * @return	Double value stating the active fraction of this agent
+	 */
 	public double getActiveFrac() {
 		return 1.0;
 	}
 
+	/**
+	 * \brief Return the colour assigned to this agent in POV-Ray output
+	 * 
+	 * Return the colour assigned to this agent in POV-Ray output
+	 * 
+	 * @return	Colour assigned to this agent as specified in the protocol file
+	 */
 	public Color getColor() {
 		return _species.color;
 	}
 
+	/**
+	 * \brief Return the colour assigned to any capsules contained in this agent in POV-Ray output
+	 * 
+	 * Return the colour assigned to any capsules contained in this agent in POV-Ray output
+	 * 
+	 * @return	Colour assigned to this agent capsules as specified in the protocol file
+	 */
 	public Color getColorCapsule() {
 		return Color.green;
 	}
 
+	/**
+	 * \brief Return the location of this agent
+	 * 
+	 * Return the location of this agent
+	 * 
+	 * @return	ContinuousVector stating the location of this agent
+	 */
 	public ContinuousVector getLocation() {
 		return _location;
 	}
 
 	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
 	 * Comparator used by AgentContainer.erodeBorder()
 	 * @author Rob Clegg
 	 */
@@ -928,6 +1245,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
+	 * \brief Comparator used by AgentContainer.erodeBorder()
+	 * 
 	 * Comparator used by AgentContainer.erodeBorder()
 	 * @author Rob Clegg
 	 */
@@ -939,14 +1258,26 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 	}
 
 	/**
-	 * @param aLoc
-	 * @return distance bw 2 agents assuming cyclic boundaries
+	 * \brief Return the distance between two agents
+	 * 
+	 * Return the distance between two agents
+	 * 
+	 * @param aLoc	LocatedAgent to find distance to
+	 * @return distance between two agents (assuming cyclic boundaries)
 	 */
 	public double getDistance(LocatedAgent aLoc) {
 		return computeDifferenceVector(_location, aLoc._location);
 	}
 
-	public void setLocation(ContinuousVector cc) {
+	/**
+	 * \brief Set the location of this agent to the supplied continuous vector
+	 * 
+	 * Set the location of this agent to the supplied continuous vector
+	 * 
+	 * @param cc	Location which this agent should be assigned to
+	 */
+	public void setLocation(ContinuousVector cc) 
+	{
 
 		//sonia:chemostat
 		//set the location of the newborns to zero
@@ -964,22 +1295,57 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable {
 		}
 	}
 
+	/**
+	 * \brief Return the continuous vector that states this agents move
+	 * 
+	 * Return the continuous vector that states this agents move
+	 * 
+	 * @return continuous vector that states this agents move
+	 */
 	public ContinuousVector getMovement() {
 		return _movement;
 	}
 
+	/**
+	 * \brief Return the index of the grid on which this agent is placed
+	 * 
+	 * Return the index of the grid on which this agent is placed
+	 * 
+	 * @return Integer grid index of where this agent is placed
+	 */
 	public int getGridIndex() {
 		return _agentGridIndex;
 	}
 
+	/**
+	 * \brief Return the LocatedGroup of agents that are present in the location where this agent is placed
+	 * 
+	 * Return the LocatedGroup of agents that are present in the location where this agent is placed
+	 * 
+	 * @return	LocatedGroup containing all agents present in the same grid space as this agent
+	 */
 	public LocatedGroup getGridElement() {
 		return _agentGrid.getShovingGrid()[_agentGridIndex];
 	}
 
+	/**
+	 * \brief Move this agent to another grid index
+	 * 
+	 * Move this agent to another grid index
+	 * 
+	 * @param aGridIndex	Grid index in which this agent should now be placed
+	 */
 	public void setGridIndex(int aGridIndex) {
 		_agentGridIndex = aGridIndex;
 	}
 
+	/**
+	 * \brief Return the domain where this agent is contained
+	 * 
+	 * Return the domain where this agent is contained
+	 * 
+	 * @return The domain where this agent is contained (Domain object)
+	 */
 	public Domain getDomain() {
 		return _species.domain;
 	}

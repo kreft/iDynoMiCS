@@ -1,28 +1,35 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java) 
- *______________________________________________________
- * Implements static utility functions for used in multigrid method.
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
  * 
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * @since June 2006
- * @version 1.0
- * @author  * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- * 
- */
-
 package utils;
 
-public abstract class MatrixOperations {
-
+/**
+ * \brief Implements static utility functions for used in multigrid method.
+ * 
+ * Implements static utility functions for used in multigrid method.
+ * 
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ *
+ */
+public abstract class MatrixOperations 
+{
+	/**
+	 * Used where this matrix is converted to a string, to separate the elements
+	 */
 	static final String SEPARATOR = "\t";
 
 	/**
-     * Set all entries of a matrix to value val
+     * \brief Set all entries of a specified matrix to a provided value
      * 
-     * @param u
-     * @param val
+     * Set all entries of a specified matrix to a provided value
+     * 
+     * @param u	The matrix for which all values should be set
+     * @param val	The value for which all elements should be set
      */
 	public static void setValues(double u[][][], double val) {
 		for (int i = 0; i<u.length; i++)
@@ -32,10 +39,12 @@ public abstract class MatrixOperations {
 	}
 
 	/**
+     * \brief Add every entry of matrix b to the corresponding entry in matrix a
+     * 
      * Add every entry of matrix b to the corresponding entry in matrix a
      * 
-     * @param a
-     * @param b
+     * @param a	Matrix whos value is being increased
+     * @param b	Matrix of values to add to the matrix above
      */
 	public static void addTo(double a[][][], double b[][][]) {
 		for (int i = 0; i<a.length; i++)
@@ -45,10 +54,12 @@ public abstract class MatrixOperations {
 	}
 
 	/**
-     * Add every entry of matrix b to the corresponding entry in matrix a
+     * \brief Multiply every entry of matrix a by the corresponding entry in matrix b
      * 
-     * @param a
-     * @param b
+     * Multiply every entry of matrix a to the corresponding entry in matrix b
+     * 
+     * @param a	Matrix whos value is being increased
+     * @param b	Matrix of values to multiply to the matrix above
      */
 	public static void muliplyBy(double a[][][], double b[][][]) {
 		for (int i = 0; i<a.length; i++)
@@ -57,6 +68,14 @@ public abstract class MatrixOperations {
 					a[i][j][k] *= b[i][j][k];
 	}
 
+	/**
+     * \brief Multiply every entry of matrix a by a specified value b
+     * 
+     * Multiply every entry of matrix a by a specified value b
+     * 
+     * @param a	Matrix whos value is being increased
+     * @param b	Double value by which every entry in the matrix should be multiplied
+     */
 	public static void muliplyBy(double a[][][], double b) {
 		for (int i = 0; i<a.length; i++)
 			for (int j = 0; j<a[i].length; j++)
@@ -65,11 +84,12 @@ public abstract class MatrixOperations {
 	}
 
 	/**
-     * Subtract every entry of matrix b from the corresponding entry in matrix
-     * a.
+     * \brief Subtract every entry of matrix b from the corresponding entry in matrix a.
      * 
-     * @param a
-     * @param b
+     * Subtract every entry of matrix b from the corresponding entry in matrix a.
+     * 
+     * @param a	Matrix whos value is being decreased
+     * @param b	Matrix containing the values by which to decrease the matrix above
      */
 	public static void subtractFrom(double a[][][], double b[][][]) {
 		for (int i = 0; i<a.length; i++)
@@ -79,11 +99,11 @@ public abstract class MatrixOperations {
 	}
 
 	/**
-     * Create matrix c = a - b
+     * \brief Creates a matrix c by subtracting matrix b from matrix a
      * 
-     * @param a
-     * @param b
-     * @return c = a-b
+     * @param a	Matrix whos value is being decreased
+     * @param b	Matrix containing the values by which to decrease the matrix above
+     * @return c = a-b	The matrix created by this subtraction
      */
 	public static double[][][] subtract(double a[][][], double b[][][]) {
 		int l = a.length;
@@ -98,9 +118,11 @@ public abstract class MatrixOperations {
 	}
 
 	/**
+     * \brief Find minimum value in a 3D matrix
+     * 
      * Find minimum value in a 3D matrix
      * 
-     * @param a
+     * @param a	The matrix to find the minimum value within
      * @return the minimum value in the matrix
      */
 	public static double min(double a[][][]) {
@@ -113,9 +135,11 @@ public abstract class MatrixOperations {
 	}
 
 	/**
+     * \brief Find maximum value in a 3D matrix
+     * 
      * Find maximum value in a 3D matrix
      * 
-     * @param a
+     * @param a	The matrix to find the maximum value within
      * @return the maximum value in the matrix
      */
 	public static double max(double a[][][]) {
@@ -128,10 +152,12 @@ public abstract class MatrixOperations {
 	}
 
 	/**
-     * compute the norm of matrix (exceptuating padding)
+     * \brief Compute the norm of a given matrix (exceptuating padding)
      * 
-     * @param a
-     * @return the norm of the matrix
+     * Compute the norm of a given matrix (exceptuating padding)
+     * 
+     * @param a	The matrix for which the norm should be computed
+     * @return Double value that is the norm of the matrix
      */
 	public static double computeNorm(double[][][] a) {
 		double norm = 0;
@@ -142,18 +168,28 @@ public abstract class MatrixOperations {
 				}
 			}
 		}
-		//return (double) Math.sqrt(norm/(a.length-1)/(a[1].length-1)/(a[1][1].length-1));
 		return (double) Math.sqrt(norm);
 	}
 	
+	/**
+     * \brief Compute the average of a given matrix (exceptuating padding)
+     * 
+     * Compute the average of a given matrix (exceptuating padding)
+     * 
+     * @param a	The matrix for which the average should be computed
+     * @return Double value that is the average of the matrix
+     */
 	public static double computeAverage(double[][][] a) {
 		return computeSum(a)/(a.length-2)/(a[0].length-2)/(a[0][0].length-2);
 	}
 
 	/**
-     * @param a
+     * \brief Compute and return the sum of all elements in the grid, padding excluded
+     * 
+     * Compute and return the sum of all elements in the grid, padding excluded
+     * 
+     * @param a	The matrix for which the sum should be computed
      * @return the sum of all elements of a grid
-     * padding excluded
      */
 	public static double computeSum(double[][][] a) {
 		double sum = 0;
@@ -164,16 +200,14 @@ public abstract class MatrixOperations {
 		return sum;
 	}
 	
-	/*//sonia:chemostat 19.02.2010
-	public static double computeSumChemo(double[][][] a) {
-		double sum = 0;
-		for (int i = 0; i<a.length; i++)
-			for (int j = 0; j<a[i].length; j++)
-				for (int k = 0; k<a[i][j].length; k++)
-					sum += a[i][j][k];
-		return sum;
-	}*/
-
+	/**
+     * \brief Compute and return the sum of all elements in the grid, padding included
+     *
+     * Compute and return the sum of all elements in the grid, padding included
+     * 
+     * @param a	The matrix for which the sum should be computed
+     * @return the sum of all elements of a grid
+     */
 	public static double computeSumP(double[][][] a) {
 		double sum = 0;
 		for (int i = 0; i<a.length; i++)
@@ -184,9 +218,11 @@ public abstract class MatrixOperations {
 	}
 
 	/**
+     * \brief Write the full matrix to a string
+     * 
      * Write the full matrix to a string
      * 
-     * @param matrix
+     * @param matrix	The matrix which should be written to a string
      * @return a string with the matrix (space separated values)
      */
 	public static String matrixToString(double[][][] matrix) {
@@ -206,10 +242,12 @@ public abstract class MatrixOperations {
 	}
 
 	/**
-     * Copy values from an array src to array dest
+     * \brief Copy values from an array source to an array destination
      * 
-     * @param dest write values to this array
-     * @param src copy values from this array
+     * Copy values from an array source to an array destination
+     * 
+     * @param dest[][][] Array into which the values should be written
+     * @param src[][][] Array into which the values should be written
      */
 	public static void copyValuesTo(double dest[][][], double src[][][]) {
 		for (int i = 0; i<dest.length; i++)

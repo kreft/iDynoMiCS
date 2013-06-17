@@ -1,103 +1,87 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java) 
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
  * 
- * Note that I have commented out the 4 transient int and int[] fields in the original code
- * These (obviously) prevented the MTRandom class from being serialized properly.
- * I'm not entirely sure that this might not have knock-on effects, but it doesn't seem to.
- */
-
-
-/*
- * MTRandom : A Java implementation of the MT19937 (Mersenne Twister)
- *            pseudo random number generator algorithm based upon the
- *            original C code by Makoto Matsumoto and Takuji Nishimura.
- * Author   : David Beaumont
- * Email    : mersenne-at-www.goui.net
- * 
- * For the original C code, see:
- *     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
- *
- * This version, Copyright (C) 2005, David Beaumont.
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
-
-/**
- * @since 2009
- * @version 1.0
- * @author Chinmay Kanchi (CGK813@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
 package utils;
 
 import java.util.Random;
 
 /**
+ * \brief An implementation of the original java mersenne twister class by Makoto Matsumoto and Takuji Nishimura 
+ * 
+ * An implementation of the original java mersenne twister class by Makoto Matsumoto and Takuji Nishimura 
+ * 
+ * @author Chinmay Kanchi (CGK813@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * 
+ * COMMENT ON ORIGINAL SOURCE CODE:
+ * MTRandom : A Java implementation of the MT19937 (Mersenne Twister) pseudo random number generator algorithm based upon the
+ *            original C code by Makoto Matsumoto and Takuji Nishimura.
+ * Author   : David Beaumont
+ * Email    : mersenne-at-www.goui.net
+ * 
+ * For the original C code, see:  http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+ *
+ * This version, Copyright (C) 2005, David Beaumont.
+ * 
+ * This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * 
  * @version 1.0
  * @author David Beaumont, Copyright 2005
- * <p>
- * A Java implementation of the MT19937 (Mersenne Twister) pseudo
- * random number generator algorithm based upon the original C code
- * by Makoto Matsumoto and Takuji Nishimura (see
- * <a href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html">
- * http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html</a> for
- * more information.
- * <p>
- * As a subclass of java.util.Random this class provides a single
- * canonical method next() for generating bits in the pseudo random
- * number sequence.  Anyone using this class should invoke the public
- * inherited methods (nextInt(), nextFloat etc.) to obtain values as
- * normal.  This class should provide a drop-in replacement for the
- * standard implementation of java.util.Random with the additional
- * advantage of having a far longer period and the ability to use a
- * far larger seed value.
- * <p>
- * This is <b>not</b> a cryptographically strong source of randomness
- * and should <b>not</b> be used for cryptographic systems or in any
+ * 
+ * A Java implementation of the MT19937 (Mersenne Twister) pseudo random number generator algorithm based upon the original C code
+ * by Makoto Matsumoto and Takuji Nishimura 
+ * 
+ * As a subclass of java.util.Random this class provides a single canonical method next() for generating bits in the pseudo random
+ * number sequence.  Anyone using this class should invoke the public inherited methods (nextInt(), nextFloat etc.) to obtain values as
+ * normal.  This class should provide a drop-in replacement for the standard implementation of java.util.Random with the additional
+ * advantage of having a far longer period and the ability to use a far larger seed value.
+ * 
+ * This is not a cryptographically strong source of randomness and should not be used for cryptographic systems or in any
  * other situation where true random numbers are required.
- * <p>
- * <!-- Creative Commons License -->
- * <a href="http://creativecommons.org/licenses/LGPL/2.1/"><img alt="CC-GNU LGPL" border="0" src="http://creativecommons.org/images/public/cc-LGPL-a.png" /></a><br />
- * This software is licensed under the <a href="http://creativecommons.org/licenses/LGPL/2.1/">CC-GNU LGPL</a>.
- * <!-- /Creative Commons License -->
  * 
- * <!--
- * <rdf:RDF xmlns="http://web.resource.org/cc/"
- *     xmlns:dc="http://purl.org/dc/elements/1.1/"
- *     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
- *     
- * <Work rdf:about="">
- *    <license rdf:resource="http://creativecommons.org/licenses/LGPL/2.1/" />
- *    <dc:type rdf:resource="http://purl.org/dc/dcmitype/Software" />
- * </Work>
- * 
- * <License rdf:about="http://creativecommons.org/licenses/LGPL/2.1/">
- *    <permits rdf:resource="http://web.resource.org/cc/Reproduction" />
- *    <permits rdf:resource="http://web.resource.org/cc/Distribution" />
- *    <requires rdf:resource="http://web.resource.org/cc/Notice" />
- *    <permits rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
- *    <requires rdf:resource="http://web.resource.org/cc/ShareAlike" />
- *    <requires rdf:resource="http://web.resource.org/cc/SourceCode" />
- * </License>
- * 
- * </rdf:RDF>
- * -->
+ * Note that the 4 transient int and int[] fields in the original code have commented out. These (obviously) prevented the MTRandom 
+ * class from being serialized properly. I'm not entirely sure that this might not have knock-on effects, but it doesn't seem to.
  * 
  */
-public class MTRandom extends Random {
+public class MTRandom extends Random 
+{
+	/**
+	 * License links: included here to keep doxygen generator happy
+	 * <!--
+	 * <rdf:RDF xmlns="http://web.resource.org/cc/"
+	 *     xmlns:dc="http://purl.org/dc/elements/1.1/"
+	 *     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+	 *     
+	 * <Work rdf:about="">
+	 *    <license rdf:resource="http://creativecommons.org/licenses/LGPL/2.1/" />
+	 *    <dc:type rdf:resource="http://purl.org/dc/dcmitype/Software" />
+	 * </Work>
+	 * 
+	 * <License rdf:about="http://creativecommons.org/licenses/LGPL/2.1/">
+	 *    <permits rdf:resource="http://web.resource.org/cc/Reproduction" />
+	 *    <permits rdf:resource="http://web.resource.org/cc/Distribution" />
+	 *    <requires rdf:resource="http://web.resource.org/cc/Notice" />
+	 *    <permits rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+	 *    <requires rdf:resource="http://web.resource.org/cc/ShareAlike" />
+	 *    <requires rdf:resource="http://web.resource.org/cc/SourceCode" />
+	 * </License>
+	 * 
+	 * </rdf:RDF>
+
+	 */
+		
 
 	/**
 	 * Auto-generated serial version UID.  Note that MTRandom does NOT

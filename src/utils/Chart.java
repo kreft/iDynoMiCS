@@ -1,8 +1,11 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package utils
+ * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
+ * 
+ * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
 package utils;
 
 
@@ -28,15 +31,49 @@ import org.jfree.ui.ApplicationFrame;
 
 
 @SuppressWarnings("serial")
-public class Chart extends ApplicationFrame {
+/**
+ * \brief Class used to represent simulation output on a graph. Assumed deprecated as never called in iDynoMiCS 1.2
+ * 
+ * Class used to represent simulation output on a graph. Assumed deprecated as never called in iDynoMiCS 1.2
+ *
+ */
+public class Chart extends ApplicationFrame 
+{
 
+	/**
+	 * Source of the data to be plotted
+	 */
 	private XYSeriesCollection[] _dataSource;
+	
+	/**
+	 * Path to the file where this chart will be stored
+	 */
 	private String               _resultPath;
+	
+	/**
+	 * The top-level chart object
+	 */
 	private CombinedDomainXYPlot parentPlot;
+	
+	/**
+	 * The chart itself - making use of JFreeChart
+	 */
 	private JFreeChart           chart;
+	
+	/**
+	 * Panel to be displayed alongside the chart
+	 */
 	private ChartPanel           panel;
 
-	public Chart(final String title) {
+	/**
+	 * \brief Constructs the chart object on the screen, with title provided
+	 * 
+	 * Constructs the chart object on the screen, with title provided
+	 * 
+	 * @param title	Title to be used for this chart
+	 */
+	public Chart(final String title) 
+	{
 
 		super(title);
 
@@ -52,10 +89,26 @@ public class Chart extends ApplicationFrame {
 		setContentPane(panel);
 	}
 
+	/**
+	 * \brief Set the path to the location where this chart will be saved
+	 * 
+	 * Set the path to the location where this chart will be saved
+	 * 
+	 * @param resultPath	Path to a location on disk where this chart will be saved
+	 */
 	public void setPath(String resultPath) {
 		_resultPath = resultPath;
 	}
 
+	/**
+	 * \brief Initialise the data sets to be drawn in the created chart, and the chart axis
+	 * 
+	 * Initialise the data sets to be drawn in the created chart, and the chart axis
+	 * 
+	 * @param allGraphSets	Data to be plotted on the graph
+	 * @param xLegend	X axis legend
+	 * @param yLegend	Y axis legend
+	 */
 	public void init(XYSeriesCollection[] allGraphSets, String[] xLegend, String[] yLegend) {
 		_dataSource = allGraphSets;
 		XYPlot subplot;
@@ -73,22 +126,28 @@ public class Chart extends ApplicationFrame {
 	}
 
 	/**
+	 * \brief Update chart with the data provided in the input arguments
 	 * 
-	 * @param iChart
-	 * @param iSeries
-	 * @param x
-	 * @param y
+	 * Update chart with the data provided in the input arguments
+	 * 
+	 * @param iChart	The chart being drawn
+	 * @param iSeries	The data series on the chart
+	 * @param x	The x point to add
+	 * @param y	The y point to add
 	 */
 	public void updateChart(int iChart, int iSeries, double x, double y) {
 		_dataSource[iChart].getSeries(iSeries).add(x, y);
 	}
 
 	/**
+	 * \brief Update chart with the data provided in the input argument arrays
 	 * 
-	 * @param iChart
-	 * @param iSeries
-	 * @param x
-	 * @param y
+	 * Update chart with the data provided in the input argument arrays
+	 * 
+	 * @param iChart	The chart being drawn
+	 * @param iSeries	The data series on the chart
+	 * @param x	Array of x points to add
+	 * @param y	Array of y points to add
 	 */
 	public void updateChart(int iChart, int iSeries, double[] x, double[] y) {
 		_dataSource[iChart].getSeries(iSeries).clear();
@@ -97,25 +156,18 @@ public class Chart extends ApplicationFrame {
 
 	}
 
-	public void repaintAndSave() {
-		// pack();
+	/**
+	 * \brief Refresh the graph on the screen and save to the result path location
+	 * 
+	 * Refresh the graph on the screen and save to the result path location
+	 */
+	public void repaintAndSave() 
+	{
 		this.repaint();
 		try {
 			ChartUtilities.saveChartAsPNG(new File(_resultPath+"solute.png"), chart, 1024, 768);
 		} catch (Exception e) {
 		}
 
-		// _frm1.repaint();
-		// _frm2.repaint();
-		/*
-		 * for(Object aPlot:plot.getSubplots()){ ((XYPlot) aPlot). }
-		 * 
-		 * ChartUtilities.saveChartAsPNG(new
-		 * File(_resultPath+"solute.png"),((XYPlot) aPlot) , 1024, 768); } try {
-		 * ChartUtilities.saveChartAsPNG(new File(_resultPath+"solute.png"), ,
-		 * 1024, 768); ChartUtilities.saveChartAsPNG(new
-		 * File(_resultPath+"species.png"), _chartSpecies, 1024, 768); } catch
-		 * (Exception e) { }
-		 */
 	}
 }

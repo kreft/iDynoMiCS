@@ -1,37 +1,54 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
- *______________________________________________________
- * Implements connected volume filtration operation. Provides a base class for
- * geometry specific connected volume filtrators.
+ * \package simulator.detachment
  * 
- */
-
-/**
- * @since June 2006
- * @version 1.0
- * @author  * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ * \brief Package of classes that capture detachment of agents from the biomass
  * 
+ * Package of classes that capture detachment of agents from the biomass. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-
-/*
- * Created on 29-jan-2004 by Joao Xavier (j.xavier@tnw.tudelft.nl)
- */
-
 package simulator.detachment;
 
 import simulator.agent.LocatedGroup;
 
+/**
+ * \brief Implements connected volume filtration operation. Provides a base class for geometry specific connected volume filtrators.
+ * 
+ * Implements connected volume filtration operation. Provides a base class for geometry specific connected volume filtrators.
+ * 
+ * @author  * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
+ *
+ */
 public class ConnectedVolume {
 
+	/**
+	 * Total number of elements in the grid
+	 */
 	protected int            _nTotal;
+	
+	/**
+	 * Store grid dimensions
+	 */
 	protected int[]          gridDim = new int[3];
+	
+	/**
+	 * Connected volume filtration matrix of size _nTotal.
+	 */
 	protected boolean[]      _cvf;
+	
+	/**
+	 * Shoving grid to use to determine which agents to mark for sloughing
+	 */
 	protected LocatedGroup[] _shoveGrid;
+	
+	/**
+	 * Integer noting whether a grid element needs to be validated (1) in an iteration or not (0)
+	 */
 	protected int            _validateInThisIteration;
 
 	/**
+	 * \brief Initialise the _cvf matrix
+	 * 
 	 * Initialise the _cvf matrix
 	 */
 	public ConnectedVolume(int nI, int nJ, int nK) {
@@ -43,11 +60,12 @@ public class ConnectedVolume {
 	}
 
 	/**
-	 * Implements iterative implementation of connected volume filtering
-	 * Iteration stop when none grid cell has been added
-	 * @param matrixToFilter : vectorised array of space occupation matrix
-	 * @return a vectorized array of a boolean matrix (true for connected to
-	 * carrier)
+	 * \brief Implements iterative implementation of connected volume filtering 
+	 * 
+	 * Implements iterative implementation of connected volume filtering. Iteration stop when none grid cell has been added
+	 * 
+	 * @param matrixToFilter	Vectorised array of space occupation matrix
+	 * @return a vectorized array of a boolean matrix (true for connected to carrier)
 	 */
 	public boolean[] computeCvf(LocatedGroup[] matrixToFilter) {
 		// assign
@@ -68,11 +86,16 @@ public class ConnectedVolume {
 	}
 
 	/**
+	 * \brief Initiate the cvf process. Research carrier on the padded grid
+	 * 
 	 * Initiate the cvf process. Research carrier on the padded grid
 	 */
-	protected void initializeCvf() {
+	protected void initializeCvf() 
+	{
 		int status;
-		for (int index = 0; index<_nTotal; index++) {
+		
+		for (int index = 0; index<_nTotal; index++) 
+		{
 			status = _shoveGrid[index].status;
 			// First test if the element is outside a cyclic boundary
 			if(status==-1) continue;
@@ -82,12 +105,17 @@ public class ConnectedVolume {
 	}
 
 	/**
+	 * \brief Determine if this grid element has been validated
+	 * 
+	 * Determine if this grid element has been validated
+	 * 
 	 * @return true if this grid element has been validated
 	 */
 	public boolean validateElement(int index) {
 		boolean test;
 
-		if (!_cvf[index]&_shoveGrid[index].status==1) {
+		if (!_cvf[index]&_shoveGrid[index].status==1) 
+		{
 			// check if one of your neighbors is attached to the carrier
 			// (Note that we only check the neighbors in the cube-face directions
 			// and not along any of the diagonals.)
@@ -115,73 +143,5 @@ public class ConnectedVolume {
 		}
 		return false;
 	}
-
-	/**
-	 * Implements iterative implementation of connected volume filtering, but does
-	 * so using an iterative process starting from the carrier.
-	 * 
-	 * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
-	 * 
-	 * @param matrixToFilter : vectorised array of space occupation matrix
-	 * @return a vectorized array of a boolean matrix (true for connected to
-	 * carrier)
-	 * 
-	 * @deprecated This was more of a test than meant to be used for all cases
-	 */
-	public boolean[] computeCvfFromCarrier(LocatedGroup[] matrixToFilter) {
-		// assign
-		_shoveGrid = matrixToFilter;
-
-		// go through and initialize the connections by starting at carrier indices
-		int status;
-		for (int index = 0; index < _nTotal; index++) {
-			status = _shoveGrid[index].status;
-			// First test if the element is outside a boundary
-			if (status==-1) continue;
-
-			// Now test if it is a carrier; if so, connect elements out from here
-			if (status == 0) {
-				_cvf[index] = true;
-				attachElementNeighbors(index);
-			}
-		}
-
-		return _cvf;
-	}
-
-	/**
-	 * This is called from an attached element and looks at whether any
-	 * neighbors should also be attached.
-	 * This is first called by computeCvfFromCarrier().
-	 * 
-	 * @deprecated This was more of a test than meant to be used for all cases
-	 */
-	public void attachElementNeighbors(int index) {
-		int testindex;
-
-		// iterate over neighbors and attach any that have biomass AND aren't
-		// already attached
-		if (gridDim[2] > 1) {
-			// 3D geometry
-			for (int i=0; i<3; i++)
-				for (int j=0; j<3; j++)
-					for (int k=0; k<3; k++) {
-						testindex = _shoveGrid[index].nbhIndex[i][j][k];
-						if (!_cvf[testindex] & _shoveGrid[testindex].status==1) {
-							_cvf[testindex] = true;
-							attachElementNeighbors(testindex);
-						}
-					}
-		} else {
-			// 2D geometry
-			for (int i=0; i<3; i++)
-				for (int j=0; j<3; j++) {
-					testindex = _shoveGrid[index].nbhIndex[i][j][1];
-					if (!_cvf[testindex] & _shoveGrid[testindex].status==1) {
-						_cvf[testindex] = true;
-						attachElementNeighbors(testindex);
-					}
-				}
-		}
-	}
+	
 }

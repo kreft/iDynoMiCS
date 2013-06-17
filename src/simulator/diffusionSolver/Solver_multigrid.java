@@ -1,21 +1,12 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
- *______________________________________________________
- * DiffusionSolver is an abstract class used as parent for all diffusion_solvers 
- * you could define
+ * \package diffusionSolver
+ * \brief Package of classes used to capture the diffusion solvers that can be defined in the protocol file
  * 
+ * Package of classes used to capture the diffusion solvers that can be defined in the protocol file. Solvers are used to compute 
+ * the steady-state solute profile within the computational domains. This package is part of iDynoMiCS v1.2, governed by the CeCILL 
+ * license under French law and abides by the rules of distribution of free software. You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * @since June 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA) 
- */
-
 package simulator.diffusionSolver;
 
 import idyno.SimTimer;
@@ -27,16 +18,46 @@ import simulator.SoluteGrid;
 
 import utils.XMLParser;
 
+/**
+ * 
+ * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ *
+ */
 public class Solver_multigrid extends DiffusionSolver {
 
-	protected MultigridSolute _bLayer, _diffusivity;
-	protected MultigridSolute[] _solute, _biomass;
+	protected MultigridSolute _bLayer;
+	
+	protected MultigridSolute	_diffusivity;
+	protected MultigridSolute[] _solute;
+	
+	protected MultigridSolute[]	_biomass;
 
-	protected SoluteGrid[]      allSolute, allReac, allDiffReac;
+	protected SoluteGrid[]      allSolute;
+	
+	protected SoluteGrid[]		allReac;
+	
+	protected SoluteGrid[]		allDiffReac;
 
-	protected static int        iSolute, order;
-	protected int               maxOrder, nSolute, nReaction;
-	protected int               nCoarseStep, vCycles, nPreSteps, nPosSteps;
+	protected static int        iSolute;
+	
+	protected static int		order;
+	protected int               maxOrder;
+	
+	/**
+	 * Number of solutes SOLVED by THIS solver
+	 */
+	protected int				nSolute;
+	
+	protected int				nReaction;
+	protected int               nCoarseStep;
+	
+	protected int				vCycles;
+	
+	protected int				nPreSteps;
+	
+	protected int				nPosSteps;
 	protected Domain            _domain;
 
 	public void init(Simulator aSimulator, XMLParser xmlRoot) {
@@ -197,8 +218,10 @@ public class Solver_multigrid extends DiffusionSolver {
 	}
 
 	/**
+	 * \brief Update concentration in the reactor
+	 * 
 	 * Update concentration in the reactor
-	 * @param lastIter
+	 * 
 	 */
 	public void updateBulk() {
 		// Update reaction rates

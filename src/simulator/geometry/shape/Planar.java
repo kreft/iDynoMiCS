@@ -1,47 +1,115 @@
-
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
+ * \package simulator.geometry.shape
+ * \brief Package of utilities that assist with managing the boundary conditions in iDynoMiCS
+ * 
+ * Package of utilities that assist with managing the boundary conditions in iDynoMiCS. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
-
 package simulator.geometry.shape;
 
 import simulator.geometry.*;
 import simulator.SpatialGrid;
 import utils.XMLParser;
-
 import java.io.Serializable;
 import java.util.*;
 
-public class Planar implements IsShape, Serializable {
-	// Serial version used for the serialisation of the class
+/**
+ * \brief Create a planar shaped boundary
+ * 
+ * Each boundaryCondition also includes a shape mark-up to define the shape of the boundary. In this release only the 'Planar' class is 
+ * available, and it requires specification of a point on the boundary and a vector pointing outside the domain. These shape parameters 
+ * must be given in index coordinates 
+ * 
+ */
+public class Planar implements IsShape, Serializable 
+{
+	/**
+	 * Serial version used for the serialisation of the class
+	 */
 	private static final long serialVersionUID = 1L;
 	/* Definition of the plan _______________________________________ */
 
 	// Computation domain where this shape is defined
 
-	// A point on the plan and a vector normal to the plan and going outside the
-	// domain
-	private DiscreteVector          _pointDCIn, _vectorDCOut;
-	private ContinuousVector        _pointIn, _vectorOut;
+	/**
+	 * A point on the plane 
+	 */ 
+	private DiscreteVector          _pointDCIn;
+	
+	/**
+	 * A vector normal to the plan and going outside the domain
+	 */
+	private DiscreteVector			_vectorDCOut;
+	
+	/**
+	 * A point on the plane (ContinuousVector)
+	 */ 
+	private ContinuousVector        _pointIn;
+	
+	/**
+	 * A vector normal to the plan and going outside the domain (ContinuousVector)
+	 */
+	private ContinuousVector		 _vectorOut;
 
-	// Two orthogonal vectors colinear to the plan
-	private DiscreteVector          u, v;
-	// Range of discrete coordinates met on this shape
-	private int                     uMax, vMax;
+	/**
+	 *  Orthogonal vectors colinear to the plan
+	 */
+	private DiscreteVector          u;
+	
+	/**
+	 *  Orthogonal vectors colinear to the plan
+	 */
+	private DiscreteVector			v;
+	
+	/**
+	 * Range of discrete coordinates met on this shape
+	 */
+	private int                     uMax;
+	
+	/**
+	 * Range of discrete coordinates met on this shape
+	 */
+	private int						vMax;
 
 	/* Temporary variables __________________________________________ */
+	
+	/**
+	 * Temporary continuous vector to use in calculations
+	 */
 	private static ContinuousVector tempVar = new ContinuousVector();
-	private static int              indexU, indexV;
+	
+	/**
+	 * Index used to check whether a point is within the shape
+	 */
+	private static int              indexU;
+	
+	/**
+	 * Index used to check whether a point is within the shape
+	 */
+	private static int				indexV;
+	
+	/**
+	 * Stores the move while being calculated
+	 */
 	private static DiscreteVector   move    = new DiscreteVector();
+	
+	/**
+	 * Temporary store of the origin of a point prior to move
+	 */
 	private static DiscreteVector   origin  = new DiscreteVector();
 
 	/**
-     * Tune a shape
-     * @param shapeRoot
-     * @param aDomain
-     */
-	public void readShape(XMLParser shapeRoot, Domain aDomain) {
+	 * \brief Reads the coordinates that specify a boundary from the protocol file, creating a shape
+	 * 
+	 * Reads the coordinates that specify a boundary from the protocol file, creating a shape
+	 * 
+	 * @param shapeRoot	XML elements from the protocol file that contain coordinates specifying the edge of a boundary
+	 * @param aDomain	The computation domain that this boundary is associated with
+	 */
+	public void readShape(XMLParser shapeRoot, Domain aDomain) 
+	{
 
 		// Build the variables describing the plan
 		_pointDCIn = shapeRoot.getParamXYZ("pointIn");
@@ -66,8 +134,13 @@ public class Planar implements IsShape, Serializable {
 	}
 
 	/**
-     * Test if the given coordinates are outside the boundary
-     */
+	 * \brief Test if a given set of coordinates is outside this shape
+	 * 
+	 * Test if a given set of coordinates is outside this shape
+	 * 
+	 * @param cc	ContinuousVector containing the coordinates of a point to test
+	 * @return	Boolean noting whether this coordinate is inside or outside this shape
+	 */
 	public Boolean isOutside(ContinuousVector cc) {
 		tempVar.x = -_pointIn.x+cc.x;
 		tempVar.y = -_pointIn.y+cc.y;
@@ -77,17 +150,25 @@ public class Planar implements IsShape, Serializable {
 	}
 
 	/**
-     * Computes orthogonal distance and if this distance is lower than the
-     * resolution and if the point is outside, then it is declared on boundary
-     */
+     * Computes orthogonal distance and if this distance is lower than the resolution and if the point is outside, 
+     * then the point tested is declared to be on the boundary of the domain
+     * 
+	 * @param cC	ContinuousVector containing the coordinates of a point to test
+	 * @param res	Resolution of the domain that this shape is associated with
+	 * @return	Boolean noting whether this coordinate is on the boundary of the domain
+	 */
 	public Boolean isOnBoundary(ContinuousVector cC, double res) {
 		return (isOutside(cC)&&(cC.distance(getOrthoProj(cC))<=res));
 	}
 
 	/**
-     * @return : coordinates of the intersection between a line (described by a
-     * point and a vector ) and the plane ; return null if none intersection
-     * exists
+     * \brief Calculates the coordinates of the interaction between a line (point a vector) and the plane
+     * 
+     * Calculates the coordinates of the interaction between a line (point a vector) and the plane. Returns null if none exists
+     * 
+     * @param position	Position used to calculate the line
+     * @param vector	Vector of coordinate positions used to calculate the line
+     * @return : coordinates of the intersection between a line and the plane
      */
 	public ContinuousVector intersection(ContinuousVector position, ContinuousVector vector) {
 
@@ -108,16 +189,27 @@ public class Planar implements IsShape, Serializable {
 	}
 
 	/**
-     * Send a normal vector pointing toward the inside
-     */
+	 * \brief Takes a vector and returns that vector pointing towards the inside of the shape
+	 * 
+	 * Takes a vector and returns that vector pointing towards the inside of the shape
+	 * 
+	 * @param cc	Vector outside the shape
+	 * @return ContinuousVector that is pointing towards the inside of the shape
+	 * 
+	 */
 	public ContinuousVector getNormalInside(ContinuousVector cc) {
 		return new ContinuousVector(-_vectorOut.x, -_vectorOut.y, -_vectorOut.z);
 	}
 
-	public ContinuousVector getNormalOutside(ContinuousVector cc) {
-		return new ContinuousVector(_vectorOut);
-	}
-
+	/**
+	 * \brief Correct coordinates of a point that has gone outside this shape 
+	 * 
+	 * Correct coordinates of a point that has gone outside this shape
+	 * 
+	 * @param ccIn	Coordinates to be corrected
+	 * @param ccOut	Corrected coordinates
+	 * 
+	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut) {
 		double a, b, c, d, k;
 		a = _vectorOut.x;
@@ -135,34 +227,61 @@ public class Planar implements IsShape, Serializable {
 		ccOut.z = ccIn.z+k*c;
 	}
 
+	/**
+	 * \brief Correct coordinates of a point that has gone outside this shape, returning these coordinates
+	 * 
+	 * Correct coordinates of a point that has gone outside this shape, returning these coordinates
+	 * 
+	 * @param ccIn	Coordinates to be corrected
+	 * @return Corrected coordinates
+	 * 
+	 */
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn) {
 		ContinuousVector ccOut = new ContinuousVector();
 		orthoProj(ccIn, ccOut);
 		return ccOut;
 	}
 
+	/**
+	 * \brief Used in cyclic boundaries - gets the distance from the opposite side (aShape)
+	 * 
+	 * Used in cyclic boundaries - gets the distance from the opposite side (aShape)
+	 * 
+	 * @return Double stating distance to that shape
+	 */
 	public double getDistance(IsShape aShape) {		
 		ContinuousVector ccOut = aShape.intersection(_pointIn, _vectorOut);
 		return _pointIn.distance(ccOut);
 	}
 	
 	
-
+	/**
+	 * \brief Used in cyclic boundaries - gets the distance from a point on the other side (ContinuousVector)
+	 * 
+	 * Used in cyclic boundaries - gets the distance from a point on the other side (ContinuousVector)
+	 * 
+	 * @return Double stating distance to that shape
+	 */
 	public double getDistance(ContinuousVector cc){
 		ContinuousVector ccOut = intersection(cc, _vectorOut);
 		return ccOut.distance(cc);
 	}
 
 	/**
-     * Initialisation to go along the boundary
+     * \brief Initialisation to create the features of and go along the boundary
+     * 
+     * Initialisation to create the features of and go along the boundary
+     * 
+     * @param aSG	The grid to which this boundary is a part
      */
-	public void readyToFollowBoundary(SpatialGrid aSG) {
+	public void readyToFollowBoundary(SpatialGrid aSG) 
+	{
 		double res = aSG.getResolution();
-
+		
 		origin.i = ((int)Math.floor(_pointIn.x/res))-u.i;
 		origin.j = ((int)Math.floor(_pointIn.y/res))-u.j;
 		origin.k = ((int)Math.floor(_pointIn.z/res))-u.k;
-		
+				
 		if(_vectorDCOut.i>0) origin.i+=-1;
 		if(_vectorDCOut.j>0) origin.j+=-1;
 		if(_vectorDCOut.k>0) origin.k+=-1;
@@ -182,7 +301,15 @@ public class Planar implements IsShape, Serializable {
 	}
 
 	/**
+     * \brief Find the next valid point
      * 
+     *  Find the next valid point 
+     *  
+     *  @param dcIn	Discrete vector within the shape
+     *  @param dcOut	Discrete vector outside the shape
+     *  @param aSG	Spatial grid in which the boundary is associated
+     *  @return Whether a valid point was found
+     *  
      */
 	public boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut, SpatialGrid aSG) {
 		// Find the next valid point
@@ -202,7 +329,9 @@ public class Planar implements IsShape, Serializable {
 	}
 
 	/**
+     * \brief Process next location in the boundary
      * 
+     * Process next location in the boundary
      */
 	public void stepBoundary() {
 		if (indexU<uMax) indexU++;
@@ -215,120 +344,13 @@ public class Planar implements IsShape, Serializable {
 		move.k = indexU*u.k+indexV*v.k;
 	}
 
-	@Deprecated
-	public LinkedList<DiscreteVector> sendOnBorder(SpatialGrid aSoluteGrid) {
-
-		double res = aSoluteGrid.getResolution();
-
-		double x, y, z;
-		double a, b, c, d;
-		a = _vectorOut.x;
-		b = _vectorOut.y;
-		c = _vectorOut.z;
-		d = -(_pointIn.x*a+_pointIn.y*b+_pointIn.z*c);
-
-		// infinetisimal mouvement toward the outside
-		double epsilon = 1e-6;
-
-		LinkedList<DiscreteVector> out = new LinkedList<DiscreteVector>();
-		ContinuousVector cC;
-		if (b!=0) {
-
-			for (int k = -1; k<=aSoluteGrid.getGridSizeK(); k++) {
-				for (int i = -1; i<=aSoluteGrid.getGridSizeI(); i++) {
-					y = (a*(i*res)+c*(k*res)+d)/b;
-					cC = new ContinuousVector(i*res, y, k*res);
-					cC.x += epsilon/2*_vectorOut.x;
-					cC.y += epsilon/2*_vectorOut.y;
-					cC.z += epsilon/2*_vectorOut.z;
-					if (aSoluteGrid.isValidOrPadded(cC)&&isOnShape(cC)) {
-						out.add(aSoluteGrid.getDiscreteCoordinates(cC));
-					}
-				}
-			}
-			return out;
-		}
-
-		if (a!=0) {
-			for (int j = -1; j<=aSoluteGrid.getGridSizeJ(); j++) {
-				for (int k = -1; k<=aSoluteGrid.getGridSizeK(); k++) {
-					x = (b*(j*res)+c*(k*res)+d)/a;
-					cC = new ContinuousVector(x, j*res, k*res);
-					cC.x += epsilon/2*_vectorOut.x;
-					cC.y += epsilon/2*_vectorOut.y;
-					cC.z += epsilon/2*_vectorOut.z;
-					if (aSoluteGrid.isValidOrPadded(cC)) {
-						out.add(aSoluteGrid.getDiscreteCoordinates(cC));
-					}
-				}
-			}
-			return out;
-		}
-
-		if (c!=0) {
-			for (int j = -1; j<=aSoluteGrid.getGridSizeJ(); j++) {
-				for (int i = -1; i<=aSoluteGrid.getGridSizeI(); i++) {
-					z = (a*(i*res)+b*(j*res)+d)/c;
-					cC = new ContinuousVector(i*res, j*res, z);
-					cC.x += epsilon/2*_vectorOut.x;
-					cC.y += epsilon/2*_vectorOut.y;
-					cC.z += epsilon/2*_vectorOut.z;
-					if (aSoluteGrid.isValidOrPadded(cC)) {
-						out.add(aSoluteGrid.getDiscreteCoordinates(cC));
-					}
-				}
-			}
-			return out;
-		}
-		return out;
-	}
-
-	@Deprecated
-	public LinkedList<ContinuousVector> sendCCOnBorder(SpatialGrid aSoluteGrid) {
-
-		double res = aSoluteGrid.getResolution();
-
-		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
-		ContinuousVector cC;
-		int iMin = -(int) Math.floor(_pointIn.x/res)-1;
-		int iMax = (int) Math.floor(aSoluteGrid.getGridSizeI()-_pointIn.x/res)+1;
-		int jMin = -(int) Math.floor(_pointIn.y/res)-1;
-		int jMax = (int) Math.floor(aSoluteGrid.getGridSizeJ()-_pointIn.y/res)+1;
-		int kMin = -(int) Math.floor(_pointIn.z/res)-1;
-		int kMax = (int) Math.floor(aSoluteGrid.getGridSizeK()-_pointIn.z/res)+1;
-
-		ContinuousVector nV1 = new ContinuousVector();
-		nV1.x = Math.abs(_vectorOut.z);
-		nV1.y = Math.abs(_vectorOut.x);
-		nV1.z = Math.abs(_vectorOut.y);
-
-		ContinuousVector nV2 = new ContinuousVector();
-		nV2.x = nV1.z;
-		nV2.y = nV1.x;
-		nV2.z = nV1.y;
-
-		for (int i = iMin; i<=iMax; i++) {
-			for (int j = jMin; j<=jMax; j++) {
-				for (int k = kMin; k<=kMax; k++) {
-					cC = new ContinuousVector(_pointIn);
-					cC.x += i*(nV1.x+nV2.x)*res;
-					cC.y += j*(nV1.y+nV2.y)*res;
-					cC.z += k*(nV1.z+nV2.z)*res;
-					if (aSoluteGrid.isValidOrPadded(cC)) {
-						out.add(cC);
-					}
-				}
-			}
-
-		}
-
-		return out;
-	}
-
 	/**
-     * test that the received point is coplanar with the definition point
-     * @param cC
-     * @return
+     * \brief Test that the received point is coplanar with the definition point
+     * 
+     * Test that the received point is coplanar with the definition point
+     * 
+     * @param cC	ContinuousVector of coordinates that should be tested
+     * @return	Boolean stating whether the point is cooplanar with the definition point
      */
 	public boolean isOnShape(ContinuousVector cC) {
 		boolean out = ((cC.x-_pointIn.x)/_vectorOut.x==(cC.y-_pointIn.y)/_vectorOut.y);
@@ -336,10 +358,14 @@ public class Planar implements IsShape, Serializable {
 		return out;
 	}
 
-	public ContinuousVector getPointIn() {
-		return _pointIn;
-	}
-
+	
+	/**
+	 * \brief Return vector normal to the plane
+	 * 
+	 * Return vector normal to the plane
+	 * 
+	 * @return	Discrete vector normal to the plane
+	 */
 	public DiscreteVector getNormalDC() {
 		return _vectorDCOut;
 	}

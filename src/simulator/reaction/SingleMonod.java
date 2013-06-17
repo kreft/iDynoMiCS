@@ -1,19 +1,11 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *______________________________________________________
- * Use this class to create pathways described by a simple Monod kinetic y1 S1 ->
- * y2 S2+X where µ=muMax*S1/(Ks+S1) the substrate used by a monod kinetic is the
- * first one of the solutelist of th current object
+ * \package reaction
+ * \brief Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS
  * 
+ * Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
  */
-
-/**
- * @since January 2007
- * @version 1.0
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- */
-
-
 package simulator.reaction;
 
 import Jama.Matrix;
@@ -25,6 +17,15 @@ import utils.XMLParser;
 
 
 @Deprecated
+/**
+ * \brief Deprecated. Was used  to create pathways described by a simple Monod kinetic y1 S1 -> y2 S2+X where µ=muMax*S1/(Ks+S1) 
+ * 
+ * Deprecated. Was used  to create pathways described by a simple Monod kinetic y1 S1 -> y2 S2+X where µ=muMax*S1/(Ks+S1) the substrate 
+ * used by a monod kinetic is the first one of the solutelist of the current object
+ * 
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ *
+ */
 public class SingleMonod extends Reaction {
 	// Serial version used for the serialisation of the class
 	private static final long serialVersionUID = 1L;
@@ -80,15 +81,26 @@ public class SingleMonod extends Reaction {
 		_specRate = kineticValue(s[localIndex], anAgent.reactionKinetic[reactionIndex], 1);
 	}
 
+	/**
+     * \brief Return the specific reaction rate
+     * 
+     * Return the specific reaction rate
+     * @param s	array of solute concentration
+     * @param anAgent	The agent
+     * @deprecated
+     */
 	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
 		int localIndex = _mySoluteIndex[0];		
 		_specRate = kineticValue(s[localIndex], anAgent.reactionKinetic[reactionIndex], 1);			
 	}
 	
 	/**
-     * Compute specific growth rate in function of concentrations sent
-     * Parameters used are those defined for the reaction
-     * @param double[] s : array of solute concentration
+     * \brief Compute specific growth rate in function of concentrations sent. Parameters used are those defined for the reaction
+     * 
+     * Compute specific growth rate in function of concentrations sent. Parameters used are those defined for the reaction
+     * 
+     * @param s	array of solute concentration
+     * @deprecated
      */
 	public void computeSpecificGrowthRate(double[] s) {
 		int localIndex = _mySoluteIndex[0];
@@ -142,6 +154,13 @@ public class SingleMonod extends Reaction {
 		        *kineticDiff(s1, kineticParam, 1);
 	}
 
+	/**
+	 * @param s	Double array
+	 * @param mass	Concentration factor
+	 * @param tdel	Double
+	 * @deprecated
+	 * 
+	 */
 	public void computeUptakeRate(double[] s, double mass, double tdel) {
 		int localIndex = _mySoluteIndex[0];
 		double s1 = s[localIndex];
@@ -216,17 +235,6 @@ public class SingleMonod extends Reaction {
 		return 1;
 	}
 
-	@Override
-	public void computeUptakeRate(double[] s, double mass, Matrix dFdY) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public double[] getMarginalDiffMu() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public Matrix calcdMUdS(Matrix S, double biomass) {

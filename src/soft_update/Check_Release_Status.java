@@ -1,3 +1,13 @@
+/**
+ * \package soft_update
+ * \brief Package of classes required to detect whether a new release of iDynomics is available, and to perform the update
+ * 
+ * This package contains classes that are used to detect whether a new release of iDynomics is available, and to perform a software 
+ * update that downloads this new version and makes the required changes that ensures the user is running the latest version. This 
+ * package is part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free 
+ * software.  You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and 
+ * INRIA at the following URL  "http://www.cecill.info".
+ */
 package soft_update;
 
 import java.io.InputStream;

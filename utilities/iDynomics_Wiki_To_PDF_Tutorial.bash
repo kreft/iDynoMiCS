@@ -58,3 +58,5 @@ mv tutorial.pdf iDyno_Tutorial/iDyno_Tutorial.pdf
 # Now cleanup - delete the PDFs that gimli produced and the markdown files
 rm *.pdf
 rm *.md
+
+cd ..

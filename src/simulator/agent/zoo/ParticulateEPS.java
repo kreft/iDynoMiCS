@@ -1,16 +1,12 @@
 /**
- * Project iDynoMiCS (copyright -> see Idynomics.java)
- *  
+ * \package simulator.agent.zoo
+ * \brief Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types
+ * 
+ * Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
  */
-
-/**
- * ______________________________________________________
- * @since June 2006
- * @version 1.0
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * ____________________________________________________________________________
- */
-
 package simulator.agent.zoo;
 
 import simulator.agent.LocatedAgent;
@@ -20,31 +16,51 @@ import simulator.geometry.ContinuousVector;
 import utils.ExtraMath;
 import utils.XMLParser;
 
+/**
+ * \brief Creates an object of the Particulate EPS species
+ * 
+ * Creates an object of the Particulate EPS species. This represents generic extracellular polymers and contains only the 'capsule' 
+ * type. This species often includes a hydrolysis reaction, which converts COD bound in EPS into soluble COD. Note that if a bacterium 
+ * species includes a capsule of this species of ParticulateEPS, the EPS species MUST be defined first in the protocol file in order 
+ * to avoid an error; because of this the example protocol files included in iDynoMiCS list ParticulateEPS as the first defined species.
+ * 
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ *
+ */
 public class ParticulateEPS extends LocatedAgent {
 
-	// Serial version used for the serialisation of the class
+	/**
+	 * Serial version used for the serialisation of the class
+	 */
 	private static final long   serialVersionUID = 1L;
 
-	//private static StringBuffer tempString;
-
-	/* __________________ CONSTRUCTOR _________________________________ */
-
 	/**
-	 * Default constructor, only called to create the progenitor of a species
+	 * \brief Default constructor, only called to create the progenitor of this species
+	 * 
+	 * Default constructor, only called to create the progenitor of this species
 	 */
 	public ParticulateEPS() {
 		super();
 		_speciesParam = new ParticulateEPSParam();
 	}
 
-	public Object clone() throws CloneNotSupportedException {
+	/**
+	 * \brief Creates a clone of this ParticulateEPS agent
+	 * 
+	 * Creates a clone of this ParticulateEPS agent
+	 * 
+	 * @throws CloneNotSupportedException 	Exception thrown if the agent is a type that cannot be cloned
+	 */
+	public Object clone() throws CloneNotSupportedException 
+	{
 		ParticulateEPS o = (ParticulateEPS) super.clone();
 		return o;
 	}
 
 	/**
-	 * Initialisation procedure based on XML parameter file Used when creating a
-	 * progenitor
+	 * \brief Initialises the object by reading the relevant species information from the simulation XML protocol file
+	 * 
+	 *  Initialises the object by reading the relevant species information from the simulation XML protocol file
 	 */
 	public void initFromProtocolFile(Simulator aSimulator, XMLParser aSpeciesRoot) {
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -52,12 +68,27 @@ public class ParticulateEPS extends LocatedAgent {
 		init();
 	}
 
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
+	/**
+	 * \brief Create a Particulate EPS agent using information in a previous state or initialisation file
+	 * 
+	 * Create a Particulate EPS agent using information in a previous state or initialisation file
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
+	 */
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
+	{
 		// this writes no unique values, so doesn't need unique reading-in
 		super.initFromResultFile(aSim,singleAgentData);
 	}
 
-	public void init() {
+	/**
+	 * \brief Initialise an agent object, setting its generation and genealogy and calculating the agent size
+	 * 
+	 * Initialise an agent object, setting its generation and genealogy and calculating the agent size
+	 */
+	public void init() 
+	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
 		_genealogy = 0;
@@ -67,9 +98,13 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 	/**
-	 * Called by ParticulateEps.createAgent and to obtain another instance of
-	 * the same species (totally independent) The returned agent is NOT
-	 * registered
+	 * \brief Called by ParticulateEps.createAgent to obtain another instance of the same species (totally independent) 
+	 * 
+	 * Called by ParticulateEps.createAgent to obtain another instance of the same species (totally independent). The returned agent is 
+	 * NOT registered
+	 * 
+	 * @throws CloneNotSupportedException	Thrown if attempting to clone an agent type that does not implement Cloneable
+	 * @return	New instance of the ParticulateEPS species
 	 */
 	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException {
 		ParticulateEPS baby = (ParticulateEPS) this.clone();
@@ -79,8 +114,9 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 	/**
-	 * Create an agent (who a priori is registered in at least one container;
-	 * this agent is located !
+	 * \brief Create a new Particulate EPS agent (who a priori is registered in at least one container)
+	 * 
+	 * Create a new Particulate EPS agent (who a priori is registered in at least one container)
 	 */
 	public void createNewAgent(ContinuousVector position) {
 		try {
@@ -97,9 +133,13 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 	/**
-	 * Called by a capsuled agent when excreting its capsule
-	 * @param position
-	 * @param mass
+	 * \brief Creates a new Particulate EPS agent when a capsuled agent excretes that capsule
+	 * 
+	 * Creates a new Particulate EPS agent when a capsuled agent excretes that capsule. The birth of this agent is registered in the 
+	 * relevant simulation grids
+	 * 
+	 * @param mother	Bacterium object that is excreting an EPS capsule
+	 * @param ratio	Ratio of biomass that is being transferred to the capsule
 	 */
 	public boolean createByExcretion(Bacterium mother, double ratio) {
 		try {
@@ -131,6 +171,15 @@ public class ParticulateEPS extends LocatedAgent {
 		}
 	}
 
+	/**
+	 * \brief Creates a new inert particle agent when a capsuled agent excretes that capsule
+	 * 
+	 * Creates a new inert particle agent when a capsuled agent excretes that capsule. The birth of this agent is registered in the 
+	 * relevant simulation grids
+	 * 
+	 * @param mother	Bacterium object that is excreting an EPS capsule
+	 * @param ratio	Ratio of biomass that is being transferred to the capsule
+	 */
 	public boolean createInertByExcretion(Bacterium mother, double ratio) {
 		try {
 			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
@@ -160,17 +209,37 @@ public class ParticulateEPS extends LocatedAgent {
 		}
 	}
 	
+	/**
+	 * \brief Determines if this agent has reached either the radius size limit at which it will die, or a state of zero mass
+	 * 
+	 * Determines if this agent has reached either the radius size limit at which it will die, or a state of zero mass
+	 * 
+	 * @return Boolean value noting whether the cell will die (true) or not (false)
+	 */
 	public boolean willDie() {
 		if (_totalMass<0) return true;
 		return getRadius(true)<=ExtraMath.deviateFrom(getSpeciesParam().deathRadius,
 		        getSpeciesParam().deathRadiusCV);
 	}
 
-	public void mutatePop() {
+	/**
+	 * \brief Mutate any inherited parameters for this particular agent
+	 * 
+	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
+	 */
+	public void mutatePop() 
+	{
 		super.mutatePop();
 	}
 
-	public void internalStep() {
+	/**
+	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume
+	 * 
+	 * Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. Also determines whether 
+	 * the agent has reached the size at which it must divide, and monitors agent death
+	 */
+	public void internalStep() 
+	{
 		// Compute mass growth over all compartments and update radius, mass and
 		// volume
 		grow();
@@ -184,19 +253,37 @@ public class ParticulateEPS extends LocatedAgent {
 		if (willDie()) die(true);
 	}
 
-	public boolean willDivide() {
+	/**
+	 * \brief Determines if this agent has reached the radius size limit at which it will divide
+	 * 
+	 * Determines if this agent has reached the radius size limit at which it will divide
+	 * 
+	 * @return Boolean value noting whether the cell will divide (true) or not (false)
+	 */
+	public boolean willDivide() 
+	{
 		return getRadius(true)>getSpeciesParam().divRadius;
 	}
 
+	/**
+	 * \brief Determines if the agent can transfer biomass to a neighbour upon cell death
+	 * 
+	 * Determines if the agent can transfer biomass to a neighbour upon cell death
+	 * 
+	 * @return	Boolean noting whether a biomass transfer is possible
+	 */
 	public boolean willTransfer() {
 		return getRadius(true)<=ExtraMath.deviateFrom(getSpeciesParam().transferRadius,
 		        getSpeciesParam().deathRadiusCV);
 	}
 
 	/**
-	 * When becoming too small, try to transfer your biomass to your neighbour
+	 * \brief Method to transfer biomass to a neighbour should the agent become too small
+	 * 
+	 * Method to transfer biomass to a neighbour should the agent become too small
 	 */
-	protected void transferBiomass() {
+	protected void transferBiomass() 
+	{
 		// Find a neighbour with the same species in your range
 		findCloseSiblings(speciesIndex);
 
@@ -219,14 +306,24 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 	/**
-	 * Test if the agent has to die and remove it from any container
+	 * \brief Tests if the agent has to die and removes it from any container
+	 * 
+	 * Tests if the agent has to die and removes it from any container
+	 * 
+	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
 	public void die(boolean isStarving) {
 		if (isStarving&_totalMass>0) transferBiomass();		
 		super.die(isStarving);
 	}
 
-	public void updateVolume() {
+	/**
+	 * \brief Update the volume of this agent by examining the particle density
+	 * 
+	 * Update the volume of this agent by examining the particle density
+	 */
+	public void updateVolume() 
+	{
 		_volume = 0;
 		for (int i = 0; i<particleMass.length-1; i++)
 			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
@@ -238,13 +335,28 @@ public class ParticulateEPS extends LocatedAgent {
 
 	}
 
-	public String sendHeader() {
+	/**
+	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * 
+	 * @return	String specifying the header of each column of results associated with this agent
+	 */
+	public String sendHeader() 
+	{
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
 
 		return tempString.toString();
 	}
 
+	/**
+	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * 
+	 * @return	String containing results associated with this agent
+	 */
 	public String writeOutput() {
 		// write the data matching the header file
 		StringBuffer tempString = new StringBuffer(super.writeOutput());
@@ -253,16 +365,22 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 
-
+	/**
+	 * \brief Return the set of parameters that is associated with the object of this species
+	 * 
+	 * Return the set of parameters that is associated with the object of this species
+	 * 
+	 * @return Object of ParticulateParam that stores the parameters associated with this species
+	 */
 	public ParticulateEPSParam getSpeciesParam() {
 		return (ParticulateEPSParam) _speciesParam;
 	}
 
-	@Override
-	protected void conjugate(double elapsedHGTtime) {
+	//@Override
+	//protected void conjugate(double elapsedHGTtime) {
 		// TODO Auto-generated method stub
 		
-	}
+	//}
 
 
 }

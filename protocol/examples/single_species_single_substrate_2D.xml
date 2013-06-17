@@ -35,6 +35,9 @@
 		<!-- this specifies how often the output files should be written -->
 		<param name="outputPeriod" unit="hour">1</param>
 
+		<!-- Specifies whether the simulation should check as to whether a new release is available -->
+		<param name="checkForReleaseUpdate">true</param>
+
 		<!-- iDynoMiCS may use a fixed or an adaptive global timestep. If 'adaptive' is true,
 			then the three 'timeStep***' parameters control the initial, minimum, and maximum
 			values the timestep may take. If 'adaptive' is false, then the value for
@@ -48,6 +51,11 @@
 			<param name="timeStepMax" unit="hour">1</param>
 			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
+
+		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
+		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
+		<param name="attachment">selfattach</param>
+
 		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->
 		<param name="agentTimeStep" unit="hour">0.05</param>
 		<!-- Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system -->
@@ -453,13 +461,26 @@
 		involved with, using the <reaction> mark-ups. If the 'status' is set to 'inactive',
 		then the reaction will not be carried out by the species for this simulation.
 
-		Finally, the <initArea> mark-up defines the rectangular region within which
+		Finally, you need to declare parameters on how each species begins life in the simulaton.
+		This will depend on whether you are using traditional one-time attachment or the new self-attachment
+		scenario. You set this in the ATTACHMENT tag in the SIMULATOR section
+
+		FOR ONETIME ATTACHMENT (AS IN TRADITIONAL VERSIONS OF IDYNOMICS):
+		The <initArea> mark-up defines the rectangular region within which
 		the given number of individuals of this species should be placed; the agents
 		will be placed randomly in this region. The coordinates should be given in spatial
 		(micron) units, not element # (unitless). The 'birthday' parameter sets when
 		in the simulation the agents should be introduced. You may define any number
 		of <initArea> regions, and if <initArea> is omitted, no agents will be created
 		automatically.
+
+		FOR SELF-ATTACHMENT SCENARIOS (NEW TO IDYNOMICS VERSION 1.2):
+		- Specify the hour that cell injection begins in parameter "cellInjectionStartHour" - this can be set to 0 if from the start of the simulation
+		- Specify the cell attachment frequency during injection (per hour) in parameter "injectionOnAttachmentFrequency" - i.e. number of cells that 
+			attach to the substratum or biofilm per hour when injection on
+		- Specify the hour at which cell injection stops, in parameter "cellInjectionEndHour". No more cells will be introduced in the simulation from that point
+		- Specify the cell attachment frequency during injection (per hour) in parameter "injectionOffAttachmentFrequency" - i.e. number of cells that 
+			attach to the substratum or biofilm per hour when injection off
 
 
 		POSSIBLE SPECIES TYPES:
@@ -516,10 +537,10 @@
 
 		<reaction name="MyGrowthHeterotrophs" status="active"/>
 
-		<initArea number="10">
+		<initArea number="2">
 			<param name="birthday" unit="hour">0</param>
-			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="264" z="0"/>
+			<coordinates x="0" y="132" z="0"/>
+			<coordinates x="10" y="132" z="0"/>
 		</initArea>
 	</species>
 

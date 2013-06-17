@@ -2,55 +2,91 @@
  * Project iDynoMiCS (copyright -> see Idynomics.java)
  *  Project iDynoMicS
  * ___________________________________________________________________________
- * BoundaryMembrane : defines a boundary impermeable to everything except to gas
+ * 
  * 
  */
 
 /**
  * @since June 2006
  * @version 1.0
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * 
  */
-
+/**
+ * \package simulator.geometry.boundaryConditions
+ * \brief Package of boundary conditions that can be used to capture agent behaviour at the boundary of the computation domain
+ * 
+ * Package of boundary conditions that can be used to capture agent behaviour at the boundary of the computation domain. This package is 
+ * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
+ * the following URL  "http://www.cecill.info".
+ */
 package simulator.geometry.boundaryConditions;
 
 import org.jdom.Element;
-
 import java.util.*;
-
 import utils.UnitConverter;
 import utils.XMLParser;
-
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
-public class BoundaryGasMembrane extends AllBC{
 
-	/* ____________________________ FIELDS ________________________________ */
-	// Serial version used for the serialisation of the class
+/**
+ * \brief BoundaryMembrane : defines a boundary impermeable to everything except to gas
+ * 
+ * BoundaryMembrane : defines a boundary impermeable to everything except to gas. A membrane boundary has a selective permeability,
+ * meaning it behaves like a zero-flux boundary for agents and most of the solutes, but for selected solutes includes specification of 
+ * the diffusivity in the membrane and the opposing-side solute concentration
+ * 
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ *
+ */
+public class BoundaryGasMembrane extends AllBC
+{
+	/**
+	 *  Serial version used for the serialisation of the class
+	 */
 	private static final long         serialVersionUID = 1L;
 
-	// Defines permeability properties of the membrane
+	/**
+	 * The list of solutes to let diffuse through the membrane
+	 */
 	protected boolean[]               isPermeableTo;
+
+	/**
+	 * Level of permeability for each solute that can diffuse through the membrane
+	 */
 	protected double[]                permeability;
 
-	// At which bulk the membrane is connected
+	/**
+	 * The defined bulk in the simulation to which the liquid phase is connected
+	 */
 	protected Bulk                    _connectedBulk;
 
-	/* ______________ INTERNAL TEMPORARY VARIABLES ____________________ */
+	/**
+	 * A vector normal to the boundary and starting from the orthogonal projection
+	 */
 	protected static ContinuousVector vectorIn;
 
-	/* ________________________ CONSTRUCTOR _______________________________ */
+	/**
+	 * \brief Declare a gas membrane boundary and set hasBulk to true to note this is the case
+	 * 
+	 * Declare a gas membrane boundary and set hasBulk to true to note this is the case
+	 */
 	public BoundaryGasMembrane() {
 		hasBulk = true;
 	}
 
 	/**
-     * Initialise a boundary condition simulating a selective membrane,
-     * permeable to gas compounds
-     */
+	 * \brief Initialises the boundary from information contained in the simulation protocol file, and builds the list of solutes to let diffuse through the membrane
+	 * 
+	 * Initialises the boundary from information contained in the simulation protocol file, and builds the list of solutes to let diffuse through the membrane
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aDomain	The domain which this boundary condition is associated with
+	 * @param aBCMarkUp	The XML tags that have declared this boundary in the protocol file
+	 */
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp) {
 
 		// this part is same as zero-flux boundary
@@ -85,7 +121,15 @@ public class BoundaryGasMembrane extends AllBC{
 		}
 	}
 
-	/* ________________________ SOLVER _______________________________ */
+	
+	/**
+	 * \brief Computes and applies gas diffusivity across the gas membrane boundary
+	 * 
+	 * Computes and applies gas diffusivity across the gas membrane boundary
+	 * 
+	 * @param relDif	Supplied RelDiff grid
+	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 */
 	public void refreshDiffBoundary(SoluteGrid relDif, SoluteGrid aSoluteGrid) {
 		double value;
 
@@ -104,6 +148,13 @@ public class BoundaryGasMembrane extends AllBC{
 
 	}
 
+	/**
+	 * \brief Solver for the gas membrane boundary condition. Initialises the course along the shape of the boundary. 
+	 * 
+	 * Solver for the gas membrane boundary condition. Initialises the course along the shape of the boundary
+	 * 
+	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 */
 	public void refreshBoundary(SoluteGrid aSoluteGrid) {
 
 		// Initialise the course along the shape of the boundary
@@ -122,23 +173,49 @@ public class BoundaryGasMembrane extends AllBC{
 		}
 	}
 
+	/**
+	 * \brief Return the bulk that is connected to this boundary
+	 * 
+	 * Return the bulk that is connected to this boundary
+	 * 
+	 * @return Bulk object that is connected to this boundary
+	 */
 	public Bulk getBulk() {
 		return _connectedBulk;
 	}
 
+	/**
+	 * \brief For a specified solute, returns the level of that solute in the bulk
+	 * 
+	 * For a specified solute, returns the level of that solute in the bulk
+	 * 
+	 * @param soluteIndex	Index of the solute in the simulation dictionary
+	 * @return	Value of solute in the connected bulk
+	 */
 	public double getBulkValue(int soluteIndex) {
 		return _connectedBulk.getValue(soluteIndex);
 	}
 
 
-	/* _______________________ LOCATED AGENTS ______________________________ */
+	/**
+	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
+	 * 
+	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
+	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
+	 * just return the input looks a bit daft - but we'll leave it here for the moment
+	 * 
+	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
+	 */
 	public ContinuousVector lookAt(ContinuousVector cc) {
 		return cc;
 	}
 
 	/**
-     * Label a LocatedGroup which has been identified being outside this
-     * boundary
+     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * 
+     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * 
+     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
 	public void setBoundary(LocatedGroup aGroup) {
 		aGroup.status = 0;

@@ -2,19 +2,12 @@
  * Project iDynoMiCS (copyright -> see Idynomics.java)
  *  
  *______________________________________________________
- * Bulk is an object used to define the environment connected to the simulated 
- * system : this environment can impose concentrations on the boundaries 
- * (constant boundary) or exchange matter through the boundaries (bulk boundary)
+ * 
  * 
  */
 
 /**
- * @since August 2006
- * @version 1.0
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * 
  */
 
 package simulator.geometry;
@@ -33,62 +26,145 @@ import utils.XMLParser;
 import utils.ResultFile;
 import utils.LogFile;
 
-public class Bulk {
-
-	private String   _name;
-	public Simulator mySim;
-	// Rob (22/8/2011): changed _bulkValue to public so that Solver_chemostat can
-	// use it to initialise solute concentrations
-	//private  double[] _bulkValue;
-	public double[] _bulkValue;
-	private double[] _reacRate;
-	double[]         _dT;
-	private Boolean  _bulkIsConstant = true;
-	//private Boolean  _updateByReaction = true;
-
-	// Influent load and dilution rate
-	//sonia:chemostat
-	//changed to public 
-	public  double   _D;
-	public  double[] _sIn;
-
-	private Boolean[] _isInBulk;
-
-	// to allow setting each solute as constant if needed
-	public Boolean[] _isConstant;
-
-	// bvm 30.4.2009
-	// variables pertaining to pulsed bulk concentrations
-	private double[] _sPulse; // so that pulsed concentration can be different than inflow
-	private double[] _pulseRate;
-	private double[] _pulseInterval;
-	private double[] _lastPulseTime;
-
-	/* __________________ CONSTRUCTOR _________________________________ */
+/**
+ * \brief Define the bulk: an object used to define the environment connected to the simulated system
+ * 
+ * The Bulk is an object used to define the environment connected to the simulated system : this environment can impose concentrations 
+ * on the boundaries (constant boundary) or exchange matter through the boundaries (bulk boundary). A  bulk is a perfectly mixed liquid  
+ * compartment of the system, usually with a larger size than the extent of the simulated biofilm domain. For example, in a wastewater  
+ * reactor the bulk would refer to the liquid volume being treated. The bulk will usually have a fixed volume, but the volume is not 
+ * specified here, instead the definition of the computationDomain addresses the bulk compartment volume
+ * 
+ * @since August 2006
+ * @version 1.2
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ */
+public class Bulk 
+{
 
 	/**
-	 * Constructor based on XML file
-	 * @param aBulkRoot
+	 * Name assigned to this bulk, as specified in the protocol file
 	 */
-	public Bulk(Simulator aSim, XMLParser aBulkRoot) {
+	private String   _name;
+	
+	/**
+	 * The simulation object being used to simulate the conditions specified in the protocol file
+	 */
+	public Simulator mySim;
+	
+	/**
+	 * Array containing the initial bulk concentration of each solute in the bulk. RJC 22/8/11 - Made public so that Solver_chemostat
+	 * can use it to initialise solute concentrations
+	 */
+	public double[] _bulkValue;
+	
+	/**
+	 * Array of reaction rates for each solute specified in this bulk
+	 */
+	private double[] _reacRate;
+	
+	/**
+	 * Timestep value assigned to each solute in specified in this bulk
+	 */
+	double[]         _dT;
+	
+	/**
+	 * Boolean noting whether the concentration of solutes is constant or varys. Default to constant if not in protocol file
+	 */
+	private Boolean  _bulkIsConstant = true;
+	
+	/**
+	 * Reactor Dilusion rate of the bulk. Used if isConstant is set to false
+	 */
+	public  double   _D;
+	
+	/**
+	 * Array of doubles that specify the feed flow concentration of each solute in this simulation (if applicable)
+	 */
+	public  double[] _sIn;
+
+	/**
+	 * Array of booleans that note whether each solute specified in the simulation is present in this bulk
+	 */
+	private Boolean[] _isInBulk;
+
+	/**
+	 * Array of booleans that note whether the concentration of each specified solute varies over time or remains constant
+	 */
+	public Boolean[] _isConstant;
+
+	/**
+	 * Array of sPulse values assigned to each solute, if applicable. Used in pulsing to spike the concentration of a solute at a given rate
+	 */
+	private double[] _sPulse;
+	
+	/**
+	 * Array of pulseRate values assigned to each solute, if applicable. Sets the rate that the concentration of a solute is spiked if pulsing is employed
+	 */
+	private double[] _pulseRate;
+	
+	/**
+	 * Array of interval values assigned to each solute, if applicable. Sets the interval at which concentration spiking occurs, if employed
+	 */
+	private double[] _pulseInterval;
+	
+	/**
+	 * Array that stores the last time in the simulation that particular solute was spiked, if applicable. Used with pulsed concentrations
+	 */
+	private double[] _lastPulseTime;
+
+	
+	/*************************************************************************************************************************
+	 * CLASS METHODS 
+	 ************************************************************************************************************************/
+
+	/**
+	 * \brief Creates a bulk compartment object with attributes specified in the protocol file
+	 * 
+	 * Constructor for the Bulk compartment. For each bulk specified in the protocol file, creates a simulation bulk object with 
+	 * the attributes specified in the XML. This includes storing the information for each solute (initial concentrations, reaction rates, 
+	 * constant/varying concentration levels, and whether pulsed concentrations are employed) in the retrospective array for access 
+	 * in later calculations
+	 * 
+	 * @param aSim	The simulation object upon which the scenario specified in the protocol file is beinbg run
+	 * @param aBulkRoot	The XML tag objects that sub-nodes of the 'Bulk' tag in the protocol file
+	 */
+	public Bulk(Simulator aSim, XMLParser aBulkRoot) 
+	{
+		// Solute index is the integer reference to the solute in the simulation solutes dictionary
 		int soluteIndex;
 		XMLParser parser;
 
+		// Set the simulation object to that initialised in the Simulator class
 		mySim = aSim;
+		
+		// Get the name of this Bulk compartment object
 		_name = aBulkRoot.getAttribute("name");
+		
+		// Check the XML to determine is the concentration of the bulk is assumed to be constant or affected by mass balance
 		_bulkIsConstant = aBulkRoot.getParamBool("isConstant");
 
-		if (!_bulkIsConstant) {
-			// set the method used to update the bulk concentration
+		if (!_bulkIsConstant) 
+		{
+			// With bulkIsConstant set to false, the solute concentrations in the bulk vary in time. The protocol file should 
+			// specify how the bulk concentration is updated
 			String updateType = aBulkRoot.getParam("updateType");
-			if (updateType != null && updateType.equals("gradient")) {
+			
+			if (updateType != null && updateType.equals("gradient")) 
+			{
 				//_updateByReaction = false;
 				LogFile.writeLog("\t\tUsing gradient-based method for bulk updates.");
-			} else
+			} 
+			else
 				LogFile.writeLog("\t\tUsing reaction-based method for bulk updates.");
 		}
 
-		// Build the list of concentrations for each solute
+		
+		// Array initialisation - store the attributes of each solute in an array
+		// Build the list of concentrations for each solute in this bulk
 		LinkedList<Element> soluteList = aBulkRoot.buildSetMarkUp("solute");
 		_bulkValue = new double[aSim.soluteDic.size()];
 		_reacRate = new double[aSim.soluteDic.size()];
@@ -102,36 +178,46 @@ public class Bulk {
 		_pulseInterval = new double[aSim.soluteDic.size()];
 		_lastPulseTime = new double[aSim.soluteDic.size()];
 
-		// read these values in for both constant and dynamic bulk
-		//if (!_bulkIsConstant) {
-		_D = aBulkRoot.getParamDbl("D");
 		_sIn = new double[aSim.soluteDic.size()];
 		_sPulse = new double[aSim.soluteDic.size()];
-		//}
+		
+		// Parameter D is the Reactor Dilusion rate, used if isConstand is set to false
+		_D = aBulkRoot.getParamDbl("D");
+	
 
-		for (Element asoluteMarkUp : soluteList) {
+		// Now iterate through each solute specified in this bulk
+		for (Element asoluteMarkUp : soluteList) 
+		{
 			parser = new XMLParser(asoluteMarkUp);
+			// Earlier (in createSimulation method in Simulator) we built a dictionary of solutes in this simulation. Get the index 
+			// assigned in that dictionary for this solute name. This is then used as the reference for each of the above arrays
 			soluteIndex = aSim.getSoluteIndex(parser.getAttribute("name"));
+			
+			// Get the Sbulk value for this solute - the initial bulk concentration of this solute
 			_bulkValue[soluteIndex] = parser.getParamConc("Sbulk");
 			LogFile.writeLog("Setting initial "+_bulkValue[soluteIndex]);
+			
+			// Note in the boolean array that this solute is present in the bulk if concentration value is over zero
 			if (Double.isNaN(_bulkValue[soluteIndex])) _bulkValue[soluteIndex] = 0;
 			_isInBulk[soluteIndex]= true;
 
+			// Note in the array whether the concentration of this solute is set to vary over time (as determined earlier in this method
 			_isConstant[soluteIndex] = _bulkIsConstant;
+
+			// However each solute can have its own isConstant value - check whether this is the case, and if so determine if the 
+			// concentration of this solute is variable. Even if the bulk is set to isConstant, the solute can be set to be varied and 
+			// thus override the compartment
 			String isconst = parser.getParam("isConstant");
-			//if (isconst != null){
 			if (isconst != null)
 				_isConstant[soluteIndex] = Boolean.valueOf(isconst);
-			//}
-			// dilution of the solute	
-			//	if(!_bulkIsConstant){
-
-			//if(!_isConstant[soluteIndex]){
+			
+			// Get the concentration of each solute in the feed flow (for varying concentrations)
 			_sIn[soluteIndex] = parser.getParamDbl("Sin");
 			if (Double.isNaN(_sIn[soluteIndex])) _sIn[soluteIndex] = 0;
-			//}
 
-
+			// Now check for pulses. The pulseRate parameters can be used to periodically spike the concentration of a solute to that
+			// specified in Spulse parameter at a given time
+			
 			// for pulses, set pulse concentration and interval
 			_sPulse[soluteIndex] = parser.getParamDbl("Spulse");
 			if (Double.isNaN(_sPulse[soluteIndex])) _sPulse[soluteIndex] = 0;
@@ -142,14 +228,21 @@ public class Bulk {
 			_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
 			if (!Double.isNaN(_pulseRate[soluteIndex]) && _pulseRate[soluteIndex]!=0.)
 				_pulseInterval[soluteIndex] = 1./_pulseRate[soluteIndex];
-			//	}
-
+			
 		}
 	}
-
-	// bvm note 15.12.08: modified routine to allow input of solute grid
-	// bvm note 13.07.09: removed passing-in of 'implicit' flag, and instead
-	//                    set the bulk update method via the XML protocol file
+                  
+	/**
+	 * \brief Updates the bulk solute concentration if the bulk is not constant
+	 * 
+	 * Updates the bulk solute concentration if the bulk is not constant.
+	 * bvm note 15.12.08: modified routine to allow input of solute grid.
+	 * bvm note 13.07.09: removed passing-in of 'implicit' flag, and instead set the bulk update method via the XML protocol file
+	 * 
+	 * @param soluteGrid	Grid of all solutes in the simulated system
+	 * @param reacGrid	Grid of all reactions in the simulated system
+	 * @param timeStep	Internal timestep used to update the simulation environment
+	 */
 	public void updateBulk(SoluteGrid[] soluteGrid, SoluteGrid[] reacGrid, double timeStep) {
 
 		if (_bulkIsConstant) return;
@@ -184,7 +277,17 @@ public class Bulk {
 
 
 	//sonia 19.02.2010
-	//method to update Bulk solute concentrations during a chemostat setup
+	//
+	/**
+	 * \brief Method to update Bulk solute concentrations during a chemostat setup
+	 * 
+	 * Method to update Bulk solute concentrations during a chemostat setup
+	 * 
+	 * @author Sonia Martins 190210
+	 * 
+	 * @param allSol	Grid of all solutes in the simulated system
+	 * @param reacGrid	Grid of all reactions in the simulated system
+	 */
 	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid){
 		String message = "Bulk dynamics \n";	
 
@@ -206,7 +309,6 @@ public class Bulk {
 						mySim.soluteList[i].getName()+": "+_sPulse[i]);
 			}
 		for (int iGrid = 0; iGrid<allSol.length; iGrid++) {
-			//System.out.println ("BULK SOLUTE VALUES......" + _bulkValue[iGrid]);
 			message += reacGrid[iGrid].gridName+" [";
 			message += ExtraMath.toString(_bulkValue[iGrid], true)+" g/L]\n";
 		}
@@ -215,9 +317,12 @@ public class Bulk {
 	}
 
 	/**
-	 * Update bulk concentration
-	 * @param reacGrid : an array of uptake-rates grids in g.L-1.h-1
-	 * @param timeStep
+	 * \brief Update bulk concentration by reaction, determining reaction rate seen from reaction compartments
+	 * 
+	 * Update bulk concentration by reaction, determining reaction rate seen from reaction compartments
+	 * 
+	 * @param reacGrid	An array of uptake-rates grids in g.L-1.h-1
+	 * @param timeStep	Internal timestep used to update the simulation environment
 	 */
 	public void updateBulkByReaction(SoluteGrid[] reacGrid, double timeStep) {
 
@@ -291,16 +396,16 @@ public class Bulk {
 	}
 
 	/**
-	 * Update bulk concentration on the basis of the flow passed through the
-	 * interface with the bulk compartment
+	 * \brief Update bulk concentration on the basis of the flow passed through the interface with the bulk compartment
 	 * 
-	 * IMPORTANT: this method should ONLY be used to test the updateBulkByReaction
-	 * routine with FLAT biofilms because this routine does not treat the
-	 * gradient through the interface correctly.
+	 * Update bulk concentration on the basis of the flow passed through the interface with the bulk compartment
 	 * 
+	 * IMPORTANT: this method should ONLY be used to test the updateBulkByReaction routine with FLAT biofilms because this routine 
+	 * does not treat the gradient through the interface correctly.
 	 * DO NOT USE FOR GENERAL SIMULATIONS
 	 * 
-	 * @param soluteGrid
+	 * @param soluteGrid	Grid of all solutes in the simulated system
+	 * @param timeStep	Internal timestep used to update the simulation environment
 	 */
 	public void updateBulkByGradient(SoluteGrid[] soluteGrid, double timeStep) {
 
@@ -396,10 +501,13 @@ public class Bulk {
 	}
 
 	/**
+	 * \brief Compute massic flow
+	 * 
 	 * Compute massic flow : g.m-2.time-1
-	 * @param aSG
-	 * @param aDC
-	 * @param flow
+	 * 
+	 * @param aSG	a solute grid for a particular solute
+	 * @param aDC	Position on the grid
+	 * @param flow	Flow direction
 	 */
 	public void computeFlow(SoluteGrid aSG, DiscreteVector aDC, ContinuousVector flow) {
 		int _i, _j, _k;
@@ -420,27 +528,60 @@ public class Bulk {
 		flow.z += -D*(u[_i][_j][_k+1]-u[_i][_j][_k-1])/(2*r)*factor;
 	}
 
-	/* _________________________ GET & SET ________________________________ */
-
-	public Boolean contains(int soluteIndex) {
+	/**
+	 * \brief Determine if a particular solute is in the bulk
+	 * 
+	 * Determine if a particular solute is in the bulk. Uses the index of this solute in the simulation dictionary
+	 * 
+	 * @param soluteIndex	Index of solute in the simulation dictionary
+	 * @return	Boolean noting whether this solute is in the bulk (true) or not (false)
+	 */
+	public Boolean contains(int soluteIndex) 
+	{
 		return _isInBulk[soluteIndex];
 	}
 
+	/**
+	 * \brief Get the value of a particular solute in the bulk
+	 * 
+	 * Get the value of a particular solute in the bulk. Uses the index of this solute in the simulation dictionary
+	 * 
+	 * @param soluteIndex	Index of solute in the simulation dictionary
+	 * @return	Level of this particular solute in the bulk
+	 */
 	public double getValue(int soluteIndex) {
 		return _bulkValue[soluteIndex];
 	}
 
+	/**
+	 * \brief Set the value of a particular solute in the bulk
+	 * 
+	 * Set the value of a particular solute in the bulk. Uses the index of this solute in the simulation dictionary
+	 * 
+	 * @param soluteIndex	Index of solute in the simulation dictionary
+	 * @param value	Level at which to set the solute level
+	 */
 	public void setValue(int soluteIndex, double value) {
 		_bulkValue[soluteIndex] = value;
 	}
 
+	/**
+	 * \brief Get the name of this bulk
+	 * 
+	 * Get the name of this bulk
+	 * 
+	 * @return	String containing the name of this bulk
+	 */
 	public String getName() {
 		return _name;
 	}
 
 	/**
-	 * Send the time constraint of that bulk
-	 * @return
+	 * \brief Return the time constraint of the bulk
+	 * 
+	 * Return the time constraint of the bulk
+	 * 
+	 * @return	Double containing the time constraint of this bulk
 	 */
 	public double getTimeConstraint() {
 		double out = ExtraMath.max(_dT);
@@ -454,8 +595,12 @@ public class Bulk {
 	}
 
 	/**
-	 * Insert the description of the bulk in the result file
-	 * @param buffer
+	 * \brief Writes a description of the bulk in the result file
+	 * 
+	 * Writes a description of the bulk in the result file
+	 * 
+	 * @param buffer	Buffer to which simulation results are being written
+	 * @throws Exception	Exception thrown if this buffer cannot be written to
 	 */
 	public void writeReport(ResultFile buffer) throws Exception {
 		StringBuffer text = new StringBuffer();

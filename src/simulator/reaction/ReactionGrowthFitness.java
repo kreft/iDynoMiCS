@@ -1,3 +1,11 @@
+/**
+ * \package reaction
+ * \brief Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS
+ * 
+ * Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS. This package is part of iDynoMiCS v1.2, governed by the 
+ * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
+ * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ */
 package simulator.reaction;
 
 import idyno.SimTimer;
@@ -18,42 +26,76 @@ import utils.UnitConverter;
 import utils.XMLParser;
 
 /**
- * This class deals with the fitness cost associated with the carriage of a plasmid.
- * A cell carrying a plasmid will have its biomass yield reduced due to the metabolic burden 
- * conferred by the plasmid, which indirectly impacts its growth rate output.
- * Here we assume that plasmid cost decreases exponentially with the time spent in the host, until it reaches
- * a minimum value. The assumption behind this approach is that plasmid and host coevolve. We also assume that
- * the individuals from a species don't mutate, thus a plasmid that has evolved in a host of a certain species if transferred
- * to another individual of the same species, will have the "evolved" cost for its new recipient.
+ * \brief Captures the fitness cost associated with the carriage of a plasmid
  * 
- * This method was extended from the abstract class Reaction and follows the rules used in ReactionFactor to model 
- * bacterium growth by monod-kinetics.
+ * This class deals with the fitness cost associated with the carriage of a plasmid. A cell carrying a plasmid will have its biomass 
+ * yield reduced due to the metabolic burden conferred by the plasmid, which indirectly impacts its growth rate output. Here we assume 
+ * that plasmid cost decreases exponentially with the time spent in the host, until it reaches a minimum value. The assumption behind 
+ * this approach is that plasmid and host coevolve. We also assume that the individuals from a species don't mutate, thus a plasmid 
+ * that has evolved in a host of a certain species if transferred to another individual of the same species, will have the "evolved" 
+ * cost for its new recipient.
  * 
  * @author SoniaMartins
  *
  */
-
 public class ReactionGrowthFitness extends Reaction{
 
+	/**
+	 * Serial version used for the serialisation of the class
+	 */
 	private static final long serialVersionUID = 1L;
 
-
+	/**
+	 * Maximum rate at which the reaction may proceed
+	 */
 	private double            _muMax;
+	
+	/**
+	 * KineticFactor mark-ups define multiplicative factors that affect the reaction rate and decrease the overall rate from muMax 
+	 * to something lower. There are several possible types of kinetic factors, and each may take a parameter as well as a 
+	 * solute that will set the term's value. This array holds the information in the protocol file for the declared kinetic factor
+	 */
 	private IsKineticFactor[] _kineticFactor;
+	
+	/**
+	 * A list of the solutes responsible for each kinetic factor. I.e. the solutes which affect this reaction. 
+	 * */
 	private int[]             _soluteFactor;
 
-	// Temporary variable
+	/**
+	 * Used to iterate through XML tags that declare this reaction in the protocol file
+	 */
 	private static int        paramIndex;
+	
+	/**
+	 * Temporary store of values retrieved from the XML protocol file
+	 */
 	private static double     value;
-	private double[]          marginalMu, marginalDiffMu;
+	
+	/**
+	 * Marginal rate of reaction matrix
+	 */
+	private double[]          marginalMu;
+	
+	/**
+	 * Used to calculate diff uptake rate of solute
+	 */
+	private double[]		  marginalDiffMu;
+	
+	/**
+	 * Holds the unit of the parameter declared in the XML protocol file
+	 */
 	private StringBuffer      unit;
 
-	/* ________________________ CONSTRUCTORS ________________________________ */
-	public ReactionGrowthFitness() {
-	}
-
-	/* ________________ Used during initialisation ______________________ */
-
+	/**
+	 * \brief Initialises the reaction by setting relevant parameters to values contained in the simulation protocol file
+	 * 
+	 * Initialises the reaction by setting relevant parameters to values contained in the simulation protocol file
+	 * 
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
+	 * @see Simulator.createReaction()
+	 */
 	public void init(Simulator aSim, XMLParser xmlRoot) {
 
 		// Call the init of the parent class (populate yield arrays)
@@ -106,7 +148,14 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	/**
-	 * Use the reaction class to fill the parameters fields of the agent
+	 * \brief Use the reaction class to fill the parameters fields of the agent
+	 * 
+	 * Use the reaction class to fill the parameters fields of the agent. Uses information in the agent and protocol file to achieve this
+	 * 
+	 * @param anAgent	The ActiveAgent which parameters are being populated
+	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
+	 * @param aReactionRoot	The XML object containing the definition of one reaction in the protocol file
+	 * @see Simulator.createReaction()
 	 */
 	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
@@ -131,8 +180,11 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	/**
-	 * @return the total number of parameters needed to describe the kinetic of
-	 * this reaction (muMax included)
+	 * \brief Return the total number of parameters needed to describe the kinetic of this reaction (muMax included)
+	 * 
+	 * Return the total number of parameters needed to describe the kinetic of this reaction (muMax included)
+	 * 
+	 * @return Integer stating the total number of parameters needed to describe the kinetic
 	 */
 	public int getTotalParam() {
 		// Sum the number of parameters of each kinetic factor
@@ -144,8 +196,13 @@ public class ReactionGrowthFitness extends Reaction{
 		return totalParam;
 	}
 
-	/* _________________ INTERACTION WITH THE SOLVER_______________________ */
-
+	/**
+	 * \brief Update the Marginal Mu data matrix
+	 * 
+	 * Update the Marginal Mu data matrix
+	 * 
+	 * @param s	Temporary container for solute concentration 
+	 */
 	public void updateMarginalMu(double[] s) {
 		int soluteIndex;
 
@@ -161,36 +218,15 @@ public class ReactionGrowthFitness extends Reaction{
 		}
 	}
 
-	/**
-	 * Update the array of uptake rates and the array of its derivative Based on
-	 * parameters sent by the agent
-	 * @param s
-	 * @param mass
-	 */
-	public void computeUptakeRate(double[] s, ActiveAgent anAgent) {
-
-		// First compute specific rate
-		computeSpecificGrowthRate(s, anAgent);
-
-		double mass = anAgent.particleMass[_catalystIndex];
-
-		// Now compute uptake rates
-		for (int iSolute : _mySoluteIndex) {
-			_uptakeRate[iSolute] = mass*_specRate*anAgent.soluteYield[reactionIndex][iSolute];
-		}
-		int iSolute;
-		for (int i = 0; i<_soluteFactor.length; i++) {
-			iSolute = _soluteFactor[i];
-			_diffUptakeRate[iSolute] = mass*marginalDiffMu[i]
-			                                               *anAgent.soluteYield[reactionIndex][iSolute];
-		}
-	}
 
 	/**
-	 * Update the array of uptake rates and the array of its derivative Based on
-	 * default values of parameters Unit is fg.h-1
-	 * @param s : the concentration locally observed
-	 * @param mass : mass of the catalyst (cell...)
+	 * \brief Update the array of uptake rates and the array of its derivative. Based on default values of parameters. Unit is fg.h-1
+	 * 
+	 * Update the array of uptake rates and the array of its derivative. Based on default values of parameters. Unit is fg.h-1
+	 * 
+	 * @param s	The concentration of solute locally observed
+	 * @param mass	Mass of the catalyst (cell...)
+	 * @param tdel	Time
 	 */
 	public void computeUptakeRate(double[] s, double mass, double tdel) {
 
@@ -229,39 +265,14 @@ public class ReactionGrowthFitness extends Reaction{
 
 	}
 
-	public void computeUptakeRate(double[] s, double mass, Matrix dFdY) {
-
-		// First compute specific rate
-		computeSpecificGrowthRate(s);
-
-		// Now compute uptake rate
-		for (int iSolute : _mySoluteIndex) {
-			_uptakeRate[iSolute] = mass*_specRate*_soluteYield[iSolute];
-		}
-
-		// Rob (29/9/2011): here we update the chemostat solver's Jacobian matrix directly
-		// For each solute factor (a solute which affects this reaction rate), we calculate
-		// the effect a change in that solute has on each solute in this reaction's solute
-		// index (a list of all solutes which are affected by this reaction).
-		int iSolute;
-		Matrix soluteYield    = new Matrix (nSolute,1,0);
-		Matrix marginaldiffmu = new Matrix (1,nSolute,0);
-		// For each affecting solute...
-		for (int i = 0; i<_soluteFactor.length; i++){
-			iSolute = _soluteFactor[i];
-			if(iSolute!=-1){
-				marginaldiffmu.set(0, iSolute, marginalDiffMu[i]);
-			}
-		}
-		// For each affected solute...
-		for (int i = 0; i<_mySoluteIndex.length; i++){
-			iSolute = _mySoluteIndex[i];
-			soluteYield.set(iSolute,0,_soluteYield[i]);
-		}
-
-		dFdY.plusEquals(soluteYield.times(marginaldiffmu).times(mass));
-	}
-
+	/**
+	 * \brief Compute the specific growth rate
+	 * 
+	 * Compute the specific growth rate. Don't forget to update marginalMu before calling this! 
+	 * 
+	 * @param s	Temporary container for solute concentration 
+	 * @return	The specific growth rate
+	 */
 	public double computeSpecRate(double[] s) {
 		double specRate = _muMax;
 
@@ -272,9 +283,11 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	/**
-	 * Compute specific growth rate in function of concentrations sent
-	 * Parameters used are those defined for the reaction
-	 * @param double[] s : array of solute concentration
+	 * \brief Compute specific growth rate in function to concentrations sent
+	 * 
+	 * Compute specific growth rate in function to concentrations sent
+	 * 
+	 * @param s	Array of solute concentration
 	 */
 	public void computeSpecificGrowthRate(double[] s) {
 		_specRate = _muMax;
@@ -302,10 +315,27 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 
-
-	public double[] getMarginalDiffMu() {
+	/**
+	 * \brief Return the marginalDiffMu array
+	 * 
+	 * Return the marginalDiffMu array. Rob (25/8/2011): added this so that Reaction.applyChemostatReaction() can see marginalDiffMu
+	 * 
+	 * @return	marginalDiffMu array
+	 */
+	public double[] getMarginalDiffMu() 
+	{
 		return marginalDiffMu;
 	}
+	
+	/**
+	 * \brief Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
+	 * 
+	 * Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
+	 * 
+	 * @param S	Temporary container for solute concentration
+	 * @param biomass	Total particle mass in the system which catalyses this reaction
+	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
+	 */ 
 	public Matrix calcdMUdS(Matrix S, double biomass) {
 		Matrix dMUdY = new Matrix (nSolute, nSolute, 0);
 
@@ -339,6 +369,16 @@ public class ReactionGrowthFitness extends Reaction{
 		return dMUdY;
 	}
 
+	/**
+	 * \brief Calculate the rate of change of each uptake rate with respect to time.
+	 * 
+	 * Calculate the rate of change of each uptake rate with respect to time. dMUdT = catalyticBiomass*specificGrowthRate*soluteYield.
+	 * Returned as a matrix
+	 * 
+	 * @param S	Temporary container for solute concentration
+	 * @param biomass	Total particle mass in the system which catalyses this reaction
+	 * @return Matrix containing rate of change of each uptake rate with respect to time
+	 */ 
 	public Matrix calcdMUdT(Matrix S, double biomass) {
 		Matrix dMUdT = new Matrix(nSolute, 1, 0);
 
@@ -360,6 +400,14 @@ public class ReactionGrowthFitness extends Reaction{
 		return dMUdT;
 	}
 
+	/**
+	 * \brief Compute the marginal difference array
+	 * 
+	 * Compute the marginal difference array. Don't forget to update marginalMu before calling this! 
+	 * 
+	 * @param s	Temporary container for solute concentration 
+	 * @return Marginal diff array
+	 */
 	public double[] computeMarginalDiffMu(double[] s) {
 		int soluteIndex;
 
@@ -418,7 +466,7 @@ public class ReactionGrowthFitness extends Reaction{
 
 	/**
 	 * Compute specific growth rate in function to concentrations sent
-	 * @param double[] s : array of solute concentration
+	 * @param s : array of solute concentration
 	 * @param anAgent Parameters used are those defined for THIS agent
 	 */
 	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
@@ -456,7 +504,11 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	/**
-	 * Return the specific reaction rate
+	 * \brief Return the specific reaction rate for a given agent
+	 * 
+	 * Return the specific reaction rate for a given agent
+	 * 
+	 * @param anAgent	Agent to use to determine solute concentration and calculate reaction rate
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */

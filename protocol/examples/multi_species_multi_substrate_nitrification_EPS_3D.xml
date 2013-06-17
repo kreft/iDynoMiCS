@@ -24,6 +24,9 @@
 		<param name="randomSeed">42</param>
 		<param name="outputPeriod" unit="hour">1</param>
 
+		<!-- Specifies whether the simulation should check as to whether a new release is available -->
+		<param name="checkForReleaseUpdate">true</param>
+
 		<timeStep>
 			<param name="adaptive">true</param>
 			<param name="timeStepIni" unit="hour">0.5</param>
@@ -31,6 +34,10 @@
 			<param name="timeStepMax" unit="hour">1</param>
 			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
+
+		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
+		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
+		<param name="attachment">selfattach</param>
 
 		<param name="agentTimeStep" unit="hour">0.05</param>
         <param name="invComp">false</param> 
