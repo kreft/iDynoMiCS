@@ -8,6 +8,7 @@ package simulator.geometry.shape;
 
 import simulator.geometry.*;
 import simulator.SpatialGrid;
+import utils.LogFile;
 import utils.XMLParser;
 
 import java.io.Serializable;
@@ -185,20 +186,17 @@ public class Planar implements IsShape, Serializable {
      * 
      */
 	public boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut, SpatialGrid aSG) {
-		// Find the next valid point
-		boolean test = false;
-		while (!test) {
-			stepBoundary();
-			dcIn.sendSum(origin, move);
-			test = aSG.isValid(dcIn);
+	    // Find the next valid point
+	    boolean vectorValid = false;
+	    do {
+		stepBoundary();
+		dcIn.sendSum(origin, move);
+		vectorValid = aSG.isValid(dcIn);
+		// If a valid point has been found, compute its closest neighbour outside
+		if (vectorValid) dcOut.sendSum(dcIn, _vectorDCOut);
+	    } while ( !(vectorValid) && indexV<vMax );
 
-			if (indexV>=vMax) break;
-		}
-		// If a valid point has been found, compute its closest neighbour
-		// outside
-		if (test) dcOut.sendSum(dcIn, _vectorDCOut);
-
-		return test;
+	    return vectorValid;
 	}
 
 	/**

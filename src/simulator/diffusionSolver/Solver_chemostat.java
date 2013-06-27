@@ -177,20 +177,9 @@ public class Solver_chemostat extends DiffusionSolver {
 		// The error estimate is set back to zero for each global time-step
 		error = 0;
 
-		//		for (int iSol : _soluteIndex) {
-		//			if (_soluteIndex.contains(iSol)) {
-		//				y.set(iSol, 0,  allSolute[iSol].grid[0][0][0]);
-		//				//LogFile.writeLog(" Yes, y = "+y.get(iSol,0)+" allSol = "+allSolute[iSol].grid[0][0][0]);
-		//			} else {
-		//				y.set(iSol, 0, 0);
-		//				//LogFile.writeLog(" No, y = "+y.get(iSol,0)+" allSol = "+allSolute[iSol].grid[0][0][0]);
-		//			}
-		//		}
 		for (int iSol = 0; iSol<nSolute; iSol++) {
 			y.set(iSol, 0,  allSolute[iSol].grid[0][0][0]);
 		}
-		//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
-		//LogFile.writeLog("S = "+y.get(0,0)+" X = "+y.get(1,0));
 
 		// Check if the Sinflow has changed (solutes may be pulsed)
 		sInflow = updateSInflow(sInflow);

@@ -108,7 +108,7 @@ public class BoundaryCyclic extends AllBC{
 	}
 
 	/**
-	 * Modify the movement vector : the new position is the orthognal projection
+	 * Modify the movement vector: the new position is the orthogonal projection
 	 * on the boundary surface
 	 * @see LocatedAgent.move()
 	 */

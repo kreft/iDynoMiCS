@@ -674,7 +674,10 @@ public class AgentContainer {
 		} else{
 			// Rob 28/11/2011: Added this so we can keep the population at or below 1000
 			// EROSIONMETHOD is normally used to decide between biofilm functions so this shouldn't be a problem
-			agentsToDilute = Math.max(agentList.size() - 1000, 0);
+		    	if (Dfactor>0)
+		    	    agentsToDilute = Math.max(agentList.size() - (int) Dfactor , 0);
+		    	else
+		    	    agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
 		
 		for (int i=0; i<agentsToDilute; i++){
