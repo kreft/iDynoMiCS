@@ -464,7 +464,6 @@ public class AgentContainer
 			if (EROSIONMETHOD)
 				shrinkOnBorder();
 			else
-			{
 				// KA - Check added after self-attachment, as it is possible that if the timestep is much less than the input rate, 
 				// the grid may contain no cells for the first few steps
 				if(this.agentIter.hasNext())
@@ -483,8 +482,8 @@ public class AgentContainer
 					}
 				}
 
-				LogFile.chronoMessageOut("Detachment");
-			}
+			LogFile.chronoMessageOut("Detachment");
+			
 				
 		}
 		nAgent = agentList.size();
@@ -1524,18 +1523,32 @@ public class AgentContainer
 				
 				// KA 050613 - changed this here to create the _nTotal dependent on whether we are in 3D or not - little need for
 				// Z padding if we're not in 3D
+				// KA 270713 - bug found that creates different results between 1.1 and 1.2 - although this has been found and fixed
+				// this appears padding related, and thus 1.2 has returned to have padding for 2D simulations. This will be addressed 
+				// properly at a later version
+				
 				// Calculate the number of grid elements
 				_nTotal = (_nI + 2) * (_nJ + 2) * (_nK + 2);
+				
 			} 
 			else 
 			{
 				_nK = 1;
 				is3D = false;
 				
+				// KA 270713 - bug found that creates different results between 1.1 and 1.2 - although this has been found and fixed
+				// this appears padding related, and thus 1.2 has returned to have padding for 2D simulations. This will be addressed 
+				// properly at a later version
+
+				// KA 260713 - to check for differences between 1.1 and 1.2, have put padding back into 2D sim
+				_nTotal = (_nI + 2) * (_nJ + 2) * (_nK + 2);
+				
+				// Code for grid without padding - turn on again when this is investigated further
 				// Now work out _Total without the addition of padding in the Z, which is not necessary and should save space
-				_nTotal  = (_nI + 2) * (_nJ + 2);
+				//_nTotal  = (_nI + 2) * (_nJ + 2);
+				
+				
 			}
-			
 		}
 
 		
@@ -1849,15 +1862,21 @@ public class AgentContainer
 			int j = (int) Math.floor(cc.y / _res) + 1;
 			//System.out.println("I: "+i+" J: "+j+" _nI "+_nI+" NJ"+_nJ);
 			
-			if(is3D)
-			{	
-				int k = (int) Math.floor(cc.z / _res) + 1;
-				return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
-			}
-			else
-			{
-				return i + j * (_nI + 2) + (_nI + 2);
-			}
+			// KA 260713 - to check for differences between 1.1 and 1.2, have put padding back into 2D sim
+			int k = (int) Math.floor(cc.z / _res) + 1;
+			return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
+			
+			// WITH BUG BETWEEN 1.1 AND 1.2 SUGGESTING THIS NEEDS FURTHER EXAMINING, PADDING PUT BACK IN TO 2D SIMULATIONS
+			// THIS CODE CAN BE RESTORED LATER WHEN THIS IS REEXAMINED
+			//if(is3D)
+			//{	
+				//int k = (int) Math.floor(cc.z / _res) + 1;
+				//return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
+			//}
+			//else
+			//{
+				//return i + j * (_nI + 2) + (_nI + 2);
+			//}
 		}
 	}
 
