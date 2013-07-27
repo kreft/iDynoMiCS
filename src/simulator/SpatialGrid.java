@@ -764,26 +764,16 @@ public class SpatialGrid implements Serializable {
 	 */
 	public void setAllValueAt(double value) 
 	{
+		//sonia:chemostat 
+		//in this case we have no padding
 
-		if(Simulator.isChemostat)
-		{
-			//sonia:chemostat 
-			//in this case we have no padding
-
+		if(Simulator.isChemostat){
 			Arrays.fill(grid[0][0],value);
-		}
-		else
-		{
-			for (int i = 0; i<_nI+2; i++) 
-			{
-				for (int j = 0; j<_nJ+2; j++) 
-				{
-					// KA - why isn't the third dimension initialised to zero too?
-					for (int k =0; k<_nK+2;k++)
-					{
-						//Arrays.fill(grid[i][j], value);
-						grid[i][j][k] = 0.0;
-					}
+
+		}else{
+			for (int i = 0; i<_nI+2; i++) {
+				for (int j = 0; j<_nJ+2; j++) {
+					Arrays.fill(grid[i][j], value);
 				}
 			}
 		}
