@@ -130,7 +130,7 @@ public class LocatedParam extends ActiveParam
 		value = aSpeciesRoot.getParamDbl("deathRadiusCV");
 		if(!Double.isNaN(value)) deathRadiusCV = value;	
 
-		value = aSpeciesRoot.getParamLength("babyMassFrac ");
+		value = aSpeciesRoot.getParamDbl("babyMassFrac ");
 		if(!Double.isNaN(value)) babyMassFrac  = value;
 
 		value = aSpeciesRoot.getParamDbl("babyMassFracCV");

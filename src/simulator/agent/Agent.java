@@ -211,7 +211,7 @@ public abstract class Agent implements Cloneable {
 	protected void recordGenealogy(Agent baby) 
 	{
 		// Rob 18/1/11: Shuffled around slightly to include odd numbers
-		baby._genealogy = _genealogy+ExtraMath.exp2(this._generation);
+		baby._genealogy = _genealogy+ExtraMath.exp2long(this._generation);
 
 		this._generation++;
 		baby._generation = this._generation;

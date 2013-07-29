@@ -989,14 +989,12 @@ public class Species implements Serializable
 	 */
 	public void shuffleCoordinates(ContinuousVector cc, ContinuousVector[] area) 
 	{
-		boolean test = true;
-		while (test) 
+		do 
 		{
 			cc.x = area[0].x+ExtraMath.getUniRand()*(area[1].x-area[0].x);
 			cc.y = area[0].y+ExtraMath.getUniRand()*(area[1].y-area[0].y);
 			cc.z = area[0].z+ExtraMath.getUniRand()*(area[1].z-area[0].z);
-			test = !(domain.testCrossedBoundary(cc)==null);
-
-		}
+		} while ( domain.testCrossedBoundary(cc) != null );
+		 
 	}
 }

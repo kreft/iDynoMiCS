@@ -592,7 +592,7 @@ public class LocatedGroup {
 	 * 
 	 * Comparator used by the detachment levelset algorithm
 	 * 
-	 * @author lal
+	 * @author Chaodong Zhang
 	 */
 	public static class TValueComparator implements java.util.Comparator<Object> 
 	{

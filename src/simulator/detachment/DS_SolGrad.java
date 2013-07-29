@@ -51,7 +51,7 @@ public class DS_SolGrad extends LevelSet
 	 */
 	public void init(AgentContainer anAgentGrid, XMLParser root) {
 		super.init(anAgentGrid, root);
-		// kDet has units of: fg.um-4.hr-1
+		// kDet has units of: um2.hr-1
 		// this gives speed in um.hr-1
 		kDet = root.getParamDbl("kDet");
 		double value=root.getParamDbl("maxTh");
