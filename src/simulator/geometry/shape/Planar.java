@@ -14,6 +14,7 @@ import simulator.SpatialGrid;
 import utils.XMLParser;
 import java.io.Serializable;
 import java.util.*;
+import utils.LogFile;
 
 /**
  * \brief Create a planar shaped boundary
@@ -311,21 +312,20 @@ public class Planar implements IsShape, Serializable
      *  @return Whether a valid point was found
      *  
      */
-	public boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut, SpatialGrid aSG) {
+	public boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut, SpatialGrid aSG) 
+	{
 		// Find the next valid point
-		boolean test = false;
-		while (!test) {
+		boolean vectorValid = false;
+		do 
+		{
 			stepBoundary();
 			dcIn.sendSum(origin, move);
-			test = aSG.isValid(dcIn);
-
-			if (indexV>=vMax) break;
-		}
-		// If a valid point has been found, compute its closest neighbour
-		// outside
-		if (test) dcOut.sendSum(dcIn, _vectorDCOut);
-
-		return test;
+			vectorValid = aSG.isValid(dcIn);
+			// If a valid point has been found, compute its closest neighbour outside
+			if (vectorValid) dcOut.sendSum(dcIn, _vectorDCOut);
+		} while ( !(vectorValid) && indexV<vMax );
+		
+		return vectorValid; 
 	}
 
 	/**
