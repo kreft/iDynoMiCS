@@ -91,6 +91,19 @@ public final class ExtraMath
 	}
 
 	/**
+	 * \brief Calculate x to the power of x where x is an integer, returning a long number
+	 * 
+	 * Calculate x to the power of x where x is an integer, returning a long number
+	 * 
+	 * @param x	Number to be raised to power of 2
+	 * @return	2^x, as a long number
+	 */
+	public static final long exp2long(int x) 
+	{
+		return (long) Math.pow(2, x);
+	} 
+	
+	/**
 	 * \brief Calculate x to the power of 2 where x is an integer
 	 * 
 	 * Calculate x to the power of 2 where x is an integer

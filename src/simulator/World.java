@@ -9,7 +9,7 @@
 package simulator;
 
 import java.util.*;
-
+import utils.LogFile;
 import utils.ExtraMath;
 import utils.XMLParser;
 import simulator.geometry.*;
@@ -69,13 +69,28 @@ public class World
 	 */
 	public void init(Simulator aSim, XMLParser worldRoot) 
 	{
-		// Create & register the defined bulks
-		for (XMLParser aBulkRoot : worldRoot.buildSetParser("bulk"))
-			bulkList.add(new Bulk(aSim, aBulkRoot));
-
-		// Create & register the defined domains
-		for (XMLParser aDomainRoot : worldRoot.buildSetParser("computationDomain"))
-			domainList.add(new Domain(aSim, aDomainRoot));
+		
+		try 
+		{
+			// Create & register the defined bulks
+			for (XMLParser aBulkRoot : worldRoot.buildSetParser("bulk"))
+				bulkList.add(new Bulk(aSim, aBulkRoot));
+		} 
+		catch(Exception e) 
+		{
+			LogFile.writeLog("Error trying to create bulks in World.init(): "+e);
+		} 
+		
+		try 
+		{
+			// Create & register the defined domains
+			for (XMLParser aDomainRoot : worldRoot.buildSetParser("computationDomain"))
+				domainList.add(new Domain(aSim, aDomainRoot));
+		} 
+		catch(Exception e)
+		{
+			LogFile.writeLog("Error trying to create domains in World.init(): "+e);
+		} 
 
 	}
 
@@ -97,6 +112,7 @@ public class World
 				return (Domain) domainList.get(i); 
 			}
 		}
+		LogFile.writeLog("World.getDomain() found no domain"); 
 		return null;
 	}
 
