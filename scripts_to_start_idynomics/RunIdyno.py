@@ -65,4 +65,5 @@ else:
         for m in range(options.Multiples):
             cmd = '''java -Xms%sm -Xmx%sm -cp %s idyno.Idynomics %s'''%(options.Xmin,options.Xmax,CLASSPATH,protoFile)
             os.system(cmd)
-            time.sleep(60)
+      	    if options.Multiples > 1:
+		time.sleep(60) 
