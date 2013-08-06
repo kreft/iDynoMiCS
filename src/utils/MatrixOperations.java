@@ -200,6 +200,23 @@ public abstract class MatrixOperations
 		return sum;
 	}
 	
+	
+	public static double computeSumP2(double[][][] a) {
+		double sum = 0;
+		for (int i = 1; i<a.length-1; i++)
+			for (int j = 0; j<a[i].length; j++)
+				for (int k = 1; k<a[i][j].length-1; k++)
+				{
+					if(a[i][j][k]!=0)
+					{
+						System.out.println(a[i][j][k]);
+					}
+				
+					sum += a[i][j][k];
+				}
+		return sum;
+	}
+	
 	/**
      * \brief Compute and return the sum of all elements in the grid, padding included
      *
