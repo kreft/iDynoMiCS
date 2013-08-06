@@ -102,9 +102,14 @@ public abstract class Reaction implements Serializable
 	protected double[]                _uptakeRate;
 	
 	/**
-	 * Array to store the solute yield from this reaction.  If a solute is not concerned by the current reaction, the yield will be zero
+	 * Array to store the solute yield for this reaction.  If a solute is not concerned by the current reaction, the yield will be zero
 	 */
 	protected double[]                _soluteYield;
+	
+	/**
+	 * Array to store the uptake or production of each solute, by this reaction, for the whole domain [KA August 2013]
+	 */
+	public double[]				  _soluteProductionOrUptake;
 	
 	/**
 	 * Array to store the kinetic factors involved in this reaction
@@ -178,6 +183,7 @@ public abstract class Reaction implements Serializable
 
 		// Initialize arrays storing reaction parameters
 		_soluteYield = new double[nSolute];
+		_soluteProductionOrUptake = new double[nSolute];
 		_particleYield = new double[nParticulate];
 		_particleNameYield = new String[nParticulate];
 
@@ -561,6 +567,23 @@ public abstract class Reaction implements Serializable
 
 		return out;
 	}
+	
+	/**
+	 * \brief Calculates the production or uptake of each solute for this reaction, over the whole domain, for this simulation timestep
+	 * 
+	 * Calculates the production or uptake of each solute for this reaction, over the whole domain, for this simulation timestep. These 
+	 * are totalled for all reactions and written to the env_state files at the appropriate output period
+	 */
+	public void calculateSoluteChange()
+	{
+		// For each solute in the simulation
+		for (int iSolute = 0; iSolute<_soluteList.length; iSolute++) 
+		{
+			// To obtain figure for this solute multiply the sum of the reaction rates by the stochiometry
+			_soluteProductionOrUptake[iSolute] = _soluteYield[iSolute]*getReactionRateSum();
+			
+		}
+	}
 
 	/**
 	 * \brief Write reaction information to the result file stream
@@ -724,6 +747,11 @@ public abstract class Reaction implements Serializable
 	 * @return Marginal diff array
 	 */
 	public abstract double[] computeMarginalDiffMu(double[] s);
+	
+	public double getReactionRateSum()
+	{
+		return _reacGrid.getSum();
+	}
 
 
 }

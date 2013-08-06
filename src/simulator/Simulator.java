@@ -315,6 +315,8 @@ public class Simulator
 		while (simulationIsRunning() && continueRunning)
 			step();
 		if (!continueRunning) writeReport();
+		
+		
 	}
 
 	/**
@@ -367,6 +369,8 @@ public class Simulator
 			// Perform agent stepping
 			agentGrid.step(this);
 			LogFile.chronoMessageOut("Simulating agents");
+			
+			
 	
 	
 			// output result files
@@ -377,12 +381,16 @@ public class Simulator
 					>= (_outputPeriod - 0.01*SimTimer.getCurrentTimeStep())) ||
 					SimTimer.simIsFinished() ) {
 				writeReport();
+				
+				//sonia 26.04.2010
+				//only remove the agents from the system after recording all the information about active
+				//and death/removed biomass
+				agentGrid.removeAllDead();
 			}	
+			
+			
 	
-			//sonia 26.04.2010
-			//only remove the agents from the system after recording all the information about active
-			//and death/removed biomass
-			agentGrid.removeAllDead();
+			
 	
 			// Rob 11/2/2012
 			// If this is an invComp simulation (default is false), stop if there are fewer than
@@ -1187,6 +1195,12 @@ public class Simulator
 			for (Reaction aReac : reactionList) 
 			{
 				aReac.writeReport(result[0], result[1]);
+				
+				// KA - August 2013 - For each reaction, calculate the production/uptake of each solute
+				// Thus for each output period, we can report an estimate of production/uptake of each solute
+				// Where outputPeriod > simulation step, the output remains the last simulation step. The user can interpolate
+				// from this if required.
+				aReac.calculateSoluteChange();
 			}
 			
 
@@ -1200,12 +1214,18 @@ public class Simulator
 				aDomain.getBiomass().writeReport(result[0], result[1]);
 			}
 
+			// KA AUGUST 2013
+			// Now we're going to add to ENV_STATE the amount of solute produced or consumed in this domain in this step
+			summariseSoluteProductionOrUptake();			
+			
 			// Add description of bulks
+			// THIS COMPLETES THE ENV_STATE SOLUTE COUNTS, UNDER THE BULK NAME TAGS
 			for (Bulk aBulk : world.bulkList) 
 			{
 				aBulk.writeReport(result[1]);
 			}
 
+			// Close EnvState and EnvSum
 			result[0].closeFile();
 			result[1].closeFile();
 
@@ -1244,6 +1264,45 @@ public class Simulator
 			"Simulator.writeReport()");
 		}
 
+	}
+	
+	/**
+	 * \brief Calculates the production or uptake of each solute over all reactions for this timestep and writes them to the env_state file
+	 * 
+	 * Calculates the production or uptake of each solute over all reactions for this timestep and writes them to the env_state file. This 
+	 * gives some indication of the solute change in this simulation. Note that unlike other aspects of this simulation, the output here 
+	 * remains the solute figures from just the previous step should the output period be greater than the simulation timestep. The user 
+	 * will have to interpolate from there if this is the case
+	 */
+	public void summariseSoluteProductionOrUptake()
+	{
+		// KA AUGUST 2013
+		// Now we're going to add to ENV_STATE the amount of solute produced or consumed in this domain, in this step
+		StringBuffer value = new StringBuffer();
+		value.append("<globalProductionRate\n");
+		// Need to iterate through each solute to do this
+		for(int iSolute=0;iSolute<soluteDic.size();iSolute++)
+		{
+			value.append("<solute name=\"").append(soluteDic.get(iSolute));
+			value.append("\" unit=\"").append("g.hour");
+			value.append("\">\n");
+			
+			// Now we need the total production and uptake for this solute across all the reactions.
+			// Each reaction holds this info
+			double soluteReactionFigure = 0;
+			for (Reaction aReac : reactionList) 
+			{
+				soluteReactionFigure+=aReac._soluteProductionOrUptake[iSolute];
+			}
+
+			// Now we have the value, write it to the buffer
+			value.append(soluteReactionFigure);
+			
+			value.append("</solute>");
+		}
+		value.append("</globalProductionRate>\n");
+		// Append the gloabl solute values to the env state file
+		result[1].write(value.toString());
 	}
 	
 	/**

@@ -21,6 +21,7 @@ import simulator.diffusionSolver.Solver_pressure;
 
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.reaction.Reaction;
 import simulator.SpatialGrid;
 
 import utils.ResultFile;
@@ -362,16 +363,17 @@ public class AgentContainer
 			//nDead += removeAllDead();
 			nAgent = agentList.size();
 
-			//sonia 27.04.2010
-			//removing mislocalized/death agents from the agentList, so that we can proceed 
-			//with the shoving algorithm
-			// the piece of code below was taken from removeAllDead() but with the difference that we are not
-			// removing the agents from the _agentToKill list (so that it can be used to record the
-			//information on death agents later on)
-
-			for(SpecialisedAgent aDeathAgent: _agentToKill){
-				if (aDeathAgent.isDead) {
-					nDead++;
+			// NOW DEAL WITH DEATH IN THIS AGENT TIMESTEP
+			// REMOVE THESE FROM THE GRID IF DEAD
+			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
+			for(SpecialisedAgent aDeathAgent: _agentToKill)
+			{
+				if (aDeathAgent.isDead) 
+				{
+					//nDead++;
+					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
+					// agent timestep. We should only be counting them at the simulation timestep
+					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
 					agentList.remove(aDeathAgent);
 					removeLocated(aDeathAgent);
 				}
@@ -384,6 +386,7 @@ public class AgentContainer
 			if(!Simulator.isChemostat){
 				shoveAllLocated(false, true, 15, 1, 1);
 			}
+			
 		}
 
 		SimTimer.setCurrentTimeStep(globalTimeStep);
@@ -422,13 +425,9 @@ public class AgentContainer
 			}
 		}*/
 
-
-
-		//SimTimer.setCurrentTimeStep(globalTimeStep);
-
-		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent0 + "/"
-				+ nDead + "/" + nBirth);
-
+		// KA - MOVED OUTPUT OF AGENTS STEPPED / DEAD / BORN FROM HERE TO LATER, SO THAT WE CAN INCLUDE ERODED CELLS IN THE
+		// COUNT OF DEAD CELLS
+				
 		/* MECHANICAL INTERACTIONS _____________________________________ */
 
 		//sonia:chemostat
@@ -486,6 +485,12 @@ public class AgentContainer
 			
 				
 		}
+		
+		// OUTPUT THE COUNT STATISTICS
+		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent0 + "/"
+				+ _agentToKill.size() + "/" + nBirth);
+
+		
 		nAgent = agentList.size();
 		if (maxPopLimit > 0 && nAgent >= maxPopLimit)
 			aSim.continueRunning = false;
@@ -1215,129 +1220,142 @@ public class AgentContainer
 	 * @param bufferSumDeath	The agent_sum_death result file output buffer
 	 * @throws Exception	Exception thrown if there are issues writing to these buffers
 	 */
-	public void writeReportDeath(Simulator aSim, ResultFile bufferStateDeath, ResultFile bufferSumDeath) throws Exception {
-
-
+	public void writeReportDeath(Simulator aSim, ResultFile bufferStateDeath, ResultFile bufferSumDeath) throws Exception 
+	{
+		
+		// STATUS MESSAGE TO THE SCREEN, IF NOT IN QUIET MODE
 		if (!Idynomics.quietMode)
 			System.out.println("size of agentToKill list at beginning of the writeReportDeath:  " + _agentToKill.size());
 
-		// bvm 10.2.2009: include information about the shoving grid
+		// DEATH FILE FORMAT (FOR BOTH STATE AND SUM)
+		// FIRST SET OF TAGS LISTS THE SIMULATION ITERATION, AND THE TIME THIS REPRESENTS
+		// THIS IS WRITTEN BY THE METHOD THAT CALLS THIS, NOT WRITTEN HERE.
+		// THUS THIS STARTS BY WRITING INFORMATION ABOUT THE SHOVING GRID
+				
 		StringBuffer gridInfo = new StringBuffer();
-		gridInfo.append("<grid");
-		gridInfo.append(" resolution=\"").append(_res).append("\"");
-		gridInfo.append(" nI=\"").append(_nI).append("\"");
-		gridInfo.append(" nJ=\"").append(_nJ).append("\"");
-		gridInfo.append(" nK=\"").append(_nK).append("\"");
-		gridInfo.append("/>\n");
-		//sonia 26.04.2010 writing result files for death/removed biomass
+		// Generate the grid info:
+		gridInfo = writeGridInformation(gridInfo);
+		// Write this to both the agent death and removed biomass files
 		bufferSumDeath.write(gridInfo.toString());
 		bufferStateDeath.write(gridInfo.toString());
 
-		//sonia: 5-05-09
-		//include the information about the environment status at the beginning of the agent_State and
-		//agent_Sum files
-		if(Simulator.isFluctEnv){
-			StringBuffer envInfo = new StringBuffer();
-			envInfo.append("<Environment");
-			envInfo.append(" env=\"").append(FluctEnv.envStatus).append("\"");
-			envInfo.append("/>\n");
+		// IF WE ARE DEALING WITH A FLUCTENV SIMULATION, THERE ARE ADDITIONAL ENVIRONMENTAL DATA TO WRITE TO THE FILES
+		if(Simulator.isFluctEnv)
+		{
+			StringBuffer envInfo = writeFluctEnvInformation();
 			bufferSumDeath.write(envInfo.toString());
 			bufferStateDeath.write(envInfo.toString());
 		}
 
-
-		// Detail the header
+		// NOW WE'RE GOING TO CREATE A HEADER FOR EACH OF THE SPECIES IN THE SIMULATION
+		// HEADER WILL CONTAIN SPECIES NAME, FOLLOWED BY THE NAMES OF EACH RESULT COLUMN
 		Species aSpecies;
 		int spIndex, nSpecies;
 
+		// Get the number of species in this simulation
 		nSpecies = aSim.speciesList.size();
+		// Set up a buffer to hold information for each agent of these species
 		StringBuffer[] speciesBuffer = new StringBuffer[nSpecies];
 
-		// Initialise a Species markup for each present species
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+		// Now to iterate through each species and create a markup for each
+		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
+		{
 			aSpecies = aSim.speciesList.get(iSpecies);
 			speciesBuffer[iSpecies] = new StringBuffer();
 
+			// First part, the species name
 			speciesBuffer[iSpecies].append("<species name=\"");
 			speciesBuffer[iSpecies].append(aSpecies.speciesName).append("\" ");
 
+			// Now create the header. Note that this information comes from the species itself - its part of the agent and the inherited
+			// classes. So if we are going to change that, it gets changed there
 			speciesBuffer[iSpecies].append("header=\"");
 			speciesBuffer[iSpecies].append(
 					aSpecies.getProgenitor().sendHeader());
-			//sonia 27.04.2010
-			//introducing reason of death - header
+			
+			// Now we can add additional fields if these are not declared in the agent itself. In this case, we're going to add a reason
+			// for that agents death
 			speciesBuffer[iSpecies].append(",death");
 			speciesBuffer[iSpecies].append("\"");
 			speciesBuffer[iSpecies].append(">\n");
 		}
 
-		// Initialise statistics (population total mass, growth-rate)
+		// REMEMBER WE ARE CREATING TWO STATS FILES AT THE SAME TIME HERE - ONE CONTAINING ALL THE AGENTS THAT ARE DEAD, AND ONE CONTAINING
+		// STATISTICS FOR DEATH IN THIS OUTPUT ITERATION. HERE WE INITIALISE STORAGE FOR STATISTICS (POPULATION, TOTAL MASS, GROWTH RATE)
+		// TO BE CONTAINED IN THE AGENTSUM_DEATH FILE
 		double[] spPop = new double[nSpecies];
 		double[] spMass = new double[nSpecies];
 		double[] spGrowth = new double[nSpecies];
-
-
-		/* <----- HGT Stats Begin ---------> */
-
-
-		//sonia 26.02.2010 - Plasmid stats
-		double[] spPlasmid = new double[nSpecies];
-		double[] spConjugEvents = new double[nSpecies];
-		int plasmidListSize=0;
-
-		if(Simulator.multiEpi){
-			plasmidListSize = aSim.plasmidList.size();
-		}
-		double [][][] spPlasmidTypes = new double [nSpecies][plasmidListSize][1];
-
-		if(Simulator.multiEpi){
-			for (int i = 0; i < nSpecies; i++) {
-				spPlasmid[i]=0;
-			}
-			//sonia: 08-05-09
-			for (int r=0; r< spPlasmidTypes.length; r++){
-				//System.out.println("spPlasmidTypes list size is " + spPlasmidTypes.length);
-				for (int c=0; c<spPlasmidTypes[r].length; c++){
-					//System.out.println("spPlasmidTypes[PL INDEX] list size is " + spPlasmidTypes[r].length);
-					spPlasmidTypes[r][c][0]=0;
-					//System.out.println("spPlasmidTypes[r][c][0] value is " + spPlasmidTypes[r][c][0]);
-
-				}
-			}
-		}	
-
-		/* <----- HGT Stats End ----> */	
-
-		for (int i = 0; i < nSpecies; i++) {
+		// INITIALISE THESE ARRAYS
+		for (int i = 0; i < nSpecies; i++) 
+		{
 			spPop[i] = 0;
 			spMass[i] = 0;
 			spGrowth[i] = 0;
 		}
 
-		// Fill the agent_state file, build the state for the summary
+		// FOR PLASMID SIMULATIONS< THERE ARE EXTRA STATISTICS. THIS SECTION DEALS WITH THIS
+		/* <----- HGT Stats Begin ---------> */
+		double[] spPlasmid = new double[nSpecies];
+		double[] spConjugEvents = new double[nSpecies];
+		int plasmidListSize=0;
+
+		if(Simulator.multiEpi)
+		{
+			plasmidListSize = aSim.plasmidList.size();
+		}
+		double [][][] spPlasmidTypes = new double [nSpecies][plasmidListSize][1];
+
+		if(Simulator.multiEpi)
+		{
+			for (int i = 0; i < nSpecies; i++) 
+			{
+				spPlasmid[i]=0;
+			}
+			//sonia: 08-05-09
+			for (int r=0; r< spPlasmidTypes.length; r++)
+			{
+				for (int c=0; c<spPlasmidTypes[r].length; c++)
+				{
+					spPlasmidTypes[r][c][0]=0;
+				}
+			}
+		}	
+		/* <----- HGT Stats End ----> */	
+
+		// NOW TO GET BACK TO THE NORMAL SIMULATION CASE, LETS BUILD THE AGENT STATE DEATH FILE AND STATISTICS
 		LocatedAgent aLoc;
 		MultiEpiBac anEpiBac;
-		for (SpecialisedAgent anAgent : _agentToKill) {
+		
+		// FOR EACH AGENT IN THE _AGENTTOKILL LIST
+		for (SpecialisedAgent anAgent : _agentToKill) 
+		{
 			spIndex = anAgent.getSpecies().speciesIndex;
 			spPop[spIndex]++;
 
-			if (anAgent instanceof LocatedAgent) {
+			if (anAgent instanceof LocatedAgent) 
+			{
 				aLoc = (LocatedAgent) anAgent;	
+				// Increment the total mass and total growth rate for this agent
 				spMass[spIndex] += aLoc.getTotalMass();
 				spGrowth[spIndex] += aLoc.getNetGrowth();	
 
-				//sonia:07-05-09
+				// Now examine the statistics for a plasmid simulation and increase these where necessary
 				/* <----- HGT Sonia Stats Start ----> */
-				if(aLoc instanceof MultiEpiBac){
+				if(aLoc instanceof MultiEpiBac)
+				{
 					anEpiBac = (MultiEpiBac) aLoc;
-					if (anEpiBac._plasmidHosted.size() != 0){
+					if (anEpiBac._plasmidHosted.size() != 0)
+					{
 						spPlasmid[spIndex]++;
-						for (int i=0; i< anEpiBac._plasmidHosted.size(); i++){
-							for(int j=0; j< aSim.plasmidList.size(); j++){
-								if (anEpiBac._plasmidHosted.get(i).getName().equals(aSim.plasmidList.get(j))){
+						for (int i=0; i< anEpiBac._plasmidHosted.size(); i++)
+						{
+							for(int j=0; j< aSim.plasmidList.size(); j++)
+							{
+								if (anEpiBac._plasmidHosted.get(i).getName().equals(aSim.plasmidList.get(j)))
+								{
 									int	plIndex = aSim.plasmidList.indexOf(aSim.plasmidList.get(j));
 									spPlasmidTypes[spIndex][plIndex][0]++;		
-									//System.out.println("plasmid count is  " + spPlasmidTypes[spIndex][plIndex][0]);
 								}
 							}
 						}
@@ -1347,22 +1365,30 @@ public class AgentContainer
 						spConjugEvents[spIndex]= anEpiBac.plasmidVector.size() + spConjugEvents[spIndex];
 					}
 
-				}else{
+				}
+				else
+				{
 					spPlasmid[spIndex]=0;
-
 				}
 				/* <----- HGT Sonia Stats End ----> */
 
+				// NOW THE STATS ARE DEALT WITH, WRITE THE INFORMATION FOR THIS AGENT OF THIS SPECIES TO THE BUFFER
+				// NOTE THAT THE CODE TO DO THIS IS CONTAINED IN THE AGENT ITSELF
 				speciesBuffer[spIndex].append(aLoc.writeOutput());
-				//sonia 27.04.2010
-				//added death information to agent's state description
+				
+				// NOW ADD ANY ADDITIONAL INFORMATION THAT WAS ADDED IN THE HEADER PREVIOUSLY 
+				// IN THIS CASE REASON FOR DEATH
 				speciesBuffer[spIndex].append("," + aLoc.death + ";\n");
 
 			}
 		}
+		
+		
 
+		// NOW WE HAVE THE STATS AND HAVE GONE THROUGH EACH AGENT BEING KILLED, WE CAN CREATE THE AGENT_SUM_DEATH FILE
 		StringBuffer text;
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
+		{
 			text = new StringBuffer();
 			aSpecies = aSim.speciesList.get(iSpecies);
 			text.append("<species name=\"");
@@ -1424,19 +1450,57 @@ public class AgentContainer
 				text.append("</species>\n");
 			}
 
-			text.append("</species>\n");
 			bufferSumDeath.write(text.toString());
 		}
-
-		//brian
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+		
+		// NOW CAN ITERATE THROUGH THE SPECIES AND WRITE THE AGENT_STATE_DEATH FILE FOR EACH AGENT OF THAT SPECIES
+		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
+		{
 			speciesBuffer[iSpecies].append("</species>\n");
 			bufferStateDeath.write(speciesBuffer[iSpecies].toString());
 		}	
 
+		
+
 
 	}
 
+	/**
+	 * \brief Writes information on the shoving grid to the output string specified
+	 * 
+	 * Writes information on the shoving grid to the output string specified
+	 * 
+	 * @param outputString	String that will be output in the result file
+	 * @return	String with information about the grid (resolution and size in I,J,K directions)
+	 */
+	public StringBuffer writeGridInformation(StringBuffer outputString)
+	{
+		outputString.append("<grid");
+		outputString.append(" resolution=\"").append(_res).append("\"");
+		outputString.append(" nI=\"").append(_nI).append("\"");
+		outputString.append(" nJ=\"").append(_nJ).append("\"");
+		outputString.append(" nK=\"").append(_nK).append("\"");
+		outputString.append("/>\n");
+		
+		return outputString;
+	}
+	
+	/**
+	 * \brief Writes information on the environment to the result files if this is a fluctenv simulation
+	 * 
+	 * Writes information on the environment to the result files if this is a fluctenv simulation
+	 * 
+	 * @return	Stringbuffer with information about the environment for writing to the output file
+	 */
+	public StringBuffer writeFluctEnvInformation()
+	{
+		StringBuffer envInfo = new StringBuffer();
+		envInfo.append("<Environment");
+		envInfo.append(" env=\"").append(FluctEnv.envStatus).append("\"");
+		envInfo.append("/>\n");
+		
+		return envInfo;
+	}
 
 
 	/*public void preprintLevelSet() {
@@ -1640,7 +1704,8 @@ public class AgentContainer
 		int index;
 		double ratio;
 
-		for (LocatedGroup aBorderElement : _levelset.getBorder()) {
+		for (LocatedGroup aBorderElement : _levelset.getBorder()) 
+		{
 			index = aBorderElement.gridIndex;
 
 			ratio = SimTimer.getCurrentTimeStep() / _grid[index].erosionTime;
@@ -1742,6 +1807,7 @@ public class AgentContainer
 			} // end of if (2*tallyVariable>Collections.min(aBorderElement.group, new LocatedAgent....)
 		}
 
+		System.out.println("******************************REMOVE ON BORDER**************************************");
 		LogFile.writeLog("Eroding " + nDetach + " ("
 				+ ExtraMath.toString(mass, true) + "/"
 				+ ExtraMath.toString(tallyVariable, true) + " fg) from "
