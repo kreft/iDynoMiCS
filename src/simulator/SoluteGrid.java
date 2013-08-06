@@ -75,7 +75,6 @@ public class SoluteGrid extends SpatialGrid
 		// Name the grid
 		gridName = xmlRoot.getAttribute("name");
 		
-		
 		// All solute names are stored in a simulation dictionary. Get the position of this solute in this list
 		soluteIndex = aSim.getSoluteIndex(gridName);
 		
@@ -113,6 +112,7 @@ public class SoluteGrid extends SpatialGrid
 		if (Double.isNaN(value)) value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
 		// Set the grid to this initial concentration
 		setAllValueAt(value);
+		
 	}
 
 

@@ -321,7 +321,7 @@ public class SpatialGrid implements Serializable {
 	 * @return	The sum of the values in this spatial grid
 	 */
 	public double getSum() {
-		return MatrixOperations.computeSum(grid);
+		return MatrixOperations.computeSumP(grid);
 	}
 
 	/**
@@ -1012,6 +1012,9 @@ public class SpatialGrid implements Serializable {
 
 		// Close the mark-up
 		bufferState.write("\n</solute>\n");
+		
+		
+		
 
 	}
 
