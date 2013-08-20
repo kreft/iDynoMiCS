@@ -54,7 +54,7 @@
 
 		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
 		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
-		<param name="attachment">selfattach</param>
+		<param name="attachment">onetime</param>
 
 		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->
 		<param name="agentTimeStep" unit="hour">0.05</param>
@@ -406,7 +406,7 @@
 			In addition, a maximum biofilm thickness may be given via the 'maxTh' parameter.
 		-->
 		<detachment class="DS_Quadratic">
-			<param name="kDet" unit="um-1.hour-1">5e-6</param>
+			<param name="kDet" unit="um-1.hour-1">5e-5</param>
 			<param name="maxTh" unit="um">200</param>
 		</detachment>
 
@@ -537,7 +537,7 @@
 
 		<reaction name="MyGrowthHeterotrophs" status="active"/>
 
-		<initArea number="2">
+		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="132" z="0"/>
 			<coordinates x="10" y="132" z="0"/>

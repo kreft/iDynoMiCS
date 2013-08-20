@@ -67,10 +67,10 @@ public class ActiveParam extends SpeciesParam
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
 	 */
-	public void init(Simulator aSim, XMLParser aSpeciesRoot) 
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		// Initialize simple parameter
-		super.init(aSim, aSpeciesRoot);
+		super.init(aSim, aSpeciesRoot,speciesDefaults);
 
 		// Initialize particulateDensity table
 		int nParticle = aSim.particleDic.size();

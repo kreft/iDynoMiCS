@@ -32,11 +32,63 @@ public class SpeciesParam
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
 	 */
-	public void init(Simulator aSim, XMLParser aSpeciesRoot) 
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		double value;
-		value = aSpeciesRoot.getParamDbl("initialMassCV");
+		
+		// August 2013 - changed as this now may be specified in the species defaults and not for each species
+		// So use the new method
+		value = getSpeciesParameterDouble("initialMassCV",aSpeciesRoot,speciesDefaults);
 		if(!Double.isNaN(value)) initialMassCV = value;
+		
+	}
+	
+	public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if(!Double.isNaN(aSpeciesRoot.getParamLength(paramName)))
+		{
+			return aSpeciesRoot.getParamLength(paramName);
+		}
+		else if(!Double.isNaN(speciesDefaults.getParamLength(paramName)))
+		{
+			return speciesDefaults.getParamLength(paramName);
+		}
+		else
+		{
+			return Double.NaN;
+		}
+	}
+	
+	public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if(!Double.isNaN(aSpeciesRoot.getParamDbl(paramName)))
+		{
+			return aSpeciesRoot.getParamDbl(paramName);
+		}
+		else if(!Double.isNaN(speciesDefaults.getParamDbl(paramName)))
+		{
+			return speciesDefaults.getParamDbl(paramName);
+		}
+		else
+		{
+			return Double.NaN;
+		}
+	}
+	
+	public String getSpeciesParameterString(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if(aSpeciesRoot.getParam(paramName)!= null)
+		{
+			return aSpeciesRoot.getParam(paramName);
+		}
+		else if(speciesDefaults.getParam(paramName)!= null)
+		{
+			return speciesDefaults.getParam(paramName);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 
