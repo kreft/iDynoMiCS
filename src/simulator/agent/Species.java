@@ -133,7 +133,7 @@ public class Species implements Serializable
 	 * @param aSimulator	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpRoot	A Species mark-up within the specified protocol file
 	 */
-	public Species(Simulator aSimulator, XMLParser aSpRoot) 
+	public Species(Simulator aSimulator, XMLParser aSpRoot, XMLParser speciesDefaults) 
 	{
 		// Name of the species as specified in the protocol file
 		speciesName = aSpRoot.getAttribute("name");
@@ -164,12 +164,13 @@ public class Species implements Serializable
 		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
 
-		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot);
+		_progenitor.getSpeciesParam().init(aSimulator, aSpRoot, speciesDefaults);
 		
 		_progenitor.setSpecies(this);
 
 		// Set the computational domain this species is associated with
-		domain = aSimulator.world.getDomain(aSpRoot.getParam("computationDomain"));
+		// KA Aug 13 - changed as this may be a default
+		domain = aSimulator.world.getDomain(_progenitor.getSpeciesParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
 	}
 
 	/**

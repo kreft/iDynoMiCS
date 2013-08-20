@@ -35,8 +35,8 @@ public class EpiBacEnvParam extends MultiEpiBacParam{
 	}
 	
 	
-	public void init(Simulator aSim, XMLParser aSpeciesRoot) {
-		super.init(aSim, aSpeciesRoot);
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+		super.init(aSim, aSpeciesRoot, speciesDefaults);
 
 	
 	//retrieving list of environments to which this species is sensitive to and the correspondent
