@@ -28,7 +28,7 @@ public abstract class MultigridUtils {
 	 * 
 	 * @param n
 	 * @return order of multigrid
-	 * @throws InvalidValueException
+	 * @throws Exception
 	 */
 	public static int order(Integer n) throws Exception {
 		Double out = ExtraMath.log2(n - 1.0);
@@ -195,11 +195,11 @@ public abstract class MultigridUtils {
 		coarseGrid.refreshBoundary();
 	}	
 	/**
-	 * Interpolates the data in matrix uc to a grid one order finner for cubic
+	 * Interpolates the data in matrix uc to a grid one order finer for cubic
 	 * matrices. Interpolation excludes border points.
 	 * 
-	 * @param u finer grid
-	 * @param uc coarser grid
+	 * @param fineGrid finer grid
+	 * @param coarsegrid coarser grid
 	 */
 	static void interpolate(SoluteGrid fineGrid, SoluteGrid coarsegrid) {
 		double[][][] uc = coarsegrid.grid;
@@ -286,14 +286,14 @@ public abstract class MultigridUtils {
 	}
 	
 	/**
-	 * Interpolates the data in matrix uc to a grid one order finner for cubic
+	 * Interpolates the data in matrix uc to a grid one order finer for cubic
 	 * matrices for points inside the boundary layer, defined by data in bl.
 	 * Interpolation excludes border points and points outside the boundary
 	 * layer (where bl >= 0.5). Points outside boundary layer are skipped and,
 	 * therefore, preserve their original value.
 	 * 
-	 * @param u finer grid
-	 * @param uc coarser grid
+	 * @param fineGrid finer grid
+	 * @param coarseGrid coarser grid
 	 * @param bl boundary layer at finer grid
 	 */
 	static void interpolateBoundaryLayer(SoluteGrid fineGrid, SoluteGrid coarseGrid, double[][][] bl) {

@@ -131,19 +131,19 @@ public class BoundaryGasMembrane extends AllBC
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
 	public void refreshDiffBoundary(SoluteGrid relDif, SoluteGrid aSoluteGrid) {
-		double value;
+		double diffusivity;
 
 		//Compute pseudo local diffusivity
 		if (isPermeableTo[aSoluteGrid.soluteIndex]) {
-			value = permeability[aSoluteGrid.soluteIndex]/aSoluteGrid.diffusivity;
+			diffusivity = permeability[aSoluteGrid.soluteIndex]/aSoluteGrid.diffusivity;
 		} else {
-			value = 1;
+			diffusivity = 1;
 		}
 		
 		// Apply or restore standard relative diffusivity
 		_myShape.readyToFollowBoundary(relDif);
 		while (_myShape.followBoundary(dcIn, dcOut, relDif)) {
-			relDif.setValueAt(value, dcOut);
+			relDif.setValueAt(diffusivity, dcOut);
 		}
 
 	}

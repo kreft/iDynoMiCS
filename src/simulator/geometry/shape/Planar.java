@@ -174,13 +174,13 @@ public class Planar implements IsShape, Serializable
 	public ContinuousVector intersection(ContinuousVector position, ContinuousVector vector) {
 
 		// Determine the constant term for the equation of the plane
-		double d = -_vectorOut.prodScalar(_pointIn);
+		double d = _vectorOut.prodScalar(_pointIn);
 		if (_vectorOut.prodScalar(vector)==0) {
 			// the line will never cross this plane
 			return null;
 		}
 
-		double k = (-d-_vectorOut.prodScalar(position))/_vectorOut.prodScalar(vector);
+		double k = (d-_vectorOut.prodScalar(position))/_vectorOut.prodScalar(vector);
 
 		ContinuousVector out = new ContinuousVector();
 		out.x = position.x+k*vector.x;

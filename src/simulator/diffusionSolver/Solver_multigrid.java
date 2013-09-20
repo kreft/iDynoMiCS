@@ -102,8 +102,6 @@ public class Solver_multigrid extends DiffusionSolver {
 	}
 
 	public void initializeConcentrationFields() {
-		minimalTimeStep = SimTimer.getCurrentTimeStep()/10;
-
 		// Refresh then insert here the boundary layer and the diffusivity grid
 		_domain.refreshBioFilmGrids();
 
