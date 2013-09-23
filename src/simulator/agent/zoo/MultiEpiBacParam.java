@@ -48,8 +48,8 @@ import utils.*;
 		super();
 	}
 
-	public void init(Simulator aSim, XMLParser aSpeciesRoot) {
-		super.init(aSim, aSpeciesRoot);
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+		super.init(aSim, aSpeciesRoot, speciesDefaults);
 		double value;
 
 		value = aSpeciesRoot.getParamDbl("donorProbability");

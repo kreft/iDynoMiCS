@@ -827,11 +827,15 @@ public class Simulator
 		{ 
 			System.out.print("\t Species: \n");
 			
+			// Read in the 'Species Defaults' from the parameter file
+			XMLParser speciesDefaults = new XMLParser(_protocolFile.getChildElement("speciesDefaults"));
+			
+			
 			// Now iterate through all species specified in the protocol file
 			for (Element aSpeciesMarkUp : _protocolFile.buildSetMarkUp("species")) 
 			{
 				// Create a new species object for this specification
-				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp)); 
+				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp),speciesDefaults); 
 				// Add to the list of species in this simulation
 				speciesList.add(aSpecies);
 				
