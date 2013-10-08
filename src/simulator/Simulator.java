@@ -848,6 +848,7 @@ public class Simulator
 		catch (Exception e) 
 		{
 			LogFile.writeLog("Error in Simulator.createSpecies() first stage");
+            e.printStackTrace();
 		}
 		
 		
