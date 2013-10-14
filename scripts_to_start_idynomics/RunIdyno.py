@@ -5,9 +5,9 @@ import sys, os, glob, time
 from optparse import OptionParser
 import __main__ as main
 
-
+print "If you haven't already, please set your source directory in RunIdyno.py line 10"
 # Please set this to the directory where the iDynoMiCS java class files are
-srcpath = '/kreftj/aldenkj/idynomics/bin/'
+srcpath = 'set_to_source_directory'
 
 if srcpath == 'set_to_source_directory':
     #get name of current file, so we can get the location in case -s is not provided
