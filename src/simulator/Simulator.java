@@ -826,9 +826,17 @@ public class Simulator
 		try 
 		{ 
 			System.out.print("\t Species: \n");
-			
+
+			XMLParser speciesDefaults;
 			// Read in the 'Species Defaults' from the parameter file
-			XMLParser speciesDefaults = new XMLParser(_protocolFile.getChildElement("speciesDefaults"));
+			if(_protocolFile.getChildElement("speciesDefaults") != null)
+			{
+			    speciesDefaults = new XMLParser(_protocolFile.getChildElement("speciesDefaults"));
+			}
+			else
+			{
+				speciesDefaults = new XMLParser(new Element("speciesDefaults"));
+			}
 			
 			
 			// Now iterate through all species specified in the protocol file
@@ -848,6 +856,7 @@ public class Simulator
 		catch (Exception e) 
 		{
 			LogFile.writeLog("Error in Simulator.createSpecies() first stage");
+            e.printStackTrace();
 		}
 		
 		
