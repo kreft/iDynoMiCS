@@ -208,11 +208,12 @@ public class SinglegridPressure {
 	 * Determine order of the finest grid
 	 * 
 	 */
-	public void setReferenceSide() {
-		_referenceSystemSide = ExtraMath.min(_nI, _nJ);
-		if (_nK>1) _referenceSystemSide = ExtraMath.min(_referenceSystemSide, _nK);
+	public void setReferenceSide()
+	{
+		_referenceSystemSide = Math.min(_nI, _nJ);
+		if (_nK>1) _referenceSystemSide = Math.min(_referenceSystemSide, _nK);
 
-		maxOrder = (int) (ExtraMath.log2(_referenceSystemSide));
+		maxOrder = ExtraMath.log2(_referenceSystemSide).intValue();
 		_referenceSystemSide -= 1;
 		_referenceSystemSide *= realGrid.getResolution();
 	}
@@ -221,8 +222,8 @@ public class SinglegridPressure {
 	// the logic of setReferenceSide() above
 	private double referenceIndex(int i, int j, int k) {
 		if (_nK > 1)
-			return ExtraMath.min(i,ExtraMath.min(j,k))-1;
-		return ExtraMath.min(i,j)-1;
+			return Math.min(i, Math.min(j,k))-1;
+		return Math.min(i,j)-1;
 	}
 
 }

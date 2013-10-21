@@ -57,7 +57,7 @@ public class SimTimer {
 	private static double	_dTMin;
 	
 	
-	private static double[] _oldStep;
+	private static Double[] _oldStep;
 	
 	/**
 	 * Simulation time - in hours
@@ -108,7 +108,7 @@ public class SimTimer {
 			LogFile.writeLog("Using adaptive time stepping.");
 			_dTMax = parser.getParamTime("timeStepMax");
 			_dTMin = parser.getParamTime("timeStepMin");
-			_oldStep = new double[10];
+			_oldStep = new Double[10];
 		
 			for(int i=0;i<10;i++)
 				_oldStep[i]=_dT;			
@@ -164,7 +164,7 @@ public class SimTimer {
 			for (int i=1;i<10;i++)
 				_oldStep[i]=_oldStep[i-1];
 			_oldStep[0] = newDeltaT;
-			newDeltaT = utils.ExtraMath.average(_oldStep);
+			newDeltaT = utils.ExtraMath.mean(_oldStep);
 
 			// again make sure the step isn't too small or too large
 			_dT = _oldStep[0] = Math.min(Math.max(newDeltaT,_dTMin),_dTMax);

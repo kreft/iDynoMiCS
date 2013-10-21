@@ -174,9 +174,9 @@ public class World
 	 * @param soluteIndex	The integer reference of the solute in the solute dictionary
 	 * @return	An array of Sbulk values for this given solute - one for each bulk specified
 	 */
-	public double[] getAllBulkValue(int soluteIndex) 
+	public Double[] getAllBulkValue(int soluteIndex) 
 	{
-		double value[] = new double[bulkList.size()];
+		Double value[] = new Double[bulkList.size()];
 		
 		for (int i = 0; i<bulkList.size(); i++) 
 		{

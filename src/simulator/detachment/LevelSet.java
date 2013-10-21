@@ -160,8 +160,9 @@ public abstract class LevelSet {
 	 * 
 	 * @return	LocatedGroup from a random element of the shoving grid
 	 */
-	public LocatedGroup getLandingPoint() {
-		return _close.get((int) ExtraMath.getUniRand()*_close.size());
+	public LocatedGroup getLandingPoint()
+	{
+		return _close.get(ExtraMath.getUniRandInt(_close.size()));
 	}
 
 	/**

@@ -89,12 +89,12 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	/**
 	 * Mass of the agent (table for all particles belonging to the agent)
 	 */
-	public double[]              particleMass;
+	public Double[]              particleMass;
 	
 	/**
 	 * Sum of masses of all particles
 	 */
-	protected double             _totalMass;
+	protected Double             _totalMass;
 
 	/**
 	 * \brief Creates an ActiveAgent object and initialises the object in which associated parameters are stored
@@ -128,24 +128,30 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		int nSolute = aSim.soluteList.length;
 		int reacIndex;
 
-		particleMass = new double[nParticle];
-
+		particleMass = new Double[nParticle];
+		
 		// Build the list of particles
 		XMLParser parser;
 		int particleIndex;
-
-		for (Element aChild : xmlMarkUp.getChildren("particle")) {
+		
+		for (Element aChild : xmlMarkUp.getChildren("particle"))
+		{
 			// Initialize the xml parser
 			parser = new XMLParser(aChild);
 			particleIndex = aSim.getParticleIndex(parser.getAttribute("name"));
-
+			
 			// Set the average mass of the particle within the initial
 			// population
 			particleMass[particleIndex] = parser.getParamMass("mass");
 		}
-
+		
+		// Check that all particles have been specified.
+		for (int i=0; i<nParticle; i++)
+			if (particleMass[i]==null)
+				particleMass[i] = 0.0;
+		
 		updateMass();
-
+		
 		/* Create description of reactions _________________________________ */
 
 		// Initialize the arrays
@@ -432,8 +438,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * Update mass of agent, summing the particle mass
 	 */
-	public void updateMass() {
-		_totalMass = ExtraMath.sumVector(particleMass);
+	public void updateMass()
+	{
+		_totalMass = ExtraMath.sum(particleMass);
 	}
 
 	/* ______________________ REACTION MANAGEMENT __________________________ */

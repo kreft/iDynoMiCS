@@ -261,7 +261,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The XML parameter for which the value is required
 	 * @return	Double value assigned to that XML tag
 	 */
-	public double getParamDbl(String paramName) 
+	public Double getParamDbl(String paramName) 
 	{
 		if (getParam(paramName)==null) 
 		{
@@ -282,7 +282,7 @@ public class XMLParser implements Serializable
 	 * @param unit	The unit that this parameter is required to be within
 	 * @return	The double value assigned to that parameter, in the required unit
 	 */
-	public double getParamDbl(String paramName, StringBuffer unit) 
+	public Double getParamDbl(String paramName, StringBuffer unit) 
 	{
 		if (getParam(paramName)==null) 
 		{
@@ -302,7 +302,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The name of the XML tag for which a value is required
 	 * @return	The int value assigned to that parameter
 	 */
-	public int getParamInt(String paramName) 
+	public Integer getParamInt(String paramName) 
 	{
 		if (getParam(paramName)==null) 
 		{
@@ -323,7 +323,7 @@ public class XMLParser implements Serializable
 	 * @param unit	The unif of measurement specified for this parameter
 	 * @return	The int value assigned to that parameter
 	 */
-	public int getParamInt(String paramName, StringBuffer unit) {
+	public Integer getParamInt(String paramName, StringBuffer unit) {
 		if (getParam(paramName)==null) {
 			return 0;
 		} else {
@@ -339,7 +339,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The name of the parameter for which the length value should be returned
 	 * @return	The length value assigned to this parameter in the protocol file
 	 */
-	public double getParamLength(String paramName)
+	public Double getParamLength(String paramName)
 	{
 		unit = new StringBuffer("");
 		value = getParamDbl(paramName, unit);
@@ -355,7 +355,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The name of the parameter for which the mass should be returned
 	 * @return	The calculated mass of this parameter
 	 */
-	public double getParamMass(String paramName) {
+	public Double getParamMass(String paramName) {
 		unit = new StringBuffer("");
 		value = getParamDbl(paramName, unit);
 		value *= utils.UnitConverter.mass(unit.toString());
@@ -370,7 +370,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The parameter to be retrieved from the XML file
 	 * @return	Double of the value of this parameter converted into a unit of time
 	 */
-	public double getParamTime(String paramName) {
+	public Double getParamTime(String paramName) {
 		unit = new StringBuffer("");
 		value = getParamDbl(paramName, unit);
 		value *= utils.UnitConverter.time(unit.toString());
@@ -385,7 +385,7 @@ public class XMLParser implements Serializable
 	 * @param paramName	The concentration of the parameter to be retrieved from the protocol file
 	 * @return	The calculated concentration level for this simulation parameter
 	 */
-	public double getParamConc(String paramName) {
+	public Double getParamConc(String paramName) {
 		unit = new StringBuffer("");
 		value = getParamDbl(paramName, unit);
 		value *= utils.UnitConverter.mass(unit.toString());
@@ -494,7 +494,7 @@ public class XMLParser implements Serializable
 	 * @param detailName	The name of the detail element which is part of that tag, if present
 	 * @return	The double value associated with the specified detail of this tag
 	 */
-	public double getParamSuchDbl(String paramName, String detailName) {
+	public Double getParamSuchDbl(String paramName, String detailName) {
 		if (getParamSuch(paramName, detailName)==null) {
 			return Double.NaN;
 		} else {
@@ -598,7 +598,7 @@ public class XMLParser implements Serializable
 	 * @param attributeName	The attribute name for which the value is being sought
 	 * @return	The double value of that attribute, if present
 	 */
-	public double getAttributeDbl(String attributeName) {
+	public Double getAttributeDbl(String attributeName) {
 		return Double.parseDouble(getAttributeStr(attributeName));
 	}
 
@@ -628,13 +628,29 @@ public class XMLParser implements Serializable
 	 * @param attrName	The name of the attribute for which the value is required
 	 * @return	Double value assigned to that attribute, if present
 	 */
-	public double getChildAttrDbl(String childName, String attrName) 
+	public Double getChildAttrDbl(String childName, String attrName) 
+	{
+		String value = getChildAttrStr(childName, attrName);
+		if (value==null) return 0.0;
+		else return Double.parseDouble(value);
+	}
+	
+	/**
+	 * \brief Returns the value assigned to an attribute within a child node
+	 * 
+	 * Returns the value assigned to an attribute within a child node. Checking computation domain dimension is one example of its use
+	 * 
+	 * @param childName	The name of the child node of which the attribute value is being sought
+	 * @param attrName	The name of the attribute for which the value is required
+	 * @return	Double value assigned to that attribute, if present
+	 */
+	public Integer getChildAttrInt(String childName, String attrName) 
 	{
 		String value = getChildAttrStr(childName, attrName);
 		if (value==null) return 0;
-		else return Double.parseDouble(value);
+		else return Integer.parseInt(value);
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	/**
 	 * \brief Returns a list of the children of a given XML child tag name
@@ -719,11 +735,11 @@ public class XMLParser implements Serializable
 	 * @param attr2Name	The name of the related attribute that is required to find this value
 	 * @return	Double value assigned to this tag
 	 */
-	public double getDblAttrOfChildSuchAttribute(String childName, String attrName,
+	public Double getDblAttrOfChildSuchAttribute(String childName, String attrName,
 	        String attrValue, String attr2Name) {
 		String out = getChildSuchAttribute(childName, attrName, attrValue).getAttributeValue(
 		        attr2Name);
-		return (double) Double.parseDouble(out);
+		return Double.parseDouble(out);
 	}
 
 	

@@ -290,10 +290,10 @@ public class Species implements Serializable
 				{
 					// This cell needs to take a random location in the Z and Y directions. The X will come from the position of the boundary layer 
 					// on those axis. Generate these random numbers
-					this.swimmingAgentPosition.y = ExtraMath.getUniRand()*domain.length_Y;
+					this.swimmingAgentPosition.y = ExtraMath.getUniRandDbl()*domain.length_Y;
 					
 					if(domain.is3D)
-						this.swimmingAgentPosition.z = ExtraMath.getUniRand()*domain.length_Z;
+						this.swimmingAgentPosition.z = ExtraMath.getUniRandDbl()*domain.length_Z;
 					else
 						this.swimmingAgentPosition.z = 0;
 				
@@ -500,7 +500,7 @@ public class Species implements Serializable
 					// We may have hit the biofilm but the Y and Z coordinates in this generated move may still be negative (as they may have 
 					// gone over another boundary. So before we set the final x, we should check Y and Z
 					// So firstly, set the X position onto the surface
-					this.swimmingAgentPosition.x = ExtraMath.getUniRand();
+					this.swimmingAgentPosition.x = ExtraMath.getUniRandDbl();
 					
 					// Now set the final X position
 					AllBC boundaryCrossedNewCheck = domain.testCrossedBoundarySelfAttach(this.swimmingAgentPosition);
@@ -992,9 +992,9 @@ public class Species implements Serializable
 	{
 		do 
 		{
-			cc.x = area[0].x+ExtraMath.getUniRand()*(area[1].x-area[0].x);
-			cc.y = area[0].y+ExtraMath.getUniRand()*(area[1].y-area[0].y);
-			cc.z = area[0].z+ExtraMath.getUniRand()*(area[1].z-area[0].z);
+			cc.x = ExtraMath.getUniRandDbl(area[0].x, area[1].x);
+			cc.y = ExtraMath.getUniRandDbl(area[0].y, area[1].y);
+			cc.z = ExtraMath.getUniRandDbl(area[0].z, area[1].z);
 		} while ( domain.testCrossedBoundary(cc) != null );
 		 
 	}

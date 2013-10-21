@@ -65,8 +65,8 @@ public class MultiEpisomeParam extends ActiveParam {
 		isHighCopy = aSpeciesRoot.getParamBool("isHighCopy");
 		//nCopy = (int) aSpeciesRoot.getParamDbl("nCopy");
 		nCopy=1;
-		nCopyMin = (int) aSpeciesRoot.getParamDbl("nCopyMin");
-		nCopyMax = (int) aSpeciesRoot.getParamDbl("nCopyMax");
+		nCopyMin = aSpeciesRoot.getParamInt("nCopyMin");
+		nCopyMax = aSpeciesRoot.getParamInt("nCopyMax");
 
 		pilusLength = aSpeciesRoot.getParamLength("pilusLength");
 		exchangeLag = aSpeciesRoot.getParamTime("exchangeLag");

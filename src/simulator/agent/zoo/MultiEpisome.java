@@ -359,7 +359,7 @@ public class MultiEpisome extends InfoAgent {
 	 * @return
 	 */
 	public void segregation(MultiEpisome aPlasmid) {
-		if (ExtraMath.getUniRand() > getSpeciesParam().lossProbability) {
+		if (ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability) {
 			_nCopy = 1;
 			aPlasmid._nCopy = 1;
 		} else {

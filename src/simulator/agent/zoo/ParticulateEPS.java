@@ -218,7 +218,7 @@ public class ParticulateEPS extends LocatedAgent {
 	 */
 	public boolean willDie() {
 		if (_totalMass<0) return true;
-		return getRadius(true)<=ExtraMath.deviateFrom(getSpeciesParam().deathRadius,
+		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
 		        getSpeciesParam().deathRadiusCV);
 	}
 
@@ -273,7 +273,7 @@ public class ParticulateEPS extends LocatedAgent {
 	 * @return	Boolean noting whether a biomass transfer is possible
 	 */
 	public boolean willTransfer() {
-		return getRadius(true)<=ExtraMath.deviateFrom(getSpeciesParam().transferRadius,
+		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().transferRadius,
 		        getSpeciesParam().deathRadiusCV);
 	}
 

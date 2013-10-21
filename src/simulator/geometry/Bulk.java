@@ -69,7 +69,7 @@ public class Bulk
 	/**
 	 * Timestep value assigned to each solute in specified in this bulk
 	 */
-	double[]         _dT;
+	Double[]         _dT;
 	
 	/**
 	 * Boolean noting whether the concentration of solutes is constant or varys. Default to constant if not in protocol file
@@ -168,7 +168,7 @@ public class Bulk
 		LinkedList<Element> soluteList = aBulkRoot.buildSetMarkUp("solute");
 		_bulkValue = new double[aSim.soluteDic.size()];
 		_reacRate = new double[aSim.soluteDic.size()];
-		_dT = new double[aSim.soluteDic.size()];
+		_dT = new Double[aSim.soluteDic.size()];
 
 		_isConstant = new Boolean[aSim.soluteDic.size()];
 		_isInBulk = new Boolean[aSim.soluteDic.size()];
