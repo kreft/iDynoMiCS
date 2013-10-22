@@ -450,7 +450,7 @@ public class MultiEpiBac extends BactEPS {
 		//recipient cell
 		rP = partner.getSpeciesParam().recipientProbability;
 
-		conjugate &= (ExtraMath.getUniRand()<=tP*rP*distBasedProb); 
+		conjugate &= (ExtraMath.getUniRandDbl()<=tP*rP*distBasedProb); 
 
 		return (conjugate);
 	}
@@ -464,7 +464,7 @@ public class MultiEpiBac extends BactEPS {
 
 		tP = aPlasmid.getSpeciesParam().transferProb;
 
-		conjugate &= (ExtraMath.getUniRand()<=tP); 
+		conjugate &= (ExtraMath.getUniRandDbl()<=tP); 
 
 		return (conjugate);
 	}
@@ -556,7 +556,7 @@ public class MultiEpiBac extends BactEPS {
 
 				double random = 0;
 				double normRand =0;
-				random = ExtraMath.getUniRand();
+				random = ExtraMath.getUniRandDbl();
 				normRand = random*cumProbSum;
 
 				int pos=0;

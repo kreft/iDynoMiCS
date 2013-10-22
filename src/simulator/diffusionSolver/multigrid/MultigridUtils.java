@@ -30,9 +30,9 @@ public abstract class MultigridUtils {
 	 * @return order of multigrid
 	 * @throws InvalidValueException
 	 */
-	public static int order(int n) throws Exception {
-		double o = ExtraMath.log2(n-1);
-		if (o%1==0) return (int) o;
+	public static int order(Integer n) throws Exception {
+		Double out = ExtraMath.log2(n - 1.0);
+		if (out%1==0) return out.intValue();
 		else throw (new Exception("invalid grid value ("+n+") must be 2^i + 1"));
 	}
 

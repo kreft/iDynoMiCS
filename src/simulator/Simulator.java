@@ -497,7 +497,7 @@ public class Simulator
 		{
 			// No random state file exists - initialise the random state generator without any previous information
 			//Chinmay - added MTRandom.java to utils and changed the RNG to use that class instead. 11/08/2009
-			ExtraMath.random = new MTRandom((long) localRoot.getParamDbl("randomSeed"));
+			ExtraMath.random = new MTRandom((long) localRoot.getParamInt("randomSeed"));
 		}
 
 		// Now to initialise the simulation timer - the timesteps specified in the SIMULATOR markup of the XML file are processed
@@ -1178,7 +1178,7 @@ public class Simulator
 				// output the biofilm thickness data
 				//sonia 12.10.09				
 
-				double [] intvals;
+				Double [] intvals;
 				StringBuffer value = new StringBuffer();
 				for (Domain aDomain : world.domainList) 
 				{
@@ -1187,7 +1187,7 @@ public class Simulator
 
 					value.append("<thickness domain=\""+aDomain.domainName+"\" unit=\"um\">\n");
 					value.append("\t<mean>"+(ExtraMath.mean(intvals))+"</mean>\n");
-					value.append("\t<stddev>"+(ExtraMath.stddev(intvals))+"</stddev>\n");
+					value.append("\t<stddev>"+(ExtraMath.stddev(intvals, false))+"</stddev>\n");
 					value.append("\t<max>"+(ExtraMath.max(intvals))+"</max>\n");
 					value.append("</thickness>\n");
 

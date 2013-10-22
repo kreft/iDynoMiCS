@@ -1,39 +1,51 @@
 /**
  * \package utils
- * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
+ * \brief Package of classes that perform utility functions in the process of
+ * running an iDynoMiCS Simulation.
  * 
- * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * Package of classes that perform utility functions in the process of running
+ * an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by
+ * the CeCILL license under French law and abides by the rules of distribution
+ * of free software.  You can use, modify and/ or redistribute iDynoMiCS under
+ * the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the
+ * following URL "http://www.cecill.info".
  */
 package utils;
 
 import java.text.DecimalFormat;
-import java.util.*;
-
-import Jama.Matrix;
-import exceptions.ModelRuntimeException;
-
-import simulator.geometry.ContinuousVector;
+import java.util.Random;
 
 /**
- * \brief Abstract class with some extra useful math functions
+ * \brief Abstract class with some extra useful math functions.
  * 
- * Abstract class with some extra useful math functions
+ * Contents:
+ * 		Simple calculations
+ * 		Shapes
+ * 		Arrays of doubles
+ * 		Dealing with signs
+ * 		Dealing with strings
+ * 		Random number generation
  * 
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- *
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * Center (NY, USA)
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
+ * @author Robert Clegg (rjc096@bham.ac.uk), University of Birmingham, UK
  */
-public final class ExtraMath 
+public final class ExtraMath
 {
-
 	/**
-	 * One option for decimal of decimals when these are written to the screen
+	 * \brief One option for writing decimals to screen.
+	 * 
+	 * This always has 3 digits before the decimal point, and adjusts the
+	 * scientific exponent accordingly.
 	 */
 	public static java.text.DecimalFormat dfSc = new DecimalFormat("000.###E0");
 	
 	/**
-	 * Second option for decimal of decimals when these are written to the screen
+	 * \brief Second option for writing decimals to screen.
+	 * 
+	 * This always has 2 digits after the decimal point, and will round any
+	 * smaller decimals.
 	 */
 	public static java.text.DecimalFormat dfUs = new DecimalFormat("########.##");
 	
@@ -42,390 +54,468 @@ public final class ExtraMath
 	 */
 	public static Random random;
 	
-	/**
-	 * \brief Computes the logarithm of base 2
-	 * 
-	 * Computes the logarithm of base 2
-	 * 
-	 * @param x a number greater than 0.0
-	 * @return the logarithm base 2 of x
-	 */
-	public static final double log2(double x) {
-		return (Math.log(x)/Math.log(2));
-	}
-
-	/**
-	 * \brief Square an integer number
-	 * 
-	 * Square an integer number
-	 * 
-	 * @param x value to square
-	 * @return The square of x
-	 */
-	public static final int sq(int x) {
-		return x*x;
-	}
-
-	/**
-	 * \brief Square a double
-	 * 
-	 * Square a double
-	 * 
-	 * @param x: value to square
-	 * @return The square value of x
-	 */
-	public static final double sq(double x) {
-		return x*x;
-	}
-
-	/**
-	 * \brief cube a double number
-	 * 
-	 * cube a double number
-	 * 
-	 * @param x : value to cube
-	 * @return The cube of x
-	 */
-	public static final double cube(double x) {
-		return x*x*x;
-	}
-
-	/**
-	 * \brief Calculate x to the power of x where x is an integer, returning a long number
-	 * 
-	 * Calculate x to the power of x where x is an integer, returning a long number
-	 * 
-	 * @param x	Number to be raised to power of 2
-	 * @return	2^x, as a long number
-	 */
-	public static final long exp2long(int x) 
-	{
-		return (long) Math.pow(2, x);
-	} 
+	/* ----------------------- Simple calculations ------------------------ */
 	
 	/**
-	 * \brief Calculate x to the power of 2 where x is an integer
+	 * \brief Computes the logarithm of base 2.
 	 * 
-	 * Calculate x to the power of 2 where x is an integer
+	 * If x is non-positive Double.NaN will be returned.
 	 * 
-	 * @param x Number to be raised to power of 2
-	 * @return 2^x
+	 * @param x The Integer to take the logarithm of.
+	 * @return Double the logarithm base 2 of x
 	 */
-	public static final int exp2(int x) {
-		return (int) Math.pow(2, x);
+	public static final Double log2(Double x)
+	{
+		return (Math.log(x)/Math.log(2));
 	}
-
+	
 	/**
-	 * \brief Calculate x to the power of 2 where x is a double
+	 * \brief Square an Integer number.
 	 * 
-	 * Calculate x to the power of 2 where x is an double
+	 * @param x The Integer to square.
+	 * @return The Integer square of x.
+	 */
+	public static final Integer sq(Integer x)
+	{
+		return x*x;
+	}
+	
+	/**
+	 * \brief Square a Double number.
 	 * 
-	 * @param x Number to be raised to power of 2
+	 * @param x The Double to square.
+	 * @return The Double square of x.
+	 */
+	public static final Double sq(Double x) 
+	{
+		return x*x;
+	}
+	
+	/**
+	 * \brief Cube an Integer number.
+	 * 
+	 * @param x The Integer to cube.
+	 * @return The Integer cube of x.
+	 */
+	public static final Integer cube(Integer x)
+	{
+		return x*x*x;
+	}
+	
+	/**
+	 * \brief Cube a Double number.
+	 * 
+	 * @param x The Double to cube.
+	 * @return The Double cube of x.
+	 */
+	public static final Double cube(Double x)
+	{
+		return x*x*x;
+	}
+	
+	/**
+	 * \brief Find the real cube root of a double number.
+	 * 
+	 * @param x The Double to take the cube root of.
+	 * @return The Double real cube root of x.
+	 */
+	public static final Double cubeRoot(Double x)
+	{
+		return Math.pow(x, (1.0/3.0));
+	}
+	
+	/**
+	 * \brief Calculate 2 to the power of x where x is an integer.
+	 * 
+	 * Returns 1 if x is less than zero.
+	 * 
+	 * @param x The exponent
 	 * @return 2^x
 	 */
-	public static final double exp2(double x) {
+	public static final Integer exp2(Integer x)
+	{
+		Integer out = 1;
+		for (int i = 0; i < x; i++)
+			out *= 2;
+		return out;
+	}
+	
+	/**
+	 * \brief Calculate 2 to the power of x where x is a long integer.
+	 * 
+	 * Returns 1 if x is less than zero.
+	 * 
+	 * @param x
+	 * @return 2^x
+	 */
+	public static final long exp2long(int x)
+	{
+		long out = 1;
+		for (int i = 0; i< x; i++)
+			out *= 2;
+		return out;
+	}
+	
+	/**
+	 * \brief Calculate 2 to the power of x where x is a double.
+	 * 
+	 * @param x The exponent
+	 * @return 2^x
+	 */
+	public static final Double exp2(Double x)
+	{
 		return Math.pow(2, x);
 	}
 	
+	/*  ----------------------------- Shapes  ----------------------------- */
+	
 	/**
-	 * \brief Calculate the volume of a sphere with radius r
+	 * \brief Calculate the area of circle with radius r.
 	 * 
-	 * Calculate the volume of a sphere with radius r
+	 * The formula for this is pi r^2.
 	 * 
-	 * @param r	Radius of the sphere
-	 * @return volume of sphere
-	 */
-	public static final double volumeOfASphere(double r) {
-		return 4.1888d*r*r*r;
-	}
-
-	/**
-	 * \brief Calculate the volume of a cylinder with radius r and length l
-	 * 
-	 * Calculate the volume of a cylinder with radius r and length l
-	 * 
-	 * @param r Radius of the cylinder
-	 * @param l Length of the cylinder
-	 * @return volume of cylinder
-	 */
-	public static final double volumeOfACylinder(double r, double l) {
-		return 3.1416d*r*r*l;
-	}
-
-	/**
-	 * \brief Calculate the area of circle with radius r
-	 * 
-	 * Calculate the area of circle with radius r
-	 * 
-	 * @param r Radius of the circle
+	 * @param radius Radius of the circle
 	 * @return area of circle
 	 */
-	public static final double areaOfACircle(double r) {
-		return 3.1416d*r*r;
+	public static final Double areaOfACircle(Double radius)
+	{
+		return Math.PI * sq(radius);
 	}
-
+	
 	/**
-	 * \brief Calculate the radius of a sphere with volume v
+	 * \brief Calculate the volume of a cylinder with radius r and length l.
 	 * 
-	 * @param v Volume of the sphere
+	 * The formula for this is pi * r^2 * l.
+	 * 
+	 * @param radius Radius of the cylinder
+	 * @param length Length of the cylinder
+	 * @return volume of cylinder
+	 */
+	public static final Double volumeOfACylinder(Double radius, Double length)
+	{
+		return areaOfACircle(radius) * length;
+	}
+	
+	/**
+	 * \brief Calculate the radius of a circle with area a.
+	 * 
+	 * The formula for this is ( a/pi )^(1/2)
+	 * 
+	 * @param area Area of the circle
+	 * @return Radius of the circle
+	 */
+	public static final Double radiusOfACircle(Double area)
+	{
+		return Math.sqrt(area / Math.PI);
+	}
+	
+	/**
+	 * \brief Calculate the radius of a cylinder with volume v and length l.
+	 * 
+	 * This is calculated from the area of the cross-section: v/l
+	 * 
+	 * @param volume Volume of the cylinder
+	 * @param length Length of the cylinder
+	 * @return Radius of the cylinder
+	 */
+	public static final Double radiusOfACylinder(Double volume, Double length)
+	{
+		return radiusOfACircle(volume/length);
+	}
+	
+	/**
+	 * \brief Calculate the volume of a sphere with radius r.
+	 * 
+	 * The formula for this is 4/3 * pi * r^3.
+	 * 
+	 * @param radius Radius of the sphere
+	 * @return volume of sphere
+	 */
+	public static final Double volumeOfASphere(Double radius)
+	{
+		return (4.0/3.0) * Math.PI * cube(radius);
+	}
+	
+	/**
+	 * \brief Calculate the radius of a sphere with volume v.
+	 * 
+	 * The formula for this is ( (v*3)/(4*pi) )^(1/3)
+	 * 
+	 * @param volume Volume of the sphere
 	 * @return Radius of the sphere
 	 */
-	public static final double radiusOfASphere(double v) {
-		return (double) Math.pow(0.23873d*v, 0.33333d);
+	public static final Double radiusOfASphere(Double volume)
+	{
+		return cubeRoot(volume*0.75/Math.PI);
 	}
-
+	
+	/*  ------------------------ Arrays of doubles  ------------------------ */
+	
 	/**
-	 * \brief Calculate the radius of a sphere with volume v assuming repetition along 3rd dimension
+	 * \brief Return the maximum entry in a Double array.
 	 * 
-	 * Calculate the radius of a sphere with volume v assuming repetition along 3rd dimension
-	 * 
-	 * @param v Volume of the sphere
-	 * @param lZ	Omitted dimension
-	 * @return Radius of the sphere
+	 * @param array Array of Doubles.
+	 * @return Greatest Double in a.
 	 */
-	public static final double radiusOfASphere(double v, double lZ) {
-		return (double) Math.pow(0.23873d*v*lZ, 0.25d);
-	}
-
-	/**
-	 * \brief Returns the radius of a cylinder with volume v and length l
-	 * 
-	 * Returns the radius of a cylinder with volume v and length l
-	 * 
-	 * @param v	Volume of the cylinder
-	 * @param l	Length of the cylinder
-	 * @return	Radius of the cylinder
-	 */
-	public static final double radiusOfACylinder(double v, double l) {
-		return (double) Math.sqrt(v/(3.1416d*l));
-	}
-
-	/**
-	 * \brief Calculate the distance between 2 points for points specified in X,Y,Z
-	 * 
-	 * Calculate the distance between 2 points for points specified in X,Y,Z
-	 * 
-	 * @param x1	X coordinate of point 1
-	 * @param y1	Y coordinate of point 1
-	 * @param z1	Z coordinate of point 1
-	 * @param x2	X coordinate of point 2
-	 * @param y2	Y coordinate of point 2
-	 * @param z2	Z coordinate of point 2
-	 * @return Distance between the two points
-	 */
-	public static final double pointDistance(double x1, double y1, double z1, double x2, double y2,
-	        double z2) {
-		return (double) Math.sqrt(sq(x1-x2)+sq(y1-y2)+sq(z1-z2));
-	}
-
-	/**
-	 * \brief Calculate the distance between 2 points for points specified as continuous vectors
-	 * 
-	 * Calculate the distance between 2 points for points specified as continuous vectors
-	 * 
-	 * @param p1	Point 1
-	 * @param p2	Point 2
-	 * @return Distance between the two points
-	 */
-	public static final double pointDistance(ContinuousVector p1, ContinuousVector p2) {
-		return pointDistance(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
-	}
-
-	/**
-	 * \brief Perform gamma correction of value v: v^gamma check that v is in the [0,* 1] range
-	 * 
-	 * Perform gamma correction of value v: v^gamma check that v is in the [0,* 1] range
-	 * 
-	 * @param v	Value to check
-	 * @param gamma	Gamma Constant
-	 * @return V corrected by gamma
-	 */
-	public static double gammaCorrection(double v, double gamma) {
-		if ((v<0)|(v>1)) throw new ModelRuntimeException("invalid v for gamma correction, v = "+v);
-		return (double) Math.pow(v, gamma);
-	}
-
-	/**
-	 * \brief Return the maximum among 2 doubles
-	 * 
-	 * Return the maximum among 2 doubles
-	 * 
-	 * @param a	Double 1
-	 * @param b Double 2
-	 * @return the maximum among a and b
-	 */
-	public static double max(double a, double b) {
-		return (a>b ? a : b);
-	}
-
-	/**
-	 * \brief Return the minimum among 2 doubles
-	 * 
-	 * Return the minimum among 2 doubles
-	 * 
-	 * @param a	Double 1
-	 * @param b Double 2
-	 * @return the minimum among a and b
-	 */
-	public static double min(double a, double b) {
-		return (a<b ? a : b);
-	}
-
-	/**
-	 * \brief Return the maximum entry in a double array
-	 * 
-	 * Return the maximum entry in a double array
-	 * 
-	 * @param a Vector of doubles
-	 * @return max double in a
-	 */
-	public static double max(double[] a) {
-		double out = a[0];
-		for (int i = 0; i<a.length; i++) {
-			out = max(out, a[i]);
-		}
+	public static Double max(Double[] array)
+	{
+		Double out = array[0];
+		for (int i = 0; i<array.length; i++)
+			out = Math.max(out, array[i]);
 		return out;
 	}
-
+	
 	/**
-	 * \brief Return the average entry in a double array
+	 * \brief Return the minimum entry in a Double array.
 	 * 
-	 * Return the average entry in a double array
-	 * 
-	 * @param a Vector of doubles
-	 * @return average double in a
+	 * @param array Array of Doubles.
+	 * @return Least Double in a.
 	 */
-	public static double average(double[] a) {
-		double out=0;
-		int n=0;
+	public static Double min(Double[] array)
+	{
+		Double out = array[0];
+		for (int i = 0; i<array.length; i++)
+			out = Math.min(out, array[i]);
+		return out;
+	}
+	
+	/**
+	 * \brief Determine the sum of an array of doubles.
+	 * 
+	 * Takes care to exclude any infinites or NaN's.
+	 * 
+	 * @param a Array of doubles
+	 * @return
+	 */
+	public static Double sum(Double[] a)
+	{
+		Double sum = 0.0;
 		for (int i = 0; i<a.length; i++)
-			if(!Double.isInfinite(a[i])&&!Double.isNaN(a[i])){
-					out += a[i];
+			if(!Double.isInfinite(a[i])&&!Double.isNaN(a[i]))
+					sum += a[i];
+		return sum;
+	}
+	
+	/**
+	 * \brief Return the mean average entry in a Double array.
+	 * 
+	 * Removes infinite/NaN values from the sum and the number of entries.
+	 * 
+	 * @param array Vector of Doubles.
+	 * @return Average Double in array.
+	 */
+	public static Double mean(Double[] array)
+	{
+		Double out=0.0;
+		Integer n=0;
+		for (int i = 0; i<array.length; i++)
+			if(!Double.isInfinite(array[i])&&!Double.isNaN(array[i]))
+			{
+					out += array[i];
 					n++;
 			}		
 		return (out/n);
 	}
-
-	/**
-	 * \brief Return the minimum entry in a double array
-	 * 
-	 * Return the minimum entry in a double array
-	 * 
-	 * @param a Vector of doubles
-	 * @return minimum double in a
-	 */
-	public static double min(double[] a) {
-		double out = a[0];
-		for (int i = 0; i<a.length; i++) {
-			out = Math.min(out, a[i]);
-		}
-		return out;
+	
+	public static Double stddev(Double[] a, Boolean fromSample)
+	{
+		Double mean = mean(a);
+		Double sum = 0.0;
+		Double n = 0.0;
+		for (int i = 0; i<a.length; i++)
+			if(!Double.isInfinite(a[i])&&!Double.isNaN(a[i]))
+			{
+				sum += sq(a[i] - mean);
+				n++;
+			}
+		// if this is from a sample we divide by (n-1), not n
+		if ((fromSample)&&(n>1))
+			n--;
+		return Math.sqrt(sum/n);
 	}
-
+	
+	/*  ----------------------- Dealing with signs  ----------------------- */
+	
 	/**
-	 * \brief Return the maximum square among 2 doubles
+	 * \brief Unequivocally determine the sign of a double number. 
 	 * 
-	 * Return the maximum square among 2 doubles
+	 * Copied from 
+	 * http://stackoverflow.com/questions/3994531/how-to-determine-if-a-number-is-positive-or-negative-in-java
+	 * on 7 August 2013
 	 * 
-	 * @param a	Double 1
-	 * @param b	Double 2
-	 * @return the maximum square among a and b
+	 * @param f Double to be inspected
+	 * @return Integer value with the sign of f: -1, 0, or +1
 	 */
-	public static double maxSquare(double a, double b) {
-		double a2 = a*a;
-		double b2 = b*b;
-		return (a2>b2 ? a2 : b2);
-	}
+	public static Integer sign(Double f)
+	{
+	    if (f == 0.0) return 0;
+	    f *= Double.POSITIVE_INFINITY;
+	    if (f == Double.POSITIVE_INFINITY) return +1;
+	    if (f == Double.NEGATIVE_INFINITY) return -1;
 
-	/**
-	 * \brief Determine if two doubles are the same sign
-	 * 
-	 * Determine if two doubles are the same sign
-	 * 
-	 * @param a	Double 1
-	 * @param b	Double 2
-	 * @return	Boolean noting whether the two are the same sign
-	 */
-	static public boolean sameSign(double a, double b) {
-		return (a*b>=0);
-	}
-
-	/**
-	 * \brief Return the sum of a vector
-	 * 
-	 * Return the sum of a vector
-	 * 
-	 * @param vector	Vector to sum
-	 * @return	The sum of that vector
-	 */
-	public static double sumVector(double vector[]) {
-		double out = 0;
-		for (int i = 0; i<vector.length; i++) {
-			out += vector[i];
-		}
-		return out;
-	}
-
-	/**
-	 * \brief Output a double value as a string, in a particular decimal format
-	 * 
-	 * Output a double value as a string, in a particular decimal format
-	 * 
-	 * @param value	Value to be output
-	 * @param scFormat	The decimal format to use
-	 * @return	A string containing that value in the required decimal format
-	 */
-	public static String toString(double value, boolean scFormat) {
-		if (scFormat) return dfSc.format(value);
-		else return dfUs.format(value);
+	    throw new IllegalArgumentException("Unfathomed double");
 	}
 	
 	/**
-	 * \brief Return a uniform distributed random number between 0 and 1
+	 * \brief Determine if two Doubles are the same sign.
 	 * 
-	 * Return a uniform distributed random number between 0 and 1
+	 * Note that this is true if if either (or both) of the arguments is zero.
 	 * 
-	 * @return uniform distributed random number in [0,1]
+	 * @param a	Double 1
+	 * @param b	Double 2
+	 * @return	Boolean noting whether the two are the same sign.
 	 */
-	public static double getUniRand() {
+	static public Boolean sameSign(Double a, Double b)
+	{
+		return (sign(a)*sign(b) >= 0);
+	}
+	
+	/**
+	 * \brief Output a Double value as a string, in a particular decimal format.
+	 * 
+	 * If true, use dfSc; if false, use dfUs. 
+	 * 
+	 * @param value	Double value to be output.
+	 * @param scFormat	The decimal format to use.
+	 * @return	A string containing that value in the required decimal format.
+	 */
+	public static String toString(Double value, Boolean scFormat)
+	{
+		return (scFormat) ? dfSc.format(value) : dfUs.format(value); 
+	}
+	
+	/**
+	 * \brief Searches for a substring within a main string, and returns a double immediately after if it exists.
+	 * 
+	 * Note that 1.0 will be returned if the substring is not found, the substring is at the very end 
+	 * of the main string, or there is no double immediately after.
+	 * 
+	 * @param mainString The string within which the search will be made
+	 * @param subString The substring being searched for
+	 * @return The double immediately after subString, if found. If not found, 1.0
+	 */
+	public static Double doubleAfterSubstring(String mainString, String subString)
+	{
+		Double out = 1.0;
+		if (mainString.contains(subString))
+		{
+			int startIndex = mainString.indexOf(subString) + subString.length();
+			int endIndex = startIndex + 1;
+			int maxIndex = mainString.length();
+			String potential;
+			
+			while ((endIndex < maxIndex) && 
+					(isNumeric(mainString.substring(startIndex, endIndex+1))))
+				endIndex++;
+			
+			potential = mainString.substring(startIndex, endIndex);
+			
+			if (isNumeric(potential))
+				out = Double.parseDouble(potential); 
+		}
+		return out;
+	}
+	
+
+	/**
+	 * \brief Checks if the supplied String can be safely parsed as a Double.
+	 * 
+	 * @param str The string to be tested.
+	 * @return True or False depending on the outcome of the test.
+	 */
+	public static Boolean isNumeric(String str)  
+	{  
+	  try  
+	  {  
+	    @SuppressWarnings("unused")
+		double d = Double.parseDouble(str);  
+	  }  
+	  catch(NumberFormatException nfe)
+	  {  
+	    return false;
+	  }  
+	  return true;  
+	}
+	
+	/*  -------------------- Random number generation  -------------------- */
+	
+	/**
+	 * \brief Return a uniformly distributed random number between 0 and 1.
+	 * 
+	 * Lower bound (0) is inclusive, upper bound (1) is exclusive.
+	 * 
+	 * @return A uniformly distributed random number in [0,1).
+	 */
+	public static Double getUniRandDbl() {
 		return random.nextDouble();
 	}
-
+	
 	/**
-	 * \brief Return an integer random number between two set bounds
+	 * \brief Return a double random number between two set bounds.
 	 * 
-	 * Return an integer random number between two set bounds
-	 * 
-	 * @param lBound	Lower bound
-	 * @param hBound	Upper bound
-	 * @return an int between lBound inclusive and hBound exclusive
+	 * @param lBound	Lower bound (inclusive).
+	 * @param uBound	Upper bound (exclusive).
+	 * @return A uniformly distributed random double number in [lBound, uBound).
 	 */
-	public static int getUniRandInt(int lBound, int hBound) {
-		return random.nextInt(hBound-lBound)+lBound;
+	public static Double getUniRandDbl(Double lBound, Double uBound)
+	{
+		return getUniRandDbl()*(uBound-lBound)+lBound;
 	}
 	
 	/**
-	 * \brief Return a double random number between two set bounds
+	 * \brief Return 2 to the power of a uniformly distributed random number
+	 * in [0,1).
 	 * 
-	 * Return a double random number between two set bounds
-	 * 
-	 * @param lBound	Lower bound
-	 * @param hBound	Upper bound
-	 * @return an int between lBound inclusive and hBound exclusive
+	 * @return 2 to the power of a uniformly distributed random number in [0,1).
 	 */
-	public static double getUniRand(double lBound, double hBound) {
+	public static Double getExp2Rand()
+	{
+		return exp2(getUniRandDbl());
+	}
+	
+	/**
+	 * \brief Return an integer random number less than the upper bound supplied.
+	 * 
+	 * @param uBound	Upper bound (exclusive).
+	 * @return A uniformly distributed random integer number in [0, uBound).
+	 */
+	public static Integer getUniRandInt(Integer uBound)
+	{
+		return random.nextInt(uBound);
+	}
+	
+	/**
+	 * \brief Return an integer random number between two set bounds.
+	 * 
+	 * @param lBound	Lower bound (inclusive).
+	 * @param uBound	Upper bound (exclusive).
+	 * @return A uniformly distributed random integer number in [lBound, uBound).
+	 */
+	public static Integer getUniRandInt(Integer lBound, Integer hBound)
+	{
+		return getUniRandInt(hBound-lBound)+lBound;
+	}
+	
+	/**
+	 * @param lBound
+	 * @param hBound
+	 * @return a double between lBound inclusive and hBound exclusive
+	 */
+	public static Double getUniRand(double lBound, double hBound) {
 		return random.nextDouble()*(hBound-lBound)+lBound;
 	}
 
 	/**
-	 * \brief Return a truncated N(0,1) distributed random number. Normal distributed random numbers are truncated at 2*sigma to prevent extreme values.
+	 * \brief Return a truncated N(0,1) distributed random number.
 	 * 
-	 * Return a truncated N(0,1) distributed random number. Normal distributed random numbers are truncated at 2*sigma to prevent extreme values.
+	 * Normal distributed random numbers are truncated at 2*sigma to prevent
+	 * extreme values.
 	 * 
-	 * @return truncated N(0,1) distributed random number. 
+	 * @return Truncated N(0,1) distributed random number. 
 	 */
-	public static double getNormRand() {
-		double phi;
+	public static Double getNormRand()
+	{
+		Double phi;
 		do {
 			phi = random.nextGaussian();
 		} while (Math.abs(phi)>2);
@@ -433,75 +523,68 @@ public final class ExtraMath
 	}
 	
 	/**
-	 * \brief Return 2 to the power of a uniformly distributed random number in [0,1]
+	 * \brief Randomise a value with a normal distribution in a range fixed by
+	 * the Coefficient of Variation (CV).
 	 * 
-	 * Return 2 to the power of a uniformly distributed random number in [0,1]
+	 * Randomise a value mu with a normal (Gaussian) distribution in a range
+	 * fixed by CV. This is different from deviateFromSD()!
+	 * The result will be the same sign (+/-) as mu.
 	 * 
-	 * @return 2 to the power of a uniformly distributed random number in [0,1]
+	 * E.g. If mu = 1 and cv = .1, the results form a truncated normal
+	 * 			distribution between 0.8 and 1.2
+	 * 		If mu = -3 and cv = .05 the results form a truncated normal
+	 * 			distribution between -3.3 and -2.7
+	 * 
+	 * @param mu Mean value.
+	 * @param cv Coefficient of Variation.
+	 * @return N(mu, cv)-distributed random value within
+	 * [mu*(1-2*cv), mu*(1+2*cv)]
 	 */
-	public static double getExp2Rand() {
-		return exp2(getUniRand());
-	}
-	
-	/**
-	 * \brief Randomise a value with a gaussian distribution in a range fixed by the ratio sigma
-	 * 
-	 * Randomise a value with a gaussian distribution in a range fixed by the ratio sigma. If mu = 1 and sigma = .1, the results 
-	 * form a truncated gaussian distribution between 0.8 and 1.2 (2*sigma interval)
-	 * 
-	 * @param mu mean value
-	 * @param sigma standard deviation
-	 * @return N(mu,sigma)-distributed random value within [mu-2*sigma,mu+2*sigma]
-	 */
-	public static double deviateFrom(double mu, double sigma) 
+	public static Double deviateFromCV(Double mu, Double cv) 
 	{
-		// Called by getBabyMassFrac(), willDie(), willDivide() and willTransfer().
-		// sigma is homogeneous to a ratio of deviation/value
+		// No point going further if either is zero 
+		if (mu == 0.0 || cv == 0.0) return mu;
 		
-		// Rob 11th Jan 2011 
-		// Extended "if (mu==0) return 0;" to avoid unnecessarily calling getNormRand()
-		if (mu==0 || sigma==0) return mu;
-		
-		double result, deviation;
-
+		Double result, deviation;
 		do {
 			deviation = getNormRand();
 			// Compute the new value
-			result = mu*(1.0+sigma*deviation);
+			result = mu*(1.0+cv*deviation);
 		} while (!sameSign(result, mu));
-
+		
 		return result;
 	}
 	
 	/**
-	 * \brief Calculate the mean of a double array v
+	 * \brief Randomise a value with a normal distribution in a range fixed by 
+	 * the Standard Deviation (SD).
 	 * 
-	 * Calculate the mean of a double array v
+	 * Randomise a value mu with a normal (Gaussian) distribution in a range
+	 * fixed by SD. This is different from deviateFromCV()!
+	 * The result will be the same sign (+/-) as mu.
 	 * 
-	 * @param v	The double array
-	 * @return	The mean of the double array
+	 * E.g. If mu = 1 and sigma = .1, the results form a truncated normal
+	 * 			distribution between 0.8 and 1.2
+	 * 		If mu = -3 and sigma = .05 the results form a truncated normal
+	 * 			distribution between -3.1 and -2.9
+	 * 
+	 * @param mu Mean value
+	 * @param sigma Standard Deviation
+	 * @return N(mu,sigma)-distributed random value within
+	 * [mu-2*sigma, mu+2*sigma]
 	 */
-	public static double mean(double [] v) {
-		return sumVector(v)/v.length;
-	}
-
-	/**
-	 * \brief Calculate the standard deviation of a double array v
-	 * 
-	 * Calculate the standard deviation of a double array v
-	 * 
-	 * @param v	The double array
-	 * @return	The standard deviation of the double array
-	 */
-	public static double stddev(double [] v) {
-		double mean = mean(v);
-		double sum = 0.;
-		for (int i = 0; i<v.length; i++) {
-			sum += sq(v[i] - mean);
-		}
-
-		return Math.sqrt(sum/v.length);
-	}
-
-	                                      
+	public static Double deviateFromSD(Double mu, Double sigma) 
+	{
+		// No point going further if the standard deviation is zero 
+		if (sigma == 0.0) return mu;
+		
+		Double result, deviation;
+		do {
+			deviation = getNormRand();
+			// Compute the new value
+			result = mu + (sigma*deviation);
+		} while (!sameSign(result, mu));
+		
+		return result;
+	}                           
 }

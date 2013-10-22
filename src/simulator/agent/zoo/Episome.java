@@ -242,7 +242,7 @@ public class Episome extends InfoAgent {
 	 * @return
 	 */
 	public void segregation(Episome aPlasmid) {
-		if (ExtraMath.getUniRand() > getSpeciesParam().lossProbability) {
+		if (ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability) {
 			_nCopy = 1;
 			aPlasmid._nCopy = 1;
 		} else {
@@ -264,7 +264,7 @@ public class Episome extends InfoAgent {
 	}
 
 	public boolean testProficiency() {
-		double alea = ExtraMath.getUniRand();
+		Double alea = ExtraMath.getUniRandDbl();
 		return (alea <= getSpeciesParam().transferProficiency);
 
 //		// previous (LAL) growth-dependence mechanism

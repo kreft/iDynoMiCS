@@ -504,8 +504,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public void setDivisionDirection(double distance) {
 		double phi, theta;
 
-		phi = 2*Math.PI*ExtraMath.getUniRand();
-		theta = 2*Math.PI*ExtraMath.getUniRand();
+		phi = 2*Math.PI*ExtraMath.getUniRandDbl();
+		theta = 2*Math.PI*ExtraMath.getUniRandDbl();
 
 		_divisionDirection.x = distance*Math.sin(phi)*Math.cos(theta);
 		_divisionDirection.y = distance*Math.sin(phi)*Math.sin(theta);
@@ -1143,8 +1143,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return	Double stating the fraction of mass that is transferred to the new agent on cell division
 	 */
 	public double getBabyMassFrac() {
-		return ExtraMath.deviateFrom(getSpeciesParam().babyMassFrac,
-				getSpeciesParam().babyMassFracCV);
+		return ExtraMath.deviateFromCV(getSpeciesParam().babyMassFrac,
+										getSpeciesParam().babyMassFracCV);
 	}
 	
 	/**
@@ -1154,8 +1154,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	Double stating the agent radius at which cell division is triggered
 	 */
-	public double getDivRadius() {
-		return ExtraMath.deviateFrom(getSpeciesParam().divRadius, getSpeciesParam().divRadiusCV);
+	public double getDivRadius()
+	{
+		return ExtraMath.deviateFromCV(getSpeciesParam().divRadius,
+											getSpeciesParam().divRadiusCV);
 	}
 	
 	/**
@@ -1166,7 +1168,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return	Double stating the agent radius at which cell death is triggered
 	 */
 	public double getDeathRadius() {
-		return ExtraMath.deviateFrom(getSpeciesParam().deathRadius, getSpeciesParam().deathRadiusCV);
+		return ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
+										getSpeciesParam().deathRadiusCV);
 	}
 
 	/**

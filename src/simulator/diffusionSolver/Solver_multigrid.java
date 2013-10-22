@@ -63,10 +63,10 @@ public class Solver_multigrid extends DiffusionSolver {
 	public void init(Simulator aSimulator, XMLParser xmlRoot) {
 		super.init(aSimulator, xmlRoot);
 
-		nCoarseStep = (int) xmlRoot.getParamDbl("coarseStep");
-		vCycles = (int) xmlRoot.getParamDbl("nCycles");
-		nPreSteps = (int) xmlRoot.getParamDbl("preStep");
-		nPosSteps = (int) xmlRoot.getParamDbl("postStep");
+		nCoarseStep = xmlRoot.getParamInt("coarseStep");
+		vCycles = xmlRoot.getParamInt("nCycles");
+		nPreSteps = xmlRoot.getParamInt("preStep");
+		nPosSteps = xmlRoot.getParamInt("postStep");
 
 		// Create the table of solute grids
 		nSolute = _soluteList.length;

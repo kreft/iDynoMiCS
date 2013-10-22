@@ -232,7 +232,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		} else {	
 			//LogFile.writeLog("distributing mass normally");
 			for (int i = 0; i<particleMass.length; i++) {
-				particleMass[i] = ExtraMath.deviateFrom(1.5*particleMass[i], getSpeciesParam().initialMassCV);
+				particleMass[i] = ExtraMath.deviateFromCV(1.5*particleMass[i], getSpeciesParam().initialMassCV);
 			}
 		}
 	}
@@ -376,7 +376,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		updateRadius();
 		if (_totalMass<0) return true;
 		// Test cell radius
-		if (getRadius(false)<=ExtraMath.deviateFrom(getSpeciesParam().deathRadius,
+		if (getRadius(false)<=ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
 				getSpeciesParam().deathRadiusCV)) return true;
 
 		// Test inert ratio

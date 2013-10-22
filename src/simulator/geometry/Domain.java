@@ -179,10 +179,9 @@ public class Domain implements IsComputationDomain
 		}
 		else
 		{
-			_nI = (int) cdRoot.getChildAttrDbl("grid", "nI");
-			_nJ = (int) cdRoot.getChildAttrDbl("grid", "nJ");
-			if (is3D) _nK = (int) cdRoot.getChildAttrDbl("grid", "nK");
-			else _nK = 1;
+			_nI = cdRoot.getChildAttrInt("grid", "nI");
+			_nJ = cdRoot.getChildAttrInt("grid", "nJ");
+			_nK = (is3D) ? cdRoot.getChildAttrInt("grid", "nK") : 1;
 		}
 
 		// Now calculate the length of the grid in micrometres
@@ -529,17 +528,17 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return	Array of double values of the heights of the biofilm/liquid interface
 	 */
-	public double[] getInterface() {
+	public Double[] getInterface() {
 		currentSim.agentGrid.getLevelSet().refreshBorder(false, currentSim);
 		LinkedList<LocatedGroup> border =
 				currentSim.agentGrid.getLevelSet().getBorder();
 		
 		
 		// catch if there is no biomass for some reason; in that case return zero height
-		if (border.size() == 0)	return new double[]{0.};
+		if (border.size() == 0)	return new Double[]{0.};
 
 		// now copy to regular array, but watch for infinite distances
-		double [] borderarray = new double[border.size()];
+		Double [] borderarray = new Double[border.size()];
 		for (int i = 0; i < border.size(); i++) {
 			borderarray[i] = border.get(i).distanceFromCarrier;
 			if (borderarray[i] == Double.MAX_VALUE) borderarray[i] = 0.;
@@ -670,7 +669,7 @@ public class Domain implements IsComputationDomain
 	 * @return	Double of the length of the longest side of this domain
 	 */
 	public double getLongestSize() {
-		return ExtraMath.max(ExtraMath.max(length_X, length_Y), length_Z);
+		return Math.max(Math.max(length_X, length_Y), length_Z);
 	}
 
 	/**
