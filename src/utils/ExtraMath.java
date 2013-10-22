@@ -313,7 +313,13 @@ public final class ExtraMath
 			{
 					out += array[i];
 					n++;
-			}		
+			}
+		if (n==0.0)
+		{
+			LogFile.writeLogAlways("WARNING! ExtraMath.mean(): array of length "+
+												array.length+" has no valid entries");
+			return 0.0;
+		}
 		return (out/n);
 	}
 	
@@ -328,6 +334,12 @@ public final class ExtraMath
 				sum += sq(a[i] - mean);
 				n++;
 			}
+		if (n==0.0)
+		{
+			LogFile.writeLogAlways("WARNING! ExtraMath.stddev(): array of length "+
+												a.length+" has no valid entries");
+			return 0.0;
+		}
 		// if this is from a sample we divide by (n-1), not n
 		if ((fromSample)&&(n>1))
 			n--;
