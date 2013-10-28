@@ -14,6 +14,7 @@ import java.io.Serializable;
 import utils.ExtraMath;
 import org.jdom.*;
 
+
 /**
  * \brief Implements 3D vector of continuous spatial coordinates. Can be used to store Continuous coordinates or Movement vectors
  * 
@@ -24,7 +25,7 @@ import org.jdom.*;
  * @author Jo�o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
  *
  */
-public class ContinuousVector implements Cloneable, Serializable 
+public class ContinuousVector implements Cloneable, Serializable, Comparable<ContinuousVector>
 {
 
 	/**
@@ -393,5 +394,24 @@ public class ContinuousVector implements Cloneable, Serializable
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
+	
+	/**
+	 * \brief Compares the values of two continuous vectors. Used in the creation of the epithelium for eGUT
+	 * 
+	 * @param p2	ContinuousVector to compare this continuous vector object to
+	 */
+	public int compareTo(ContinuousVector p2) 
+    {
+    	double valueComparison = Double.valueOf(this.x).compareTo(Double.valueOf(p2.x));
+    	if(valueComparison != 0)		// i.e. they are not the same
+    	{
+    		return Double.valueOf(this.x).compareTo(Double.valueOf(p2.x));
+    	}
+    	else
+    	{
+    		// Need to compare the second value
+    		return Double.valueOf(this.y).compareTo(Double.valueOf(p2.y));
+    	}
+    }
 
 }
