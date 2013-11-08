@@ -1292,7 +1292,7 @@ public class Simulator
 		// KA AUGUST 2013
 		// Now we're going to add to ENV_STATE the amount of solute produced or consumed in this domain, in this step
 		StringBuffer value = new StringBuffer();
-		value.append("<globalProductionRate\n");
+		value.append("<globalProductionRate>\n");
 		// Need to iterate through each solute to do this
 		for(int iSolute=0;iSolute<soluteDic.size();iSolute++)
 		{
