@@ -598,8 +598,17 @@ public class XMLParser implements Serializable
 	 * @param attributeName	The attribute name for which the value is being sought
 	 * @return	The double value of that attribute, if present
 	 */
-	public Double getAttributeDbl(String attributeName) {
-		return Double.parseDouble(getAttributeStr(attributeName));
+	public Double getAttributeDbl(String attributeName) 
+	{
+		// KA NOV 13 - Added a return of NaN if the attribute was not found. Required when setting up the cell birth area by volume/area
+		try
+		{
+			return Double.parseDouble(getAttributeStr(attributeName));
+		}
+		catch(Exception e)
+		{
+			return Double.NaN;
+		}
 	}
 
 	/**
