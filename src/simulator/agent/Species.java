@@ -213,28 +213,41 @@ public class Species implements Serializable
 	public void createPop(XMLParser spRoot) 
 	{
 		double howMany = spRoot.getAttributeDbl("number");
-		
+	
 		// Define the birth area - this is taken from the coordinates tags in the protocol file
 		// (Nov13) OR if an initial area is not declared, this is the whole Y and Z of the domain with a height of 1.
 		ContinuousVector[] _initArea = defineSquareArea(spRoot);
+		String logStatement;
 		
 		if(Double.isNaN(howMany))
 		{
-			// User has declared a set number to be added over a specified area
-			// We assume the user has declared the cells by entering an area and the number of cells they want per mm squared
-			double cellsPerMMVolume = spRoot.getAttributeDbl("cellspermm3");
-			
+			// User has declared a set number to be added over a specified area (for 3D) or length (for 2D)
+			// We assume the user has declared the number of cells they want in millimetres in both cases
+						
 			// Now we need the area of the initial area / whole domain (depending how this has been declared) to calculate the number
 			// of agents required. Make sure this is calculated in mm not microns
-			double birthAreaVolume;
-			if (domain.is3D) 
-				birthAreaVolume = (((_initArea[1].x-_initArea[0].x)*(_initArea[1].y-_initArea[0].y)*(_initArea[1].z-_initArea[0].z))/1000);
+			if(domain.is3D) 
+			{
+				double cellsPerArea = spRoot.getAttributeDbl("cellsperMM2");
+				double birthRegionArea = ((_initArea[1].y-_initArea[0].y)/1000)
+										*((_initArea[1].z-_initArea[0].z)/1000);
+				howMany = Math.floor(cellsPerArea * birthRegionArea);
+				
+				logStatement = "by specifying "+cellsPerArea+" cells per mm2";
+			}
 			else
-				birthAreaVolume = (((_initArea[1].x-_initArea[0].x)*(_initArea[1].y-_initArea[0].y))/1000);
+			{
+				
+				double cellsPerLength = spRoot.getAttributeDbl("cellsperMM");
+				double birthRegionLength = ((_initArea[1].y-_initArea[0].y)/1000);
+				howMany = Math.floor(cellsPerLength * birthRegionLength);
+				logStatement = "by specifying "+cellsPerLength+" cells per mm";
+			}			
+		}
+		else
+		{
 			
-			// How have the volume of the area in mm3, and the number of cells per mm3, so can work out the total number of cells
-			howMany = Math.floor(cellsPerMMVolume * birthAreaVolume);
-			
+			logStatement = "by specifying "+howMany+" cells for a stated initial area";
 		}
 		
 		// Now we have a number and a birth area, we can add the cells
@@ -266,7 +279,7 @@ public class Species implements Serializable
 			}
 		}
 
-		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created");
+		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created, "+logStatement);
 	}
 	
 	

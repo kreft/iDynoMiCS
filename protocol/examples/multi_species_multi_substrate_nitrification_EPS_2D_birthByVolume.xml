@@ -437,8 +437,8 @@
 		<reaction name="MyInactivationAutotrophs" status="active"/>
 
 		<!-- NOTE FROM iDynoMiCS v1.3 - DEFINITION OF SPECIES INITIAL AREA CAN BE DONE IN A NUMBER OF 
-		WAYS. THE TRADITIONAL WAY IS STILL POSSIBLE, WHERE A BIRTH AREA IS DEFINED AND THE NUMBER OF 
-		CELLS REQUIRED IN THAT AREA STATED:
+		WAYS. THE TRADITIONAL WAY IS STILL POSSIBLE, WHERE A BIRTH REGION IS DEFINED AND THE NUMBER OF 
+		CELLS REQUIRED IN THAT REGION STATED:
 
 		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
@@ -446,22 +446,30 @@
 			<coordinates x="1" y="264" z="0"/>
 		</initArea>
 
-		NOW, YOU CAN ALSO STATE THE NUMBER OF CELLS YOU REQUIRE PER VOLUME (MILLIMETRE CUBED) IN THAT
-		PARTICULAR AREA, AND iDynoMiCS WILL THEN CALCULATE THE NUMBER OF CELLS REQUIRED. THIS IS DONE
-		AS BELOW:
+		NOW, YOU CAN ALSO STATE THE NUMBER OF CELLS YOU REQUIRE PER AREA ON THE SUBSTRATUM SURFACE FOR 3D 
+		(MILLIMETRE SQUARED) OR CELLS PER LENGTH OF THE SUBSTRATUM FOR 2D. iDynoMiCS WILL THEN CALCULATE 
+		THE NUMBER OF CELLS REQUIRED. THIS IS DONE AS BELOW FOR 3D:
 		
-		<initArea cellspermm3="40000">
+		<initArea cellsperMM2="40">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="264" z="264"/>
+		</initArea>
+
+		AND FOR 2D:
+		<initArea cellsperMM="40">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
 			<coordinates x="1" y="264" z="0"/>
 		</initArea>
 
-		BUT YOU CAN NOW ALSO DO MORE. NOTE IN THE ABOVE THAT THE COORDINATES SUGGEST THE BIRTH AREA
+
+		BUT YOU CAN NOW ALSO DO MORE. NOTE IN THE ABOVE THAT THE COORDINATES SUGGEST THE BIRTH REGION
 		IS JUST ABOVE THE SUBSTRATUM, BUT IS THE WHOLE LENGTH OF THE DOMAIN? NOW, IF YOU WANT THIS
 		TO BE THE CASE, YOU CAN LEAVE OUT THE 'COORDINATES' TAGS COMPLETELY. THIS CREATES A BIRTH
-		AREA THAT IS THE LENGTH OF THE WHOLE DOMAIN (IN Y AND Z DIRECTIONS) WITH A HEIGHT OF 1, LIKE THIS:
+		REGION THAT IS THE LENGTH OF THE WHOLE DOMAIN (IN Y AND Z DIRECTIONS) WITH A HEIGHT OF 1, LIKE THIS:
 
-		<initArea cellspermm3="40000">
+		<initArea cellsperMM2="40">
 			<param name="birthday" unit="hour">0</param>
 		</initArea>
 
@@ -471,11 +479,7 @@
 			<param name="birthday" unit="hour">0</param>
 		</initArea>-->
 
-		<!--<initArea number="10">
-			<param name="birthday" unit="hour">0</param>
-		</initArea>-->
-
-		<initArea cellspermm3="40">
+		<initArea cellsperMM="40">
 			<param name="birthday" unit="hour">0</param>
 		</initArea>
 
