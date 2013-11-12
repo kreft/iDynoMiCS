@@ -11,7 +11,6 @@ package simulator.agent;
 import java.util.List;
 import java.util.Random;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.awt.Color;
 
 import org.jdom.Element;
@@ -214,14 +213,49 @@ public class Species implements Serializable
 	public void createPop(XMLParser spRoot) 
 	{
 		double howMany = spRoot.getAttributeDbl("number");
-		if (howMany==0) return;
-
+	
 		// Define the birth area - this is taken from the coordinates tags in the protocol file
+		// (Nov13) OR if an initial area is not declared, this is the whole Y and Z of the domain with a height of 1.
 		ContinuousVector[] _initArea = defineSquareArea(spRoot);
+		String logStatement;
+		
+		if(Double.isNaN(howMany))
+		{
+			// User has declared a set number to be added over a specified area (for 3D) or length (for 2D)
+			// We assume the user has declared the number of cells they want in millimetres in both cases
+						
+			// Now we need the area of the initial area / whole domain (depending how this has been declared) to calculate the number
+			// of agents required. Make sure this is calculated in mm not microns
+			if(domain.is3D) 
+			{
+				double cellsPerArea = spRoot.getAttributeDbl("cellsperMM2");
+				double birthRegionArea = ((_initArea[1].y-_initArea[0].y)/1000)
+										*((_initArea[1].z-_initArea[0].z)/1000);
+				howMany = Math.floor(cellsPerArea * birthRegionArea);
+				
+				logStatement = "by specifying "+cellsPerArea+" cells per mm2";
+			}
+			else
+			{
+				
+				double cellsPerLength = spRoot.getAttributeDbl("cellsperMM");
+				double birthRegionLength = ((_initArea[1].y-_initArea[0].y)/1000);
+				howMany = Math.floor(cellsPerLength * birthRegionLength);
+				logStatement = "by specifying "+cellsPerLength+" cells per mm";
+			}			
+		}
+		else
+		{
+			
+			logStatement = "by specifying "+howMany+" cells for a stated initial area";
+		}
+		
+		// Now we have a number and a birth area, we can add the cells
+		if (howMany==0) return;
 
 		// Create all the required agents
 		ContinuousVector cc;
-		
+			
 		for (int i = 0; i<howMany; i++) 
 		{
 			if (_progenitor instanceof LocatedAgent) 
@@ -245,7 +279,7 @@ public class Species implements Serializable
 			}
 		}
 
-		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created");
+		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created, "+logStatement);
 	}
 	
 	
@@ -954,28 +988,49 @@ public class Species implements Serializable
 	public ContinuousVector[] defineSquareArea(XMLParser spRoot) 
 	{
 		List<Element> area = spRoot.getChildren("coordinates");
-		// First Coordinate Tag
-		ContinuousVector cc1 = new ContinuousVector((Element) area.get(0));
-		// Second Coordinate Tag
-		ContinuousVector cc2 = new ContinuousVector((Element) area.get(1));
-
+		
 		ContinuousVector[] initArea = new ContinuousVector[2];
 		initArea[0] = new ContinuousVector();
 		initArea[1] = new ContinuousVector();
-
-		// Set each point
-		initArea[0].x = Math.min(cc1.x, cc2.x);
-		initArea[0].y = Math.min(cc1.y, cc2.y);
-		initArea[0].z = Math.min(cc1.z, cc2.z);
-		initArea[1].x = Math.max(cc1.x, cc2.x);
-		initArea[1].y = Math.max(cc1.y, cc2.y);
-		initArea[1].z = Math.max(cc1.z, cc2.z);
-
+		
+		// KA NOV 13 - CHANGED THIS, AS WE'RE GOING TO LET THE USER NOT DECLARE AN INITIAL AREA IF THEY WANT THE CELLS SPREAD ACROSS
+		// THE WHOLE DOMAIN. THUS THIS NEEDS CHECKING AND FIXING
+		if(area.size()>0)
+		{
+			// First Coordinate Tag
+			ContinuousVector cc1 = new ContinuousVector((Element) area.get(0));
+			// Second Coordinate Tag
+			ContinuousVector cc2 = new ContinuousVector((Element) area.get(1));
+	
+			// Set each point
+			initArea[0].x = Math.min(cc1.x, cc2.x);
+			initArea[0].y = Math.min(cc1.y, cc2.y);
+			initArea[0].z = Math.min(cc1.z, cc2.z);
+			initArea[1].x = Math.max(cc1.x, cc2.x);
+			initArea[1].y = Math.max(cc1.y, cc2.y);
+			initArea[1].z = Math.max(cc1.z, cc2.z);
+	
+		}
+		else
+		{
+			// NO INITIAL AREA HAS BEEN DECLARED, USE THE WHOLE SUBSTRATUM. NOTE THAT THE X (HEIGHT) COORDINATE IS SET TO 1 SO THE
+			// CELLS ARE PLACED NEAR THE SUBSTRATUM
+			// Set each point
+			initArea[0].x = 0;
+			initArea[0].y = 0;
+			initArea[0].z = 0;
+			initArea[1].x = 1.0;
+			initArea[1].y = domain.length_Y;
+			initArea[1].z = domain.length_Z;
+		}
+		
 		// In the case of 2D simulation, the agent's z-coordinate is 0.
-		if (!domain.is3D) {
+		if (!domain.is3D) 
+		{
 			initArea[0].z = 0;
 			initArea[1].z = 0;
 		}
+		
 		return initArea;
 	}
 
