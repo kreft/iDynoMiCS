@@ -10,7 +10,7 @@
 package idyno;
 
 import simulator.World;
-
+import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -108,10 +108,7 @@ public class SimTimer {
 			LogFile.writeLog("Using adaptive time stepping.");
 			_dTMax = parser.getParamTime("timeStepMax");
 			_dTMin = parser.getParamTime("timeStepMin");
-			_oldStep = new Double[10];
-		
-			for(int i=0;i<10;i++)
-				_oldStep[i]=_dT;			
+			_oldStep = ExtraMath.newDoubleArray(10);
 		}
 	}
 
@@ -133,33 +130,35 @@ public class SimTimer {
 	 * 
 	 * @param aWorld	The simulation world being modelled under an adaptive timestep
 	 */
-	public static void updateTimeStep(World aWorld) {
-
+	public static void updateTimeStep(World aWorld)
+	{
 		if (!isAdaptive) return;
-
+		
 		double tOpt, newDeltaT;
-
+		
 		tOpt = aWorld.getBulkTimeConstraint();
-
-		if (Double.isInfinite(tOpt)|Double.isNaN(tOpt)) {
+		
+		if (Double.isInfinite(tOpt)|Double.isNaN(tOpt))
 			return;
-		}
-
+		
 		// constrain value between min and max limits
 		newDeltaT = Math.min(Math.max(tOpt, _dTMin), _dTMax);
-
-		if (newDeltaT <= _dT) {
+		
+		if (newDeltaT <= _dT)
+		{
 			// if there is a drop in dt, just use the new value
 			// (also do this if it is not changing b/c it is at the minimum)
 			_dT = newDeltaT;
-
+			
 			// in this case, we also need to re-populate the saved steps
 			// so that we don't use too-large values to raise the step again
 			for (int i=0;i<10;i++)
 				_oldStep[i] = _dT;
-		} else {
+		}
+		else
+		{
 			// otherwise gradually update the timestep in case of increase
-
+			
 			// make the new option the average of 10 previous steps
 			for (int i=1;i<10;i++)
 				_oldStep[i]=_oldStep[i-1];
@@ -169,10 +168,10 @@ public class SimTimer {
 			// again make sure the step isn't too small or too large
 			_dT = _oldStep[0] = Math.min(Math.max(newDeltaT,_dTMin),_dTMax);
 		}
-
+		
 		// make the step into a nicer number
 		_dT = ((int)Math.floor(_dT/(_dTMin/10)))*(_dTMin/10);
-
+		
 		LogFile.writeLog("TimeStep "+_dT+" ("+tOpt+")");
 	}
 
@@ -219,7 +218,8 @@ public class SimTimer {
 	 * 
 	 * @return Double value stating the current simulation timestep
 	 */
-	public static double getCurrentTimeStep() {
+	public static double getCurrentTimeStep()
+	{
 		return _dT;
 	}
 
@@ -230,7 +230,8 @@ public class SimTimer {
 	 * 
 	 * @param dt	The double value to assign to the simulation timestep
 	 */
-	public static void setCurrentTimeStep(double dt) {
+	public static void setCurrentTimeStep(double dt)
+	{
 		_dT = dt;
 	}
 
@@ -241,13 +242,13 @@ public class SimTimer {
 	 * 
 	 * @param infoFile	Name of the XML file containing the sim timer information
 	 */
-	public void setTimerState(String infoFile) {
+	public void setTimerState(String infoFile)
+	{
 		XMLParser fileRoot = new XMLParser(infoFile);
 		XMLParser localRoot = new XMLParser(fileRoot.getChildElement("simulation"));
-
+		
 		_nIter = Integer.parseInt(localRoot.getAttribute("iterate"));
 		_now = Double.parseDouble(localRoot.getAttribute("time"));
-
 	}
 
 	/**
@@ -257,8 +258,9 @@ public class SimTimer {
 	 * 
 	 * @return	Boolean stating whether or not the simulation has finished
 	 */
-	public static boolean simIsFinished() {
-		return (_now>=_endOfSimulation);
+	public static boolean simIsFinished()
+	{
+		return (_now >= _endOfSimulation);
 	}
 	
 	/**
@@ -283,7 +285,7 @@ public class SimTimer {
 	 */
 	public static boolean isDuringNextStep(double aDate) 
 	{
-		return aDate>=_now&&aDate<_now+_dT;
+		return (aDate >= _now) && (aDate < _now+_dT);
 	}
 	
 	/**
@@ -298,6 +300,6 @@ public class SimTimer {
 	 */
 	public static boolean isCurrentTimeStepInSetInRange(double start, double end)
 	{
-		return start<=_now && end>=_now;
+		return (start <= _now) && (end >= _now);
 	}
 }

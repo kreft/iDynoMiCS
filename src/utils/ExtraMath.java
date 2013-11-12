@@ -13,6 +13,7 @@
 package utils;
 
 import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.Random;
 
 /**
@@ -252,6 +253,19 @@ public final class ExtraMath
 	/*  ------------------------ Arrays of doubles  ------------------------ */
 	
 	/**
+	 * \brief Set up a new Double[] that is initialised with zero's.
+	 * 
+	 * Note that initialising a Double[] will normally fill it with null's.
+	 * 
+	 * @param length Integer length of the array requested.
+	 * @return Double[] array of zero's
+	 */
+	public static Double[] newDoubleArray(Integer length)
+	{
+		return Collections.nCopies(length, 0.0).toArray(new Double[0]);
+	}
+	
+	/**
 	 * \brief Return the maximum entry in a Double array.
 	 * 
 	 * @param array Array of Doubles.
@@ -260,8 +274,8 @@ public final class ExtraMath
 	public static Double max(Double[] array)
 	{
 		Double out = array[0];
-		for (int i = 0; i<array.length; i++)
-			out = Math.max(out, array[i]);
+		for (Double value : array)
+			out = Math.max(out, value);
 		return out;
 	}
 	
@@ -274,8 +288,8 @@ public final class ExtraMath
 	public static Double min(Double[] array)
 	{
 		Double out = array[0];
-		for (int i = 0; i<array.length; i++)
-			out = Math.min(out, array[i]);
+		for (Double value : array)
+			out = Math.min(out, value);
 		return out;
 	}
 	
@@ -284,15 +298,15 @@ public final class ExtraMath
 	 * 
 	 * Takes care to exclude any infinites or NaN's.
 	 * 
-	 * @param a Array of doubles
+	 * @param array Array of doubles
 	 * @return
 	 */
-	public static Double sum(Double[] a)
+	public static Double sum(Double[] array)
 	{
 		Double sum = 0.0;
-		for (int i = 0; i<a.length; i++)
-			if(!Double.isInfinite(a[i])&&!Double.isNaN(a[i]))
-					sum += a[i];
+		for (Double value : array)
+			if(!Double.isInfinite(value) && !Double.isNaN(value))
+				sum += value;
 		return sum;
 	}
 	
@@ -306,15 +320,15 @@ public final class ExtraMath
 	 */
 	public static Double mean(Double[] array)
 	{
-		Double out=0.0;
-		Integer n=0;
-		for (int i = 0; i<array.length; i++)
-			if(!Double.isInfinite(array[i])&&!Double.isNaN(array[i]))
+		Double out = 0.0;
+		Double n = 0.0;
+		for (Double value : array)
+			if(!Double.isInfinite(value) && !Double.isNaN(value))
 			{
-					out += array[i];
+					out += value;
 					n++;
 			}
-		if (n==0.0)
+		if (n == 0.0)
 		{
 			LogFile.writeLogAlways("WARNING! ExtraMath.mean(): array of length "+
 												array.length+" has no valid entries");
@@ -323,25 +337,38 @@ public final class ExtraMath
 		return (out/n);
 	}
 	
-	public static Double stddev(Double[] a, Boolean fromSample)
+	/**
+	 * \brief Return the mean standard deviation of a Double array.
+	 * 
+	 * Removes infinite/NaN values from the sum and the number of entries.
+	 * 
+	 * @param array Vector of Doubles.
+	 * @param fromSample Boolean denoting whether to divide by n-1 (True) or n (False) 
+	 * @return Standard deviation of a Double array
+	 */
+	public static Double stddev(Double[] array, Boolean fromSample)
 	{
-		Double mean = mean(a);
+		Double mean = mean(array);
 		Double sum = 0.0;
 		Double n = 0.0;
-		for (int i = 0; i<a.length; i++)
-			if(!Double.isInfinite(a[i])&&!Double.isNaN(a[i]))
+		
+		for (Double value : array)
+			if(!Double.isInfinite(value) && !Double.isNaN(value))
 			{
-				sum += sq(a[i] - mean);
+				sum += sq(value - mean);
 				n++;
 			}
-		if (n==0.0)
+		
+		// check the array contains valid entries before trying to divide by zero
+		if (n == 0.0)
 		{
 			LogFile.writeLogAlways("WARNING! ExtraMath.stddev(): array of length "+
-												a.length+" has no valid entries");
+												array.length+" has no valid entries");
 			return 0.0;
 		}
-		// if this is from a sample we divide by (n-1), not n
-		if ((fromSample)&&(n>1))
+		
+		// If this is from a sample we divide by (n-1), not n
+		if ((fromSample) && (n>1))
 			n--;
 		return Math.sqrt(sum/n);
 	}

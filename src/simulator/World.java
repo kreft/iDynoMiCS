@@ -176,17 +176,13 @@ public class World
 	 */
 	public Double[] getAllBulkValue(int soluteIndex) 
 	{
-		Double value[] = new Double[bulkList.size()];
+		// Initialise value as a Double[] of zero's
+		Double[] value = ExtraMath.newDoubleArray(bulkList.size());
 		
-		for (int i = 0; i<bulkList.size(); i++) 
-		{
+		for (int i = 0; i < bulkList.size(); i++) 
 			if (bulkList.get(i).contains(soluteIndex))
-			{
 				value[i] = bulkList.get(i).getValue(soluteIndex);
-			}
-			else
-				value[i] = 0.;
-		}
+		
 		return value;
 	}
 

@@ -10,10 +10,8 @@
 package simulator.geometry;
 
 import java.io.Serializable;
-
-import utils.ExtraMath;
 import org.jdom.*;
-
+import utils.ExtraMath;
 
 /**
  * \brief Implements 3D vector of continuous spatial coordinates. Can be used to store Continuous coordinates or Movement vectors
@@ -398,20 +396,19 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	/**
 	 * \brief Compares the values of two continuous vectors. Used in the creation of the epithelium for eGUT
 	 * 
-	 * @param p2	ContinuousVector to compare this continuous vector object to
+	 * @param other	ContinuousVector to compare this continuous vector object to
 	 */
-	public int compareTo(ContinuousVector p2) 
+	public int compareTo(ContinuousVector other) 
     {
-    	double valueComparison = Double.valueOf(this.x).compareTo(Double.valueOf(p2.x));
-    	if(valueComparison != 0)		// i.e. they are not the same
-    	{
-    		return Double.valueOf(this.x).compareTo(Double.valueOf(p2.x));
-    	}
-    	else
-    	{
-    		// Need to compare the second value
-    		return Double.valueOf(this.y).compareTo(Double.valueOf(p2.y));
-    	}
+		int valueComparison = Double.valueOf(this.x).compareTo(Double.valueOf(other.x));
+    	
+    	if (valueComparison == 0)
+    		valueComparison = Double.valueOf(this.y).compareTo(Double.valueOf(other.y));
+    	
+    	if (valueComparison == 0)
+    		valueComparison = Double.valueOf(this.z).compareTo(Double.valueOf(other.z));
+    	
+    	return valueComparison;
     }
 
 }
