@@ -168,7 +168,7 @@ public class Bulk
 		LinkedList<Element> soluteList = aBulkRoot.buildSetMarkUp("solute");
 		_bulkValue = new double[aSim.soluteDic.size()];
 		_reacRate = new double[aSim.soluteDic.size()];
-		_dT = new Double[aSim.soluteDic.size()];
+		_dT = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 
 		_isConstant = new Boolean[aSim.soluteDic.size()];
 		_isInBulk = new Boolean[aSim.soluteDic.size()];

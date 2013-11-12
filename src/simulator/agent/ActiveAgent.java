@@ -13,7 +13,6 @@ import idyno.SimTimer;
 import java.util.ArrayList;
 import org.jdom.Element;
 
-import utils.LogFile;
 import utils.XMLParser;
 import utils.ExtraMath;
 import simulator.Simulator;
@@ -127,8 +126,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		int nReaction = aSim.reactionList.length;
 		int nSolute = aSim.soluteList.length;
 		int reacIndex;
-
-		particleMass = new Double[nParticle];
+		
+		// Initialise value as a Double[] of zero's
+		particleMass = ExtraMath.newDoubleArray(nParticle);
 		
 		// Build the list of particles
 		XMLParser parser;
@@ -144,11 +144,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 			// population
 			particleMass[particleIndex] = parser.getParamMass("mass");
 		}
-		
-		// Check that all particles have been specified.
-		for (int i=0; i<nParticle; i++)
-			if (particleMass[i]==null)
-				particleMass[i] = 0.0;
 		
 		updateMass();
 		

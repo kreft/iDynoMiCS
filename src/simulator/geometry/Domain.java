@@ -528,22 +528,21 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return	Array of double values of the heights of the biofilm/liquid interface
 	 */
-	public Double[] getInterface() {
+	public Double[] getInterface()
+	{
 		currentSim.agentGrid.getLevelSet().refreshBorder(false, currentSim);
 		LinkedList<LocatedGroup> border =
 				currentSim.agentGrid.getLevelSet().getBorder();
 		
+		// Catch if there is no biomass for some reason; in that case return zero height
+		if (border.size() == 0)	return ExtraMath.newDoubleArray(1);
 		
-		// catch if there is no biomass for some reason; in that case return zero height
-		if (border.size() == 0)	return new Double[]{0.};
-
-		// now copy to regular array, but watch for infinite distances
-		Double [] borderarray = new Double[border.size()];
-		for (int i = 0; i < border.size(); i++) {
-			borderarray[i] = border.get(i).distanceFromCarrier;
-			if (borderarray[i] == Double.MAX_VALUE) borderarray[i] = 0.;
-		}
-
+		// Now copy to regular array, but watch for infinite distances
+		Double [] borderarray = ExtraMath.newDoubleArray(border.size());
+		for (int i = 0; i < border.size(); i++)
+			if (border.get(i).distanceFromCarrier < Double.MAX_VALUE)
+				borderarray[i] = border.get(i).distanceFromCarrier;
+		
 		return borderarray;
 	}
 
