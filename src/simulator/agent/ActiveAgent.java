@@ -9,15 +9,15 @@
  */
 package simulator.agent;
 
-import idyno.SimTimer;
 import java.util.ArrayList;
 import org.jdom.Element;
 
-import utils.XMLParser;
-import utils.ExtraMath;
+import idyno.SimTimer;
 import simulator.Simulator;
-import simulator.reaction.Reaction;
 import simulator.SpatialGrid;
+import simulator.reaction.Reaction;
+import utils.ExtraMath;
+import utils.XMLParser;
 
 /**
  * \brief Extension of Agent and SpecialisedAgent - adds reaction information to model agent involvement in reactions
@@ -352,14 +352,14 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	protected void grow()
 	{
 		Double deltaMass = 0.0;
-		Double[] deltaParticle = new Double[particleMass.length];
+		Double[] deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
 		int reacIndex = 0;
 		Double tStep = SimTimer.getCurrentTimeStep();
 		Double catMass = 0.0; // Catalyst mass
 		Double catYield = 0.0;
 		_netGrowthRate = 0.0;
 		_netVolumeRate = 0.0;
-
+		
 		// Compute mass growth rate of each active reaction
 		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
 		{
@@ -368,14 +368,13 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 			catMass = particleMass[allReactions[reacIndex]._catalystIndex];
 			// get the growth rate in [fgX.hr-1]
 			growthRate[reacIndex] = allReactions[reacIndex].computeSpecGrowthRate(this);
-
+			
 			for (int i = 0; i<particleYield[reacIndex].length; i++)
 			{
 				if (allReactions[reacIndex].autocatalytic)
 				{
 					// Exponential growth/decay
 					catYield = particleYield[reacIndex][allReactions[reacIndex]._catalystIndex];
-					
 					deltaParticle[i] += catMass * (particleYield[reacIndex][i]/catYield)
 									    	* Math.expm1(catYield * growthRate[reacIndex]*tStep);
 					deltaMass = deltaParticle[i]/tStep;
@@ -394,9 +393,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		// We adjust the particle masses after calculating all the deltaParticle values
 		// so that the reactions occur simultaneously
 		for (int i = 0; i<particleMass.length; i++)
-		{
 			particleMass[i] += deltaParticle[i];
-		}
 	}
 	
 	public void updateGrowthRates() {
