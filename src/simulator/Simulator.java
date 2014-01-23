@@ -484,7 +484,7 @@ public class Simulator
 			{
 				try
 				{
-					System.out.println("rng test: "+ExtraMath.random.nextInt());
+					System.out.println("Random number generator test: "+ExtraMath.random.nextInt());
 				}
 				catch(java.lang.NullPointerException npe)
 				{
@@ -496,8 +496,22 @@ public class Simulator
 		else 
 		{
 			// No random state file exists - initialise the random state generator without any previous information
-			//Chinmay - added MTRandom.java to utils and changed the RNG to use that class instead. 11/08/2009
-			ExtraMath.random = new MTRandom((long) localRoot.getParamInt("randomSeed"));
+			long randomSeed;
+			try
+			{
+				String rSeed = localRoot.getParam("randomSeed");
+				randomSeed = (long) Integer.parseInt(rSeed);
+				LogFile.writeLog("Using random seed in protocol file: "+randomSeed);
+			}
+			catch (Exception e)
+			{
+				randomSeed = (long) (Math.random()*Calendar.getInstance().getTimeInMillis());
+				LogFile.writeLog("No valid random seed given in protocol file.");
+				LogFile.writeLog("Using a randomly generated seed : "+randomSeed);
+			}
+			
+			ExtraMath.random = new MTRandom(randomSeed);
+			System.out.println("Random number generator test: "+ExtraMath.random.nextInt());
 		}
 
 		// Now to initialise the simulation timer - the timesteps specified in the SIMULATOR markup of the XML file are processed
