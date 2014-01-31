@@ -67,15 +67,17 @@ public class BactEPS extends Bacterium
 	 */
 	public void manageEPS() 
 	{
-
 		LocatedAgent aNb;
 		double deltaM;int nEPS;
-
-		if (!_hasEps) { return; }
-		int epsIndex = particleMass.length-1;	
-		if (particleMass[epsIndex]==0) return;
 		
-
+		if ( ! _hasEps ) 
+			return;
+		
+		// TODO Rob Clegg 30 Jan 2014 - Make this more robust!
+		int epsIndex = particleMass.length-1;
+		
+		if ( particleMass[epsIndex].equals(0.0) )
+			return;
 		
 		/* At this line it is sure you have some EPS to hydrolyse __________*/
 		
@@ -84,12 +86,15 @@ public class BactEPS extends Bacterium
 		
 		//List all close EPS particles of your EPS species		
 		findCloseSiblings(_epsSpecies.speciesIndex);		
-				
-		if (_myNeighbors.isEmpty()) {
+		
+		if (_myNeighbors.isEmpty())
+		{
 			// Create an EPS agent and send him part of the capsule		
 			excreteEPS(deltaM);
 			updateSize();
-		} else {
+		}
+		else
+		{
 			// Update your mass and size			
 			double value = particleMass[epsIndex]*(deltaM);
 			particleMass[epsIndex] *= 1-deltaM;

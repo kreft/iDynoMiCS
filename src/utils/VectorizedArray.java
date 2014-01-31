@@ -11,14 +11,14 @@ package utils;
 /**
  * \brief Creates a 2D or 3D Vectorized array of a set size, and provides utilities to set and get values from this array
  * 
- * Creates a 2D or 3D Vectorized array of a set size, and provides utilities to set and get values from this array
+ * RC - This class never seems to be used. Consider deprecating?
  */
 public class VectorizedArray 
 {
 	/**
 	 * Vectorized array to create  
 	 */
-	private double[] _array;
+	private Double[] _array;
 
 	/**
 	 * I (X) size of original array
@@ -51,12 +51,13 @@ public class VectorizedArray
 	 * @param nJ	Array size in J (Y) direction
 	 * @param nK	Array size in K (Z) direction
 	 */
-	public VectorizedArray(int nI, int nJ, int nK) {
+	public VectorizedArray(int nI, int nJ, int nK)
+	{
 		_nI = nI;
 		_nJ = nJ;
 		_nK = nK;
 		_dim = 3;
-		_array = new double[nI * nJ * nK];
+		_array = ExtraMath.newDoubleArray(nI * nJ * nK);
 	}
 
 	/**
@@ -72,7 +73,7 @@ public class VectorizedArray
 		_nJ = nJ;
 		_nK = 1;
 		_dim = 2;
-		_array = new double[nI * nJ];
+		_array = ExtraMath.newDoubleArray(nI * nJ);
 	}
 
 	/**
@@ -85,7 +86,8 @@ public class VectorizedArray
 	 * @param k Integer index of the k position for which the value is being sought
 	 * @return 	Double value at this position
 	 */
-	public double getValueAt(int i, int j, int k) {
+	public Double getValueAt(int i, int j, int k)
+	{
 		return _array[i + _nI * j + _nI * _nJ * k];
 	}
 
@@ -99,7 +101,8 @@ public class VectorizedArray
 	 * @param j Integer index of the j position for which the value is to be set
 	 * @param k Integer index of the k position for which the value is to be set     
 	 */
-	public void setValueAt(double value, int i, int j, int k) {
+	public void setValueAt(Double value, int i, int j, int k)
+	{
 		_array[i + _nI * j + _nI * _nJ * k] = value;
 	}
 
@@ -110,12 +113,12 @@ public class VectorizedArray
 	 * 
 	 * @return Double value which is the maximum value in the array
 	 */
-	public double getMax() {
-		double maxValue = _array[0];
-		for (int i = 1; i < _array.length; i++) {
+	public Double getMax()
+	{
+		Double maxValue = _array[0];
+		for (int i = 1; i < _array.length; i++)
 			if (_array[i] > maxValue)
 				maxValue = _array[i];
-		}
 		return maxValue;
 	}
 	
@@ -126,31 +129,27 @@ public class VectorizedArray
 	 * 
 	 * @return Double value which is the minimum value in the array
 	 */
-	public double getMin() {
-		double minValue = _array[0];
-		for (int i = 1; i < _array.length; i++) {
+	public Double getMin()
+	{
+		Double minValue = _array[0];
+		for (int i = 1; i < _array.length; i++)
 			if (_array[i] < minValue)
 				minValue = _array[i];
-		}
 		return minValue;
 	}
 
 	/**
-	 * \brief Return the array as a 3D double array
+	 * \brief Return the array as a 3D Double array.
 	 * 
-	 * Return the array as a 3D double array
-	 * 
-	 * @return Vectorized array as a 3D double array
+	 * @return Vectorized array as a 3D Double array.
 	 */
-	public double[][][] getValues() {
-		double[][][] array = new double[_nI][_nJ][_nK];
-		for (int i = 0; i < _nI; i++) {
-			for (int j = 0; j < _nJ; j++) {
-				for (int k = 0; k < _nK; k++) {
+	public Double[][][] getValues()
+	{
+		Double[][][] array = new Double[_nI][_nJ][_nK];
+		for (int i = 0; i < _nI; i++)
+			for (int j = 0; j < _nJ; j++)
+				for (int k = 0; k < _nK; k++)
 					array[i][j][k] = _array[i + _nI * j + _nI * _nJ * k];
-				}
-			}
-		}
 		return array;
 	}
 }

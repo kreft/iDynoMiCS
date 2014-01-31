@@ -669,16 +669,7 @@ public class Idynomics
 		newVersionNumber = Double.parseDouble(Check_Release_Status.getLatestVersion());
 			
 		// Now determine if an update needs to be done
-		if (newVersionNumber > version_number && newVersionNumber != 999.0) 
-		{
-			return true;
-						
-		}
-		else
-		{
-			return false;
-		}
-		 
+		return (newVersionNumber > version_number && newVersionNumber != 999.0);
 	}
 	
 	/**

@@ -122,7 +122,7 @@ public abstract class LevelSet {
 
 			// Check absence of biomass
 			if (aGroup.group.isEmpty()) {
-				aGroup.erosionTime = 0;
+				aGroup.erosionTime = 0.0;
 				continue;
 			}
 

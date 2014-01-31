@@ -8,214 +8,225 @@
  */
 package simulator;
 
-import idyno.Idynomics;
-import idyno.SimTimer;
-
 import java.util.*;
 
+import idyno.Idynomics;
+import idyno.SimTimer;
 import simulator.agent.*;
 import simulator.agent.zoo.MultiEpiBac;
-
+import simulator.agent.zoo.MultiEpisome;
 import simulator.detachment.*;
 import simulator.diffusionSolver.Solver_pressure;
-
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
-import simulator.reaction.Reaction;
 import simulator.SpatialGrid;
-
+import utils.ExtraMath;
+import utils.LogFile;
 import utils.ResultFile;
 import utils.XMLParser;
-import utils.LogFile;
-import utils.ExtraMath;
 
 /**
- * \brief Class to store all the agents, call them, and manage shoving/erosion of located agents
+ * \brief Class to store all the agents, call them, and manage shoving/erosion
+ * of located agents.
  * 
- * Class to store all the agents, call them, and manage shoving/erosion of located agents
- * 
- * @author Andreas Doetsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sonia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Andreas Doetsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Sonia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  */
 public class AgentContainer 
 {
-
 	/**
-	 * Computational domain to which this grid is assigned
+	 * Computational domain to which this grid is assigned.
 	 */ 
 	public Domain domain;
 	
 	/**
-	 * Local copy of the simulation object used to create the conditions specified in the protocol file
+	 * Local copy of the simulation object used to create the conditions
+	 * specified in the protocol file.
 	 */
 	public Simulator mySim;
-
+	
 	/**
-	 * Container for all agents (even the non located ones)
+	 * Container for all agents (even the non located ones).
 	 */
 	public LinkedList<SpecialisedAgent> agentList;
 	
 	/**
-	 * Iterator for all agents in this grid
+	 * Iterator for all agents in this grid.
 	 */
 	public ListIterator<SpecialisedAgent> agentIter;
-
+	
 	/**
-	 * Temporary containers used to store agents who will be added or removed.  Visibility public so that it can be accessed from LocatedGroup in killAll()
+	 * Temporary containers used to store agents who will be added or removed.
+	 * Visibility public so that it can be accessed from LocatedGroup in
+	 * killAll().
 	 */
 	public LinkedList<SpecialisedAgent> _agentToKill = new LinkedList<SpecialisedAgent>();
-
+	
 	/**
-	 * Array of SpatialGrids - one for each species in the simulation
+	 * Array of SpatialGrids - one for each species in the simulation.
 	 */ 
 	private SpatialGrid[] _speciesGrid;
 	
 	/**
-	 * Number of grid elements in the x direction
+	 * Number of grid elements in the x direction.
 	 */
 	private int _nI;
 	
 	/**
-	 * Number of grid elements in the y direction
+	 * Number of grid elements in the y direction.
 	 */
 	private int _nJ;
 	
 	/**
-	 * Number of grid elements in the z direction
+	 * Number of grid elements in the z direction.
 	 */
 	private int _nK;
 	
 	/**
-	 * Total number of grid elements in this container
+	 * Total number of grid elements in this container.
 	 */
 	private int _nTotal;
 	
 	/**
-	 * Resolution of the grid. Specified in the XML protocol file
+	 * Resolution of the grid. Specified in the XML protocol file.
 	 */
 	private double _res;
 	
-	
 	/**
-	 *	Grid to hold the agents in this container. This grid holds groups of agents, within a LocatedGroup object 
+	 * Grid to hold the agents in this container. This grid holds groups of
+	 * agents, within a LocatedGroup object. 
 	 */
 	private LocatedGroup[] _grid;
 	
 	/**
-	 * 3D array that captures erosion in the agent grid
+	 * 3D array that captures erosion in the agent grid.
 	 */
 	protected double[][][] _erosionGrid;
 	
 	/**
-	 * Boolean noting whether the grid is 3D or 2D
+	 * Boolean noting whether the grid is 3D or 2D.
 	 */ 
 	public boolean is3D;
 	
 	/**
-	 * Sets the allowed cut off for moving agents
+	 * Sets the allowed cut off for moving agents.
 	 */
 	private final double SHOV_FRACTION;
-
+	
 	/**
-	 * Allows you to define a smaller timestep for agent behaviors and interactions. Read in by Simulator class. This is a local copy 
+	 * Allows you to define a smaller timestep for agent behaviors and
+	 * interactions. Read in by Simulator class. This is a local copy. 
 	 */
 	public final double AGENTTIMESTEP;
 	
 	/**
-	 * Sets the maximal number of iterations allowed to reach the final agent positions
+	 * Sets the maximal number of iterations allowed to reach the final agent
+	 * positions.
 	 */
 	private final int MAXITER;
 	
 	/**
-	 * Whether shoving motion is applied to both agents or only to one when two agents overlap
+	 * Whether shoving motion is applied to both agents or only to one when two
+	 * agents overlap.
 	 */
 	private final boolean MUTUAL;
 	
 	/**
-	 * Boolean to select erosion method: true is shrinkOnBorder, false is removeOnBorder
+	 * Boolean to select erosion method: true is shrinkOnBorder, false is
+	 * removeOnBorder.
 	 */
 	private final boolean EROSIONMETHOD;
 	
 	/**
-	 * Whether biofilm pieces that are no longer connected to the substratum are removed
+	 * Whether biofilm pieces that are no longer connected to the substratum
+	 * are removed.
 	 */
 	private final boolean DOSLOUGHING;
 	
 	/**
-	 * Limit to agent number that will cause the simulation to cease
+	 * Limit to agent number that will cause the simulation to cease.
 	 */
 	private final int maxPopLimit;
 	
 	/**
-	 * Grid used to store pressure, created if specified in the protocol file
+	 * Grid used to store pressure, created if specified in the protocol file.
 	 */
 	private SoluteGrid _pressure;
 	
 	/**
-	 *  Tally of mass to be removed in removeOnBorder, or cells in chemostat dilution (see agentsFlushedAway)
+	 *  Tally of mass to be removed in removeOnBorder, or cells in chemostat
+	 *  dilution (see agentsFlushedAway).
 	 */
-	double tallyVariable = 0; 
+	double tallyVariable = 0.0;
 	
 	/**
 	 * Number of shoving iterations performed
 	 */
 	int shovIter;
-	
+
 	/**
-	 * Limit on number of cells that will be moved in shoving
+	 * Limit on number of cells that will be moved in shoving.
 	 */
 	int shovLimit; 
 	
 	/**
-	 * Maximum number of shove iterations that can be performed in a step
+	 * Maximum number of shove iterations that can be performed in a step.
 	 */
-	int maxShoveIter; 
+	int maxShoveIter;
 	
 	/**
-	 * Number of agents that have been moved due to shoving
+	 * Number of agents that have been moved due to shoving.
 	 */
 	int nMoved;
 	
 	/**
-	 * Number of cells that perform a 'relative' move under shoving
+	 * Number of cells that perform a 'relative' move under shoving.
 	 */
 	double tMoved; 
-	
+
 	/**
-	 * Calculation of a move that is to be performed due to influence of pressure 
+	 * Calculation of a move that is to be performed due to influence of
+	 * pressure.
 	 */
 	double deltaMove;
-
+	
 	/**
-	 * Solver used for modelling detachment
+	 * Solver used for modelling detachment.
 	 */
 	public LevelSet _levelset;
-
+	
 	/**
-	 * Calculated factor noting the influence of dilution on the agent grid. Sonia Martins 23.11.09
+	 * Calculated factor noting the influence of dilution on the agent grid.
 	 */
 	private double Dfactor;
-
+	
 	/**
-	 * \brief Creates the agent grid in which all agents in the biofilm simulations are stored, as well as erosion and species grids
+	 * \brief Creates the agent grid in which all agents in the biofilm
+	 * simulations are stored, as well as erosion and species grids.
 	 * 
-	 * All agents are stored within a grid, called the agentGrid. This is similar to that for solutes but serves a purpose unique 
-	 * to agents. This constructor initialises this grid with parameters taken from the XML file
+	 * All agents are stored within a grid, called the agentGrid. This is
+	 * similar to that for solutes but serves a purpose unique to agents. This
+	 * constructor initialises this grid with parameters taken from the XML
+	 * file.
 	 * 
-	 * @param aSimulator	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param root	The agentGrid markup from the XML file
-	 * @param agentTimeStep	The agent time step as specified in the XML protocol file
-	 * @throws Exception	Exception thrown should this data not be present in the protocol file
+	 * @param aSimulator The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param root The agentGrid markup from the XML file.
+	 * @param agentTimeStep The agent time step as specified in the XML
+	 * protocol file.
+	 * @throws Exception Exception thrown should this data not be present in
+	 * the protocol file.
 	 */
-	public AgentContainer(Simulator aSimulator, XMLParser root, double agentTimeStep) throws Exception 
+	public AgentContainer(Simulator aSimulator, XMLParser root,
+										double agentTimeStep) throws Exception 
 	{
 		// Read FINAL fields
 		SHOV_FRACTION = root.getParamDbl("shovingFraction");
 		MAXITER = root.getParamInt("shovingMaxIter");
 		MUTUAL = root.getParamBool("shovingMutual");
-
 		
 		if (root.getParam("erosionMethod") == null)
 			EROSIONMETHOD = true;
@@ -226,7 +237,7 @@ public class AgentContainer
 			DOSLOUGHING = true; // default to carry out sloughing
 		else
 			DOSLOUGHING = root.getParamBool("sloughDetachedBiomass");
-			
+
 		if (root.getParamBool("maxPopLimit") == null)
 			maxPopLimit = 0;
 		else
@@ -257,7 +268,7 @@ public class AgentContainer
 		// Now set the domain where this container is defined
 		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
-		
+
 		agentList = new LinkedList<SpecialisedAgent>();
 		agentIter = agentList.listIterator();
 		// Optimised the resolution of the grid used to sort located agents
@@ -265,7 +276,7 @@ public class AgentContainer
 
 		// Now initialise the padded grid
 		createShovGrid(aSimulator);
-		
+
 		// Initialise spatial grid used to display species distribution
 		createOutputGrid(aSimulator);
 
@@ -298,34 +309,30 @@ public class AgentContainer
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 */
-	public void step(Simulator aSim) {
-
+	public void step(Simulator aSim)
+	{
 		SpecialisedAgent anAgent;
-		int nDead, nAgent, nBirth;
-
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
 		Collections.shuffle(agentList, ExtraMath.random);
-
-		// record values at the beginning
-		nDead = 0;
-		nBirth = 0;
-		nAgent = agentList.size();
-		double dt = 0;
-		double elapsedTime = 0;
+		
+		// Record values at the beginning
+		int nBirth = 0;
+		int nAgent = agentList.size();
+		double dt = 0.0;
+		double elapsedTime = 0.0;
 		double globalTimeStep = SimTimer.getCurrentTimeStep();
-		// for the local time step, choose the value according to which is best
+		// For the local time step, choose the value according to which is best.
 		double localdt = Math.min(AGENTTIMESTEP,globalTimeStep);
-
+		
 		double nAgent0 = agentList.size();
-		// Apply a shorter time step when visiting all the agents
-
-		while (elapsedTime < globalTimeStep) {
-			// by default use the saved agent timestep
+		// Apply a shorter time step when visiting all the agents.
+		
+		while (elapsedTime < globalTimeStep)
+		{
+			// By default use the saved agent timestep.
 			dt = localdt;
-
-
-			// check for a smaller dt (usually for the last iterate)
+			// Check for a smaller dt (usually for the last iterate).
 			if (dt > (globalTimeStep-elapsedTime))
 				dt = globalTimeStep-elapsedTime;
 
@@ -333,110 +340,50 @@ public class AgentContainer
 
 			/* Step all the agents */
 			SimTimer.setCurrentTimeStep(dt);
-
-			//sonia:chemostat
-			if(Simulator.isChemostat){
-				//sonia: bypass bacteria movement according to pressure field
-			}else{
+			
+			// Bypass agent movement in a chemostat.
+			if ( ! Simulator.isChemostat )
 				followPressure();
-			}
-
-
-			for (agentIter = agentList.listIterator(); agentIter.hasNext();) {
+			
+			for (agentIter = agentList.listIterator(); agentIter.hasNext(); )
+			{
 				anAgent = agentIter.next();
 				anAgent.step();
 			}
-
+			
 			Collections.shuffle(agentList, ExtraMath.random);
-
-			if (Simulator.isChemostat){
-				agentFlushedAway(dt);		
-			}
-
-
+			
+			if (Simulator.isChemostat)
+				agentFlushedAway(dt);
+			
 			// Add and remove agents
 			nBirth += agentList.size() - nAgent;
-
-			//sonia 26.04.2010
-			//commented out removeAllDead
-			// this call is now made at the end of the step in Simulator
-			//nDead += removeAllDead();
 			nAgent = agentList.size();
-
-			// NOW DEAL WITH DEATH IN THIS AGENT TIMESTEP
-			// REMOVE THESE FROM THE GRID IF DEAD
-			// MUST BE DONE SO THAT THESE DO NOT AFFECT SHOVING
+			
+			// Now deal with dead cells: this must be done before shoving.
 			for(SpecialisedAgent aDeathAgent: _agentToKill)
-			{
 				if (aDeathAgent.isDead) 
 				{
-					//nDead++;
-					// KA - removed the count here, as the count of dead cells was wrong - we were recounting these with every
-					// agent timestep. We should only be counting them at the simulation timestep
-					// However they need to remain in the _agentToKill list until this is emptied at the correct output period
+					// Dead cells need to remain in the _agentToKill list until
+					// this is emptied at the correct output period.
 					agentList.remove(aDeathAgent);
 					removeLocated(aDeathAgent);
 				}
-			}
 
-			// Apply moderate overlap relaxation
-
-			//sonia:chemostat
-			//11-06-09
-			if(!Simulator.isChemostat){
+			// Apply moderate overlap relaxation, unless this is a chemostat.
+			if ( ! Simulator.isChemostat )
 				shoveAllLocated(false, true, 15, 1, 1);
-			}
-			
 		}
 
 		SimTimer.setCurrentTimeStep(globalTimeStep);
-
-		//sonia 11.10.2010 - implementing HGT step after agents' division and shoving
-
-		/*	double elapsedHGTtime=0;
-		double hgtTimeStep =0;
-		double maxScan =0;
-		double currentTime = SimTimer.getCurrentTime();
-
-		if (Simulator.multiEpi){
-
-			elapsedHGTtime = currentTime;
-
-			maxScan = mySim.scanSpeedList.get(0);
-			for (int i=0; i< mySim.scanSpeedList.size(); i++ ){
-				if (mySim.scanSpeedList.get(i)> maxScan){
-					maxScan = mySim.scanSpeedList.get(i);
-				}
-			}
-
-			hgtTimeStep = 1/ maxScan;
-			System.out.println("hgt time step is " + hgtTimeStep);
-
-			while (elapsedHGTtime < (globalTimeStep + currentTime)) {
-				//	System.out.println("elapsedHGTtime is " + elapsedHGTtime);
-
-				for (agentIter = agentList.listIterator(); agentIter.hasNext();) {
-					anAgent = agentIter.next();
-					anAgent.HGTstep(elapsedHGTtime);
-				}
-
-				elapsedHGTtime += hgtTimeStep;
-
-			}
-		}*/
-
-		// KA - MOVED OUTPUT OF AGENTS STEPPED / DEAD / BORN FROM HERE TO LATER, SO THAT WE CAN INCLUDE ERODED CELLS IN THE
-		// COUNT OF DEAD CELLS
-				
+		
+		// KA - Moved output of agents stepped/dead/born from here to later, so
+		// that we can include eroded cells in the count of dead cells.
+		
 		/* MECHANICAL INTERACTIONS _____________________________________ */
-
-		//sonia:chemostat
-		//11-06-09
-		if(Simulator.isChemostat){
-			// bypass the shoving, detachment and erosion processes 
-
-		}else{
-
+		
+		if ( ! Simulator.isChemostat )
+		{
 			//sonia 26.04.2010
 			//care as been take so that the death agents are removed from the 
 			// _agentList preventing their participation in the shoving process 			
@@ -480,17 +427,14 @@ public class AgentContainer
 						markForSloughing();
 					}
 				}
-
 			LogFile.chronoMessageOut("Detachment");
-			
-				
 		}
-		
+
 		// OUTPUT THE COUNT STATISTICS
 		LogFile.chronoMessageOut("Agents stepped/dead/born: " + nAgent0 + "/"
 				+ _agentToKill.size() + "/" + nBirth);
 
-		
+
 		nAgent = agentList.size();
 		if (maxPopLimit > 0 && nAgent >= maxPopLimit)
 			aSim.continueRunning = false;
@@ -815,44 +759,44 @@ public class AgentContainer
 				}
 			}
 		}
-		
+
 		// Rob 9/6/11: simplified and removed any effects which might be caused by rounding
 		//agentsToDilute =  Math.round(Dfactor*(agentTimeStep)* agentList.size());
 		//pDying = agentsToDilute / agentList.size();
-//		pDying = Dfactor*agentTimeStep;
-//
-//		for ( int i=0; i< agentList.size(); i++){
-//			randNum = ExtraMath.getUniRand();
-//			if(randNum < pDying){
-//				agentList.get(i).isDead = true;
-//				agentList.get(i).death = "dilution";
-//				agentList.get(i).die(false);
-//				dead ++;
-//			}
-//		}
+		//		pDying = Dfactor*agentTimeStep;
+		//
+		//		for ( int i=0; i< agentList.size(); i++){
+		//			randNum = ExtraMath.getUniRand();
+		//			if(randNum < pDying){
+		//				agentList.get(i).isDead = true;
+		//				agentList.get(i).death = "dilution";
+		//				agentList.get(i).die(false);
+		//				dead ++;
+		//			}
+		//		}
 		int agentsToDilute = 0;
 		if (EROSIONMETHOD){
-//			agentsToDilute = (int) Math.round(Dfactor*agentTimeStep*agentList.size());
+			//			agentsToDilute = (int) Math.round(Dfactor*agentTimeStep*agentList.size());
 			// Rob 08/02/2012: Instead of simply rounding, we now use the non-integer part in a
 			// stochastic way. This means that washout of populations is possible when using a
 			// rate and an agent time-step whose product is less than 0.5
-//			double temp = Dfactor*agentTimeStep*agentList.size();
-//			if (Math.floor(temp) + Math.random() < temp)
-//				agentsToDilute = (int) Math.floor(temp);
-//			else
-//				agentsToDilute = (int) Math.ceil(temp);			
+			//			double temp = Dfactor*agentTimeStep*agentList.size();
+			//			if (Math.floor(temp) + Math.random() < temp)
+			//				agentsToDilute = (int) Math.floor(temp);
+			//			else
+			//				agentsToDilute = (int) Math.ceil(temp);			
 			// Rob 13/09/2012: this method is now changed t@param aSim	The simulation object used to simulate the conditions specified in the protocol fileo include a running tally of the non-integer
 			// remainder (as in removeOnBorder in biofilms)
 			double temp = Dfactor*agentTimeStep*agentList.size() + tallyVariable;
 			agentsToDilute = (int) Math.floor(temp);
 			tallyVariable = temp%1;
-			
+
 		} else{
 			// Rob 28/11/2011: Added this so we can keep the population at or below 1000
 			// EROSIONMETHOD is normally used to decide between biofilm functions so this shouldn't be a problem
 			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
-		
+
 		for (int i=0; i<agentsToDilute; i++){
 			agentList.get(i).isDead = true;
 			agentList.get(i).death = "dilution";
@@ -934,20 +878,18 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Iterates through each square of the agent grid to calculate total volume in that grid space, storing this on the supplied biomass grid
+	 * \brief Iterates through each square of the agent grid to calculate total
+	 * volume in that grid space, storing this on the supplied biomass grid.
 	 * 
-	 * Iterates through each square of the agent grid to calculate total volume in that grid space, storing this on the supplied biomass grid
-	 * 
-	 * @param biomassGrid	The biomass grid that will contain the total volume in each grid square of the agent grid
+	 * @param biomassGrid The biomass grid that will contain the total volume
+	 * in each grid square of the agent grid.
 	 */
-	public void fitAgentVolumeRateOnGrid(SpatialGrid biomassGrid) {
-		biomassGrid.setAllValueAt(0d);
-		for (int i = 0; i < _nTotal; i++) {
-			for (LocatedAgent aLoc : _grid[i].group) {
+	public void fitAgentVolumeRateOnGrid(SpatialGrid biomassGrid)
+	{
+		biomassGrid.resetToZero();
+		for (LocatedGroup aSquare : _grid)
+			for (LocatedAgent aLoc : aSquare.group)
 				aLoc.fitVolRateOnGrid(biomassGrid);
-				;
-			}
-		}
 	}
 
 
@@ -955,523 +897,372 @@ public class AgentContainer
 	/* ____________________ REPORT FILE EDITION__________________________ */
 
 	/**
-	 * \brief Summarise the agents in this container in simulation output, the form of a total biomass grid
+	 * \brief Summarise the agents in this container in simulation output, the
+	 * form of a total biomass grid.
 	 * 
-	 * Summarise the agents in this container in simulation output, the form of a total biomass grid
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferState	The agent_state result file output buffer
-	 * @param bufferSum	The agent_sum result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferState	The agent_state result file output buffer.
+	 * @param bufferSum	The agent_sum result file output buffer.
+	 * @throws Exception	Exception thrown if there are issues writing to
+	 * these buffers.
 	 */
 	public void writeGrids(Simulator aSim, ResultFile bufferState,
-			ResultFile bufferSum) throws Exception {
-		LocatedAgent aLoc;
-
-		//sonia:chemostat
-		//I've modified the refreshElement() method for the chemostat case
-
+										ResultFile bufferSum) throws Exception
+	{
 		// Refresh the space occupation map (0:carrier,1:biofilm or 2:liquid)
-		for (int index = 0; index < _nTotal; index++) {
-			_grid[index].refreshElement();
-		}
+		for (LocatedGroup aGroup : _grid)
+			aGroup.refreshElement();
 
+		// Reset existing grids to zero
+		for (SpatialGrid aSpeciesGrid : _speciesGrid)
+			aSpeciesGrid.resetToZero();
 
-		/* Build a grid of biomass concentration */
-
-		// Set existing grid to zero
-		for (int iSpecies = 0; iSpecies < aSim.speciesList.size(); iSpecies++)
-			_speciesGrid[iSpecies].setAllValueAt(0);
-
-		// Sum biomass concentrations
-		for (SpecialisedAgent anA : agentList) {
-			if (anA instanceof LocatedAgent) {
+		// Sum biomass concentrations.
+		LocatedAgent aLoc;
+		for (SpecialisedAgent anA : agentList)
+			if (anA instanceof LocatedAgent)
+			{
 				aLoc = (LocatedAgent) anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
-
 			}
-		}
 
-		// now output the biomass values
-		for (int iSpecies = 0; iSpecies < aSim.speciesList.size(); iSpecies++) 
-		{
-			_speciesGrid[iSpecies].writeReport(bufferState, bufferSum);
-		}
+		// Now output the biomass values.
+		for (SpatialGrid aSpeciesGrid : _speciesGrid)
+			aSpeciesGrid.writeReport(bufferState, bufferSum);
 	}
 
 	/**
-	 * \brief Write simulation output to XML files, summarising information for each species and plasmid on the agent grid
+	 * \brief Write simulation output to XML files, summarising information for
+	 * each species and plasmid on the agent grid.
 	 * 
-	 * Write simulation output to XML files, summarising information for each species and plasmid on the agent grid. These files are 
-	 * written out as agent_state([simulation step number]).XML and agent_sum([simulation step number]).XML
+	 * Write simulation output to XML files, summarising information for each
+	 * species and plasmid on the agent grid. These files are written out as
+	 * agent_state([simulation step number]).xml and
+	 * agent_sum([simulation step number]).xml
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferState	The agent_state result file output buffer
-	 * @param bufferSum	The agent_sum result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferState The agent_state result file output buffer.
+	 * @param bufferSum The agent_sum result file output buffer.
+	 * @throws Exception Exception thrown if there are issues writing to these
+	 * buffers.
 	 */
-	public void writeReport(Simulator aSim, ResultFile bufferState, ResultFile bufferSum) throws Exception {
+	public void writeReport(Simulator aSim, ResultFile bufferState,
+										ResultFile bufferSum) throws Exception
+	{
+		// This will be our general-purpose buffer.
+		StringBuffer textBuffer = new StringBuffer();
 
-		// bvm 10.2.2009: include information about the shoving grid
-		StringBuffer gridInfo = new StringBuffer();
-		gridInfo.append("<grid");
-		gridInfo.append(" resolution=\"").append(_res).append("\"");
-		gridInfo.append(" nI=\"").append(_nI).append("\"");
-		gridInfo.append(" nJ=\"").append(_nJ).append("\"");
-		gridInfo.append(" nK=\"").append(_nK).append("\"");
-		gridInfo.append("/>\n");
-		bufferState.write(gridInfo.toString());
-		bufferSum.write(gridInfo.toString());
-
-		//sonia: 5-05-09
-		//include the information about the environment status at the beginning of the agent_State and
-		//agent_Sum files
-		if(Simulator.isFluctEnv){
-			StringBuffer envInfo = new StringBuffer();
-			envInfo.append("<Environment");
-			envInfo.append(" env=\"").append(FluctEnv.envStatus).append("\"");
-			envInfo.append("/>\n");
-			bufferSum.write(envInfo.toString());
-			bufferState.write(envInfo.toString());}
-
-
-		// Detail the header
-		Species aSpecies;
-		int spIndex, nSpecies;
-
-		nSpecies = aSim.speciesList.size();
+		// Get the number of species in this simulation.
+		int nSpecies = aSim.speciesList.size();
+		// Set up a buffer to hold information for each agent of these species.
 		StringBuffer[] speciesBuffer = new StringBuffer[nSpecies];
 
+		// Include information about the shoving grid.
+		textBuffer = writeGridInformation(textBuffer);
+
+		// Include the information about the environment status at the
+		// beginning of the agent_State and agent_Sum files.
+		if (Simulator.isFluctEnv)
+			textBuffer = writeFluctEnvInformation(textBuffer);
+
+		// Write the header to the agent_State and agent_Sum buffers.
+		bufferState.write(textBuffer);
+		bufferSum.write(textBuffer);
+
 		// Initialise a Species markup for each present species
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-			aSpecies = aSim.speciesList.get(iSpecies);
-			speciesBuffer[iSpecies] = new StringBuffer();
-
-			speciesBuffer[iSpecies].append("<species name=\"");
-			speciesBuffer[iSpecies].append(aSpecies.speciesName).append("\" ");
-
-			speciesBuffer[iSpecies].append("header=\"");
-			speciesBuffer[iSpecies].append(
-					aSpecies.getProgenitor().sendHeader()).append("\"");
-			speciesBuffer[iSpecies].append(">\n");
+		for (Species aSpec : aSim.speciesList)
+		{
+			textBuffer  = new StringBuffer();
+			// First part, the species name.
+			textBuffer.append("<species name=\"");
+			textBuffer.append(aSpec.speciesName);
+			// Now create the header. Note that this information comes from the
+			// species itself - its part of the agent and the inherited classes.
+			// So if we are going to change that, it gets changed there.
+			textBuffer.append("\" header=\"");
+			textBuffer.append(aSpec.getProgenitor().sendHeader());
+			textBuffer.append("\" >\n");
+			speciesBuffer[aSpec.speciesIndex] = textBuffer;
 		}
 
 		// Initialise statistics (population total mass, growth-rate)
-		double[] spPop = new double[nSpecies];
-		double[] spMass = new double[nSpecies];
-		double[] spGrowth = new double[nSpecies];
-
+		int[] spPop = new int[nSpecies];
+		Double[] spMass = ExtraMath.newDoubleArray(nSpecies);
+		Double[] spGrowth = ExtraMath.newDoubleArray(nSpecies);
 
 		/* <----- HGT Stats Begin ---------> */
-
-
-
-		//sonia 26.02.2010 - Plasmid stats
-		double[] spPlasmid = new double[nSpecies];
-		double[] spConjugEvents = new double[nSpecies];
-		int plasmidListSize=0;
-
-		if(Simulator.multiEpi){
+		int plasmidListSize = 0;
+		if ( Simulator.multiEpi )
 			plasmidListSize = aSim.plasmidList.size();
-		}
-		double [][][] spPlasmidTypes = new double [nSpecies][plasmidListSize][1];
-
-		if(Simulator.multiEpi){
-			for (int i = 0; i < nSpecies; i++) {
-				spPlasmid[i]=0;
-			}
-			//sonia: 08-05-09
-			for (int r=0; r< spPlasmidTypes.length; r++){
-				//System.out.println("spPlasmidTypes list size is " + spPlasmidTypes.length);
-				for (int c=0; c<spPlasmidTypes[r].length; c++){
-					//System.out.println("spPlasmidTypes[PL INDEX] list size is " + spPlasmidTypes[r].length);
-					spPlasmidTypes[r][c][0]=0;
-					//System.out.println("spPlasmidTypes[r][c][0] value is " + spPlasmidTypes[r][c][0]);
-
-				}
-			}
-		}
-
-
-
+		int[] spPlasmid = new int[nSpecies];
+		int[] spConjugEvents = new int[nSpecies];
+		int[][] spPlasmidTypes = new int [nSpecies][plasmidListSize];
 		/* <----- HGT Stats End ----> */
-
-
-		for (int i = 0; i < nSpecies; i++) {
-			spPop[i] = 0;
-			spMass[i] = 0;
-			spGrowth[i] = 0;
-		}
 
 		// Fill the agent_state file, build the state for the summary
 		LocatedAgent aLoc;
 		MultiEpiBac anEpiBac;
+		int spIndex;
 
-		for (SpecialisedAgent anAgent : agentList) {
+		for (SpecialisedAgent anAgent : agentList)
+		{
 			spIndex = anAgent.getSpecies().speciesIndex;
 			spPop[spIndex]++;
 
-			if (anAgent instanceof LocatedAgent & !anAgent.isDead) {
+			// Skip to the next agent if this one is dead
+			// TODO RC - do we really want to include dead agents in the
+			// population count?
+			if (anAgent.isDead)
+				continue;
+
+			// TODO RC - why aren't we including the mass and growth rates
+			// of all ActiveAgents, only LocatedAgents?
+			if (anAgent instanceof LocatedAgent)
+			{
 				aLoc = (LocatedAgent) anAgent;	
 				spMass[spIndex] += aLoc.getTotalMass();
-				spGrowth[spIndex] += aLoc.getNetGrowth();	
-
-				/*<-------HGT Sonia Stats Begin ------> */
-				//sonia:07-05-09
-				if(aLoc instanceof MultiEpiBac){
-					anEpiBac = (MultiEpiBac) aLoc;
-					if (anEpiBac._plasmidHosted.size() != 0){
-						spPlasmid[spIndex]++;
-						for (int i=0; i< anEpiBac._plasmidHosted.size(); i++){
-							for(int j=0; j< aSim.plasmidList.size(); j++){
-								if (anEpiBac._plasmidHosted.get(i).getName().equals(aSim.plasmidList.get(j))){
-									int	plIndex = aSim.plasmidList.indexOf(aSim.plasmidList.get(j));
-									spPlasmidTypes[spIndex][plIndex][0]++;		
-									//System.out.println("plasmid count is  " + spPlasmidTypes[spIndex][plIndex][0]);
-								}
-							}
-						}
-					}
-
-					if(anEpiBac.plasmidVector.size()!= 0){
-						spConjugEvents[spIndex]= anEpiBac.plasmidVector.size() + spConjugEvents[spIndex];
-					}
-
-				}else{
-					spPlasmid[spIndex]=0;
-
-				}
-				/* <------- HGT Sonia Stats End ------> */
-
+				spGrowth[spIndex] += aLoc.getNetGrowth();
 				speciesBuffer[spIndex].append(aLoc.writeOutput()+";\n");
-
-			}
-		}
-		
-		
-		StringBuffer text;
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-			text = new StringBuffer();
-			aSpecies = aSim.speciesList.get(iSpecies);
-			text.append("<species name=\"");
-			text.append(aSpecies.speciesName).append("\" ");
-			text.append("header=\"");
-			bufferSum.write(text.toString());
-
-			/*<----HGT Sonia begin---->*/
-			if(Simulator.multiEpi){
-				text= new StringBuffer("population,mass,growthRate,plasmidBearing");
-
-				if(aSim.plasmidList.size()>0){
-					for (int iPl = 0; iPl< aSim.plasmidList.size(); iPl++){
-						String plName = aSim.plasmidList.get(iPl);
-						text.append(",");
-						text.append(plName);
-					}
-				}			
-				text.append(",conjCount");
-				/*<----HGT Sonia end---->*/
-
-			}else{
-				text= new StringBuffer("population,mass,growthRate");
 			}
 
-			text.append("\" ");
-			text.append(">\n");
-
-			bufferSum.write(text.toString());
-
-			//writing stats on population, mass and growth
-			text = new StringBuffer ("");
-			text.append(spPop[iSpecies] + "," + spMass[iSpecies] + ","
-					+ spGrowth[iSpecies] );
-
-			/*<----HGT Sonia begin---->*/
-			if(Simulator.multiEpi){
-				text.append("," + spPlasmid[iSpecies]);
-				for (int c=0; c<spPlasmidTypes[iSpecies].length; c++){
-					double plCount = spPlasmidTypes[iSpecies][c][0];
-					text.append("," + plCount);			
+			/*<-------HGT Sonia Begin ------> */
+			// For each MultiEpiBac that currently hosts at least one plasmid:
+			if(anAgent instanceof MultiEpiBac )
+			{
+				anEpiBac = (MultiEpiBac) anAgent;
+				if (anEpiBac.plasmidHosted.size() > 0)
+				{
+					// Let 
+					spPlasmid[spIndex]++;
+					for (MultiEpisome epiPlasmid : anEpiBac.plasmidHosted)
+						for (String simPlasmid : aSim.plasmidList)
+							if (epiPlasmid.getName().equals(simPlasmid))
+								spPlasmidTypes[spIndex]
+										[aSim.plasmidList.indexOf(simPlasmid)]++;
 				}
-				text.append("," + spConjugEvents[iSpecies] + ";");
+				if( anEpiBac.plasmidVector.size() > 0 )
+					spConjugEvents[spIndex] += anEpiBac.plasmidVector.size();
+			}
+			/* <------- HGT Sonia End ------> */
+		}
+
+		for (Species aSpecies : aSim.speciesList)
+		{
+			spIndex = aSpecies.speciesIndex;
+
+			// Write the agent_state info for this species to file  
+			speciesBuffer[spIndex].append("</species>\n");
+			bufferState.write(speciesBuffer[spIndex]);
+
+			// Collate the agent_Sum info.
+			textBuffer = new StringBuffer();
+			textBuffer.append("<species name=\"");
+			textBuffer.append(aSpecies.speciesName);
+			textBuffer.append("\" header=\"population,mass,growthRate");
+
+			/*<----HGT Sonia begin---->*/
+			if (Simulator.multiEpi)
+			{
+				textBuffer.append(",plasmidBearing");
+				if (plasmidListSize > 0)
+					for (String plName : aSim.plasmidList)
+						textBuffer.append(",").append(plName);
+				textBuffer.append(",conjCount");
 			}
 			/*<----HGT Sonia end---->*/
 
-			text.append("</species>\n");
-			bufferSum.write(text.toString());
+			textBuffer.append("\" >\n");
+
+			textBuffer.append(spPop[spIndex]).append(",");
+			textBuffer.append(spMass[spIndex]).append(",");
+			textBuffer.append(spGrowth[spIndex]).append(",");
+
+			/*<----HGT Sonia begin---->*/
+			if(Simulator.multiEpi)
+			{
+				textBuffer.append(",").append(spPlasmid[spIndex]);
+				for (int c=0; c<spPlasmidTypes[spIndex].length; c++)
+					textBuffer.append(",").append(spPlasmidTypes[spIndex][c]);
+				textBuffer.append(",").append(spConjugEvents[spIndex]);
+			}
+			/*<----HGT Sonia end---->*/
+
+			textBuffer.append(";\n</species>\n");
+			bufferSum.write(textBuffer);
 		}
-
-		//brian
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
-			speciesBuffer[iSpecies].append("</species>\n");
-			bufferState.write(speciesBuffer[iSpecies].toString());
-		}	
-
 	}
 
-
 	/**
-	 * \brief Output information on agents that have been removed from the simulation. Will enable investigators to find out why this is the case
+	 * \brief Output information on agents that have been removed from the
+	 * simulation.
 	 * 
-	 * Output information on agents that have been removed from the simulation. Will enable investigators to find out why this is the case
+	 * Will enable investigators to find out why this is the case.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferStateDeath	The agent_state_death result file output buffer
-	 * @param bufferSumDeath	The agent_sum_death result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferStateDeath The agent_state_death result file output buffer.
+	 * @param bufferSumDeath The agent_sum_death result file output buffer.
+	 * @throws Exception Exception thrown if there are issues writing to these
+	 * buffers.
 	 */
-	public void writeReportDeath(Simulator aSim, ResultFile bufferStateDeath, ResultFile bufferSumDeath) throws Exception 
-	{
-		
-		// STATUS MESSAGE TO THE SCREEN, IF NOT IN QUIET MODE
-		if (!Idynomics.quietMode)
-			System.out.println("size of agentToKill list at beginning of the writeReportDeath:  " + _agentToKill.size());
+	public void writeReportDeath(Simulator aSim, ResultFile bufferStateDeath,
+			ResultFile bufferSumDeath) throws Exception 
+			{
+		// Status message to screen (not in quiet mode)
+		if ( !Idynomics.quietMode )
+			System.out.println("size of agentToKill list at beginning of the writeReportDeath: "
+					+ _agentToKill.size());
 
-		// DEATH FILE FORMAT (FOR BOTH STATE AND SUM)
-		// FIRST SET OF TAGS LISTS THE SIMULATION ITERATION, AND THE TIME THIS REPRESENTS
-		// THIS IS WRITTEN BY THE METHOD THAT CALLS THIS, NOT WRITTEN HERE.
-		// THUS THIS STARTS BY WRITING INFORMATION ABOUT THE SHOVING GRID
-				
-		StringBuffer gridInfo = new StringBuffer();
-		// Generate the grid info:
-		gridInfo = writeGridInformation(gridInfo);
-		// Write this to both the agent death and removed biomass files
-		bufferSumDeath.write(gridInfo.toString());
-		bufferStateDeath.write(gridInfo.toString());
+		// This will be our general-purpose buffer.
+		StringBuffer textBuffer = new StringBuffer();
 
-		// IF WE ARE DEALING WITH A FLUCTENV SIMULATION, THERE ARE ADDITIONAL ENVIRONMENTAL DATA TO WRITE TO THE FILES
-		if(Simulator.isFluctEnv)
-		{
-			StringBuffer envInfo = writeFluctEnvInformation();
-			bufferSumDeath.write(envInfo.toString());
-			bufferStateDeath.write(envInfo.toString());
-		}
-
-		// NOW WE'RE GOING TO CREATE A HEADER FOR EACH OF THE SPECIES IN THE SIMULATION
-		// HEADER WILL CONTAIN SPECIES NAME, FOLLOWED BY THE NAMES OF EACH RESULT COLUMN
-		Species aSpecies;
-		int spIndex, nSpecies;
-
-		// Get the number of species in this simulation
-		nSpecies = aSim.speciesList.size();
-		// Set up a buffer to hold information for each agent of these species
+		// Get the number of species in this simulation.
+		int nSpecies = aSim.speciesList.size();
+		// Set up a buffer to hold information for each agent of these species.
 		StringBuffer[] speciesBuffer = new StringBuffer[nSpecies];
 
-		// Now to iterate through each species and create a markup for each
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
+		// Include information about the shoving grid.
+		textBuffer = writeGridInformation(textBuffer);
+
+		// Include the information about the environment status at the
+		// beginning of the agent_StateDeath and agent_SumDeath files.
+		if (Simulator.isFluctEnv)
+			textBuffer = writeFluctEnvInformation(textBuffer);
+
+		// Write the header to the agent_StateDeath and agent_SumDeath buffers.
+		bufferStateDeath.write(textBuffer);
+		bufferSumDeath.write(textBuffer);
+
+		// Initialise a Species markup for each present species
+		for (Species aSpec : aSim.speciesList)
 		{
-			aSpecies = aSim.speciesList.get(iSpecies);
-			speciesBuffer[iSpecies] = new StringBuffer();
-
-			// First part, the species name
-			speciesBuffer[iSpecies].append("<species name=\"");
-			speciesBuffer[iSpecies].append(aSpecies.speciesName).append("\" ");
-
-			// Now create the header. Note that this information comes from the species itself - its part of the agent and the inherited
-			// classes. So if we are going to change that, it gets changed there
-			speciesBuffer[iSpecies].append("header=\"");
-			speciesBuffer[iSpecies].append(
-					aSpecies.getProgenitor().sendHeader());
-			
-			// Now we can add additional fields if these are not declared in the agent itself. In this case, we're going to add a reason
-			// for that agents death
-			speciesBuffer[iSpecies].append(",death");
-			speciesBuffer[iSpecies].append("\"");
-			speciesBuffer[iSpecies].append(">\n");
+			textBuffer  = new StringBuffer();
+			// First part, the species name.
+			textBuffer.append("<species name=\"");
+			textBuffer.append(aSpec.speciesName);
+			// Now create the header. Note that this information comes from the
+			// species itself - its part of the agent and the inherited classes.
+			// So if we are going to change that, it gets changed there.
+			textBuffer.append("\" header=\"");
+			textBuffer.append(aSpec.getProgenitor().sendHeader());
+			// Now we can add additional fields if these are not declared by
+			// the agent itself. In this case, we're going to add a reason
+			// for the agent's death.
+			textBuffer.append(",death");
+			textBuffer.append("\" >\n");
+			speciesBuffer[aSpec.speciesIndex] = textBuffer;
 		}
 
-		// REMEMBER WE ARE CREATING TWO STATS FILES AT THE SAME TIME HERE - ONE CONTAINING ALL THE AGENTS THAT ARE DEAD, AND ONE CONTAINING
-		// STATISTICS FOR DEATH IN THIS OUTPUT ITERATION. HERE WE INITIALISE STORAGE FOR STATISTICS (POPULATION, TOTAL MASS, GROWTH RATE)
-		// TO BE CONTAINED IN THE AGENTSUM_DEATH FILE
-		double[] spPop = new double[nSpecies];
-		double[] spMass = new double[nSpecies];
-		double[] spGrowth = new double[nSpecies];
-		// INITIALISE THESE ARRAYS
-		for (int i = 0; i < nSpecies; i++) 
-		{
-			spPop[i] = 0;
-			spMass[i] = 0;
-			spGrowth[i] = 0;
-		}
+		// Initialise statistics (population total mass, growth-rate)
+		int[] spPop = new int[nSpecies];
+		Double[] spMass = ExtraMath.newDoubleArray(nSpecies);
+		Double[] spGrowth = ExtraMath.newDoubleArray(nSpecies);
 
-		// FOR PLASMID SIMULATIONS< THERE ARE EXTRA STATISTICS. THIS SECTION DEALS WITH THIS
 		/* <----- HGT Stats Begin ---------> */
-		double[] spPlasmid = new double[nSpecies];
-		double[] spConjugEvents = new double[nSpecies];
-		int plasmidListSize=0;
-
-		if(Simulator.multiEpi)
-		{
+		int plasmidListSize = 0;
+		if ( Simulator.multiEpi )
 			plasmidListSize = aSim.plasmidList.size();
-		}
-		double [][][] spPlasmidTypes = new double [nSpecies][plasmidListSize][1];
+		int[] spPlasmid = new int[nSpecies];
+		int[] spConjugEvents = new int[nSpecies];
+		int[][] spPlasmidTypes = new int [nSpecies][plasmidListSize];
+		/* <----- HGT Stats End ----> */
 
-		if(Simulator.multiEpi)
-		{
-			for (int i = 0; i < nSpecies; i++) 
-			{
-				spPlasmid[i]=0;
-			}
-			//sonia: 08-05-09
-			for (int r=0; r< spPlasmidTypes.length; r++)
-			{
-				for (int c=0; c<spPlasmidTypes[r].length; c++)
-				{
-					spPlasmidTypes[r][c][0]=0;
-				}
-			}
-		}	
-		/* <----- HGT Stats End ----> */	
-
-		// NOW TO GET BACK TO THE NORMAL SIMULATION CASE, LETS BUILD THE AGENT STATE DEATH FILE AND STATISTICS
+		// Collate the information for the agent_StateDeath file.
 		LocatedAgent aLoc;
 		MultiEpiBac anEpiBac;
-		
-		// FOR EACH AGENT IN THE _AGENTTOKILL LIST
-		for (SpecialisedAgent anAgent : _agentToKill) 
+		int spIndex;
+		for (SpecialisedAgent anAgent : _agentToKill)
 		{
 			spIndex = anAgent.getSpecies().speciesIndex;
 			spPop[spIndex]++;
 
-			if (anAgent instanceof LocatedAgent) 
+			// TODO RC - why aren't we including the mass and growth rates
+			// of all ActiveAgents, only LocatedAgents?
+			if (anAgent instanceof LocatedAgent)
 			{
 				aLoc = (LocatedAgent) anAgent;	
-				// Increment the total mass and total growth rate for this agent
 				spMass[spIndex] += aLoc.getTotalMass();
-				spGrowth[spIndex] += aLoc.getNetGrowth();	
-
-				// Now examine the statistics for a plasmid simulation and increase these where necessary
-				/* <----- HGT Sonia Stats Start ----> */
-				if(aLoc instanceof MultiEpiBac)
-				{
-					anEpiBac = (MultiEpiBac) aLoc;
-					if (anEpiBac._plasmidHosted.size() != 0)
-					{
-						spPlasmid[spIndex]++;
-						for (int i=0; i< anEpiBac._plasmidHosted.size(); i++)
-						{
-							for(int j=0; j< aSim.plasmidList.size(); j++)
-							{
-								if (anEpiBac._plasmidHosted.get(i).getName().equals(aSim.plasmidList.get(j)))
-								{
-									int	plIndex = aSim.plasmidList.indexOf(aSim.plasmidList.get(j));
-									spPlasmidTypes[spIndex][plIndex][0]++;		
-								}
-							}
-						}
-					}
-
-					if(anEpiBac.plasmidVector.size()!= 0){
-						spConjugEvents[spIndex]= anEpiBac.plasmidVector.size() + spConjugEvents[spIndex];
-					}
-
-				}
-				else
-				{
-					spPlasmid[spIndex]=0;
-				}
-				/* <----- HGT Sonia Stats End ----> */
-
-				// NOW THE STATS ARE DEALT WITH, WRITE THE INFORMATION FOR THIS AGENT OF THIS SPECIES TO THE BUFFER
-				// NOTE THAT THE CODE TO DO THIS IS CONTAINED IN THE AGENT ITSELF
+				spGrowth[spIndex] += aLoc.getNetGrowth();
 				speciesBuffer[spIndex].append(aLoc.writeOutput());
-				
-				// NOW ADD ANY ADDITIONAL INFORMATION THAT WAS ADDED IN THE HEADER PREVIOUSLY 
-				// IN THIS CASE REASON FOR DEATH
 				speciesBuffer[spIndex].append("," + aLoc.death + ";\n");
-
 			}
+
+			/*<-------HGT Sonia Begin ------> */
+			// For each MultiEpiBac that currently hosts at least one plasmid:
+			if(anAgent instanceof MultiEpiBac )
+			{
+				anEpiBac = (MultiEpiBac) anAgent;
+				if (anEpiBac.plasmidHosted.size() > 0)
+				{
+					// Let 
+					spPlasmid[spIndex]++;
+					for (MultiEpisome epiPlasmid : anEpiBac.plasmidHosted)
+						for (String simPlasmid : aSim.plasmidList)
+							if (epiPlasmid.getName().equals(simPlasmid))
+								spPlasmidTypes[spIndex]
+										[aSim.plasmidList.indexOf(simPlasmid)]++;
+				}
+				if( anEpiBac.plasmidVector.size() > 0 )
+					spConjugEvents[spIndex] += anEpiBac.plasmidVector.size();
+			}
+			/* <------- HGT Sonia End ------> */
 		}
-		
-		
 
-		// NOW WE HAVE THE STATS AND HAVE GONE THROUGH EACH AGENT BEING KILLED, WE CAN CREATE THE AGENT_SUM_DEATH FILE
-		StringBuffer text;
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
+		for (Species aSpecies : aSim.speciesList)
 		{
-			text = new StringBuffer();
-			aSpecies = aSim.speciesList.get(iSpecies);
-			text.append("<species name=\"");
-			text.append(aSpecies.speciesName).append("\" ");
-			text.append("header=\"");
-			bufferSumDeath.write(text.toString());
+			spIndex = aSpecies.speciesIndex;
 
-			text= new StringBuffer("population,mass,growthRate");
+			// Write the agent_state info for this species to file  
+			speciesBuffer[spIndex].append("</species>\n");
+			bufferStateDeath.write(speciesBuffer[spIndex]);
 
-			//<--- Multi HGT starts---->
-			if (Simulator.multiEpi){			
-				if(aSim.plasmidList.size()>0){
-					text.append(",plasmidBearing");
-				}
+			// Collate the agent_Sum info.
+			textBuffer = new StringBuffer();
+			textBuffer.append("<species name=\"");
+			textBuffer.append(aSpecies.speciesName);
+			textBuffer.append("\" header=\"population,mass,growthRate");
 
-				if(aSim.plasmidList.size()>0){
-					for (int iPl = 0; iPl< aSim.plasmidList.size(); iPl++){
-						String plName = aSim.plasmidList.get(iPl);
-						text.append(",");
-						text.append(plName);
-					}
-				}
-
-				if(aSim.plasmidList.size()>0){
-					text.append(",conjCount");
-				}
+			/*<----HGT Sonia begin---->*/
+			if (Simulator.multiEpi)
+			{
+				textBuffer.append(",plasmidBearing");
+				if (plasmidListSize > 0)
+					for (String plName : aSim.plasmidList)
+						textBuffer.append(",").append(plName);
+				textBuffer.append(",conjCount");
 			}
-			//<--- Multi HGT ends---->
+			/*<----HGT Sonia end---->*/
 
-			text.append("\" ");
-			text.append(">\n");
+			textBuffer.append("\" >\n");
 
-			bufferSumDeath.write(text.toString());
+			textBuffer.append(spPop[spIndex]).append(",");
+			textBuffer.append(spMass[spIndex]).append(",");
+			textBuffer.append(spGrowth[spIndex]).append(",");
 
-			text = new StringBuffer ("");
-			text.append(spPop[iSpecies] + "," + spMass[iSpecies] + ","
-					+ spGrowth[iSpecies]);
-
-			//<--- Multi HGT starts---->
-			if (Simulator.multiEpi){
-				if(aSim.plasmidList.size()>0){
-					text.append("," + spPlasmid[iSpecies]);
-				}
-
-				if(aSim.plasmidList.size()>0){
-					for (int c=0; c<spPlasmidTypes[iSpecies].length; c++){
-						double plCount = spPlasmidTypes[iSpecies][c][0];
-						text.append("," + plCount);			
-					}
-				}
-
-				if(aSim.plasmidList.size()>0){
-					text.append("," + spConjugEvents[iSpecies]);
-					text.append("</species>\n");
-				}
-				//<--- Multi HGT ends---->
-			}else{
-				//text.append(";");
-				text.append("</species>\n");
+			/*<----HGT Sonia begin---->*/
+			if(Simulator.multiEpi)
+			{
+				textBuffer.append(",").append(spPlasmid[spIndex]);
+				for (int c=0; c<spPlasmidTypes[spIndex].length; c++)
+					textBuffer.append(",").append(spPlasmidTypes[spIndex][c]);
+				textBuffer.append(",").append(spConjugEvents[spIndex]);
 			}
+			/*<----HGT Sonia end---->*/
 
-			bufferSumDeath.write(text.toString());
+			textBuffer.append(";\n</species>\n");
+			bufferSumDeath.write(textBuffer);
 		}
-		
-		// NOW CAN ITERATE THROUGH THE SPECIES AND WRITE THE AGENT_STATE_DEATH FILE FOR EACH AGENT OF THAT SPECIES
-		for (int iSpecies = 0; iSpecies < nSpecies; iSpecies++) 
-		{
-			speciesBuffer[iSpecies].append("</species>\n");
-			bufferStateDeath.write(speciesBuffer[iSpecies].toString());
-		}	
-
-		
-
-
-	}
+			}
 
 	/**
-	 * \brief Writes information on the shoving grid to the output string specified
+	 * \brief Writes information on the shoving grid to the output string
+	 * specified.
 	 * 
-	 * Writes information on the shoving grid to the output string specified
-	 * 
-	 * @param outputString	String that will be output in the result file
-	 * @return	String with information about the grid (resolution and size in I,J,K directions)
+	 * @param outputString String that will be output in the result file.
+	 * @return	String with information about the grid (resolution and size in
+	 * I, J, K directions).
 	 */
 	public StringBuffer writeGridInformation(StringBuffer outputString)
 	{
@@ -1481,150 +1272,102 @@ public class AgentContainer
 		outputString.append(" nJ=\"").append(_nJ).append("\"");
 		outputString.append(" nK=\"").append(_nK).append("\"");
 		outputString.append("/>\n");
-		
 		return outputString;
 	}
-	
+
 	/**
-	 * \brief Writes information on the environment to the result files if this is a fluctenv simulation
+	 * \brief Writes information on the environment to the result files if this
+	 * is a FluctEnv simulation.
 	 * 
-	 * Writes information on the environment to the result files if this is a fluctenv simulation
-	 * 
-	 * @return	Stringbuffer with information about the environment for writing to the output file
+	 * @return	Stringbuffer with information about the environment for writing
+	 * to the output file.
 	 */
-	public StringBuffer writeFluctEnvInformation()
+	public StringBuffer writeFluctEnvInformation(StringBuffer outputString)
 	{
-		StringBuffer envInfo = new StringBuffer();
-		envInfo.append("<Environment");
-		envInfo.append(" env=\"").append(FluctEnv.envStatus).append("\"");
-		envInfo.append("/>\n");
-		
-		return envInfo;
+		outputString.append("<Environment");
+		outputString.append(" env=\"").append(FluctEnv.envStatus).append("\"");
+		outputString.append("/>\n");
+		return outputString;
 	}
 
-
-	/*public void preprintLevelSet() {
-		// Build the matrix of erosion time
-		// _levelset.refreshFromBorder();
-
-		for (int index = 0; index < _nTotal; index++) {
-			_grid[index].printLevelSet(_erosionGrid);
-		}
-	}*/
-
-
-	/*public void printLevelSet(ResultFile bufferState) throws Exception {
-
-		// Edit the markup for the solute grid
-		StringBuffer value = new StringBuffer();
-		value.append("<solute name=\"").append("erosionSpeed");
-		value.append("\" unit=\"hr");
-		value.append("\" resolution=\"").append(_res);
-		value.append("\" nI=\"").append(_nI);
-		value.append("\" nJ=\"").append(_nJ);
-		value.append("\" nK=\"").append(_nK);
-		value.append("\">\n");
-
-		// Write the markup in the file
-		bufferState.write(value.toString());
-
-		// Fill the mark-up
-		if (_nK == 1) {
-			// We have a 2D grid
-			for (int i = 0; i < _nI+2; i++) {
-				for (int j = 0; j < _nJ+2; j++) {
-					bufferState.write(Arrays.toString(_erosionGrid[i][j]));
-					bufferState.write(";\n");
-				}
-			}
-		} else {
-			for (int i = 0; i < _nI+2; i++) {
-				for (int j = 0; j < _nJ+2; j++) {
-					bufferState.write(Arrays.toString(_erosionGrid[i][j]));
-					bufferState.write(";\n");
-				}
-			}
-		}
-
-		// Close the mark-up
-		bufferState.write("\n</solute>\n");
-	}*/
-
 	/**
-	 * \brief Checks the grid size, dependent on whether this is a biofilm or chemostat simulation, and sets suitable dimensions
+	 * \brief Checks the grid size, dependent on whether this is a biofilm or
+	 * chemostat simulation, and sets suitable dimensions.
 	 * 
-	 * Checks the grid size, dependent on whether this is a biofilm or chemostat simulation, and sets suitable dimensions
+	 * Checks the grid size, dependent on whether this is a biofilm or
+	 * chemostat simulation, and sets suitable dimensions.
 	 * 
-	 * @param aSimulator	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param root	The agentGrid markup from the XML file
+	 * @param aSimulator The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param root	The agentGrid markup from the XML file.
 	 */
 	public void checkGridSize(Simulator aSimulator, XMLParser root) 
 	{
 		// Read in the grid resolution from the XML protocol file
+		// TODO RC - Why are we reading in the resolution from the xml root,
+		// only to overwrite it with info from the domain?!
 		_res = root.getParamDbl("resolution");
 
-		if(Simulator.isChemostat)
+		if ( Simulator.isChemostat )
 		{
-			//set the resolution to the resolution of the domain
+			// Set the resolution to the resolution of the domain.
 			_res = domain._resolution;
-			//do not correct the grid size
-			//set the number of grid elements to 1
+			// Do not correct the grid size.
+			// Set the number of grid elements to 1.
 			_nTotal = 1;
 		}
 		else
 		{
-			// Eventually correct grid size
-			
+			// Eventually correct grid size.
 			_nI = (int) Math.ceil(domain.length_X / _res);
 			_res = domain.length_X / _nI;
 			_nJ = (int) Math.ceil(domain.length_Y / _res);
-			
-			// Now determine if dealing with a 3D environment
-			if (domain.is3D()) 
+			// Now determine if dealing with a 3D environment.
+			if ( domain.is3D() )
 			{
 				_nK = (int) Math.ceil(domain.length_Z / _res);
 				is3D = true;
-				
-				// KA 050613 - changed this here to create the _nTotal dependent on whether we are in 3D or not - little need for
-				// Z padding if we're not in 3D
-				// KA 270713 - bug found that creates different results between 1.1 and 1.2 - although this has been found and fixed
-				// this appears padding related, and thus 1.2 has returned to have padding for 2D simulations. This will be addressed 
-				// properly at a later version
-				
-				// Calculate the number of grid elements
+				// KA 050613 - changed this here to create the _nTotal
+				// dependent on whether we are in 3D or not - little need for
+				// Z padding if we're not in 3D.
+				// KA 270713 - bug found that creates different results between
+				// 1.1 and 1.2 - although this has been found and fixed this
+				// appears padding related, and thus 1.2 has returned to have
+				// padding for 2D simulations. This will be addressed properly
+				// at a later version.
+				// Calculate the number of grid elements.
 				_nTotal = (_nI + 2) * (_nJ + 2) * (_nK + 2);
-				
 			} 
 			else 
 			{
 				_nK = 1;
 				is3D = false;
-				
-				// KA 270713 - bug found that creates different results between 1.1 and 1.2 - although this has been found and fixed
-				// this appears padding related, and thus 1.2 has returned to have padding for 2D simulations. This will be addressed 
-				// properly at a later version
-
-				// KA 260713 - to check for differences between 1.1 and 1.2, have put padding back into 2D sim
+				// KA 270713 - bug found that creates different results between
+				// 1.1 and 1.2 - although this has been found and fixed this
+				// appears padding related, and thus 1.2 has returned to have
+				// padding for 2D simulations. This will be addressed properly
+				// at a later version.
+				// KA 260713 - to check for differences between 1.1 and 1.2,
+				// have put padding back into 2D sim.
 				_nTotal = (_nI + 2) * (_nJ + 2) * (_nK + 2);
-				
-				// Code for grid without padding - turn on again when this is investigated further
-				// Now work out _Total without the addition of padding in the Z, which is not necessary and should save space
+				// Code for grid without padding - turn on again when this is
+				// investigated further.
+				// Now work out _Total without the addition of padding in the
+				// Z, which is not necessary and should save space
 				//_nTotal  = (_nI + 2) * (_nJ + 2);
-				
-				
 			}
 		}
-
-		
 	}
 
 	/**
-	 * \brief Creates the shoving grid, padded of LocatedGroups
+	 * \brief Creates the shoving grid, padded of LocatedGroups.
 	 * 
-	 * Create a vectorized array of spatial groups, build their neighbourhood and store it 
-	 * Note :Shoving grid is a padded of LocatedGroups
+	 * Create a vectorized array of spatial groups, build their neighbourhood
+	 * and store it. 
+	 * Note: Shoving grid is a padded of LocatedGroups.
 	 * 
-	 * @param aSimulator	The current simulation object that is recreating the conditions specified in the protocol file
+	 * @param aSimulator The current simulation object that is recreating the
+	 * conditions specified in the protocol file.
 	 */
 	public void createShovGrid(Simulator aSimulator) 
 	{
@@ -1634,72 +1377,66 @@ public class AgentContainer
 
 		for (int index = 0; index < _nTotal; index++){
 			_grid[index].init();}
-
-
 	}
 
 	/**
-	 * \brief Creates the output species and erosion grids
+	 * \brief Creates the output species and erosion grids.
 	 * 
-	 * Creates the output species and erosion grids. There is one erosion grid, but one grid for each species in the simulation
+	 * There is one erosion grid, but one grid for each species in the
+	 * simulation.
 	 * 
-	 * @param aSim	The current simulation object that is recreating the conditions specified in the protocol file
+	 * @param aSim The current simulation object that is recreating the
+	 * conditions specified in the protocol file.
 	 */
 	public void createOutputGrid(Simulator aSim) 
 	{
 		_erosionGrid = new double[_nI + 2][_nJ + 2][_nK + 2];
 		_speciesGrid = new SpatialGrid[aSim.speciesList.size()];
-		
+
 		// Create a grid for each species in the simulation
-		for (int iSpecies = 0; iSpecies < aSim.speciesDic.size(); iSpecies++)
-			_speciesGrid[iSpecies]=domain.createGrid(aSim.speciesDic.get(iSpecies), 0);
+		for (Species aSpecies : aSim.speciesList)
+		{
+			_speciesGrid[aSpecies.speciesIndex] =
+								domain.createGrid(aSpecies.speciesName, 0.0);
+		}
 	}
 
 	/* _____________________ EROSION & DETACHMENT ___________________________ */
 
 	/**
-	 * \brief Perform connected volume filtration (connected to bottom) to determine which agents should be marked for sloughing
-	 * 
-	 *  Perform connected volume filtration (connected to bottom) to determine which agents should be marked for sloughing
+	 * \brief Perform connected volume filtration (connected to bottom) to 
+	 * determine which agents should be marked for sloughing.
 	 */
-	protected void markForSloughing() {
-		// 
-		// (cvf is true for connected elements, and false for non-connected)
+	protected void markForSloughing()
+	{
+		// (cvf is true for connected elements, and false for non-connected).
 		boolean[] cvf = (new ConnectedVolume(_nI, _nJ, _nK)).computeCvf(_grid);
 
-		int nRemoved = 0;
-		double mRemoved = 0;
+		int numRemoved = 0;
+		Double massRemoved = 0.0;
 
-		// mark as detachable all particles in non-valid map positions
-		for (int index = 0; index < _nTotal; index++) {
-			// if (_grid[index].status==1&&!cvf[index]) {
-			if (!cvf[index]) {
-				// if it's not connected, remove the agents
-				if (_grid[index].totalMass > 0) {
-					nRemoved += _grid[index].group.size();
-					mRemoved += _grid[index].totalMass;
-
-					_grid[index].killAll();
-				}
+		// Mark as detachable all particles in non-valid map positions.
+		for (int index = 0; index < _nTotal; index++)
+			// If it's not connected, remove the agents.
+			if ( ! cvf[index] && _grid[index].totalMass > 0 )
+			{
+				numRemoved += _grid[index].group.size();
+				massRemoved += _grid[index].totalMass;
+				_grid[index].killAll();
 			}
-		}
-
-		LogFile.writeLog("Sloughing " + nRemoved + " ("
-				+ ExtraMath.toString(mRemoved, false) + " fg)");
+		LogFile.writeLog("Sloughing " + numRemoved + " ("
+				+ ExtraMath.toString(massRemoved, false) + " fg)");
 	}
 
 	/**
-	 * \brief Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
-	 * 
-	 * Find the border points which go through a process of erosion (erosion and sloughing have changed the configuration)
-	 * 
+	 * \brief Find the border points which go through a process of erosion
+	 * (erosion and sloughing have changed the configuration).
 	 */
 	public void shrinkOnBorder() 
 	{
 		_levelset.refreshBorder(true, mySim);
-
-		double mass = 0;
-		double tallyVariable = 0;
+		double mass = 0.0;
+		double tallyVariable = 0.0;
 		int nDetach = 0;
 		int index;
 		double ratio;
@@ -1707,23 +1444,20 @@ public class AgentContainer
 		for (LocatedGroup aBorderElement : _levelset.getBorder()) 
 		{
 			index = aBorderElement.gridIndex;
-
 			ratio = SimTimer.getCurrentTimeStep() / _grid[index].erosionTime;
 			ratio = Math.max(0, Math.min(ratio, 1));
 			tallyVariable = aBorderElement.totalMass * ratio;
-
-
-			for (LocatedAgent aLoc : _grid[index].group) {
+			for (LocatedAgent aLoc : _grid[index].group)
+			{
 				mass += aLoc.getTotalMass() * ratio;
 				for (int iComp = 0; iComp < aLoc.particleMass.length; iComp++)
-					aLoc.particleMass[iComp] *= 1 - ratio;
-
+					aLoc.particleMass[iComp] *= 1.0 - ratio;
 				aLoc.updateSize();
-				if (aLoc.willDie()) {
+				if (aLoc.willDie())
+				{
 					mass += aLoc.getTotalMass();
 					aLoc.die(false);
 					aLoc.death = "detachment";
-
 					nDetach++;
 				}
 			}
@@ -1735,7 +1469,7 @@ public class AgentContainer
 				+ ExtraMath.toString(mass, true) + "/"
 				+ ExtraMath.toString(tallyVariable, true) + " fg)");
 	}
-	
+
 
 	/**
 	 * \brief Calculate the detachment priority
@@ -1745,8 +1479,10 @@ public class AgentContainer
 	 * @return
 	 */
 	private double detFunction(double i, double location) {
-		if (i<1){ return ExtraMath.sq(_res - (location % _res));}
-		else {return ExtraMath.sq(location % _res);}
+		if (i < 1.0)
+			return ExtraMath.sq(_res - (location % _res));
+		else
+			return ExtraMath.sq(location % _res);
 	}
 
 	/**
@@ -1790,7 +1526,7 @@ public class AgentContainer
 				// calculate detPriority for all agents in the _close list
 				calcDetPriority(agentGrid, aBorderElement, aBorderElement.ratio);
 			}
-			
+
 			detLoc = Collections.max(detGroup, new LocatedAgent.detPriorityComparator());
 			while (detLoc.getTotalMass()<tallyVariable && detGroup.size()>0) {
 				// Remove agents one by one, in order of decreasing detPriority
@@ -1927,21 +1663,21 @@ public class AgentContainer
 			int i = (int) Math.floor(cc.x / _res) + 1;
 			int j = (int) Math.floor(cc.y / _res) + 1;
 			//System.out.println("I: "+i+" J: "+j+" _nI "+_nI+" NJ"+_nJ);
-			
+
 			// KA 260713 - to check for differences between 1.1 and 1.2, have put padding back into 2D sim
 			int k = (int) Math.floor(cc.z / _res) + 1;
 			return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
-			
+
 			// WITH BUG BETWEEN 1.1 AND 1.2 SUGGESTING THIS NEEDS FURTHER EXAMINING, PADDING PUT BACK IN TO 2D SIMULATIONS
 			// THIS CODE CAN BE RESTORED LATER WHEN THIS IS REEXAMINED
 			//if(is3D)
 			//{	
-				//int k = (int) Math.floor(cc.z / _res) + 1;
-				//return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
+			//int k = (int) Math.floor(cc.z / _res) + 1;
+			//return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
 			//}
 			//else
 			//{
-				//return i + j * (_nI + 2) + (_nI + 2);
+			//return i + j * (_nI + 2) + (_nI + 2);
 			//}
 		}
 	}
@@ -2024,7 +1760,8 @@ public class AgentContainer
 	 * 
 	 * @return	Double value stating the agent time step
 	 */
-	public double getAgentTimeStep() {
+	public double getAgentTimeStep()
+	{
 		return AGENTTIMESTEP;
 	}
 
@@ -2050,7 +1787,7 @@ public class AgentContainer
 		int[] out = { _nI, _nJ, _nK };
 		return out;
 	}
-	
+
 	/**
 	 * \brief Return the number of grid cells in the J direction
 	 * 
@@ -2062,7 +1799,7 @@ public class AgentContainer
 	{
 		return _nJ;
 	}
-	
+
 	/**
 	 * \brief Return the number of grid cells in the K direction
 	 * 
@@ -2082,7 +1819,7 @@ public class AgentContainer
 	 * 
 	 * @return	LocatedGroup containing the calculated shoving information
 	 */
-	
+
 	public LocatedGroup[] getShovingGrid() {
 		return _grid;
 	}
@@ -2097,7 +1834,7 @@ public class AgentContainer
 	public LevelSet getLevelSet() {
 		return _levelset;
 	}
-	
+
 	/**
 	 * \brief Return the status of a given grid voxel, to determine if the voxel is within a biofilm or not
 	 * 
@@ -2110,7 +1847,7 @@ public class AgentContainer
 	{
 		return _grid[gridVoxel].status;
 	}
-	
+
 	/**
 	 * \brief Return the located group of agents in an agent grid voxel
 	 * 

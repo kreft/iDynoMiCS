@@ -151,7 +151,8 @@ public abstract class Agent implements Cloneable {
 	 * Implemented fully by agent types that extend Agent
 	 * 
 	 */
-	public void step() {
+	public void step()
+	{
 		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
@@ -175,30 +176,31 @@ public abstract class Agent implements Cloneable {
 
 
 	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * \brief Specifies the header of the columns of output information for this agent.
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * Used in creation of results files.
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader() {
-		// return the header file for this agent's values	
-		StringBuffer tempString = new StringBuffer("family,genealogy,generation,birthday");
-		return tempString.toString();
+	public StringBuffer sendHeader()
+	{
+		return new StringBuffer("family,genealogy,generation,birthday");
 	}
 
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
 	 * 
-	 * @return	String containing results associated with this agent
+	 * @return	StringBuffer containing results associated with this agent.
 	 */
-	public String writeOutput() {
-		// write the data matching the header file
+	public StringBuffer writeOutput()
+	{
 		StringBuffer tempString = new StringBuffer("");
 		tempString.append(_family+","+_genealogy+","+_generation+","+_birthday);
-		return tempString.toString();
+		return tempString;
 	}
 
 	/**
@@ -235,7 +237,8 @@ public abstract class Agent implements Cloneable {
 	 * 
 	 * @return	String containing the family name and genealogy of this agent
 	 */
-	public String sendName(){
+	public String sendName()
+	{
 		return _family+"-"+_genealogy;
 	}
 

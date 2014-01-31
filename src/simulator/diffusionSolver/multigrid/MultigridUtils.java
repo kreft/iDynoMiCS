@@ -20,20 +20,24 @@ import simulator.SoluteGrid;
 public abstract class MultigridUtils {
 
 	// boundary layer threshold
-	private static final double BLTHRESH  = MultigridSolute.BLTHRESH;
+	private static final Double BLTHRESH  = MultigridSolute.BLTHRESH;
 	public static final String  SEPARATOR = " ";
 
 	/**
-	 * retuns log2(n - 1) * 0.5
+	 * \brief Calculates log2(n - 1).
 	 * 
-	 * @param n
+	 * @param n Integer 
 	 * @return order of multigrid
 	 * @throws InvalidValueException
 	 */
-	public static int order(Integer n) throws Exception {
+	public static int order(Integer n) throws Exception
+	{
 		Double out = ExtraMath.log2(n - 1.0);
-		if (out%1==0) return out.intValue();
-		else throw (new Exception("invalid grid value ("+n+") must be 2^i + 1"));
+		//if (out%1==0)
+		if (out.equals(Math.floor(out)))
+			return out.intValue();
+		else
+			throw (new Exception("invalid grid value ("+n+") must be 2^i + 1"));
 	}
 
 	/**
@@ -44,24 +48,25 @@ public abstract class MultigridUtils {
 	 * @param fineGrid finer grid
 	 * @param coarsegrid coarser grid
 	 */
-	public static void restrict2(SoluteGrid fineGrid, SoluteGrid coarsegrid) {
-
-		double[][][] uc = coarsegrid.grid;
-		double[][][] u = fineGrid.grid;
-
+	public static void restrict2(SoluteGrid fineGrid, SoluteGrid coarsegrid)
+	{
+		Double[][][] uc = coarsegrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
 		int lc = uc[0][0].length-2;
 		int mc = uc[0].length-2;
 		int nc = uc.length-2;
-
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// implements 2D and 3D
 		float nfac = (lc==1 ? 1.0f/16.0f : 1.0f/32.0f); // pre-compute
-
+		
 		for (k = 1, kc = 1; kc<=lc; kc++, k += 2)
 			for (j = 1, jc = 1; jc<=mc; jc++, j += 2)
-				for (i = 1, ic = 1; ic<=nc; ic++, i += 2) {
+				for (i = 1, ic = 1; ic<=nc; ic++, i += 2)
+				{
 					// 4-connectivity weight
 					uc[ic][jc][kc] = 2*(u[i+1][j][k]+u[i-1][j][k]+u[i][j+1][k]+u[i][j-1][k]);
 					// 8-connectivity weight
@@ -80,40 +85,40 @@ public abstract class MultigridUtils {
 					uc[ic][jc][kc] += 4*u[i][j][k];
 					uc[ic][jc][kc] *= nfac;
 				}
-
+		
 		coarsegrid.refreshBoundary();
 	}
-
-	public static void restrict(SoluteGrid fineGrid, SoluteGrid coarseGrid) {
-
-		double[][][] uc = coarseGrid.grid;
-		double[][][] u = fineGrid.grid;
-
+	
+	public static void restrict(SoluteGrid fineGrid, SoluteGrid coarseGrid)
+	{
+		Double[][][] uc = coarseGrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
 		int lc = uc[0][0].length-2;
 		int mc = uc[0].length-2;
 		int nc = uc.length-2;
-
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// implements 2D and 3D
 		float nfac = (lc==1 ? 1.0f/8.0f : 1.0f/12.0f); // pre-compute
-
+		
 		for (k = 1, kc = 1; kc<=lc; kc++, k += 2)
 			for (j = 1, jc = 1; jc<=mc; jc++, j += 2)
-				for (i = 1, ic = 1; ic<=nc; ic++, i += 2) {
+				for (i = 1, ic = 1; ic<=nc; ic++, i += 2)
+				{
 					// special case for 2D (when lc = 1)
 					uc[ic][jc][kc] = u[i+1][j][k]+u[i-1][j][k]+u[i][j+1][k]+u[i][j-1][k];
 					uc[ic][jc][kc] += (lc==1 ? 0.0f : u[i][j][k+1]+u[i][j][k-1]);
 					uc[ic][jc][kc] *= nfac;
 					uc[ic][jc][kc] += 0.5f*u[i][j][k];
-					if(Double.isNaN(uc[ic][jc][kc])){
+					if ( uc[ic][jc][kc].isNaN() )
 						System.out.print(1);
-					}
 				}
 		coarseGrid.refreshBoundary();
 	}
-
+	
 	/**
 	 * Restricts the data in matrix u to a grid one order coarser. Restriction
 	 * excludes border points for points inside the boundary layer, defined by
@@ -126,25 +131,27 @@ public abstract class MultigridUtils {
 	 * @param bl	boundary layer at coarser grid
 	 */
 	public static void restrictBoundaryLayer2(SoluteGrid fineGrid, SoluteGrid coarseGrid,
-	        double[][][] bl) {
+	        Double[][][] bl)
+	{
 
-		double[][][] uc = coarseGrid.grid;
-		double[][][] u = fineGrid.grid;
-
+		Double[][][] uc = coarseGrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
 		int nK = uc[0][0].length-2;
 		int nJ = uc[0].length-2;
 		int nI = uc.length-2;
-
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// implements 2D and 3D
 		float nfac = (nK==1 ? 1.0f/16.0f : 1.0f/32.0f); // pre-compute
-
-		for (k = 1, kc = 1; kc<=nK; kc++, k += 2)
-			for (j = 1, jc = 1; jc<=nJ; jc++, j += 2)
-				for (i = 1, ic = 1; ic<=nI; ic++, i += 2)
-					if (bl[ic][jc][kc]>=BLTHRESH) {
+		
+		for (k = 1, kc = 1; kc <= nK; kc++, k += 2)
+			for (j = 1, jc = 1; jc <= nJ; jc++, j += 2)
+				for (i = 1, ic = 1; ic <= nI; ic++, i += 2)
+					if ( bl[ic][jc][kc] >= BLTHRESH )
+					{
 						// 4-connectivity weight
 						uc[ic][jc][kc] = 2*(u[i+1][j][k]+u[i-1][j][k]+u[i][j+1][k]+u[i][j-1][k]);
 						// 8-connectivity weight
@@ -165,27 +172,28 @@ public abstract class MultigridUtils {
 					}
 		coarseGrid.refreshBoundary();
 	}
-
+	
 	public static void restrictBoundaryLayer(SoluteGrid fineGrid, SoluteGrid coarseGrid,
-	        double[][][] bl) {
-
-		double[][][] uc = coarseGrid.grid;
-		double[][][] u = fineGrid.grid;
-
+	        Double[][][] bl)
+	{
+		Double[][][] uc = coarseGrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
 		int nK = uc[0][0].length-2;
 		int nJ = uc[0].length-2;
 		int nI = uc.length-2;
-
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// implements 2D and 3D
 		float nfac = (nK==1 ? 1.0f/8.0f : 1.0f/12.0f); // pre-compute
-
-		for (k = 1, kc = 1; kc<=nK; kc++, k += 2)
-			for (j = 1, jc = 1; jc<=nJ; jc++, j += 2)
-				for (i = 1, ic = 1; ic<=nI; ic++, i += 2)
-					if (bl[ic][jc][kc]>=BLTHRESH) {
+		
+		for (k = 1, kc = 1; kc <= nK; kc++, k += 2)
+			for (j = 1, jc = 1; jc <= nJ; jc++, j += 2)
+				for (i = 1, ic = 1; ic <= nI; ic++, i += 2)
+					if ( bl[ic][jc][kc] >= BLTHRESH )
+					{
 						// special case for 2D (when lc = 1)
 						uc[ic][jc][kc] = u[i+1][j][k]+u[i-1][j][k]+u[i][j+1][k]+u[i][j-1][k];
 						uc[ic][jc][kc] += (nK==1 ? 0.0f : u[i][j][k+1]+u[i][j][k-1]);
@@ -193,7 +201,8 @@ public abstract class MultigridUtils {
 						uc[ic][jc][kc] += 0.5f*u[i][j][k];
 					}
 		coarseGrid.refreshBoundary();
-	}	
+	}
+	
 	/**
 	 * Interpolates the data in matrix uc to a grid one order finner for cubic
 	 * matrices. Interpolation excludes border points.
@@ -201,87 +210,79 @@ public abstract class MultigridUtils {
 	 * @param u finer grid
 	 * @param uc coarser grid
 	 */
-	static void interpolate(SoluteGrid fineGrid, SoluteGrid coarsegrid) {
-		double[][][] uc = coarsegrid.grid;
-		double[][][] u = fineGrid.grid;
-
+	static void interpolate(SoluteGrid fineGrid, SoluteGrid coarsegrid) 
+	{
+		Double[][][] uc = coarsegrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
 		int l = u[0][0].length-2;
 		int m = u[0].length-2;
 		int n = u.length-2;
-
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// copy points
-		for (kc = 1, k = 1; k<=l; kc++, k += 2) {
-			for (jc = 1, j = 1; j<=m; jc++, j += 2) {
-				for (ic = 1, i = 1; i<=n; ic++, i += 2)
+		for (kc = 1, k = 1; k <= l; kc++, k += 2)
+			for (jc = 1, j = 1; j <= m; jc++, j += 2)
+				for (ic = 1, i = 1; i <= n; ic++, i += 2)
 					u[i][j][k] = uc[ic][jc][kc];
-			}
-		}
+		
 		// interpolate vertically
-		for (k = 1; k<=l; k += 2) {
-			for (j = 1; j<=m; j += 2) {
-				for (i = 2; i<n; i += 2)
+		for (k = 1; k <= l; k += 2)
+			for (j = 1; j <= m; j += 2)
+				for (i = 2; i < n; i += 2)
 					u[i][j][k] = 0.5f*(u[i+1][j][k]+u[i-1][j][k]);
-			}
-		}
+		
 		// interpolate sideways
-		for (k = 1; k<=l; k += 2) {
-			for (j = 2; j<m; j += 2) {
-				for (i = 1; i<=n; i++)
+		for (k = 1; k <= l; k += 2)
+			for (j = 2; j < m; j += 2)
+				for (i = 1; i <= n; i++)
 					u[i][j][k] = 0.5f*(u[i][j+1][k]+u[i][j-1][k]);
-			}
-		}
-		for (k = 2; k<l; k += 2) {
-			for (j = 1; j<=m; j++) {
-				for (i = 1; i<=n; i++)
+		
+		for (k = 2; k < l; k += 2)
+			for (j = 1; j <= m; j++)
+				for (i = 1; i <= n; i++)
 					u[i][j][k] = 0.5f*(u[i][j][k+1]+u[i][j][k-1]);
-			}
-		}
-
+		
 		fineGrid.refreshBoundary();
 	}
 
-	static void interpolate2(SoluteGrid fineGrid, SoluteGrid coarsegrid) {
-		double[][][] uc = coarsegrid.grid;
-		double[][][] u = fineGrid.grid;
-
-		int l = u[0][0].length-2;
-		int m = u[0].length-2;
-		int n = u.length-2;
-
+	static void interpolate2(SoluteGrid fineGrid, SoluteGrid coarsegrid)
+	{
+		Double[][][] uc = coarsegrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
+		int l = u[0][0].length - 2;
+		int m = u[0].length - 2;
+		int n = u.length - 2;
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// copy points
-		for (kc = 1, k = 1; k<=l; kc++, k += 2) {
-			for (jc = 1, j = 1; j<=m; jc++, j += 2) {
-				for (ic = 1, i = 1; i<=n; ic++, i += 2)
+		for (kc = 1, k = 1; k <= l; kc++, k += 2)
+			for (jc = 1, j = 1; j <= m; jc++, j += 2)
+				for (ic = 1, i = 1; i <= n; ic++, i += 2)
 					u[i][j][k] = uc[ic][jc][kc];
-			}
-		}
+		
 		// interpolate vertically
-		for (k = 1; k<=l; k += 2) {
-			for (j = 1; j<=m; j += 2) {
-				for (i = 2; i<n; i += 2)
+		for (k = 1; k <= l; k += 2)
+			for (j = 1; j <= m; j += 2)
+				for (i = 2; i < n; i += 2)
 					u[i][j][k] = 0.5f*(u[i+1][j][k]+u[i-1][j][k]);
-			}
-		}
+		
 		// interpolate sideways
-		for (k = 1; k<=l; k += 2) {
-			for (j = 2; j<m; j += 2) {
-				for (i = 1; i<=n; i++)
+		for (k = 1; k <= l; k += 2)
+			for (j = 2; j < m; j += 2)
+				for (i = 1; i <= n; i++)
 					u[i][j][k] = 0.5f*(u[i][j+1][k]+u[i][j-1][k]);
-			}
-		}
-		for (k = 2; k<l; k += 2) {
-			for (j = 1; j<=m; j++) {
-				for (i = 1; i<=n; i++)
+		
+		for (k = 2; k < l; k += 2)
+			for (j = 1; j <= m; j++)
+				for (i = 1; i <= n; i++)
 					u[i][j][k] = 0.5f*(u[i][j][k+1]+u[i][j][k-1]);
-			}
-		}
-
+		
 		fineGrid.refreshBoundary();
 	}
 	
@@ -296,95 +297,97 @@ public abstract class MultigridUtils {
 	 * @param uc coarser grid
 	 * @param bl boundary layer at finer grid
 	 */
-	static void interpolateBoundaryLayer(SoluteGrid fineGrid, SoluteGrid coarseGrid, double[][][] bl) {
-
-		double[][][] uc = coarseGrid.grid;
-		double[][][] u = fineGrid.grid;
-
-		int nK = u[0][0].length-2;
-		int nJ = u[0].length-2;
-		int nI = u.length-2;
-
+	static void interpolateBoundaryLayer(SoluteGrid fineGrid, SoluteGrid coarseGrid, Double[][][] bl)
+	{
+		Double[][][] uc = coarseGrid.grid;
+		Double[][][] u = fineGrid.grid;
+		
+		int nK = u[0][0].length - 2;
+		int nJ = u[0].length - 2;
+		int nI = u.length - 2;
+		
 		int i, j, k; // indexes for fine grid
 		int ic, jc, kc; // indexes for coarse grid
-
+		
 		// copy points
-		for (kc = 1, k = 1; k<=nK; kc++, k += 2) {
-			for (jc = 1, j = 1; j<=nJ; jc++, j += 2) {
-				for (ic = 1, i = 1; i<=nI; ic++, i += 2)
-					if (bl[i][j][k]>=BLTHRESH) u[i][j][k] = uc[ic][jc][kc];
-			}
-		}
+		for (kc = 1, k = 1; k <= nK; kc++, k += 2)
+			for (jc = 1, j = 1; j <= nJ; jc++, j += 2)
+				for (ic = 1, i = 1; i <= nI; ic++, i += 2)
+					if (bl[i][j][k]>=BLTHRESH)
+						u[i][j][k] = uc[ic][jc][kc];
+		
 		// interpolate verically
-		for (k = 1; k<=nK; k += 2) {
-			for (j = 1; j<=nJ; j += 2) {
-				for (i = 2; i<nI; i += 2)
-					if (bl[i][j][k]>=BLTHRESH) u[i][j][k] = 0.5f*(u[i+1][j][k]+u[i-1][j][k]);
-			}
-		}
+		for (k = 1; k <= nK; k += 2)
+			for (j = 1; j <= nJ; j += 2)
+				for (i = 2; i < nI; i += 2)
+					if ( bl[i][j][k] >= BLTHRESH )
+						u[i][j][k] = 0.5f*(u[i+1][j][k]+u[i-1][j][k]);
+		
 		// interpolate sideways
-		for (k = 1; k<=nK; k += 2) {
-			for (j = 2; j<nJ; j += 2) {
-				for (i = 1; i<=nI; i++)
-					if (bl[i][j][k]>=BLTHRESH) u[i][j][k] = 0.5f*(u[i][j+1][k]+u[i][j-1][k]);
-			}
-		}
-		for (k = 2; k<nK; k += 2) {
-			for (j = 1; j<=nJ; j++) {
-				for (i = 1; i<=nI; i++)
-					if (bl[i][j][k]>=BLTHRESH) u[i][j][k] = 0.5f*(u[i][j][k+1]+u[i][j][k-1]);
-			}
-		}
-
+		for (k = 1; k <= nK; k += 2)
+			for (j = 2; j < nJ; j += 2)
+				for (i = 1; i <= nI; i++)
+					if ( bl[i][j][k] >= BLTHRESH )
+						u[i][j][k] = 0.5f*(u[i][j+1][k]+u[i][j-1][k]);
+		
+		for (k = 2; k < nK; k += 2)
+			for (j = 1; j <= nJ; j++)
+				for (i = 1; i <= nI; i++)
+					if ( bl[i][j][k] >= BLTHRESH )
+						u[i][j][k] = 0.5f*(u[i][j][k+1]+u[i][j][k-1]);
+		
 		fineGrid.refreshBoundary();
 	}
-
+	
 	/**
 	 * Set all entries of a matrix to value val
 	 * 
 	 * @param u
 	 * @param val
 	 */
-	public static void setValues(double u[][][], double val) {
-		for (int i = 0; i<u.length; i++)
-			for (int j = 0; j<u[i].length; j++)
-				for (int k = 0; k<u[i][j].length; k++)
+	public static void setValues(Double u[][][], Double val)
+	{
+		for (int i = 0; i < u.length; i++)
+			for (int j = 0; j < u[i].length; j++)
+				for (int k = 0; k < u[i][j].length; k++)
 					u[i][j][k] = val;
 	}
-
+	
 	/**
 	 * Set all entries of a boolean matrix to value val
 	 * 
 	 * @param u
 	 * @param val
 	 */
-	public static void setValues(boolean u[][][], boolean val) {
+	public static void setValues(Boolean u[][][], Boolean val)
+	{
 		for (int i = 0; i<u.length; i++)
 			for (int j = 0; j<u[i].length; j++)
 				for (int k = 0; k<u[i][j].length; k++)
 					u[i][j][k] = val;
 	}
-
+	
 	/**
 	 * Add every entry of matrix b to the corresponding entry in matrix a
 	 * 
 	 * @param a
 	 * @param b
 	 */
-	static void addTo(double a[][][], double b[][][]) {
+	static void addTo(Double a[][][], Double b[][][])
+	{
 		for (int i = 0; i<a.length; i++)
 			for (int j = 0; j<a[i].length; j++)
 				for (int k = 0; k<a[i][j].length; k++)
 					a[i][j][k] += b[i][j][k];
 	}
-
+	
 	/**
 	 * Subtract every entry of matrix b to the corresponding entry in matrix a.
 	 * 
 	 * @param a
 	 * @param b
 	 */
-	static void subtractTo(double a[][][], double b[][][]) {
+	static void subtractTo(Double a[][][], Double b[][][]) {
 		for (int i = 0; i<a.length; i++)
 			for (int j = 0; j<a[i].length; j++)
 				for (int k = 0; k<a[i][j].length; k++)
@@ -446,7 +449,7 @@ public abstract class MultigridUtils {
 	 * @param a
 	 * @return the norm of the matrix
 	 */
-	public static float computeNorm(double[][][] a) {
+	public static float computeNorm(Double[][][] a) {
 		float norm = 0;
 		for (int i = 1; i<a.length-1; i++)
 			for (int j = 1; j<a[i].length-1; j++)

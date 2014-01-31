@@ -11,7 +11,7 @@ package simulator.reaction;
 import Jama.Matrix;
 import simulator.Simulator;
 import simulator.agent.*;
-
+import utils.ExtraMath;
 import utils.XMLParser;
 
 @Deprecated
@@ -20,7 +20,7 @@ import utils.XMLParser;
  * 
  * Modelled First-Order reactions. This class is deprecated
  * 
- * @author Andreas D�tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
@@ -33,36 +33,37 @@ public class FirstOrder extends Reaction {
 	private static int          iSolute;
 
 	/* _______________________ CONSTRUCTOR _________________________ */
-	public void init(Simulator aSim, XMLParser aReactionRoot) {
+	public void init(Simulator aSim, XMLParser aReactionRoot)
+	{
 		super.init(aSim, aReactionRoot);
 		_k = aReactionRoot.getParamTime("k");	
-
-		_kineticParam = new double[1];
+		_kineticParam = ExtraMath.newDoubleArray(1);
 		_kineticParam[0] = _k;
 	}
 
 	/**
 	 */
-	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
+	{
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
-
-
-		anAgent.reactionKinetic[reactionIndex] = new double[1];
+		anAgent.reactionKinetic[reactionIndex] = ExtraMath.newDoubleArray(1);
 		anAgent.reactionKinetic[reactionIndex][0] = aReactionRoot.getParamTime("k");
 
 	}
 
 	/* __________________ METHODS _________________________ */
 
-	public void computeUptakeRate(double[] s, ActiveAgent anAgent) {
+	public void computeUptakeRate(Double[] s, ActiveAgent anAgent)
+	{
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 		// Now compute uptake rate and its derivative for each solute
-		for (int i = 0; i<_mySoluteIndex.length; i++) {
+		for (int i = 0; i < _mySoluteIndex.length; i++)
+		{
 			iSolute = _mySoluteIndex[i];
 			_uptakeRate[iSolute] = anAgent.particleMass[_catalystIndex]*_specRate
 			        *anAgent.soluteYield[reactionIndex][iSolute];
-			_diffUptakeRate[iSolute] = 0;
+			_diffUptakeRate[iSolute] = 0.0;
 		}
 	}
 
@@ -70,14 +71,14 @@ public class FirstOrder extends Reaction {
      * @param s	Array of concentration
      * @param mass	Concentration of reactant
      */
-	public void computeUptakeRate(double[] s, double mass) {
-
+	public void computeUptakeRate(Double[] s, Double mass)
+	{
 		_specRate = _k;
 		// Now compute uptake rate and its derivative for each solute
 		for (int i = 0; i<_mySoluteIndex.length; i++) {
 			iSolute = _mySoluteIndex[i];
 			_uptakeRate[iSolute] = mass*_specRate*this._soluteYield[iSolute];
-			_diffUptakeRate[iSolute] = 0;
+			_diffUptakeRate[iSolute] = 0.0;
 		}
 	}
 	
@@ -97,7 +98,7 @@ public class FirstOrder extends Reaction {
 	 * @deprecated
 	 * 
 	 */
-	public void computeSpecificGrowthRate(double[] s) {
+	public void computeSpecificGrowthRate(Double[] s) {
 		_specRate = this._k;
 	}
 	
@@ -107,7 +108,7 @@ public class FirstOrder extends Reaction {
      * @param anAgent Parameters used are those defined for THIS agent
      * @deprecated
      */
-	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
 
@@ -117,12 +118,12 @@ public class FirstOrder extends Reaction {
      * @param anAgent
      * @return
      */
-	public double computeMassGrowthRate(ActiveAgent anAgent) {
+	public Double computeMassGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
 
-	public double computeSpecGrowthRate(ActiveAgent anAgent) {
+	public Double computeSpecGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;
 	}
@@ -135,37 +136,39 @@ public class FirstOrder extends Reaction {
 	 * @deprecated
 	 * 
 	 */
-	public void computeUptakeRate(double[] s, double conc, double h) {
+	public void computeUptakeRate(Double[] s, Double conc, Double h) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public Matrix calcdMUdS(Matrix S, double biomass) {
+	public Matrix calcdMUdS(Matrix S, Double biomass) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Matrix calcdMUdT(Matrix S, double biomass) {
+	public Matrix calcdMUdT(Matrix S, Double biomass) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public double[] computeMarginalDiffMu(double[] s) {
+	public Double[] computeMarginalDiffMu(Double[] s)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public double computeSpecRate(double[] s) {
+	public Double computeSpecRate(Double[] s)
+	{
 		// TODO Auto-generated method stub
-		return 0;
+		return 0.0;
 	}
 
 	@Override
-	public void updateMarginalMu(double[] s) {
+	public void updateMarginalMu(Double[] s) {
 		// TODO Auto-generated method stub
 		
 	}

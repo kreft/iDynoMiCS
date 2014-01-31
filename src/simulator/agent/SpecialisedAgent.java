@@ -13,8 +13,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import simulator.AgentContainer;
 import simulator.Simulator;
-import simulator.SoluteGrid;
-import simulator.geometry.ContinuousVector;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -32,22 +30,22 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	/**
 	 * Type of species that this agent is representing
 	 */
-	protected Species        _species;
+	protected Species _species;
 	
 	/**
 	 * Integer index to that species within the simulation dictionary
 	 */
-	public int               speciesIndex;
+	public int speciesIndex;
 	
 	/**
 	 * Boolean noting whether this agent is still active in the simulation
 	 */
-	public boolean           isDead = false;
+	public Boolean isDead = false;
 	
 	/**
 	 * Set of parameters associated with this specialised agent
 	 */
-	protected SpeciesParam   _speciesParam;
+	protected SpeciesParam _speciesParam;
 	
 	/**
 	 * Grid in which this agent is contained
@@ -95,19 +93,19 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Clones this agent object, creating a new progeny of this agent. Ensures new clone inherits same parameters as parents
+	 * \brief Clones this agent object, creating a new progeny of this agent.
 	 * 
-	 * Clones this agent object, creating a new progeny of this agent. Ensures new clone inherits same parameters as parents
+	 * Ensures new clone inherits same parameters as parents.
 	 * 
 	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
 	 */
-	public Object clone() throws CloneNotSupportedException {
-		SpecialisedAgent o = (SpecialisedAgent) super.clone();
-
+	public Object clone() throws CloneNotSupportedException
+	{
+		SpecialisedAgent out = (SpecialisedAgent) super.clone();
 		// Copy the references (superficial copy)
-		o._species = this._species;
-		o._speciesParam = this._speciesParam;
-		return (Object) o;
+		out._species = this._species;
+		out._speciesParam = this._speciesParam;
+		return (Object) out;
 	}
 
 	/**
@@ -137,9 +135,9 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Mutate any inherited parameters for a population of agents
+	 * \brief Mutate any inherited parameters for a population of agents.
 	 * 
-	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
+	 * KA June 2013 - not sure this action is implemented.
 	 */
 	public void mutatePop() 
 	{
@@ -150,10 +148,10 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	/**
 	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container.
 	 *  
-	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
-	 * species is registered into the agent grid
+	 * In this case, the species is registered into the agent grid.
 	 */
-	public void registerBirth() {
+	public void registerBirth()
+	{
 		_agentGrid = _species.currentSimulator.agentGrid;
 		_agentGrid.registerBirth(this);
 		_species.notifyBirth();
@@ -166,7 +164,8 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(boolean isStarving) {
+	public void die(Boolean isStarving)
+	{
 		// If you are too small, you must die !
 		// Decrease the population of your species
 		_species.notifyDeath();
@@ -175,32 +174,31 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Used in the calculation of delta move in Agent Container class. Will investigate further why this class returns 0
+	 * \brief Used in the calculation of delta move in Agent Container class.
 	 * 
-	 * Used in the calculation of delta move in Agent Container class. Will investigate further why this class returns 0
+	 * KA - will investigate further why this class returns 0
+	 * RC - suspect this is because SpecialisedAgent is not necessarily located
 	 * 
-	 * @return	0
+	 * @return	0.0
 	 */
-	public double move() {
-		return 0;
+	public Double move()
+	{
+		return 0.0;
 	}
 
 
 	/**
-	 * \brief Set the species parameters to a specified Species Parameter object
-	 * 
-	 * Set the species parameters to a specified Species Parameter object
+	 * \brief Set the species parameters to a specified Species Parameter object.
 	 * 
 	 * @param aSpeciesParam
 	 */
-	public void setSpeciesParam(SpeciesParam aSpeciesParam) {
+	public void setSpeciesParam(SpeciesParam aSpeciesParam)
+	{
 		_speciesParam = aSpeciesParam;
 	}
 
 	/**
-	 * \brief Returns the object containing a set of parameters associated with a particular agent (species)
-	 * 
-	 * Returns the object containing a set of parameters associated with a particular agent (species)
+	 * \brief Returns the object containing a set of parameters associated with a particular agent (species).
 	 */
 	public SpeciesParam getSpeciesParam() 
 	{
@@ -208,20 +206,19 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Returns the species object that is represented by this agent
-	 * 
-	 * Returns the species object that is represented by this agent
+	 * \brief Returns the species object that is represented by this agent.
 	 * 
 	 * @return	Object of the Species class that this agent is representing
 	 */
-	public Species getSpecies() {
+	public Species getSpecies()
+	{
 		return _species;
 	}
 
 	/**
-	 * \brief Set the progenitor Specialised agent to a specified species
+	 * \brief Set the progenitor SpecialisedAgent to a specified species.
 	 * 
-	 * Set the progenitor Specialised agent to a specified species. New agents of this species are created using this information
+	 * New agents of this species are created using this information.
 	 * 
 	 * @param aSpecies	A species object to use as the progenitor
 	 */
@@ -229,46 +226,46 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	{
 		_species = aSpecies;
 		speciesIndex = aSpecies.speciesIndex;
-
 	}
 
 	/**
-	 * \brief Return the name of the species represented by this agent
+	 * \brief Return the name of the species this agent belongs to.
 	 * 
-	 * Return the name of the species represented by this agent
-	 * 
-	 * @return	Name of the species represented
+	 * @return	Name of the species this agent belongs to.
 	 */
-	public String getName() {
+	public String getName()
+	{
 		return _species.speciesName;
 	}
 
 	/**
-	 * \brief Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
+	 * \brief Returns a boolean noting whether this agent is detached and may be removed in sloughing. 
 	 * 
-	 * Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
+	 * Implemented by extending classes
 	 *  
 	 * @return	Boolean value noting whether this agent will be detached
 	 */
-	public boolean willDetach() {
+	public Boolean willDetach()
+	{
 		return false;
 	}
 
 	/**
-	 * \brief Returns the integer grid index where this agent resides. Implemented by extending classes
+	 * \brief Returns the integer grid index where this agent resides. 
 	 * 
-	 * Returns the integer grid index where this agent resides. Implemented by extending classes
+	 * Implemented by extending classes.
 	 *  
-	 * @return	Integer grid index where this agent is located within
+	 * @return	Integer grid index within which this agent is located.
 	 */
-	public int getGridIndex() {
+	public int getGridIndex()
+	{
 		return 0;
 	}
 
 	/**
-	 * \brief Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
+	 * \brief Models a mechanical interaction between two located agents. 
 	 * 
-	 * Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
+	 * Implemented by extending classes (LocatedAgent).
 	 * 
 	 * @param MUTUAL	Whether movement is shared between two agents or applied only to this one
 	 * @param pull	Boolean noting whether this action is shoving (false) or pulling (shrinking biofilm) (true)
@@ -276,31 +273,36 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
-	public double interact(boolean MUTUAL, boolean pull, boolean seq, double gain) {
-		return 0;
+	public Double interact(Boolean MUTUAL, Boolean pull, Boolean seq, Double gain)
+	{
+		return 0.0;
 	}
 
 	/**
-	 * \brief Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
+	 * \brief Returns a boolean noting whether this agent is moving due to growth and sloughing.
 	 * 
-	 * Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
+	 * Implemented by extending classes.
 	 *  
-	 * @return	Boolean noting whether or not this agent is moving
+	 * @return	Boolean noting whether or not this agent is moving.
 	 */
-	public boolean isMoving() {
+	public Boolean isMoving()
+	{
 		return false;
 	}
 
 	/**
-	 * \brief Used in POV-Ray output to display this species - writes a colour definition to the passed-in file
+	 * \brief Used in POV-Ray output to display this species: writes a colour
+	 * definition to the passed-in file.
 	 * 
-	 * Used in POV-Ray output to display this species. This writes a color definition to the passed-in file. Meant for later use in 
-	 * macros. Note that this routine is put here and not in Species to allow derived agents to use different colors for different 
-	 * states; EpiBac is one example, with different colors for donor, recipient, and transconjugant states
+	 * Meant for later use in macros. Note that this routine is put here and
+	 * not in Species to allow derived agents to use different colors for
+	 * different states; EpiBac is one example, with different colors for donor,
+	 * recipient, and transconjugant states.
 	 * 
 	 * @param fr	POV-Ray output file where the colour definition should be applied
 	 */
-	public void writePOVColorDefinition(FileWriter fr) throws IOException {
+	public void writePOVColorDefinition(FileWriter fr) throws IOException
+	{
 		fr.write("#declare "+_species.speciesName+" = color rgb < ");
 		fr.write(((float) _species.color.getRed()) / 255.0 + " , ");
 		fr.write(((float) _species.color.getGreen()) / 255.0 + " , ");

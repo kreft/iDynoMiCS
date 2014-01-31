@@ -44,20 +44,23 @@ public class PovRayWriter implements Serializable
 	 * Directory in which the POV-Ray output files should be stored
 	 */
 	private String            dir;
-
+	
 	/**
-	 * Archive (.zip) file in which all POV-Ray output files will be stored
+	 * Archive (.zip) file in which all POV-Ray output files will be stored.
 	 */
 	private File              _vArchive;
-
+	
 	/**
-	 * \brief Initialises a POV-Ray writer object to produce simulation statistics that can be presented using POV-Ray
+	 * \brief Initialises a POV-Ray writer object to produce simulation
+	 * statistics that can be presented using POV-Ray.
 	 * 
-	 * Initialises a POV-Ray writer object to produce simulation statistics that can be presented using POV-Ray. Creates the required 
-	 * output file paths and the archive in which these files will be stored
+	 * Creates the required output file paths and the archive in which these
+	 * files will be stored.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param outPath	A string stating the directory in which POV-Ray output files should be stored
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param outPath	A string stating the directory in which POV-Ray output
+	 * files should be stored.
 	 */
 	public void initPovRay(Simulator aSim, String outPath) 
 	{
@@ -80,10 +83,10 @@ public class PovRayWriter implements Serializable
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError(e.getLocalizedMessage(), "PovRayWriter.initPovRay()");
+			LogFile.writeError(e, "PovRayWriter.initPovRay()");
 		}
 	}
-
+	
 	/**
 	 * \brief Writes model state information to the POV-Ray file for representation in POV-Ray
 	 * 

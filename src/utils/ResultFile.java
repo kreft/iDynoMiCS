@@ -105,15 +105,12 @@ public class ResultFile
 		{
 			// bvm added 26.1.2009: use simulation iterate for file name 
 			_fileIndex = iter;
-
 			newFile = new File(_dir+"lastIter"+File.separator+_prefix+"(last).xml");
 			archiveFile = new File(_dir+_prefix+".zip"+File.separator
 									+_prefix+"("+_fileIndex+").xml");
-
 			// Create the streams to write in the file
 			_out = new FileOutputStream(newFile);
 			buffer = new BufferedOutputStream(_out);
-
 			// Build the main markup
 			// bvm 26.1.2009: added output of iterate as well as time
 			value = new StringBuffer("<idynomics>\n <simulation iterate=\"");
@@ -122,48 +119,68 @@ public class ResultFile
 			value.append(SimTimer.getCurrentTime());
 			value.append("\" unit=\"hour\">\n");
 			buffer.write(value.toString().getBytes());
-			
-		} catch (Exception e) 
+		}
+		catch (Exception e)
 		{
-			LogFile.writeError("Unable to open result file", "ResultFile.openFile()");
+			LogFile.writeError(e, "ResultFile.openFile()");
 		}
 	}
 
 	/**
-	 * \brief Add text to an existing resultFile
+	 * \brief Add text to an existing resultFile.
 	 * 
-	 * Add text to an existing resultFile
-	 * 	 * 
 	 * @param text	The text that should be appended to this results file
 	 */
-	public void write(String text) {
-		try {
+	public void write(String text)
+	{
+		try
+		{
 			buffer.write(text.getBytes());
-		} catch (Exception e) {
-			LogFile.writeError("Unable to write", "ResultFile.write()");
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ResultFile.write(String)");
 		}
 	}
-
+	
+	/**
+	 * \brief Add text to an existing resultFile.
+	 * 
+	 * @param textBuffer StringBuffer of text to be written to the result file.
+	 */
+	public void write(StringBuffer textBuffer)
+	{
+		try
+		{
+			buffer.write(textBuffer.toString().getBytes());
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ResultFile.write(StringBuffer)");
+		}
+	}
+	
+	
 	/**
 	 * \brief Closes the resultFile and adds the closing mark-up to have a well-formed XML file
 	 * 
 	 * Closes the resultFile and adds the closing mark-up to have a well-formed XML file
 	 */
 	public void closeFile() {
-		try {
+		try
+		{
 			// Close the markup
 			buffer.write("\n</simulation>\n</idynomics>".getBytes());
-
 			// Close the file
 			buffer.close();
 			_out.close();
-
 			// Add the resultFile to the archive
 			newFile.copyTo(archiveFile);
 			File.update(_vArchive);
-
-		} catch (Exception e) {
-			LogFile.writeError("Unable to close or archive", "ResultFile.closeFile()");
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ResultFile.closeFile()");
 		}
 	}
 

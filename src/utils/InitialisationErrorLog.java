@@ -8,24 +8,18 @@
  */
 package utils;
 
-import idyno.Idynomics;
-import idyno.SimTimer;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-// log file where events are recorder
-import java.util.Calendar;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-import Jama.Matrix;
-
+import idyno.Idynomics;
 
 /**
- * \brief Creates and updates a simulation initialisation error log file for the initialising simulation
- * 
- * Creates and updates a simulation initialisation error log file for the initialising simulation
+ * \brief Creates and updates a simulation initialisation error log file for
+ * the initialising simulation.
  */
 public class InitialisationErrorLog 
 {
@@ -37,79 +31,84 @@ public class InitialisationErrorLog
 	/**
 	 * Format of the date which is used in logging simulation messages
 	 */
-	private static DateFormat      dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static DateFormat dateFormat =
+								new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	/**
-	 * Decimal format which is logged in logging simulation messages
+	 * Decimal format which is logged in logging simulation messages.
 	 */
-	private static DecimalFormat   myformat   = new DecimalFormat("0.0");
+	@SuppressWarnings("unused")
+	private static DecimalFormat myformat = new DecimalFormat("0.0");
 	
 	/**
-	 * Used to hold simulation time at the time of logging
+	 * Used to hold simulation time at the time of logging.
 	 */
-	public static long             anInstant;
+	public static long anInstant;
 	
 	/**
-	 * Name of the log file
+	 * Name of the log file.
 	 */
 	private static String theLogFileName;
 	
 	/**
-     * \brief Open a logFile at a specified directory, and initialises the time recorder
+     * \brief Open a logFile at a specified directory, and initialises the time
+     * recorder.
      * 
-     * Open a logFile at a specified directory, and initialises the time recorder
-     * 
-     * @param dirName	Directory where the log file should be stored
+     * @param dirName Directory where the log file should be stored.
      */
 	public static void openInitialisationErrorFile(String dirName) 
 	{
 		try 
 		{
-			File test = new File(dirName+File.separator+"Initialisation_Error_Log.txt");
-			theLogFileName = dirName+File.separator+"Initialisation_Error_Log.txt";
+			theLogFileName = dirName + File.separator + 
+												"Initialisation_Error_Log.txt";
+			@SuppressWarnings("unused")
+			File test = new File(theLogFileName);
 			
 			log = new FileOutputStream(theLogFileName);
 		} catch (Exception e) 
 		{
-			System.out.println("Failed to create a log file");
+			System.out.println("Failed to create a log file : "+e);
 		}
 	}
 	
 	/**
-     * \brief Static method to add message to the log file, even when quiet mode is enabled
+     * \brief Static method to add message to the log file, even when quiet
+     * mode is enabled.
      * 
-     * Static method to add message to the log file, even when quiet mode is enabled
-     * 
-     * @param message	The message that should be appended to the log file
+     * @param message The message that should be appended to the log file.
      */
-	public static void writeLog(String message) {
-		try {
-			if (!Idynomics.quietMode){
-				System.out.println(message);
-				log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
-				log.write((" : "+message+"\n").getBytes());
-			}
-		} catch (Exception e) {
-			System.out.println("Failed to write into the log file");
+	public static void writeLog(String message)
+	{
+		try
+		{
+			System.out.println(message);
+			log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
+			log.write((" : "+message+"\n").getBytes());
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed to write into the log file : "+e);
 		}
 	}
 	
 	/**
-     * \brief Static method to add message to the log file, so long as Idynomics.quietMode is false (default)
+     * \brief Static method to add a specific error message to the log file.
      * 
-     * Static method to add message to the log file, so long as Idynomics.quietMode is false (default)
-     * 
-     * @param message	The message that should be appended to the log file
-     * @param origin	Origin of where this message came from
+     * @param exception	Exception associated with this error.
+     * @param origin String noting the origin of this error
      */
-	public static void writeError(String message,String origin) {
+	public static void writeError(String message,String origin)
+	{
 		try {
 			System.out.println(message);
 			log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
 			log.write((" Error met in "+origin).getBytes());
 			log.write((" : "+message+"\n").getBytes());
-		} catch (Exception e) {
-			System.out.println("Failed to write into the log file");
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed to write into the log file : "+e);
 		}
 	}	
 

@@ -141,34 +141,37 @@ public class LogFile
 				log.write((" : "+row+"\n").getBytes());
 				row.delete(0, row.length());
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			System.out.println("Failed to write into the log file");
 		}
 	}
 	
 	/**
-     * \brief Static method to add a specific error message to the log file
+     * \brief Static method to add a specific error message to the log file.
      * 
-     * Static method to add a generated error message to the log file
-     * 
-     * @param message	Error message that should be appended to the log file
-     * @param origin	String noting the origin of this error
+     * @param exception	Exception associated with this error.
+     * @param origin String noting the origin of this error
      */
-	public static void writeError(String message,String origin) {
-		try {
-			System.out.println(message);
-			log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
-			log.write((" Error met in "+origin).getBytes());
-			log.write((" : "+message+"\n").getBytes());
-		} catch (Exception e) {
-			System.out.println("Failed to write into the log file");
+	public static void writeError(Exception exception, String origin)
+	{
+		try
+		{
+			String message = dateFormat.format(Calendar.getInstance().getTime());
+			message += "\nError met in "+origin+" : "+exception+"\n";
+			for (StackTraceElement line : exception.getStackTrace())
+				message += "\t"+line.toString()+"\n";
+			writeLogAlways(message);
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed to write into the log file : "+e);
 		}
 	}	
 
 	/**
-	 * \brief Closes the log file
-	 * 
-	 * Closes the log file
+	 * \brief Closes the log file.
 	 */
 	public static void closeFile() 
 	{
@@ -176,7 +179,9 @@ public class LogFile
 		{
 			log.close();
 		} 
-		catch (Exception e) {
+		catch (Exception e)
+		{
+			System.out.println("Failed to close the log file : "+e);
 		}
 	}
 
@@ -193,7 +198,6 @@ public class LogFile
 		{
 			closeFile();
 			log = new FileOutputStream(theLogFileName, true);
-			//System.out.println("Reopened log file.");
 		} 
 		catch (Exception e) 
 		{

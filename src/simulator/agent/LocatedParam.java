@@ -13,17 +13,20 @@ import simulator.Simulator;
 import utils.XMLParser;
 
 /**
- * \brief Extends ActiveParam by adding location and behaviour parameters to a defined agent
+ * \brief Extends ActiveParam by adding location and behaviour parameters to a
+ * defined agent.
  * 
- * Extends ActiveParam by adding location and behaviour parameters to a defined agent. These parameters include the radius at which 
- * division occurs, the radius at which death occurs, and for self attach simulations, parameters involved in simulating a cells run 
- * and tumble motion
+ * These parameters include the radius at which division occurs, the radius at
+ * which death occurs, and for self attach simulations, parameters involved in
+ * simulating a cells run and tumble motion.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  */
 public class LocatedParam extends ActiveParam 
 {
@@ -32,138 +35,147 @@ public class LocatedParam extends ActiveParam
 	 */
 	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Division radius (in µm)
-	 */
-	public double divRadius       = .97;
 	
 	/**
-	 * Degree of stochasticity used in determining cell division behaviour
+	 * Division radius (in µm).
 	 */
-	public double divRadiusCV     = .1;
-
-	/**
-	 * Fraction of the mother's total mass that is given to the baby. Formerly called splitRatio
-	 */
-	public double babyMassFrac    = .5;
+	public double divRadius = 0.97;
 	
 	/**
-	 * Degree of stochasticity used in determining cell mass distribution
+	 * Degree of stochasticity used in determining cell division behaviour.
 	 */
-	public double babyMassFracCV  = .1;
-
-	/**
-	 * Minimal radius before death (in m)
-	 */
-	public double deathRadius     = .2;
+	public double divRadiusCV = 0.1;
 	
 	/**
-	 * Degree of stochasticity used in determining cell death
+	 * Fraction of the mother's total mass that is given to the baby.
+	 * 
+	 * Formerly called splitRatio.
 	 */
-	public double deathRadiusCV   = .1;
-
-	/**
-	 * Multiplier of the full radius to enhance distance between cells
-	 */
-	public double shoveFactor     = 1.15;
-
-	/**
-	 * Minimal distance between two cells (after shovingRadius computation)
-	 */
-	public double shoveLimit      = 0;
+	public double babyMassFrac = 0.5;
 	
 	/**
-	 * For simulations that model self attachment to the substratum, the agents move from the boundary layer in a random walk. This 
-	 * parameter captures the speed of that move (KA 170513)
+	 * Degree of stochasticity used in determining cell mass distribution.
+	 */
+	public double babyMassFracCV = 0.1;
+	
+	/**
+	 * Minimal radius before death (in µm).
+	 */
+	public double deathRadius = 0.2;
+	
+	/**
+	 * Degree of stochasticity used in determining cell death.
+	 */
+	public double deathRadiusCV = 0.1;
+	
+	/**
+	 * Multiplier of the full radius to enhance distance between cells.
+	 */
+	public double shoveFactor = 1.15;
+	
+	/**
+	 * Minimal distance between two cells (after shovingRadius computation).
+	 */
+	public double shoveLimit = 0.0;
+	
+	/**
+	 * For simulations that model self attachment to the substratum, the agents
+	 * move from the boundary layer in a random walk. This parameter captures
+	 * the speed of that move.
+	 * 
+	 * @author Kieran Alden 170513
 	 */
 	public double cellRunSpeed;
 	
 	/**
-	 * For simulations that model self attachment to the substratum, the agents move from the boundary layer in a random walk. This 
-	 * parameter captures the interval at which the cell will 'tumble' and change direction (KA 170513)
+	 * For simulations that model self attachment to the substratum, the agents
+	 * move from the boundary layer in a random walk. This parameter captures
+	 * the interval at which the cell will 'tumble' and change direction.
+	 * 
+	 * @author Kieran Alden 170513
 	 */
 	public double tumbleInterval;
 	
 	/**
-	 * Some cells (e.g. some e-coli species) will express molecules on the surface that will stick to any other surface. For versions of 
-	 * the simulation where self-attachment is being modelled, this parameter captures the extra cell dimension that needs to be considered 
-	 * in collision detection (to see if the agent sticks) (KA 170513)
+	 * Some cells (e.g. some E. coli strains) will express molecules on the
+	 * surface that will stick to any other surface. For versions of the
+	 * simulation where self-attachment is being modelled, this parameter
+	 * captures the extra cell dimension that needs to be considered in
+	 * collision detection (to see if the agent sticks).
+	 * 
+	 * @author Kieran Alden 170513
 	 */
 	public double stickinessAddition;
-
+	
 	/**
-	 * \brief Create a new LocatedParam parameter storage object, calling the relevant extended class constructors
-	 * 
-	 * Create a new LocatedParam parameter storage object, calling the relevant extended class constructirs
+	 * \brief Create a new LocatedParam parameter storage object, calling the
+	 * relevant extended class constructors.
 	 */
-	public LocatedParam() {
+	public LocatedParam()
+	{
 		super();
 	}
 
 	/**
-	 * \brief Assigns values to each of the location and behavioural specific parameters, reading these from the protocol file
+	 * \brief Assigns values to each of the location and behavioural specific
+	 * parameters, reading these from the protocol file.
 	 * 
-	 * Assigns values to each of the location and behavioural specific parameters, reading these from the protocol file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file.
 	 */
-	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
-		double value;
-
-		//sonia 28.04.2010
-		//the user can define the degree of variability in the division, split and death radius
-		//by defining the "parameterCV" in the protocol file
-
+		Double value;
+		
 		// AUGUST 2013 - Change such that these can be declared as defaults, rather than for EVERY species
 		// But can be overriden for each species, so need to check if in species - if not then check the defaults
 		// If not in defaults, the default value hard coded into iDynoMiCS (if present) will be used
 		
 		value = getSpeciesParameterLength("divRadius",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) divRadius = value;
+		divRadius = value.isNaN() ? divRadius : value;
 		
 		value = getSpeciesParameterDouble("divRadiusCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) divRadiusCV = value;
+		divRadiusCV = value.isNaN() ? divRadiusCV : value;
 		
 		value = getSpeciesParameterLength("deathRadius",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) deathRadius = value;
-
+		deathRadius = value.isNaN() ? deathRadius : value;
+		
 		value = getSpeciesParameterDouble("deathRadiusCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) deathRadiusCV = value;
-
+		deathRadiusCV = value.isNaN() ? deathRadiusCV : value;
+		
 		value = getSpeciesParameterDouble("babyMassFrac",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) babyMassFrac = value;
-
+		babyMassFrac = value.isNaN() ? babyMassFrac : value;
+		
 		value = getSpeciesParameterDouble("babyMassFracCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) babyMassFracCV = value;
-	
+		babyMassFracCV = value.isNaN() ? babyMassFracCV : value;
+		
 		value = getSpeciesParameterLength("shoveLimit",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) shoveLimit = value;
-
-		value = getSpeciesParameterLength("shoveFactor",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) shoveFactor = value;
+		shoveLimit = value.isNaN() ? shoveLimit : value;
+		
+		value = getSpeciesParameterDouble("shoveFactor",aSpeciesRoot,speciesDefaults);
+		shoveFactor = value.isNaN() ? shoveFactor : value;
 		
 		// Attachment parameters - KA 170513
+		// TODO This should be read in as a speed, not as a length!
 		value = getSpeciesParameterLength("cellRunSpeed",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) cellRunSpeed = value;
+		cellRunSpeed = value.isNaN() ? cellRunSpeed : value;
 		
-		value = getSpeciesParameterLength("tumbleInt",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) tumbleInterval = value;
-				
+		value = getSpeciesParameterTime("tumbleInt",aSpeciesRoot,speciesDefaults);
+		tumbleInterval = value.isNaN() ? tumbleInterval : value;
+		
 		value = getSpeciesParameterLength("stickinessAddition",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) stickinessAddition = value;
-		
+		stickinessAddition = value.isNaN() ? stickinessAddition : value;
 	}
 	
 	/**
-	 * \brief Return the cell run speed. Used in agent self-attachment scenarios
+	 * \brief Return the cell run speed.
 	 * 
-	 * Return the cell run speed. Used in agent self-attachment scenarios
+	 * Used in agent self-attachment scenarios.
 	 * 
-	 * @return	Double value stating the stored cell run speed for this species of agent
+	 * @return	Double value stating the stored cell run speed for this species
+	 * of agent.
 	 */
 	public double getCellRunSpeed()
 	{
@@ -171,17 +183,19 @@ public class LocatedParam extends ActiveParam
 	}
 	
 	/**
-	 * \brief Return the cell stickiness radius. Used in agent self-attachment scenarios
+	 * \brief Return the cell stickiness radius. Used in agent self-attachment
+	 * scenarios.
 	 * 
-	 * Return the cell stickiness radius. Used in agent self-attachment scenarios. Captures the hypothesis that for some biological 
-	 * bacterial cells such as e-coli, there will be receptors on the outside of the cell that adhere to the biofilm or substratum 
-	 * surface, and thus this needs to be added to the cell radius
+	 * Captures the hypothesis that for some biological bacterial cells such as
+	 * E. coli, there will be receptors on the outside of the cell that adhere
+	 * to the biofilm or substratum surface, and thus this needs to be added to
+	 * the cell radius.
 	 * 
-	 * @return	Double value stating the stored stickiness radius value for agents of this species
+	 * @return	Double value stating the stored stickiness radius value for
+	 * agents of this species.
 	 */
-	public double getStickinessRadius()
+	public Double getStickinessRadius()
 	{
-		return this.stickinessAddition;
+		return divRadius + stickinessAddition;
 	}
-	
 }

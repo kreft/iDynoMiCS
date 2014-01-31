@@ -44,13 +44,15 @@ public interface HasSpecies
 	public void setSpecies(Species aSpecies);
 	
 	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * \brief Specifies the header of the columns of output information for
+	 * this agent.
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * Used in creation of results files.
 	 * 
-	 * @return	String specifying the header of each column of results associated with this agent
+	 * @return	String specifying the header of each column of results
+	 * associated with this agent.
 	 */
-	public String sendHeader();
+	public StringBuffer sendHeader();
 	
 	/**
 	 * \brief Return the set of parameters that is associated with the object of this species

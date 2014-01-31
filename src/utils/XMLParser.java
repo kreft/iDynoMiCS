@@ -12,64 +12,62 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
-import org.jdom.Element;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+
 import simulator.geometry.DiscreteVector;
 
 /**
- * \brief Class providing methods of parsing the XML simulation protocol file
+ * \brief Class providing methods of parsing the XML simulation protocol file.
  * 
- * In iDynoMiCS, protocol files are used to create the conditions under which a simulation is run. This is specified in XML. During 
- * initialisation, the simulation will require access to tags within this file. This class provides a means of accessing the data in 
- * these tags 
+ * In iDynoMiCS, protocol files are used to create the conditions under which a
+ * simulation is run. This is specified in XML. During initialisation, the
+ * simulation will require access to tags within this file. This class provides
+ * a means of accessing the data in these tags. 
  */
 public class XMLParser implements Serializable 
 {
-
 	/**
-	 * Serial version used for the serialisation of the class
+	 * Serial version used for the serialisation of the class.
 	 */
-	private static final long   serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Document Object Model used to process an XML file
+	 * Document Object Model used to process an XML file.
 	 */
-	private Document            document;
+	private Document document;
 	
 	/**
-	 * The XML head tag of the group of elements currently being processed
+	 * The XML head tag of the group of elements currently being processed.
 	 */
-	private Element             _localRoot;
+	private Element _localRoot;
 	
 	/**
-	 * Temporary store of the value read in from the XML file. Used in cases where this value needs to be post-processed before returning 
+	 * Temporary store of the value read in from the XML file. Used in cases
+	 * where this value needs to be post-processed before returning. 
 	 */
-	private static double       value;
+	private static double value;
 	
 	/**
-	 * The unit of the protocol file parameter being processed
+	 * The unit of the protocol file parameter being processed.
 	 */
 	private static StringBuffer unit;
-
-
+	
 	/**
-	 * \brief Create an XML parser for a given XML local grouping
+	 * \brief Create an XML parser for a given XML local grouping.
 	 * 
-	 * Create an XML parser for a given XML local grouping
-	 * 
-	 * @param localRoot	An element that is the root of a group of XML tags
+	 * @param localRoot	An element that is the root of a group of XML tags.
 	 */
 	public XMLParser(Element localRoot) 
 	{
 		_localRoot = localRoot;
 	}
-
+	
 	/**
-	 * Create an XML parser object for an XML file of a given name
+	 * Create an XML parser object for an XML file of a given name.
 	 * 
-	 * @param fileName	The name of the XML file to be processed
+	 * @param fileName	The name of the XML file to be processed.
 	 */
 	public XMLParser(String fileName) 
 	{
@@ -78,55 +76,62 @@ public class XMLParser implements Serializable
 	}
 	
 	/**
-	 * \brief Used to parse an XML file before a simulation log file is generated, when the simulation is being initialised
+	 * \brief Used to parse an XML file before a simulation log file is
+	 * generated, when the simulation is being initialised.
 	 * 
-	 * There are some checks the simulation needs to do on initialisation (with the protocol file). This is before the simulation log 
-	 * is generated. These errors get stored in a separate log file
+	 * There are some checks the simulation needs to do on initialisation (with
+	 * the protocol file). This is before the simulation log is generated.
+	 * These errors get stored in a separate log file.
 	 * 
-	 * @param activePath	The path to the protocol file to open
-	 * @param protocolFile	The protocol file to read in
+	 * @param activePath	The path to the protocol file to open.
+	 * @param protocolFile	The protocol file to read in.
 	 */
 	public XMLParser(String activePath,String protocolFile) 
 	{
 		openXMLDocument(activePath,protocolFile, false);
 		_localRoot = document.getRootElement();
 	}
-
+	
 	/**
-	 * \brief Creates a DOM document for an XML protocol file of a given name
+	 * \brief Creates a DOM document for an XML protocol file of a given name.
 	 * 
-	 * Creates a DOM document for an XML protocol file of a given name
-	 * 
-	 * @param fileName	The name of the XML protocol file being processed
-	 * @param testDTD	Boolean stating whether or not schema validation should be applied on reading the XML file
+	 * @param fileName	The name of the XML protocol file being processed.
+	 * @param testDTD	Boolean stating whether or not schema validation should
+	 * be applied on reading the XML file.
 	 */
-	public void openXMLDocument(String fileName, boolean testDTD) {
-		try {
-			document = (new SAXBuilder(testDTD)).build(new File(fileName));
-		} catch (Exception e) 
+	public void openXMLDocument(String fileName, Boolean testDTD)
+	{
+		try
 		{
-			LogFile.writeLog("XMLParser.openXMLdocument(): Initialisation of the XML parser failed");
-			LogFile.writeLog("Error: "+e);
+			document = (new SAXBuilder(testDTD)).build(new File(fileName));
+		}
+		catch (Exception e) 
+		{
+			LogFile.writeLogAlways("Error while trying to open "+fileName);
+			LogFile.writeError(e, "XMLParser.openXMLdocument()");
 			System.exit(-1);
 		}
 	}
 	
 	/**
-	 * \brief Used to open an XML file in simulation initialisation - where the log file has yet to be created
+	 * \brief Used to open an XML file in simulation initialisation, where the
+	 * log file has yet to be created.
 	 * 
-	 * Used to open an XML file in simulation initialisation - where the log file has yet to be created. This is the case as the 
-	 * simulation log file location is specified in the protocol file. If that can't be read then there is a problem
+	 * This is the case as the simulation log file location is specified in the
+	 * protocol file. If that can't be read then there is a problem.
 	 * 
-	 * @param activePath	String of path to protocol file being processed
-	 * @param protocolFile	The protocol file to be read
-	 * @param testDTD	Boolean stating whether or not schema validation should be applied on reading the XML file
+	 * @param activePath	String of path to protocol file being processed.
+	 * @param protocolFile	The protocol file to be read.
+	 * @param testDTD	Boolean stating whether or not schema validation should
+	 * be applied on reading the XML file.
 	 */
-	public void openXMLDocument(String activePath,String protocolFile, boolean testDTD) 
+	public void openXMLDocument(String activePath, String protocolFile, boolean testDTD) 
 	{
 		try 
 		{
 			document = (new SAXBuilder(testDTD)).build(new File(activePath+protocolFile));
-		} catch (Exception e) 
+		}
+		catch (Exception e) 
 		{
 			InitialisationErrorLog.writeLog("XMLParser.openXMLdocument(): Initialisation of the XML parser failed");
 			InitialisationErrorLog.writeLog("Check your XML files for Errors");
@@ -169,9 +174,8 @@ public class XMLParser implements Serializable
 	{
 		List<Element> childList = _localRoot.getChildren(childMarkup);
 		LinkedList<XMLParser> out = new LinkedList<XMLParser>();
-		for (Object anElement : childList) {
+		for (Object anElement : childList)
 			out.add(new XMLParser((Element) anElement));
-		}
 		return out;
 	}
 
@@ -284,7 +288,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getParamDbl(String paramName, StringBuffer unit) 
 	{
-		if (getParam(paramName)==null) 
+		if (getParam(paramName) == null) 
 		{
 			return Double.NaN;
 		} 
@@ -304,14 +308,10 @@ public class XMLParser implements Serializable
 	 */
 	public Integer getParamInt(String paramName) 
 	{
-		if (getParam(paramName)==null) 
-		{
+		if ( getParam(paramName) == null ) 
 			return 0;
-		} 
 		else 
-		{
 			return Integer.parseInt(getParam(paramName));
-		}
 	}
 
 	/**
@@ -323,12 +323,12 @@ public class XMLParser implements Serializable
 	 * @param unit	The unif of measurement specified for this parameter
 	 * @return	The int value assigned to that parameter
 	 */
-	public Integer getParamInt(String paramName, StringBuffer unit) {
-		if (getParam(paramName)==null) {
+	public Integer getParamInt(String paramName, StringBuffer unit)
+	{
+		if ( getParam(paramName) == null )
 			return 0;
-		} else {
+		else
 			return Integer.parseInt(getParam(paramName, unit));
-		}
 	}
 
 	/**
@@ -394,16 +394,16 @@ public class XMLParser implements Serializable
 	}
 
 	/**
-	 * \brief Converts coordinates specified in the protocol file into a discrete vector
+	 * \brief Converts coordinates specified in the protocol file into a
+	 * discrete vector.
 	 * 
-	 * Converts coordinates specified in the protocol file into a discrete vector. Used for boundary conditions and specifications of 
-	 * birth area of agents
+	 * Used for boundary conditions and specifications of birth area of agents.
 	 * 
 	 * @param paramName	The protocol file parameter specified as X,Y,and Z coordinated
 	 * @return	A discrete vector containing these three coordinates
 	 */
-	public DiscreteVector getParamXYZ(String paramName){
-		//Element param = getParamMarkUp(paramName);
+	public DiscreteVector getParamXYZ(String paramName)
+	{
 		return new DiscreteVector(getParamMarkUp(paramName));
 	}
 	
@@ -415,7 +415,8 @@ public class XMLParser implements Serializable
 	 * @param paramName	The parameter to be retrieved from the XML file
 	 * @return	Boolean value assigned to this parameter
 	 */
-	public Boolean getParamBool(String paramName) {
+	public Boolean getParamBool(String paramName)
+	{
 		return Boolean.parseBoolean(getParam(paramName));
 	}
 
@@ -574,34 +575,46 @@ public class XMLParser implements Serializable
 		}
 		return _localRoot;
 	}
-
-	@SuppressWarnings("unchecked")
-	
 	
 	/**
-	 * \brief Return the string value of an attribute of the current localroot of the XML file
+	 * \brief Return the string value of an attribute of the current localRoot
+	 * of the XML file.
 	 * 
-	 * Return the string value of an attribute of the current localroot of the XML file
-	 * 
-	 * @param attributeName	The attribute name for which the value is being sought
-	 * @return	The string value of that attribute, if present
+	 * @param attributeName	The attribute name for which the value is being
+	 * sought.
+	 * @return	The string value of that attribute, if present.
 	 */
-	public String getAttributeStr(String attributeName) {
+	public String getAttribute(String attributeName)
+	{
 		return _localRoot.getAttributeValue(attributeName);
 	}
-
+	
 	/**
-	 * \brief Return the double value of an attribute of the current localroot of the XML file
+	 * \brief Return the Double value of an attribute of the current localRoot
+	 * of the XML file.
 	 * 
-	 * Return the double value of an attribute of the current localroot of the XML file
-	 * 
-	 * @param attributeName	The attribute name for which the value is being sought
-	 * @return	The double value of that attribute, if present
+	 * @param attributeName	The attribute name for which the value is being
+	 * sought.
+	 * @return	The Double value of that attribute, if present.
 	 */
-	public Double getAttributeDbl(String attributeName) {
-		return Double.parseDouble(getAttributeStr(attributeName));
+	public Double getAttributeDbl(String attributeName)
+	{
+		return Double.parseDouble(getAttribute(attributeName));
 	}
-
+	
+	/**
+	 * \brief Return the Integer value of an attribute of the current localRoot
+	 * of the XML file.
+	 * 
+	 * @param attributeName	The attribute name for which the value is being
+	 * sought.
+	 * @return	The Integer value of that attribute, if present.
+	 */
+	public Integer getAttributeInt(String attributeName)
+	{
+		return Integer.parseInt(getAttribute(attributeName));
+	}
+	
 	/**
 	 * \brief Return the string value of a child attribute of the current localroot of the XML file
 	 * 
@@ -653,21 +666,20 @@ public class XMLParser implements Serializable
 	
 	@SuppressWarnings("unchecked")
 	/**
-	 * \brief Returns a list of the children of a given XML child tag name
+	 * \brief Returns a list of the children of a given XML child tag name.
 	 * 
-	 * Returns a list of the children of a given XML child tag name
-	 * 
-	 * @param childName	The name of a child tag in the XML file for which the list of children is required
-	 * @return	List of XML elements containing the children of the specified tag name
+	 * @param childName	The name of a child tag in the XML file for which the
+	 * list of children is required.
+	 * @return	List of XML elements containing the children of the specified
+	 * tag name.
 	 */
-	public List<Element> getChildren(String childName) {
+	public List<Element> getChildren(String childName)
+	{
 		return (List<Element>) _localRoot.getChildren(childName);
 	}
 
 	/**
-	 * \brief Returns the XML element of a given child node tag name
-	 * 
-	 * Returns the XML element of a given child node tag name
+	 * \brief Returns the XML element of a given child node tag name.
 	 * 
 	 * @param childName	The child tag name for which the XML element is required
 	 * @return	An XML element containing the tags for the specified child name
@@ -675,20 +687,7 @@ public class XMLParser implements Serializable
 	public Element getChildElement(String childName) {
 		return _localRoot.getChild(childName);
 	}
-
-	/**
-	 * \brief Return the value assigned to a given XML tag
-	 * 
-	 * Returns the value assigned to a given XML tag in a protocol file
-	 * 
-	 * @param attributeName	The XML tag for which the associated value is needed
-	 * @return	The string value assigned to that tag in the protocol file
-	 */
-	public String getAttribute(String attributeName) 
-	{
-		return _localRoot.getAttributeValue(attributeName);
-	}
-
+	
 	/**
 	 * \brief Return the current XML local root element
 	 * 

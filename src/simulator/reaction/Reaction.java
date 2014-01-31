@@ -11,11 +11,12 @@ package simulator.reaction;
 import java.io.Serializable;
 import java.util.*;
 import Jama.Matrix;
+
 import simulator.*;
 import simulator.agent.*;
-import simulator.geometry.Bulk;
-import simulator.geometry.DiscreteVector;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.Bulk;
+import utils.ExtraMath;
 import utils.LogFile;
 import utils.ResultFile;
 import utils.XMLParser;
@@ -29,9 +30,11 @@ import utils.XMLParser;
  * these representations are used in definining reactions in the protocol file.
  * 
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham, UK
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham, UK.
  */
 public abstract class Reaction implements Serializable 
 {
@@ -58,83 +61,83 @@ public abstract class Reaction implements Serializable
 	/**
 	 * Local copy of the solute grids used in this simulation. Used for efficiency purposes 
 	 */
-	protected SoluteGrid[]            _soluteList;
+	protected SoluteGrid[] _soluteList;
 	
 	/**
 	 * A list of solute indices: if that solute's yield in this reaction is non-zero then it is on this list.
 	 * Hence, this is the list of solutes which are affected by this reaction. 
 	 **/
-	public int[]                   _mySoluteIndex;
+	public int[] _mySoluteIndex;
 	
 	/** 
 	 * Boolean noting whether or not the catalytic particle is affected by the reaction 
 	*/
-	public boolean					autocatalytic;
+	public Boolean autocatalytic;
 	
 	/**
 	 *	Solute grid that stores reaction rate for this reaction 
 	 */
-	protected SoluteGrid              _reacGrid;
+	protected SoluteGrid _reacGrid;
 	
 	/**
 	 * Grid concerning the biomass that catalyses this reaction
 	 */
-	protected SoluteGrid	_guildGrid;
+	protected SoluteGrid _guildGrid;
 	
 	/**
 	 * Buffer vector used to communicate uptake rate to the solver, for each solute
 	 */
-	public double[]                   totalUptake;
+	public Double[] totalUptake;
 
 	/**
 	 *  Temporary storage used during computation of reaction rates
 	 */
-	protected double                  _specRate;
+	protected Double _specRate;
 	
 	/**
 	 * Buffer vector used to communicate diffision uptake rate to the solver, for each solute
 	 */
-	protected double[]                _diffUptakeRate;
+	protected Double[] _diffUptakeRate;
 	
 	/**
 	 * Buffer vector used to communicate uptake rate to the solver, for each solute
 	 */
-	protected double[]                _uptakeRate;
+	protected Double[] _uptakeRate;
 	
 	/**
 	 * Array to store the solute yield for this reaction.  If a solute is not concerned by the current reaction, the yield will be zero
 	 */
-	protected double[]                _soluteYield;
+	protected Double[] _soluteYield;
 	
 	/**
 	 * Array to store the uptake or production of each solute, by this reaction, for the whole domain [KA August 2013]
 	 */
-	public double[]				  _soluteProductionOrUptake;
+	public Double[] _soluteProductionOrUptake;
 	
 	/**
 	 * Array to store the kinetic factors involved in this reaction
 	 */
-	protected double[]                _kineticParam;
+	protected Double[] _kineticParam;
 	
 	/** 
 	 * Array to store the particle yield from this reaction. If a solute is not concerned by the current reaction, the yield will be zero
 	 */
-	protected double[]                _particleYield;
+	protected Double[] _particleYield;
 
 	/**
 	 * Array to store the names of the particles yielded in this reaction (sonia: 21-05-09)
 	 */
-	protected String[]             _particleNameYield ;
+	protected String[] _particleNameYield ;
 
 	/**
 	 * dilution rate from associated bulk (sonia 21-04-10)
 	 */
-	public double Dil;
+	public Double Dil;
 
 	/**
 	 * Temporary variable to hold number of solutes in this specified simulation case
 	 */
-	static int                        nSolute;
+	static int nSolute;
 	
 	/*************************************************************************************************************************
 	 * CLASS METHODS 
@@ -177,14 +180,14 @@ public abstract class Reaction implements Serializable
 		_guildGrid.gridName = reactionName+"-pop";
 
 		// Initialize buffer arrays
-		_uptakeRate = new double[nSolute];
-		_diffUptakeRate = new double[nSolute];
-		totalUptake = new double[nSolute];
+		_uptakeRate = ExtraMath.newDoubleArray(nSolute);
+		_diffUptakeRate = ExtraMath.newDoubleArray(nSolute);
+		totalUptake = ExtraMath.newDoubleArray(nSolute);
 
 		// Initialize arrays storing reaction parameters
-		_soluteYield = new double[nSolute];
-		_soluteProductionOrUptake = new double[nSolute];
-		_particleYield = new double[nParticulate];
+		_soluteYield = ExtraMath.newDoubleArray(nSolute);
+		_soluteProductionOrUptake = ExtraMath.newDoubleArray(nSolute);
+		_particleYield = ExtraMath.newDoubleArray(nParticulate);
 		_particleNameYield = new String[nParticulate];
 
 		
@@ -216,37 +219,38 @@ public abstract class Reaction implements Serializable
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
-	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot) {
-		double yield;
-
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser xmlRoot)
+	{
+		Double yield;
 		// Populate yield for solutes __________________________________
 		XMLParser parser = new XMLParser(xmlRoot.getChildElement("yield"));
-		for (int iSolute = 0; iSolute<_soluteList.length; iSolute++) {
+		for (int iSolute = 0; iSolute < _soluteList.length; iSolute++)
+		{
 			yield = parser.getParamSuchDbl("solute", _soluteList[iSolute].getName());
-			if (!Double.isNaN(yield)) {
+			if ( ! yield.isNaN() )
 				anAgent.soluteYield[reactionIndex][iSolute] = yield;
-			}
 		}
-
+		
 		// Populate yields for particles _________________________________
-		for (int iParticle = 0; iParticle<aSim.particleDic.size(); iParticle++) {
+		for (int iParticle = 0; iParticle<aSim.particleDic.size(); iParticle++)
+		{
 			yield = parser.getParamSuchDbl("particle", aSim.particleDic.get(iParticle));
-			if (!Double.isNaN(yield)) {
+			if ( ! yield.isNaN() )
 				anAgent.particleYield[reactionIndex][iParticle] = yield;
-			}
 		}
 	}
-
+	
 	/**
-	 * \brief End of the initialization procedure. Store the name and simulation dictionary index for this reaction
+	 * \brief End of the initialization procedure.
 	 * 
-	 * End of the initialization procedure. Store the name and simulation dictionary index for this reaction
+	 * Store the name and simulation dictionary index for this reaction.
 	 * 
-	 * @param aReactionName	Name of this reaction
-	 * @param aSimulator	Integer reference to the readcion simulation dictionary
+	 * @param aReactionName	Name of this reaction.
+	 * @param aSimulator Integer reference to the readcion simulation dictionary.
 	 * @see Simulator.addReaction()
 	 */
-	public void register(String aReactionName, Simulator aSimulator) {
+	public void register(String aReactionName, Simulator aSimulator)
+	{
 		reactionName = aReactionName;
 		reactionIndex = aSimulator.getReactionIndex(aReactionName);
 	}
@@ -283,11 +287,11 @@ public abstract class Reaction implements Serializable
 	{
 
 		// Get the factor that is catalysing the reaction
-		String catalystName = xmlRoot.getAttributeStr("catalyzedBy");
+		String catalystName = xmlRoot.getAttribute("catalyzedBy");
 		_catalystIndex = aSim.particleDic.indexOf(catalystName);
 
 		// Populate yield for solutes
-		double yield;
+		Double yield;
 		
 		// Get the yield information from the reaction tag of the protocol file
 		XMLParser parser = new XMLParser(xmlRoot.getChildElement("yield"));
@@ -353,7 +357,7 @@ public abstract class Reaction implements Serializable
 		// and hence whether the reaction is autocatalytic or not.
 		// This is important in ActiveAgent.grow()
 		
-		if (_particleYield[_catalystIndex]==0)
+		if (_particleYield[_catalystIndex].equals(0.0))
 		{
 			autocatalytic = false;
 			LogFile.writeLog("Reaction "+reactionIndex+" is not autocatalyic");
@@ -397,7 +401,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
-	public abstract double computeMassGrowthRate(ActiveAgent anAgent);
+	public abstract Double computeMassGrowthRate(ActiveAgent anAgent);
 	
 	/**
 	 * \brief Compute the specific growth rate
@@ -407,7 +411,7 @@ public abstract class Reaction implements Serializable
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
-	public abstract double computeSpecGrowthRate(ActiveAgent anAgent);
+	public abstract Double computeSpecGrowthRate(ActiveAgent anAgent);
 
 	/**
 	 * \brief Return the specific reaction rate for a given agent
@@ -428,7 +432,7 @@ public abstract class Reaction implements Serializable
 	 * @param s	Array of solute concentration
 	 * @param anAgent	Parameters used are those defined for THIS agent
 	 */
-	public abstract void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent);
+	public abstract void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent);
 
 	/**
 	 * \brief Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
@@ -437,7 +441,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @param s	Array of solute concentration
 	 */
-	public abstract void computeSpecificGrowthRate(double[] s);
+	public abstract void computeSpecificGrowthRate(Double[] s);
 
 	/**
 	 * \brief Update the array of uptake rates and the array of its derivative. Based on default values of parameters. Unit is fg.h-1
@@ -448,7 +452,7 @@ public abstract class Reaction implements Serializable
 	 * @param mass	Mass of the catalyst (cell...)
 	 * @param t	Time
 	 */
-	public abstract void computeUptakeRate(double[] s, double mass, double t);
+	public abstract void computeUptakeRate(Double[] s, Double mass, Double t);
 
 	/**
 	 * \brief Compute reaction rate on each concerned solute grids Assumes same parameters for all the agents of a same guild
@@ -462,71 +466,66 @@ public abstract class Reaction implements Serializable
 	 * @see multigrid solver
 	 */
 	public void applyReaction(SpatialGrid[] concGrid, SpatialGrid[] reacGrid,
-			SpatialGrid[] diffReacGrid, SpatialGrid biomassGrid) {
-
+						   SpatialGrid[] diffReacGrid, SpatialGrid biomassGrid)
+	{
 		nSolute = concGrid.length;
-		double[] s = new double[nSolute];
-
+		Double[] s = ExtraMath.newDoubleArray(nSolute);
 		int _nI, _nJ, _nK;
 		_nI = biomassGrid.getGridSizeI();
 		_nJ = biomassGrid.getGridSizeJ();
 		_nK = biomassGrid.getGridSizeK();
 		//globalReactionRate = 0;
-
-
-		for (int i = 1; i<_nI+1; i++) {
-			for (int j = 1; j<_nJ+1; j++) {
-				for (int k = 1; k<_nK+1; k++) {
+		for (int i = 1; i<_nI+1; i++)
+			for (int j = 1; j<_nJ+1; j++)
+				for (int k = 1; k<_nK+1; k++)
+				{
 					// If there is no biomass, go to the next grid element
-					if (biomassGrid.grid[i][j][k]==0) continue;
-
+					if  (biomassGrid.grid[i][j][k].equals(0.0) )
+						continue;
 					// Read local solute concentration
 					for (int iGrid : _mySoluteIndex)
 						s[iGrid] = concGrid[iGrid].grid[i][j][k];
-
 					// First compute local uptake-rates in g.h-1
-					computeUptakeRate(s, biomassGrid.grid[i][j][k],0);
-
+					computeUptakeRate(s, biomassGrid.grid[i][j][k], 0.0);
+					
 					// Now add them on the received grids
-					for (int iGrid : _mySoluteIndex) {
+					for (int iGrid : _mySoluteIndex)
+					{
 						reacGrid[iGrid].grid[i][j][k] += _uptakeRate[iGrid];
 						diffReacGrid[iGrid].grid[i][j][k] += _diffUptakeRate[iGrid];
 						if (Double.isNaN(reacGrid[iGrid].grid[i][j][k])) 
-							LogFile.writeLog("Warning: NaN generated in Reaction");
+							LogFile.writeLogAlways("Warning: NaN generated in Reaction");
 					}
 
 				}
-			}
-		}
 	}
 
 	
 
 	/**
-	 * \brief Add the mass of all the agents of the guild on a received grid. The stored value is a CONCENTRATION
+	 * \brief Add the mass of all the agents of the guild on a received grid.
 	 * 
-	 * Add the mass of all the agents of the guild on a received grid. The stored value is a CONCENTRATION
+	 * The stored value is a CONCENTRATION.
 	 * 
 	 * @param aSpG	Spatial grid of reactive biomass
 	 */
-	public void fitAgentMassOnGrid(SpatialGrid aSpG) {
-		for (ActiveAgent anActiveAgent : _guild) {
+	public void fitAgentMassOnGrid(SpatialGrid aSpG)
+	{
+		for (ActiveAgent anActiveAgent : _guild)
 			anActiveAgent.fitMassOnGrid(aSpG, this._catalystIndex);
-		}
 	}
 
 	/**
 	 * \brief Return a double array with all concentration seen by an agent on the default solute grid
 	 * 
-	 * Return a double array with all concentration seen by an agent on the default solute grid
-	 * 
-	 * @param anAgent	ActiveAgent responding to solute levels
-	 * @param concGrid	Solute concentration grid
-	 * @return all the concentration seen by an agent on the default solute grid
+	 * @param anAgent	ActiveAgent responding to solute levels.
+	 * @param concGrid	Solute concentration grid.
+	 * @return all the concentration seen by an agent on the default solute grid.
 	 */
-	public double[] readConcentrationSeen(ActiveAgent anAgent, SoluteGrid[] concGrid) {
+	public Double[] readConcentrationSeen(ActiveAgent anAgent, SoluteGrid[] concGrid)
+	{
 
-		double[] out = new double[concGrid.length];
+		Double[] out = ExtraMath.newDoubleArray(concGrid.length);
 
 		//sonia:chemostat
 		//the concentration read by the agents is the one stored in the bulk (which has been previously updated)
@@ -601,17 +600,18 @@ public abstract class Reaction implements Serializable
 	}
 
 	/**
-	 * \brief Build a grid with mass and mass-growth-rate of all agents of the guild
+	 * \brief Build a grid with mass and mass-growth-rate of all agents of the
+	 * guild.
 	 * 
-	 * Build a grid with mass and mass-growth-rate of all agents of the guild. Used when outputting simulation state to file
+	 * Used when outputting simulation state to file.
 	 */
-	public void fitGuildOnGrid() {
-
-		_reacGrid.setAllValueAt(0);
-		for (ActiveAgent anAgent : _guild) {
+	public void fitGuildOnGrid()
+	{
+		_reacGrid.resetToZero();
+		for (ActiveAgent anAgent : _guild)
+		{
 			// Sum mass of catalyser compartments on each grid cell
 			anAgent.fitMassOnGrid(_guildGrid, _catalystIndex);
-
 			// Apparent reaction rate on each grid cell
 			anAgent.fitReacRateOnGrid(_reacGrid, reactionIndex);
 		}
@@ -641,24 +641,22 @@ public abstract class Reaction implements Serializable
 	}
 
 	/**
-	 * \brief Return the solute yield
+	 * \brief Return the solute yield array.
 	 * 
-	 * Return the solute yield
-	 * 
-	 * @return Double array of solute yield
+	 * @return Double array of solute yield.
 	 */
-	public double[] getSoluteYield() {
+	public Double[] getSoluteYield()
+	{
 		return _soluteYield;
 	}
 	
 	/**
-	 * \brief Return the solute index
+	 * \brief Return the solute index array.
 	 * 
-	 * Return the solute index
-	 * 
-	 * @return Integer array of solute index
+	 * @return Integer array of solute index.
 	 */
-	public int[] getSoluteIndex(){
+	public int[] getSoluteIndex()
+	{
 		return _mySoluteIndex;
 	}
 
@@ -669,43 +667,40 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @return Double array of particulate yield
 	 */
-	public double[] getParticulateYield() {
+	public Double[] getParticulateYield()
+	{
 		return _particleYield;
 	}
 
 
 	/**
-	 * \brief Return the kinetic parameters used in this reaction
+	 * \brief Return the kinetic parameters used in this reaction.
 	 * 
-	 * Return the kinetic parameters used in this reaction
-	 * 
-	 * @return	Double array containing kinetic parameters
+	 * @return	Double array containing kinetic parameters.
 	 */
-	public double[] getKinetic() {
+	public Double[] getKinetic()
+	{
 		return _kineticParam;
 	}
 
 	/**
-	 * \brief Return the guild of this pathway
-	 * 
-	 * Return the guild of this pathway
+	 * \brief Return the guild of this pathway.
 	 * 
 	 * @return	LinkedList containing all agents in the guild
 	 */
-	public LinkedList<ActiveAgent> getGuild() {
+	public LinkedList<ActiveAgent> getGuild()
+	{
 		return _guild;
 	}
 	
 	/**
-	 * \brief Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
-	 * 
-	 * Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
+	 * \brief Calculate the rate of change of each uptake rate with respect to each solute.
 	 * 
 	 * @param S	Temporary container for solute concentration
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
 	 */ 
-	public abstract Matrix calcdMUdS(Matrix S, double biomass);
+	public abstract Matrix calcdMUdS(Matrix S, Double biomass);
 	
 	/**
 	 * \brief Calculate the rate of change of each uptake rate with respect to time.
@@ -717,7 +712,7 @@ public abstract class Reaction implements Serializable
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to time
 	 */ 
-	public abstract Matrix calcdMUdT(Matrix S, double biomass);
+	public abstract Matrix calcdMUdT(Matrix S, Double biomass);
 
 	/**
 	 * \brief Update the Marginal Mu data matrix
@@ -726,7 +721,7 @@ public abstract class Reaction implements Serializable
 	 * 
 	 * @param s	Temporary container for solute concentration 
 	 */
-	public abstract void updateMarginalMu(double[] s);
+	public abstract void updateMarginalMu(Double[] s);
 	
 	/**
 	 * \brief Compute the specific growth rate
@@ -736,7 +731,7 @@ public abstract class Reaction implements Serializable
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
-	public abstract double computeSpecRate(double[] s);
+	public abstract Double computeSpecRate(Double[] s);
 	
 	/**
 	 * \brief Compute the marginal difference array
@@ -746,9 +741,9 @@ public abstract class Reaction implements Serializable
 	 * @param s	Temporary container for solute concentration 
 	 * @return Marginal diff array
 	 */
-	public abstract double[] computeMarginalDiffMu(double[] s);
+	public abstract Double[] computeMarginalDiffMu(Double[] s);
 	
-	public double getReactionRateSum()
+	public Double getReactionRateSum()
 	{
 		return _reacGrid.getSum();
 	}

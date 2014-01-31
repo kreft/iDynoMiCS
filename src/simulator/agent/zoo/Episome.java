@@ -11,36 +11,32 @@
 
 package simulator.agent.zoo;
 
-import idyno.SimTimer;
-
 import java.util.ArrayList;
 
 import org.jdom.Element;
 
-import utils.XMLParser;
+import idyno.SimTimer;
 import utils.ExtraMath;
-
+import utils.LogFile;
+import utils.XMLParser;
 import simulator.agent.*;
 import simulator.reaction.Reaction;
 import simulator.Simulator;
 
-public class Episome extends InfoAgent {
-
-	// Serial version used for the serialisation of the class
-	private static final long serialVersionUID = 1L;
-
+public class Episome extends InfoAgent
+{
 	protected EpiBac _host;
-
+	
 	/* Division management ___________________________________ */
-	protected double _nCopy;
+	protected int _nCopy;
 
 	/* Conjugation management __________________________________ */
-	public double lastExchange, lastReception;
-	protected double _pilusLength;
+	public Double lastExchange, lastReception;
+	protected Double _pilusLength;
 
 	/* Reaction management ___________________________________ */
-	protected boolean _isRepressed = false;
-	public boolean isHot = false;
+	protected Boolean _isRepressed = false;
+	public Boolean isHot = false;
 
 	public Reaction[] allReactions;
 	protected ArrayList<Integer> reactionActive;
@@ -75,7 +71,7 @@ public class Episome extends InfoAgent {
 	 */
 	public void setHost(EpiBac anHost) {
 		lastReception = SimTimer.getCurrentTime();
-		lastExchange = -1;
+		lastExchange = -1.0;
 		_host = anHost;
 		setDefaultCopyNumber();
 	}
@@ -121,18 +117,20 @@ public class Episome extends InfoAgent {
 	 * 
 	 * @see sendNewAgent()
 	 */
-	public void init() {
+	public void init()
+	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
 		_genealogy = 0;
-		lastExchange = -1;
-		lastReception = -1;
+		lastExchange = -1.0;
+		lastReception = -1.0;
 	}
 
 	/**
 	 * 
 	 */
-	public Episome sendNewAgent() throws CloneNotSupportedException {
+	public Episome sendNewAgent() throws CloneNotSupportedException
+	{
 		Episome baby = (Episome) this.clone();
 		baby.init();
 		return baby;
@@ -141,94 +139,103 @@ public class Episome extends InfoAgent {
 	/**
 	 * 
 	 */
-	public void createNewAgent() {
-		try {
+	public void createNewAgent()
+	{
+		try
+		{
 			// Clone the plamid
 			Episome baby = this.sendNewAgent();
-
 			// Mutate parameters
 			baby.mutatePop();
-
 			// Register the plasmid (species population)
 			baby.registerBirth();
-
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e)
+		{
+			LogFile.writeError(e, "Episome.createNewAgent()");
 		}
 	}
 
-	public void mutatePop() {
+	public void mutatePop()
+	{
 		// Mutate inherited parameters
 		super.mutatePop();
-
 		// Now mutate your parameters
 	}
 
-	public void registerBirth() {
+	public void registerBirth()
+	{
 		_species.notifyBirth();
 	}
 
 	/* __________________________ CELL DIVISION ____________________________ */
 
-	public void makeKid() throws CloneNotSupportedException {
+	public void makeKid() throws CloneNotSupportedException
+	{
 		// Clone the plamid
 		Episome baby = this.sendNewAgent();
 		
 		// Mutate parameters
 		baby.mutateAgent();
-
+		
 		// Register the plasmid (species population)
 		baby.registerBirth();
 	}
 
-	public void mutateAgent() {
+	public void mutateAgent()
+	{
 		// Mutate inherited parameters
 		super.mutateAgent();
-
 		// Now mutate your parameters
 	}
 
 	/* _______________________________________________________________________ */
 
-	public void internalStep() {
+	public void internalStep()
+	{
+		
 	}
 
 	/**
-	 * test if the episome can be transfered
+	 * Test if the episome can be transfered.
 	 */
-	public boolean isReadyToConjugate() {
+	public boolean isReadyToConjugate()
+	{
 		EpisomeParam param = getSpeciesParam();
 		isHot = false;
-
+		
 		// not enough copys
 		if (_isRepressed)
 			return false;
-
 		if (_nCopy < 1)
 			return false;
-
+		
 		// You have given a plasmid a few minutes ago
 		if (SimTimer.getCurrentTime() - lastExchange < param.exchangeLag)
 			return false;
-
+		
 		// You have received this plasmid a few minutes ago
 		if (SimTimer.getCurrentTime() - lastReception < param.receptionLag)
 			return false;
-
+		
 		return true;
 	}
 
-	public void die() {
+	public void die()
+	{
 		_species.notifyDeath();
 	}
 
-	public double getPilusRange() {
+	public double getPilusRange()
+	{
 		return _pilusLength;
 	}
 
 	/**
 	 * You are doing a conjugation ! Update your parameters
 	 */
-	public void givePlasmid(Episome baby) {
+	public void givePlasmid(Episome baby)
+	{
 		// Update your time counter for conjugation-able recovery
 		lastExchange = SimTimer.getCurrentTime();
 		baby.lastReception = SimTimer.getCurrentTime();		
@@ -237,85 +244,85 @@ public class Episome extends InfoAgent {
 	/**
 	 * Called during the division of an EpiBac ; apply the segregation of
 	 * plasmids, modify the number for the plasmid calling the method and sends
-	 * the number for the other one
+	 * the number for the other one.
 	 * 
-	 * @return
+	 * @param aPlasmid Episome 
 	 */
-	public void segregation(Episome aPlasmid) {
-		if (ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability) {
+	public void segregation(Episome aPlasmid)
+	{
+		if (ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability)
+		{
 			_nCopy = 1;
 			aPlasmid._nCopy = 1;
-		} else {
+		}
+		else
+		{
 			_nCopy = 0;
 			aPlasmid._nCopy = 1;
 		}
 	}
 
-	public EpisomeParam getSpeciesParam() {
+	public EpisomeParam getSpeciesParam()
+	{
 		return (EpisomeParam) _speciesParam;
 	}
 
-	public int getCopyNumber() {
-		return (int) _nCopy;
+	public int getCopyNumber()
+	{
+		return _nCopy;
 	}
 
-	public void setDefaultCopyNumber() {
+	public void setDefaultCopyNumber()
+	{
 		_nCopy = getSpeciesParam().nCopy;
 	}
 
-	public boolean testProficiency() {
+	public Boolean testProficiency()
+	{
 		Double alea = ExtraMath.getUniRandDbl();
 		return (alea <= getSpeciesParam().transferProficiency);
-
-//		// previous (LAL) growth-dependence mechanism
-//		double prof = getSpeciesParam().transferProficiency;
-//		if (_host.sendTonus() < 0.25)
-//			prof = prof / 5;
-//		return (alea <= prof);
+		
+		// previous (LAL) growth-dependence mechanism
+		//double prof = getSpeciesParam().transferProficiency;
+		//if (_host.sendTonus() < 0.25)
+		//	prof = prof / 5;
+		//return (alea <= prof);
 	}
 
-	public boolean isCompatible(Episome aPlasmid) {
+	public Boolean isCompatible(Episome aPlasmid)
+	{
 		return aPlasmid.getSpeciesParam().compatibilityMarker != this
 				.getSpeciesParam().compatibilityMarker;
 	}
-
-	public int giveStatus() {
+	
+	public int giveStatus()
+	{
 		return 1;
 	}
-
-	/* _______________ FILE OUTPUT _____________________ */
-
-	public String sendHeader() {
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-		//tempString.append(",");
-		
-		// _host, _isRepressed, _isHot, lastExchange, lastReception
-
-		return tempString.toString();
-	}
-
-	public String writeOutput() {
-		// write the data matching the header file
-		// (for a template on how to write data, look in LocatedAgent.java)
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-		//tempString.append(",");
-
-		return tempString.toString();
-	}
-
-	//@Override
-	//protected void conjugate(double elapsedHGTtime) {
-		/// TODO Auto-generated method stub
-		
-	//}
 	
-//	public String sendHeader() {
-//		return "locationX,locationY,locationZ,mass,radius,growthRate";
-//	}
-//
-//	public String writeOutput() {
-//		// Now send your data
-//		return (_species.speciesName);
-//	}
+	/* _______________ FILE OUTPUT _____________________ */
+	
+	public StringBuffer sendHeader()
+	{
+		// return the header file for this agent's values after sending those for super
+		StringBuffer tempString = super.sendHeader();
+		//tempString.append(",");
+		// _host, _isRepressed, _isHot, lastExchange, lastReception
+		return tempString;
+	}
+	
+	/**
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
+	 * 
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
+	 * 
+	 * @return	String containing results associated with this agent.
+	 */
+	public StringBuffer writeOutput()
+	{
+		StringBuffer tempString = super.writeOutput();
+		return tempString;
+	}
 }

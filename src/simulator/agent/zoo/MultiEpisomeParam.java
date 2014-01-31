@@ -83,13 +83,13 @@ public class MultiEpisomeParam extends ActiveParam {
 		for (Element aChild : aSpeciesRoot.getChildren("Marker")) {
 			// Initialize the xml parser
 			parser = new XMLParser(aChild);		
-		hostCompatibilityMarkers.add(parser.getAttributeStr("name"));
+		hostCompatibilityMarkers.add(parser.getAttribute("name"));
 		}
 		
 		// retrieving plasmid markers names
 		for (Element aChild : aSpeciesRoot.getChildren("Compatibility")) {
 			parser = new XMLParser(aChild);		
-		plasmidCompatibilityMarkers.add(parser.getAttributeStr("name"));
+		plasmidCompatibilityMarkers.add(parser.getAttribute("name"));
 		}
 		
 		for (Element aChild : aSpeciesRoot.getChildren("fitnessCost")){

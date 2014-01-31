@@ -1,22 +1,26 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license under
+ * French law and abides by the rules of distribution of free software. You can
+ * use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL
+ * license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info".
  */
 package simulator;
 
-import idyno.Idynomics;
-import idyno.SimTimer;
+import de.schlichtherle.io.FileInputStream;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
 import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import de.schlichtherle.io.FileInputStream;
+
+import idyno.Idynomics;
+import idyno.SimTimer;
 import utils.ExtraMath;
 import utils.MTRandom;
 import utils.XMLParser;
@@ -29,173 +33,197 @@ import simulator.geometry.*;
 import simulator.reaction.*;
 import simulator.agent.*;
 
-
 /**
- * \brief Top-level class of the simulation core. Used to create and run a simulation
+ * \brief Top-level class of the simulation core. Used to create and run a
+ * simulation.
  * 
- * The Simulator class is called by the iDynomics class and creates an object that simulates the conditions specified in a given 
- * protocol file
+ * The Simulator class is called by the iDynomics class and creates an object
+ * that simulates the conditions specified in a given protocol file.
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  *
  */
 public class Simulator 
 {
-
 	/**
-	 * An XML parser of the protocol file that specifies the conditions under which this simulation is being run
+	 * An XML parser of the protocol file that specifies the conditions under
+	 * which this simulation is being run.
 	 */
-	public transient XMLParser    _protocolFile;
+	public transient XMLParser _protocolFile;
 	
 	/**
-	 * Boolean that notes that a file defining the agent conditions at the start of the simulation has been specified. Such files are 
-	 * normally taken from an evolved state of a similar simulation
+	 * Boolean that notes that a file defining the agent conditions at the
+	 * start of the simulation has been specified. Such files are normally
+	 * taken from an evolved state of a similar simulation.
 	 */
-	private boolean               useAgentFile;
+	private boolean useAgentFile;
 	
 	/**
-	 * Where the parameter useAgentFile is set to true, this must be a parser of an XML file that describes the initial state in which the 
-	 * agents should start the simulation
+	 * Where the parameter useAgentFile is set to true, this must be a parser
+	 * of an XML file that describes the initial state in which the agents
+	 * should start the simulation.
 	 */
-	private XMLParser             agentFile;
+	private XMLParser agentFile;
 	
 	/**
-	 * Boolean that notes that a file defining the bulk conditions at the start of the simulation has been specified. Such files are 
-	 * normally taken from an evolved state of a similar simulation
+	 * Boolean that notes that a file defining the bulk conditions at the start
+	 * of the simulation has been specified. Such files are normally taken from
+	 * an evolved state of a similar simulation.
 	 */
-	private boolean               useBulkFile;
+	private boolean useBulkFile;
 	
 	/**
-	 * Where the parameter useBulkFile is set to true, this must be a parser of an XML file that describes the initial state in which the 
-	 * bulk should start the simulation
+	 * Where the parameter useBulkFile is set to true, this must be a parser of
+	 * an XML file that describes the initial state in which the bulk should
+	 * start the simulation.
 	 */
-	private XMLParser             bulkFile;
+	private XMLParser bulkFile;
 	
 	/**
-	 * Output period at which results are written to file. Specified in the XML protocol file
+	 * Output period at which results are written to file. Specified in the XML
+	 * protocol file.
 	 */
-	private double                _outputPeriod;
+	private double _outputPeriod;
 	
 	/**
-	 * Time counter used to generate a summary report of the previous iteration
+	 * Time counter used to generate a summary report of the previous iteration.
 	 */
-	private double	_lastOutput;
+	private double _lastOutput;
 	
 	/**
-	 * Writer for pov-ray output files. Used in biofilm simulations but not for modelling chemostats
+	 * Writer for pov-ray output files. Used in biofilm simulations but not for
+	 * modelling chemostats.
 	 */
 	public transient PovRayWriter povRayWriter;
 	
 	/**
-	 * Array of result files produced by this simulation
+	 * Array of result files produced by this simulation.
 	 */
 	public transient ResultFile[] result;
 	
 	/**
-	 * Path to where results files should be stored. Specified in the protocol file
+	 * Path to where results files should be stored. Specified in the protocol
+	 * file.
 	 */
-	private String                _resultPath;
+	private String _resultPath;
 
 	/**
-	 * Boolean that runs the simulation in chemostat conditions
+	 * Boolean that runs the simulation in chemostat conditions.
 	 */
-	public static boolean isChemostat =false;
+	public static boolean isChemostat = false;
 	
 	/**
-	 * Boolean stating whether we are using a fluctuating environment. Defaults to false
+	 * Boolean stating whether we are using a fluctuating environment. Defaults
+	 * to false.
 	 */
-	public static boolean isFluctEnv=false;
+	public static boolean isFluctEnv = false;
 	
 	/**
-	 * Flag that triggers the use of the MultiEpiBac and MultiEpisome classes. Added by Sonia Martins Jan 2011
+	 * Flag that triggers the use of the MultiEpiBac and MultiEpisome classes.
 	 */
-	public static boolean multiEpi=false;
+	public static boolean multiEpi = false;
 	
 	/**
-	 * Flag that notes whether the simulation is 3D or 2D
+	 * Flag that notes whether the simulation is 3D or 2D.
 	 */
 	public boolean is3D = false;
-
+	
 	/**
-	 * Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system
+	 * Invasion/Competition simulation. Set to true if the simulation should
+	 * stop once there is only one species left in the system.
 	 */
 	public static boolean invComp = false;
 	
 	/**
-	 * Boolean controlling simulation stop point - set to false when a LocatedGroup is removed from above the threshold, thus ending 
-	 * the simulation. Added by Rob 5/3/11. To date only implemented in DS_SolGrad
+	 * Boolean controlling simulation stop point. Any method can set this to
+	 * false when the simulation should stop. For example, DS_SolGrad uses this
+	 * to stop the simulation when the biofilm has crossed the threshold. 
 	 */
 	public boolean continueRunning = true;
 
 	/** 
-	 * Timer of the simulation 
+	 * Timer of the simulation.
 	 */
-	public static SimTimer        simTimer;
-
+	public static SimTimer simTimer;
+	
 	/** 
-	 * Allows user to define a smaller timestep for agent behaviors and interactions. Should always be EQUAL or LOWER than the 
-	 * global time step 
+	 * Allows user to define a smaller timestep for agent behaviors and
+	 * interactions. Should always be EQUAL or LOWER than the global time step. 
 	 */
 	public double  agentTimeStep;
 	
 	/**
-	 * String that specifies the method of attachment used in the simulation. Can be 'onetime' - where the cells are placed randomly on the 
-	 * substratum, or self-attach, where the bacteria moves from the boundary layer to the substratum using a random walk. Defaults to onetime 
-	 * as this has been the method employed in previous versions of iDynomics. Added by Kieran, 170513.
+	 * String that specifies the method of attachment used in the simulation.
+	 * Can be 'onetime' - where the cells are placed randomly on the substratum,
+	 * or self-attach, where the bacteria moves from the boundary layer to the
+	 * substratum using a random walk. Defaults to onetime as this has been the
+	 * method employed in previous versions of iDynomics. Added by Kieran 170513
 	 */
 	public String attachmentMechanism = "onetime";
-
-	/**
-	 * Specification of all the geometry, bulks, and computational domains in the system being modelled
-	 */
-	public World                  world;
 	
 	/**
-	 * Dictionary of all the species objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Specification of all the geometry, bulks, and computational domains in
+	 * the system being modelled.
 	 */
-	public ArrayList<String> 	speciesDic;
+	public World world;
 	
 	/**
-	 * Dictionary of all the reaction objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the species objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
-	public ArrayList<String> 	reactionDic;
+	public ArrayList<String> speciesDic;
 	
 	/**
-	 * Dictionary of all the solver objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the reaction objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
-	public ArrayList<String> 	solverDic;
+	public ArrayList<String> reactionDic;
 	
 	/**
-	 * Dictionary of all the particle objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the solver objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
-	public ArrayList<String>	particleDic;
+	public ArrayList<String> solverDic;
 	
 	/**
-	 * Dictionary of all the solute objects in the specified protocl file. Allows to know the index of an object before its creation
+	 * Dictionary of all the particle objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
-	public ArrayList<String>	soluteDic;
-
+	public ArrayList<String> particleDic;
 	
 	/**
-	 * Array of solute grids - one for each solute specified in the simulation protocol file
+	 * Dictionary of all the solute objects in the specified protocl file.
+	 * Allows to know the index of an object before its creation.
 	 */
-	public SoluteGrid[]           soluteList;
+	public ArrayList<String> soluteDic;
 	
 	/**
-	 * Array of Reaction objects - one for each specified in the simulation protocol file
+	 * Array of solute grids - one for each solute specified in the simulation
+	 * protocol file.
 	 */
-	public Reaction[]             reactionList;
+	public SoluteGrid[] soluteList;
 	
 	/**
-	 * Array of Solver objects - one for each solver specified in the simulation protocol file
+	 * Array of Reaction objects - one for each specified in the simulation
+	 * protocol file.
 	 */
-	public DiffusionSolver[]      solverList;
+	public Reaction[] reactionList;
+	
+	/**
+	 * Array of Solver objects - one for each solver specified in the
+	 * simulation protocol file.
+	 */
+	public DiffusionSolver[] solverList;
 	
 	/**
 	 * Array of Species objects - one for each specifies in the simulation protocol file
@@ -301,9 +329,13 @@ public class Simulator
 	}
 
 	/**
-	 * \brief Method that starts the simulation, calling each timestep until the simulation time is over or the biofilm fills the domain
+	 * \brief Method that starts the simulation, calling each timestep until
+	 * the simulation time is over or the biofilm fills the domain.
 	 * 
-	 * Method that starts the simulation, calling each timestep until the simulation time is over or the biofilm fills the domain
+	 * The public boolean continueRunning can be set to false by any iDynoMiCS
+	 * class that might need to stop the simulation. For example, DS_SolGrad
+	 * stops the simulation once the biofilm has crossed the domain threshold
+	 * (Rob Clegg verified 20 Jan 2014).
 	 */
 	public void run() 
 	{
@@ -314,19 +346,19 @@ public class Simulator
 		// used to stop a simulation if one species is washed out: see  
 		while (simulationIsRunning() && continueRunning)
 			step();
-		if (!continueRunning) writeReport();
+		if (!continueRunning)
+			writeReport();	
 		
 		
 	}
 
 	/**
-	 * \brief Utility method that determines whether the simulation is running
+	 * \brief Utility method that determines whether the simulation is running.
 	 * 
-	 * Utility method that determines whether the simulation is running
-	 * 
-	 * @return Boolean stating if the simulation is running (true) or has stopped (false)
+	 * @return Boolean stating if the simulation is running (true) or has
+	 * stopped (false).
 	 */
-	public boolean simulationIsRunning() 
+	public Boolean simulationIsRunning() 
 	{
 		return !SimTimer.simIsFinished();
 	}
@@ -334,10 +366,10 @@ public class Simulator
 	
 
 	/**
-	 * \brief Perform a full iteration of the simulation for the conditions stated in the protocol file
+	 * \brief Perform a full iteration of the simulation for the conditions
+	 * stated in the protocol file.
 	 * 
-	 * Perform a full iteration of the simulation initialised under the conditions in a given protocol file. Accessed via the simulators 
-	 * run method
+	 * Accessed via the simulators run method.
 	 */
 	public void step() 
 	{
@@ -362,8 +394,10 @@ public class Simulator
 	
 	
 			//sonia: 25-08-09
-			if(isFluctEnv){
-				FluctEnv.setEnvCycle(FluctEnv.envNameList.indexOf(FluctEnv.envStatus));
+			if(isFluctEnv)
+			{
+				FluctEnv.setEnvCycle(
+							FluctEnv.envNameList.indexOf(FluctEnv.envStatus));
 			}
 	
 			// Perform agent stepping
@@ -377,9 +411,10 @@ public class Simulator
 			// this will output if we're close to the output period but haven't
 			// quite hit it (which happens sometimes due to floating point issues)
 			// (this will also output for sure on the last step) 
-			if ( ((SimTimer.getCurrentTime()-_lastOutput)
-					>= (_outputPeriod - 0.01*SimTimer.getCurrentTimeStep())) ||
-					SimTimer.simIsFinished() ) {
+			Double testTime = SimTimer.getCurrentTime() - _lastOutput;
+			testTime -= _outputPeriod - 0.01*SimTimer.getCurrentTimeStep();
+			if ( ( testTime >= 0.0 ) || SimTimer.simIsFinished() )
+			{
 				writeReport();
 				
 				//sonia 26.04.2010
@@ -395,14 +430,13 @@ public class Simulator
 			// Rob 11/2/2012
 			// If this is an invComp simulation (default is false), stop if there are fewer than
 			// two species remaining
-			if (invComp) {
-				int nSpecies = speciesDic.size();
+			if ( invComp )
+			{
 				int specAlive = 0;
 				
-				for (int iSpecies = 0; iSpecies<nSpecies; iSpecies++) {
+				for (int iSpecies = 0; iSpecies < speciesDic.size(); iSpecies++)
 					if (speciesList.get(iSpecies).getPopulation() > 0)
 						specAlive++; 
-				}
 				if (specAlive < 2)
 					continueRunning = false;
 			}
@@ -413,19 +447,25 @@ public class Simulator
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			LogFile.writeError(e, "Simulator.step()");
 		}
 	}
 
 	
 	/**
-	 * \brief Processes parameters specified in the SIMULATOR protocol file mark-up, sets the random number generator and creates the data dictionary
+	 * \brief Processes parameters specified in the SIMULATOR protocol file
+	 * mark-up, sets the random number generator and creates the data
+	 * dictionary.
 	 * 
-	 * Within the XML file, the SIMULATOR mark-up defines the parameters that control the overall simulation. These are read in from 
-	 * the XML file by this method, initialising the simulation. These parameters include specifying whether this run is under chemostat 
-	 * conditions, the setting of the simulation timestep, and time interval between the generation of output files. The random number 
-	 * generator is also initialised, either from scratch or from a previous state if this is a re-run. Thirdly, the simulation timer 
-	 * is initialised. Finally, a data dictionary is created for use by other utility methods within the simulation
+	 * Within the XML file, the SIMULATOR mark-up defines the parameters that
+	 * control the overall simulation. These are read in from the XML file by
+	 * this method, initialising the simulation. These parameters include
+	 * specifying whether this run is under chemostat conditions, the setting
+	 * of the simulation timestep, and time interval between the generation of
+	 * output files. The random number generator is also initialised, either
+	 * from scratch or from a previous state if this is a re-run. Thirdly, the
+	 * simulation timer is initialised. Finally, a data dictionary is created
+	 * for use by other utility methods within the simulation.
 	 */
 	public void createSimulator() 
 	{
@@ -449,17 +489,19 @@ public class Simulator
 		// Put in an IF to check as if using protocol files for previous versions, this tag may not be present
 		// We want this to remain at the default "onetime" rather than be set to null if the tag is not present
 		// KA 170513
-		if(localRoot.getParam("attachment")!=null)
+		// RC 200113 - Changed so we don't use selfattach in a simulator! 
+		if ( (localRoot.getParam("attachment") != null) && (! isChemostat) )
 		{
 			attachmentMechanism = localRoot.getParam("attachment");
 		}
-
+		LogFile.writeLog("Attachment mechanism is "+attachmentMechanism);
+		
 		// Now we need to determine if a random.state file exists. This is used to initialise the random number generator
 		//sonia 05.2011 bug fix: the code was not finding the random.state file because no path was 
 		//being given to the File class to check if the file existed. 
 		File randomFile = new File(Idynomics.currentPath+File.separator+"random.state");
 
-		if(randomFile.exists()) 
+		if ( randomFile.exists() ) 
 		{
 			/* if a file called random.state exists, the random number generator is initialised using this file.
 			 *  this ensures that the random number stream does not overlap when running repeated simulations with the same protocol file
@@ -683,7 +725,7 @@ public class Simulator
 		{
 
 			XMLParser aBulkRoot = new XMLParser(aBulkMarkUp);
-			bulkName = aBulkRoot.getAttributeStr("name");
+			bulkName = aBulkRoot.getAttribute("name");
 
 			// check to make sure the bulk exists
 			if (!world.containsBulk(bulkName))
@@ -698,7 +740,7 @@ public class Simulator
 			{
 				XMLParser aSoluteRoot = new XMLParser(aSoluteMarkUp);
 
-				soluteName = aSoluteRoot.getAttributeStr("name");
+				soluteName = aSoluteRoot.getAttribute("name");
 				soluteIndex = getSoluteIndex(soluteName);
 
 				// check consistency with protocol file declarations
@@ -973,10 +1015,11 @@ public class Simulator
 			spIndex = getSpeciesIndex(aSpeciesRoot.getAttribute("name"));
 			
 			// check consistency with protocol file declarations
-			boolean isConsistent = (speciesList.get(counterSpecies).speciesName.equals(aSpeciesRoot
-					.getAttributeStr("name")));
+			boolean isConsistent = (speciesList.get(counterSpecies).
+						speciesName.equals(aSpeciesRoot.getAttribute("name")));
 			
-			if (!isConsistent) throw new Exception("Agent input file is inconsistent with protocol file: ");
+			if ( ! isConsistent )
+				throw new Exception("Agent input file is inconsistent with protocol file: ");
 			
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getElement().getContent(0).toString();
@@ -1028,11 +1071,11 @@ public class Simulator
 			// own method. A switch is used to determine which method of attachment is being employed.
 			// Although there are only 2 at the moment (in version 1.2), a switch is useful if further methods are added later
 			
-			if(this.attachmentMechanism.equals("onetime"))
+			if ( this.attachmentMechanism.equals("onetime") )
 			{
 				creatingAgents = this.oneTimeAttachmentAgentBirth(parser,spIndex);
 			}
-			else if(this.attachmentMechanism.equals("selfattach"))
+			else if ( this.attachmentMechanism.equals("selfattach") )
 			{
 				creatingAgents = this.selfAttachmentAgentBirth(parser,spIndex);
 			}
@@ -1148,7 +1191,7 @@ public class Simulator
 		if(wholeAgentsThisTimeStep>0)
 		{
 			this.agentGrid.agentIter = agentGrid.agentList.listIterator();
-			speciesList.get(spIndex).createBoundaryLayerPop(parser,wholeAgentsThisTimeStep);
+			speciesList.get(spIndex).createBoundaryLayerPop(parser, wholeAgentsThisTimeStep);
 			creatingAgents = true;
 			
 		}
@@ -1259,8 +1302,8 @@ public class Simulator
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError("System description of grids failed:"+e.getMessage(),
-			"Simulator.writeReport()");
+			LogFile.writeError(e,
+						"Simulator.writeReport() System description of grids");
 		}
 
 		try 
@@ -1287,8 +1330,8 @@ public class Simulator
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError("System description of agents failed:"+e.getMessage(),
-			"Simulator.writeReport()");
+			LogFile.writeError(e,
+					"Simulator.writeReport() System description of agents");
 		}
 
 	}

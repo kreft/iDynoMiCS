@@ -9,126 +9,125 @@
  */
 package simulator.geometry.shape;
 
+import java.io.Serializable;
+
 import simulator.geometry.*;
 import simulator.SpatialGrid;
 import utils.XMLParser;
-import java.io.Serializable;
-import java.util.*;
-import utils.LogFile;
 
 /**
- * \brief Create a planar shaped boundary
+ * \brief Create a planar-shaped boundary.
  * 
- * Each boundaryCondition also includes a shape mark-up to define the shape of the boundary. In this release only the 'Planar' class is 
- * available, and it requires specification of a point on the boundary and a vector pointing outside the domain. These shape parameters 
- * must be given in index coordinates 
- * 
+ * Each boundaryCondition also includes a shape mark-up to define the shape of
+ * the boundary. In this release only the 'Planar' class is available, and it
+ * requires specification of a point on the boundary and a vector pointing
+ * outside the domain. These shape parameters must be given in index 
+ * coordinates.
  */
 public class Planar implements IsShape, Serializable 
 {
 	/**
-	 * Serial version used for the serialisation of the class
+	 * Serial version used for the serialisation of the class.
 	 */
 	private static final long serialVersionUID = 1L;
-	/* Definition of the plan _______________________________________ */
-
-	// Computation domain where this shape is defined
-
-	/**
-	 * A point on the plane 
-	 */ 
-	private DiscreteVector          _pointDCIn;
 	
 	/**
-	 * A vector normal to the plan and going outside the domain
+	 * A point on the plane.
+	 */ 
+	private DiscreteVector _pointDCIn;
+	
+	/**
+	 * A vector normal to the plane and going outside the domain.
 	 */
-	private DiscreteVector			_vectorDCOut;
+	private DiscreteVector _vectorDCOut;
 	
 	/**
-	 * A point on the plane (ContinuousVector)
+	 * A point on the plane (ContinuousVector).
 	 */ 
-	private ContinuousVector        _pointIn;
+	private ContinuousVector _pointIn;
 	
 	/**
 	 * A vector normal to the plan and going outside the domain (ContinuousVector)
 	 */
-	private ContinuousVector		 _vectorOut;
-
-	/**
-	 *  Orthogonal vectors colinear to the plan
-	 */
-	private DiscreteVector          u;
+	private ContinuousVector _vectorOut;
 	
 	/**
-	 *  Orthogonal vectors colinear to the plan
+	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
+	 * _vectorDCOut.
 	 */
-	private DiscreteVector			v;
+	private DiscreteVector u;
 	
 	/**
-	 * Range of discrete coordinates met on this shape
+	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
+	 * _vectorDCOut.
 	 */
-	private int                     uMax;
+	private DiscreteVector v;
 	
 	/**
 	 * Range of discrete coordinates met on this shape
 	 */
-	private int						vMax;
-
-	/* Temporary variables __________________________________________ */
+	private int uMax;
 	
 	/**
-	 * Temporary continuous vector to use in calculations
+	 * Range of discrete coordinates met on this shape
+	 */
+	private int vMax;
+	
+	/**
+	 * Temporary continuous vector to use in calculations.
 	 */
 	private static ContinuousVector tempVar = new ContinuousVector();
 	
 	/**
-	 * Index used to check whether a point is within the shape
+	 * Index used to check whether a point is within the shape.
 	 */
-	private static int              indexU;
+	private static int indexU;
 	
 	/**
-	 * Index used to check whether a point is within the shape
+	 * Index used to check whether a point is within the shape.
 	 */
-	private static int				indexV;
+	private static int indexV;
 	
 	/**
-	 * Stores the move while being calculated
+	 * Stores the move while being calculated.
 	 */
-	private static DiscreteVector   move    = new DiscreteVector();
+	private static DiscreteVector move = new DiscreteVector();
 	
 	/**
-	 * Temporary store of the origin of a point prior to move
+	 * Temporary store of the origin of a point prior to move.
 	 */
-	private static DiscreteVector   origin  = new DiscreteVector();
-
+	private static DiscreteVector origin = new DiscreteVector();
+	
 	/**
-	 * \brief Reads the coordinates that specify a boundary from the protocol file, creating a shape
+	 * \brief Reads the coordinates that specify a boundary from the protocol
+	 * file, creating a shape.
 	 * 
-	 * Reads the coordinates that specify a boundary from the protocol file, creating a shape
-	 * 
-	 * @param shapeRoot	XML elements from the protocol file that contain coordinates specifying the edge of a boundary
-	 * @param aDomain	The computation domain that this boundary is associated with
+	 * @param shapeRoot	XML elements from the protocol file that contain
+	 * coordinates specifying the edge of a boundary.
+	 * @param aDomain The computation domain that this boundary is associated
+	 * with.
 	 */
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
-
-		// Build the variables describing the plan
+		// Build the variables describing the plane.
 		_pointDCIn = shapeRoot.getParamXYZ("pointIn");
 		_vectorDCOut = shapeRoot.getParamXYZ("vectorOut");
-
-		// Translate them into continuous coordinates
-		double res = aDomain.getGrid().getResolution();
+		
+		// Translate them into continuous coordinates.
+		Double res = aDomain.getGrid().getResolution();
 		_pointIn = new ContinuousVector();
 		_pointIn.x = (_pointDCIn.i+(1-_vectorDCOut.i)/2)*res;
 		_pointIn.y = (_pointDCIn.j+(1-_vectorDCOut.j)/2)*res;
 		_pointIn.z = (_pointDCIn.k+(1-_vectorDCOut.k)/2)*res;
-
+		
+		// TODO investigate why the resolution is irrelevant here.
 		_vectorOut = new ContinuousVector();
-		_vectorOut.x = _vectorDCOut.i;
-		_vectorOut.y = _vectorDCOut.j;
-		_vectorOut.z = _vectorDCOut.k;
-
-		// Find two orthogonal vectors colinear to the plan
+		_vectorOut.x = (double) _vectorDCOut.i;
+		_vectorOut.y = (double) _vectorDCOut.j;
+		_vectorOut.z = (double) _vectorDCOut.k;
+		
+		// Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
+		// plane.
 		u = new DiscreteVector();
 		v = new DiscreteVector();
 		_vectorDCOut.orthoVector(u, v);
@@ -171,17 +170,17 @@ public class Planar implements IsShape, Serializable
      * @param vector	Vector of coordinate positions used to calculate the line
      * @return : coordinates of the intersection between a line and the plane
      */
-	public ContinuousVector intersection(ContinuousVector position, ContinuousVector vector) {
-
+	public ContinuousVector intersection(ContinuousVector position, ContinuousVector vector)
+	{
 		// Determine the constant term for the equation of the plane
 		double d = -_vectorOut.prodScalar(_pointIn);
-		if (_vectorOut.prodScalar(vector)==0) {
-			// the line will never cross this plane
+		
+		// the line will never cross this plane
+		if ( _vectorOut.prodScalar(vector).equals(0.0) )
 			return null;
-		}
-
+		
 		double k = (-d-_vectorOut.prodScalar(position))/_vectorOut.prodScalar(vector);
-
+		
 		ContinuousVector out = new ContinuousVector();
 		out.x = position.x+k*vector.x;
 		out.y = position.y+k*vector.y;

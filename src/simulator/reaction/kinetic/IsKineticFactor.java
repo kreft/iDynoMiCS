@@ -50,7 +50,7 @@ public abstract class IsKineticFactor implements Serializable
 	 * @param kineticParam	Array of parameters associated with this reaction
 	 * @param paramIndex	An index to the parameter array
 	 */
-	public abstract void initFromAgent(Element aReactionRoot,double[] kineticParam,int paramIndex);
+	public abstract void initFromAgent(Element aReactionRoot, Double[] kineticParam, int paramIndex);
 	
 	/**
 	 * \brief Calculate the value of the kinetic for a given level of solute
@@ -61,7 +61,7 @@ public abstract class IsKineticFactor implements Serializable
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 * 
 	 */
-	public abstract double kineticValue(double solute);
+	public abstract Double kineticValue(Double solute);
 	
 	/**
 	 * \brief Used to compute marginal difference kinetic values for a given solute level
@@ -71,7 +71,7 @@ public abstract class IsKineticFactor implements Serializable
 	 * @param solute	Solute level
 	 * @return	Level of the reaction kinetic
 	 */
-	public abstract double kineticDiff(double solute);
+	public abstract Double kineticDiff(Double solute);
 	
 	/**
 	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
@@ -83,7 +83,7 @@ public abstract class IsKineticFactor implements Serializable
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
-	public abstract double kineticValue(double solute,double[] paramTable,int index);
+	public abstract Double kineticValue(Double solute, Double[] paramTable, int index);
 	
 	/**
 	 * \brief Used to compute marginal difference kinetic values for a given solute level
@@ -95,6 +95,6 @@ public abstract class IsKineticFactor implements Serializable
 	 * @param index	An index to the parameter array
 	 * @return	Level of the reaction kinetic
 	 */
-	public abstract double kineticDiff(double solute,double[] paramTable,int index);
+	public abstract Double kineticDiff(Double solute, Double[] paramTable, int index);
 
 }

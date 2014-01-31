@@ -8,6 +8,7 @@
  */
 package simulator.reaction;
 
+import utils.ExtraMath;
 import utils.XMLParser;
 import utils.UnitConverter;
 import utils.LogFile;
@@ -15,359 +16,372 @@ import utils.LogFile;
 import org.jdom.Element;
 
 import Jama.Matrix;
-
 import simulator.Simulator;
 import simulator.agent.*;
 import simulator.reaction.kinetic.*;
 
 /**
- * \brief Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factor (one factor by solute), but adds a constant factor to the calculation
+ * \brief Allows creation of a Reaction object whose the reaction rate can be
+ * decomposed in several kinetic factor (one factor by solute), but adds a
+ * constant factor to the calculation.
  * 
- * Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factor (one factor by solute), but 
- * adds a constant factor to the calculation
- * 
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- *
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  */
 public class ReactionFactorWithConstant extends Reaction 
 {
 	/**
-	 * Serial version used for the serialisation of the class
+	 * Serial version used for the serialisation of the class.
 	 */
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Maximum rate at which the reaction may proceed
-	 */
-	private double            _muMax;
 	
 	/**
-	 * Constant used to control this reaction
+	 * Maximum rate at which the reaction may proceed.
 	 */
-	private double			  _c;
+	private Double _muMax;
 	
 	/**
-	 * KineticFactor mark-ups define multiplicative factors that affect the reaction rate and decrease the overall rate from muMax 
-	 * to something lower. There are several possible types of kinetic factors, and each may take a parameter as well as a 
-	 * solute that will set the term's value. This array holds the information in the protocol file for the declared kinetic factor
+	 * Constant used to control this reaction.
+	 */
+	private Double _c;
+	
+	/**
+	 * KineticFactor mark-ups define multiplicative factors that affect the
+	 * reaction rate and decrease the overall rate from muMax to something
+	 * lower. There are several possible types of kinetic factors, and each may
+	 * take a parameter as well as a solute that will set the term's value.
+	 * This array holds the information in the protocol file for the declared
+	 * kinetic factor.
 	 */
 	private IsKineticFactor[] _kineticFactor;
 	
 	/**
-	 * A list of the solutes responsible for each kinetic factor. I.e. the solutes which affect this reaction. 
+	 * A list of the solutes responsible for each kinetic factor. I.e. the
+	 * solutes which affect this reaction. 
 	 * */
-	private int[]             _soluteFactor;
-
+	private int[] _soluteFactor;
+	
 	// Temporary variables
-	private static int        iSolute;
+	private static int iSolute;
 	
 	/**
-	 * Used to iterate through XML tags that declare this reaction in the protocol file
+	 * Used to iterate through XML tags that declare this reaction in the
+	 * protocol file.
 	 */
-	private static int 			paramIndex;
+	private static int paramIndex;
 	
 	/**
-	 * Temporary store of values retrieved from the XML protocol file
+	 * Temporary store of values retrieved from the XML protocol file.
 	 */
-	private static double     value;
+	private static Double value;
 	
 	/**
-	 * Marginal rate of reaction matrix
+	 * Marginal rate of reaction matrix.
 	 */
-	private double[]          marginalMu;
+	private Double[] marginalMu;
 	
 	/**
-	 * Used to calculate diff uptake rate of solute
+	 * Used to calculate diff uptake rate of solute.
 	 */
-	private double []	 marginalDiffMu;
+	private Double []	 marginalDiffMu;
 	
 	/**
-	 * Holds the unit of the parameter declared in the XML protocol file
+	 * Holds the unit of the parameter declared in the XML protocol file.
 	 */
 	private StringBuffer      unit;
-
-
+	
 	/**
-	 * \brief Initialises the reaction by setting relevant parameters to values contained in the simulation protocol file
+	 * \brief Initialises the reaction by setting relevant parameters to values
+	 * contained in the simulation protocol file.
 	 * 
-	 * Initialises the reaction by setting relevant parameters to values contained in the simulation protocol file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param xmlRoot The XML object containing the definition of one reaction
+	 * in the protocol file.
 	 * @see Simulator.createReaction()
 	 */
-	public void init(Simulator aSim, XMLParser xmlRoot) {
-
+	public void init(Simulator aSim, XMLParser xmlRoot)
+	{
 		// Call the init of the parent class (populate yield arrays)
 		super.init(aSim, xmlRoot);
-
 		// Create the kinetic factors __________________________________________
-
 		// Build the array of different multiplicative limitating expressions
 		_kineticFactor = new IsKineticFactor[xmlRoot.getChildren("kineticFactor").size()];
 		_soluteFactor = new int[_kineticFactor.length];
-		marginalMu = new double[_kineticFactor.length];
-		marginalDiffMu = new double[_kineticFactor.length];
-
+		marginalMu = ExtraMath.newDoubleArray(_kineticFactor.length);
+		marginalDiffMu = ExtraMath.newDoubleArray(_kineticFactor.length);
+		
 		// muMax is the first factor
 		unit = new StringBuffer("");
 		value = xmlRoot.getParamSuchDbl("kinetic", "muMax", unit);
 		_muMax = value*UnitConverter.time(unit.toString());
+		
 		// the constant rate c
 		value = xmlRoot.getParamSuchDbl("kinetic", "c", unit);
 		_c = value*UnitConverter.time(unit.toString());
-
+		
 		int iFactor = 0;
-		try {
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+		try
+		{
+			for (Element aChild : xmlRoot.getChildren("kineticFactor"))
+			{
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
-
 				// Create and initialise the instance
 				_kineticFactor[iFactor] = (IsKineticFactor) (new XMLParser(aChild))
-				.instanceCreator("simulator.reaction.kinetic.");
+									.instanceCreator("simulator.reaction.kinetic.");
 				_kineticFactor[iFactor].init(aChild);
 				_soluteFactor[iFactor] = iSolute;
 				iFactor++;
 			}
 
-			_kineticParam = new double[getTotalParam()];
+			_kineticParam = new Double[getTotalParam()];
 			_kineticParam[0] = _muMax;
 			_kineticParam[1] = _c;
 
 			paramIndex = 2;
 			iFactor = 0;
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+			for (Element aChild : xmlRoot.getChildren("kineticFactor"))
+			{
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
-
 				// Populate the table collecting all kinetic parameters of this
 				// reaction term
 				_kineticFactor[iFactor].initFromAgent(aChild, _kineticParam, paramIndex);
 				paramIndex += _kineticFactor[iFactor].nParam;
 				iFactor++;
 			}
-		} catch (Exception e) {
-			LogFile.writeLog("Error met during ReactionFactor.init()");
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ReactionFactor.init()");
 		}
 	}
-
+	
 	/**
-	 * \brief Use the reaction class to fill the parameters fields of the agent
+	 * \brief Use the reaction class to fill the parameters fields of the agent.
 	 * 
-	 * Use the reaction class to fill the parameters fields of the agent. Uses information in the agent and protocol file to achieve this
+	 * Uses information in the agent and protocol file to achieve this.
 	 * 
-	 * @param anAgent	The ActiveAgent which parameters are being populated
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aReactionRoot	The XML object containing the definition of one reaction in the protocol file
+	 * @param anAgent	The ActiveAgent which parameters are being populated.
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aReactionRoot	The XML object containing the definition of one
+	 * reaction in the protocol file.
 	 * @see Simulator.createReaction()
 	 */
-	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
+	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot)
+	{
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
-
-		anAgent.reactionKinetic[reactionIndex] = new double[getTotalParam()];
-
+		anAgent.reactionKinetic[reactionIndex] = ExtraMath.newDoubleArray(getTotalParam());
+		
 		// Set muMax
 		unit = new StringBuffer("");
 		value = aReactionRoot.getParamSuchDbl("kinetic", "muMax", unit);
-		double muMax = value*UnitConverter.time(unit.toString());
+		Double muMax = value*UnitConverter.time(unit.toString());
 		anAgent.reactionKinetic[reactionIndex][0] = muMax;
+		
 		// Set c
 		value = aReactionRoot.getParamSuchDbl("kinetic", "c", unit);
-		double c = value*UnitConverter.time(unit.toString());
+		Double c = value*UnitConverter.time(unit.toString());
 		anAgent.reactionKinetic[reactionIndex][1] = c;
-
+		
 		// Set parameters for each kinetic factor (muMax and c are the first 2)
 		paramIndex = 2;
-		for (Element aChild : aReactionRoot.getChildren("kineticFactor")) {
+		for (Element aChild : aReactionRoot.getChildren("kineticFactor"))
+		{
 			iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
-			_kineticFactor[iSolute].initFromAgent(aChild, anAgent.reactionKinetic[reactionIndex],
-					paramIndex);
+			_kineticFactor[iSolute].initFromAgent(aChild,
+						anAgent.reactionKinetic[reactionIndex], paramIndex);
 			paramIndex += _kineticFactor[iSolute].nParam;
 		}
 	}
-
+	
 	/**
-	 * \brief Return the total number of parameters needed to describe the kinetic of this reaction (muMax included)
+	 * \brief Return the total number of parameters needed to describe the
+	 * kinetic of this reaction (muMax included).
 	 * 
-	 * Return the total number of parameters needed to describe the kinetic of this reaction (muMax included)
-	 * 
-	 * @return Integer stating the total number of parameters needed to describe the kinetic
+	 * @return Integer stating the total number of parameters needed to
+	 * describe the kinetic.
 	 */
-	public int getTotalParam() {
+	public int getTotalParam()
+	{
 		// Sum the number of parameters of each kinetic factor
 		int totalParam = 2;
-		for (int iFactor = 0; iFactor<_kineticFactor.length; iFactor++) {
-			if (_kineticFactor[iFactor]==null) continue;
+		for (int iFactor = 0; iFactor < _kineticFactor.length; iFactor++)
+		{
+			if (_kineticFactor[iFactor] == null)
+				continue;
 			totalParam += _kineticFactor[iFactor].nParam;
 		}
 		return totalParam;
 	}
-
-
+	
 	/**
-	 * \brief Update the array of uptake rates and the array of its derivative. Based on default values of parameters. Unit is fg.h-1
+	 * \brief Update the array of uptake rates and the array of its derivative.
 	 * 
-	 * Update the array of uptake rates and the array of its derivative. Based on default values of parameters. Unit is fg.h-1
+	 * Based on default values of parameters. Unit is fg.h-1
 	 * 
 	 * @param s	The concentration of solute locally observed
 	 * @param mass	Mass of the catalyst (cell...)
 	 * @param tdel	Time
 	 */
-	public void computeUptakeRate(double[] s, double mass, double tdel) {
-
+	public void computeUptakeRate(Double[] s, Double mass, Double tdel)
+	{
 		// First compute specific rate
 		computeSpecificGrowthRate(s);
-
-		//sonia:chemostat 27.11.09
-		if(Simulator.isChemostat){
-
-			for (int iSolute : _mySoluteIndex) {
-				_uptakeRate[iSolute] = (tdel*mass*Dil) + (mass *_specRate*_soluteYield[iSolute] ) ;
-
-			}
+		
+		if(Simulator.isChemostat)
+		{
+			for (int iSolute : _mySoluteIndex)
+				_uptakeRate[iSolute] = (tdel*mass*Dil) + (mass *_specRate*_soluteYield[iSolute]);
 			int iSolute;
-			for (int i = 0; i<_soluteFactor.length; i++) {
+			for (int i = 0; i<_soluteFactor.length; i++)
+			{
 				iSolute = _soluteFactor[i];
-				if(iSolute!=-1){	
-					_diffUptakeRate[iSolute] =(tdel*mass*Dil) + (mass*marginalDiffMu[i]*_soluteYield[iSolute])  ;	
-				}
+				if(iSolute!=-1)
+					_diffUptakeRate[iSolute] = (tdel*mass*Dil) + (mass*marginalDiffMu[i]*_soluteYield[iSolute]);
 			}
 
-		}else{
-			// Now compute uptake rate
-			for (int i = 0; i<_mySoluteIndex.length; i++) {
+		}
+		else
+		{
+			for (int i = 0; i < _mySoluteIndex.length; i++)
+			{
 				iSolute = _mySoluteIndex[i];
 				_uptakeRate[iSolute] = mass*_specRate*_soluteYield[iSolute];
-				//_diffUptakeRate[iSolute] = mass*marginalDiffMu[i]*_soluteYield[iSolute];
 			}
 
-			for (int i = 0; i<_soluteFactor.length; i++) {
+			for (int i = 0; i < _soluteFactor.length; i++)
+			{
 				iSolute = _soluteFactor[i];
-				//_uptakeRate[iSolute] = mass*_specRate*_soluteYield[iSolute];
 				_diffUptakeRate[iSolute] = mass*marginalDiffMu[i]*_soluteYield[iSolute];
 			}
 		}
-
 	}
-
-
+	
 	/**
-	 * \brief Return the specific reaction rate for a given agent
+	 * \brief Return the specific reaction rate for a given agent.
 	 * 
-	 * Return the specific reaction rate for a given agent
-	 * 
-	 * @param anAgent	Agent to use to determine solute concentration and calculate reaction rate
+	 * @param anAgent	Agent to use to determine solute concentration and
+	 * calculate reaction rate.
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
-	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
-
-		// Build the array of concentration seen by the agent
+	public void computeSpecificGrowthRate(ActiveAgent anAgent)
+	{
 		computeSpecificGrowthRate(readConcentrationSeen(anAgent, _soluteList),anAgent);
 	}
-
+	
 	/**
-	 * \brief Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
+	 * \brief Compute specific growth rate in function of concentrations sent.
 	 * 
-	 * Compute specific growth rate in function of concentrations sent Parameters used are those defined for the reaction.
+	 * Parameters used are those defined for the reaction.
 	 * 
 	 * @param s	Array of solute concentration
 	 */
-	public void computeSpecificGrowthRate(double[] s) {
+	public void computeSpecificGrowthRate(Double[] s)
+	{
 		_specRate = _muMax;
 
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
+		{
 			iSolute = _soluteFactor[iFactor];
 			marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(s[iSolute]);
 			marginalDiffMu[iFactor] = _muMax*_kineticFactor[iFactor].kineticDiff(s[iSolute]);
 		}
-
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor < _soluteFactor.length; iFactor++)
+		{
 			_specRate *= marginalMu[iFactor];
-			for (int jFactor = 0; jFactor<_soluteFactor.length; jFactor++) {
-				if (jFactor!=iFactor) marginalDiffMu[jFactor] *= marginalMu[iFactor];
+			for (int jFactor = 0; jFactor < _soluteFactor.length; jFactor++)
+			{
+				if (jFactor != iFactor)
+					marginalDiffMu[jFactor] *= marginalMu[iFactor];
 			}
 		}
-
 		_specRate += _c; 
 	}
-
+	
 	/**
-	 * \brief Compute specific growth rate in function to concentrations sent
+	 * \brief Compute specific growth rate in function to concentrations sent.
 	 * 
-	 * Compute specific growth rate in function to concentrations sent
-	 * 
-	 * @param s	Array of solute concentration
-	 * @param anAgent	Parameters used are those defined for THIS agent
+	 * @param s	Array of solute concentration.
+	 * @param anAgent	Parameters used are those defined for THIS agent.
 	 */
-	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
-		double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
-
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
+	{
+		Double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
 		// First multiplier is muMax
 		_specRate = kineticParam[0];
 		paramIndex = 2;
-
-		// Compute contribution of each limitin solute
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		// Compute contribution of each limiting solute
+		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
+		{
 			iSolute = _soluteFactor[iFactor];
-			marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(s[iSolute], kineticParam,
-					paramIndex);
-			marginalDiffMu[iFactor] = _muMax
-			*_kineticFactor[iFactor].kineticDiff(s[iSolute], kineticParam, paramIndex);
+			marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(
+										s[iSolute], kineticParam, paramIndex);
+			marginalDiffMu[iFactor] = _muMax *
+							_kineticFactor[iFactor].kineticDiff(s[iSolute],
+													kineticParam, paramIndex);
 			paramIndex += _kineticFactor[iFactor].nParam;
 		}
-
+		
 		// Finalize the computation
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor < _soluteFactor.length; iFactor++)
+		{
 			_specRate *= marginalMu[iFactor];
-			for (int jFactor = 0; jFactor<_soluteFactor.length; jFactor++) {
-				if (jFactor!=iFactor) marginalDiffMu[jFactor] *= marginalMu[iFactor];
+			for (int jFactor = 0; jFactor < _soluteFactor.length; jFactor++)
+			{
+				if (jFactor!=iFactor)
+					marginalDiffMu[jFactor] *= marginalMu[iFactor];
 			}
 		}
-
 		// add constant rate
 		_specRate += kineticParam[1]; 
 	}
-
+	
 	/**
-	 * \brief Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
+	 * \brief Calculate the rate of change of each uptake rate with respect to
+	 * each solute.
 	 * 
-	 * Calculate the rate of change of each uptake rate with respect to each solute. Returned as a matrix
-	 * 
-	 * @param S	Temporary container for solute concentration
-	 * @param biomass	Total particle mass in the system which catalyses this reaction
-	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
+	 * @param S	Temporary container for solute concentration.
+	 * @param biomass	Total particle mass in the system which catalyses this
+	 * reaction.
+	 * @return Matrix containing rate of change of each uptake rate with respect
+	 * to each solute.
 	 */ 
-	public Matrix calcdMUdS(Matrix S, double biomass) {
-		Matrix dMUdY = new Matrix (nSolute, nSolute, 0);
-
-		try {
-			double[] s = new double[nSolute];
-
+	public Matrix calcdMUdS(Matrix S, Double biomass)
+	{
+		Matrix dMUdY = new Matrix (nSolute, nSolute, 0.0);
+		try
+		{
+			// No need to initialise this with ExtraMath.newDoubleArray(nI)
+			Double[] s = new Double[nSolute];
 			for (int i = 0; i < nSolute; i++)
-				s[i] = S.get(i,0);
-
+				s[i] = S.get(i, 0);
+			
 			updateMarginalMu(s);
 			marginalDiffMu = computeMarginalDiffMu(s);
-
-			int iSol = 0;
-			int jSol = 0;
+			
+			int iSol, jSol;
 			// The affecting solute
-			for (int iFactor = 0; iFactor < _kineticFactor.length; iFactor++){
+			for (int iFactor = 0; iFactor < _kineticFactor.length; iFactor++)
+			{
 				iSol = _soluteFactor[iFactor];
-				if (iSol > -1){
+				if (iSol > -1)
+				{
 					// The affected solute
-					for (int jIndex = 0; jIndex < _mySoluteIndex.length; jIndex++){
+					for (int jIndex = 0; jIndex < _mySoluteIndex.length; jIndex++)
+					{
 						jSol = _mySoluteIndex[jIndex];
 						dMUdY.set(jSol, iSol, marginalDiffMu[iFactor]*_soluteYield[jSol]);
-						//LogFile.writeLog("At "+iSol+", "+jSol+" mDMu = "+marginalDiffMu[iFactor]+" & sY = "+_soluteYield[jSol]);
 					}
 				}
 			}
-
 			dMUdY.timesEquals(biomass);
-		}catch (Exception e) {
-			LogFile.writeLog("Error in ReactionFactorWithConstant.calcdMUdS() : "+e); }
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ReactionFactorWithConstant.calcdMUdS()");
+		}
 		return dMUdY;
 	}
 
@@ -381,24 +395,28 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to time
 	 */ 
-	public Matrix calcdMUdT(Matrix S, double biomass) {
-		Matrix dMUdT = new Matrix(nSolute, 1, 0);
-
-		try {
-			double[] s = new double[nSolute];
-
-			for (int i = 0; i < nSolute; i++) {
-				s[i] = S.get(i,0);
+	public Matrix calcdMUdT(Matrix S, Double biomass)
+	{
+		Matrix dMUdT = new Matrix(nSolute, 1, 0.0);
+		try
+		{
+			// No need to initialise this with ExtraMath.newDoubleArray(nI)
+			Double[] s = new Double[nSolute];
+			for (int i = 0; i < nSolute; i++)
+			{
+				s[i] = S.get(i, 0);
 				dMUdT.set(i, 0, _soluteYield[i]);
 			}
-
+			
 			updateMarginalMu(s);
 			_specRate = computeSpecRate(s);
-
+			
 			dMUdT.timesEquals(_specRate*biomass);
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Reaction.calcdMUdT() : "+e); }
-		//LogFile.writeMatrix("dMUdT = ",dMUdT);
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "Reaction.calcdMUdT()");
+		}
 		return dMUdT;
 	}
 
@@ -410,13 +428,13 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param s	Temporary container for solute concentration 
 	 * @return Marginal diff array
 	 */
-	public double[] computeMarginalDiffMu(double[] s) {
+	public Double[] computeMarginalDiffMu(Double[] s) {
 		int soluteIndex;
 
 		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
 			soluteIndex = _soluteFactor[iFactor];
 			if (soluteIndex==-1) {
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0);
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0);
 			} else {
 				marginalDiffMu[iFactor] = _muMax
 				*_kineticFactor[iFactor].kineticDiff(s[_soluteFactor[iFactor]]);
@@ -437,8 +455,8 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
-	public double computeSpecRate(double[] s) {
-		double specRate = _muMax;
+	public Double computeSpecRate(Double[] s) {
+		Double specRate = _muMax;
 
 		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
 			specRate *= marginalMu[iFactor];
@@ -455,13 +473,13 @@ public class ReactionFactorWithConstant extends Reaction
 	 * 
 	 * @param s	Temporary container for solute concentration 
 	 */
-	public void updateMarginalMu(double[] s) {
+	public void updateMarginalMu(Double[] s) {
 		int soluteIndex;
 
 		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
 			soluteIndex = _soluteFactor[iFactor];
 			if (soluteIndex==-1) {
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0);
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0);
 			} else {
 				marginalMu[iFactor] = _kineticFactor[iFactor]
 				                                     .kineticValue(s[_soluteFactor[iFactor]]);
@@ -479,7 +497,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
-	public double computeMassGrowthRate(ActiveAgent anAgent) {
+	public Double computeMassGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
@@ -492,7 +510,7 @@ public class ReactionFactorWithConstant extends Reaction
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
-	public double computeSpecGrowthRate(ActiveAgent anAgent) {
+	public Double computeSpecGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;
 	}

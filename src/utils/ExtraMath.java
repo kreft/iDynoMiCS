@@ -13,7 +13,6 @@
 package utils;
 
 import java.text.DecimalFormat;
-import java.util.Collections;
 import java.util.Random;
 
 /**
@@ -168,6 +167,88 @@ public final class ExtraMath
 		return Math.pow(2, x);
 	}
 	
+	/**
+	 * \brief Calculate the hypotenuse of a 2D right-angled triangle using
+	 * Pythagoras.
+	 * 
+	 * Formula: sqrt( a*a + b*b )
+	 * 
+	 * @param a Double value of the first side of the triangle.
+	 * @param b Double value of the second side of the triangle.
+	 * @return Double value of the hypotenuse of the triangle.
+	 */
+	public static final Double hypotenuse(Double a, Double b)
+	{
+		return Math.sqrt(sq(a) + sq(b));
+	}
+	
+	/**
+	 * \brief Calculate the hypotenuse of a 3D right-angled triangle using
+	 * Pythagoras.
+	 * 
+	 * Formula: sqrt( a*a + b*b + c*c )
+	 * 
+	 * @param a Double value of the length of the first side of the triangle.
+	 * @param b Double value of the length of the second side of the triangle.
+	 * @param c Double value of the length of the third side of the triangle.
+	 * @return Double value of the hypotenuse of the triangle.
+	 */
+	public static final Double hypotenuse(Double a, Double b, Double c)
+	{
+		return Math.sqrt(sq(a) + sq(b) + sq(c));
+	}
+	
+	/**
+	 * \brief Calculate the hypotenuse of a 3D right-angled triangle using
+	 * Pythagoras.
+	 * 
+	 * Formula: sqrt( a*a + b*b + c*c )
+	 * 
+	 * @param a Integer value of the length of the first side of the triangle.
+	 * @param b Integer value of the length of the second side of the triangle.
+	 * @param c Integer value of the length of the third side of the triangle.
+	 * @return Double value of the hypotenuse of the triangle.
+	 */
+	public static final Double hypotenuse(int a, int b, int c)
+	{
+		return Math.sqrt(sq(a) + sq(b) + sq(c));
+	}
+	
+	/**
+	 * \brief Calculate the side of a 2D right-angled triangle  using
+	 * Pythagoras.
+	 * 
+	 * Formula: sqrt( hypotenuse*hypotenuse - side*side ) 
+	 * 
+	 * @param side Double value of the length of the other side of the triangle.
+	 * @param hypotenuse Double value of the length of the hypotenuse of the
+	 * triangle.
+	 * @return Double value of the length of the side of the triangle being
+	 * calculated.
+	 */
+	public static final Double triangleSide(Double hypotenuse, Double side)
+	{
+		return Math.sqrt(sq(hypotenuse) - sq(side));
+	}
+	
+	/**
+	 * \brief Calculate the side of a 3D right-angled triangle  using
+	 * Pythagoras.
+	 * 
+	 * Formula: sqrt( hypotenuse*hypotenuse - sideA*sideA -sideB*sideB)
+	 * 
+	 * @param sideA Double value of the length of the first of the other sides
+	 * of the triangle.
+	 * @param sideB Double value of the length of the second of the other sides
+	 * of the triangle.
+	 * @param hypotenuse Double value of the hypotenuse of the triangle.
+	 * @return Double value of the side of the triangle being calculated.
+	 */
+	public static final Double triangleSide(Double hypotenuse, Double sideA, Double sideB)
+	{
+		return Math.sqrt(sq(hypotenuse) - sq(sideA) - sq(sideB));
+	}
+	
 	/*  ----------------------------- Shapes  ----------------------------- */
 	
 	/**
@@ -257,12 +338,53 @@ public final class ExtraMath
 	 * 
 	 * Note that initialising a Double[] will normally fill it with null's.
 	 * 
-	 * @param length Integer length of the array requested.
+	 * @param nI Integer length of the array requested.
 	 * @return Double[] array of zero's
 	 */
-	public static Double[] newDoubleArray(Integer length)
+	public static Double[] newDoubleArray(int nI)
 	{
-		return Collections.nCopies(length, 0.0).toArray(new Double[0]);
+		Double[] array = new Double[nI];
+		for (int i = 0; i<nI; i++)
+			array[i] = 0.0;
+		return array;
+	}
+	
+	/**
+	 * \brief Set up a new Double[][] that is initialised with zero's.
+	 * 
+	 * Note that initialising a Double[][] will normally fill it with null's.
+	 * 
+	 * @param nI Integer length of the array requested.
+	 * @param nJ Integer width of the array requested.
+	 * @return Double[][] array of zero's
+	 */
+	public static Double[][] newDoubleArray(int nI, int nJ)
+	{
+		Double[][] array = new Double[nI][nJ];
+		for (int i = 0; i<nI; i++)
+			for (int j = 0; j<nJ; j++)
+				array[i][j] = 0.0;
+		return array;
+	}
+	
+	/**
+	 * \brief Set up a new Double[][][] that is initialised with zero's.
+	 * 
+	 * Note that initialising a Double[][][] will normally fill it with null's.
+	 * 
+	 * @param nI Integer length of the array requested.
+	 * @param nJ Integer width of the array requested.
+	 * @param nK Integer depth of the array requested.
+	 * @return Double[][][] array of zero's
+	 */
+	public static Double[][][] newDoubleArray(int nI, int nJ, int nK)
+	{
+		Double[][][] array = new Double[nI][nJ][nK];
+		for (int i = 0; i < nI; i++)
+			for (int j = 0; j < nJ; j++)
+				for (int k = 0; k < nK; k++)
+					array[i][j][k] = 0.0;
+		return array;
 	}
 	
 	/**
@@ -387,11 +509,13 @@ public final class ExtraMath
 	 */
 	public static Integer sign(Double f)
 	{
-	    if (f == 0.0) return 0;
+	    if ( f.equals(0.0) )
+	    	return 0;
 	    f *= Double.POSITIVE_INFINITY;
-	    if (f == Double.POSITIVE_INFINITY) return +1;
-	    if (f == Double.NEGATIVE_INFINITY) return -1;
-
+	    if ( f.equals(Double.POSITIVE_INFINITY) )
+	    	return +1;
+	    if ( f.equals(Double.NEGATIVE_INFINITY) )
+	    	return -1;
 	    throw new IllegalArgumentException("Unfathomed double");
 	}
 	

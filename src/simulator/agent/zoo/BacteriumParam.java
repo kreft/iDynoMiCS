@@ -11,7 +11,9 @@ package simulator.agent.zoo;
 
 import simulator.Simulator;
 import simulator.agent.LocatedParam;
+import utils.UnitConverter;
 import utils.XMLParser;
+
 import java.awt.Color;
 
 
@@ -67,19 +69,16 @@ public class BacteriumParam extends LocatedParam
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		super.init(aSim,aSpeciesRoot,speciesDefaults);
-		double value;
-
-		value = aSpeciesRoot.getParamDbl("epsMax");
-		if(!Double.isNaN(value)) epsMax = value;
-
-		String colorName;
-		colorName= aSpeciesRoot.getParam("epsColor");
-		if(colorName!=null) epsColor = utils.UnitConverter.getColor(colorName);
-
-		Boolean boolTemp;
-		boolTemp = aSpeciesRoot.getParamBool("distMethod");
-		if (boolTemp!=null) distMethod = boolTemp;
+		Double value;
 		
+		value = getSpeciesParameterDouble("epsMax", aSpeciesRoot, speciesDefaults);
+		epsMax = value.isNaN() ? epsMax : value;
+		
+		String colorName = getSpeciesParameterString("epsColor", aSpeciesRoot, speciesDefaults);
+		epsColor = colorName.equals(null) ? epsColor : UnitConverter.getColor(colorName);
+
+		Boolean boolTemp = getSpeciesParameterBool("distMethod", aSpeciesRoot, speciesDefaults);
+		distMethod = boolTemp.equals(null) ? distMethod : boolTemp;
 	}
 
 }

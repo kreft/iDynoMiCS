@@ -305,14 +305,13 @@ public class BactAdaptable extends BactEPS
 	public void setSwitchToOff() {
 
 		// turn off the reactions that were previously on
-		for (int aReac : getSpeciesParam().onStateReactions) {
+		for (int aReac : getSpeciesParam().onStateReactions)
 			switchOffreaction(allReactions[aReac]);
-		}
+		
 
 		// turn on the reactions that should now be on
-		for (int aReac : getSpeciesParam().offStateReactions) {
+		for (int aReac : getSpeciesParam().offStateReactions)
 			switchOnReaction(allReactions[aReac]);
-		}
 
 		setSwitchState(false);
 	
@@ -380,37 +379,36 @@ public class BactAdaptable extends BactEPS
 
 	
 	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * \brief Specifies the header of the columns of output information for
+	 * this agent.
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * Adds switch state and timing info. Used in creation of results files.
 	 * 
-	 * @return	String specifying the header of each column of results associated with this agent
+	 * @return StringBuffer specifying the header of each column of results
+	 * associated with this agent.
 	 */
-	public String sendHeader() {
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-		tempString.append(",");
-		
-		// switch state and timing info
-		tempString.append("state,turnOn,turnOff,timeRequestTurnOn,timeRequestTurnOff");
-
-		return tempString.toString();
+	public StringBuffer sendHeader()
+	{
+		StringBuffer tempString = super.sendHeader();
+		tempString.append(",state,turnOn,turnOff,timeRequestTurnOn,timeRequestTurnOff");
+		return tempString;
 	}
-
+	
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
 	 * 
-	 * @return	String containing results associated with this agent
+	 * @return	String containing results associated with this agent.
 	 */
-	public String writeOutput() {
+	public StringBuffer writeOutput()
+	{
 		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
+		StringBuffer tempString = super.writeOutput();
 		tempString.append(",");
-
 		// switch state and timing info
-
 		if (switchState)   tempString.append("1,");
 		else			   tempString.append("0,");
 		if (turnSwitchOn)  tempString.append("1,");
@@ -418,8 +416,7 @@ public class BactAdaptable extends BactEPS
 		if (turnSwitchOff) tempString.append("1,");
 		else			   tempString.append("0,");
 		tempString.append(timeOfRequestToSwitchOn+","+timeOfRequestToSwitchOff);
-
-		return tempString.toString();
+		return tempString;
 	}
 	
 	
