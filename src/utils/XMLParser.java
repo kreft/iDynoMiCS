@@ -209,7 +209,8 @@ public class XMLParser implements Serializable
 		for (Object aChild : childList) 
 		{
 			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) { return aParam.getText(); }
+			if (aParam.getAttributeValue("name").equals(paramName)) 
+				return aParam.getText();
 		}
 		return null;
 	}
@@ -229,7 +230,8 @@ public class XMLParser implements Serializable
 		Element aParam;
 		for (Object aChild : childList) {
 			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) { return aParam; }
+			if (aParam.getAttributeValue("name").equals(paramName)) 
+				return aParam;
 		}
 		return null;
 	}
@@ -267,14 +269,15 @@ public class XMLParser implements Serializable
 	 */
 	public Double getParamDbl(String paramName) 
 	{
-		if (getParam(paramName)==null) 
-		{
+		if ( getParam(paramName) == null ) 
 			return Double.NaN;
-		} 
-		else 
+		else if ( getParam(paramName) == "" )
 		{
-			return Double.parseDouble(getParam(paramName));
+			LogFile.writeLogAlways("No value given for "+paramName+"!");
+			return Double.NaN;
 		}
+		else
+			return Double.parseDouble(getParam(paramName));
 	}
 
 	/**

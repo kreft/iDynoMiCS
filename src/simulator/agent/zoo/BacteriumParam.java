@@ -75,8 +75,8 @@ public class BacteriumParam extends LocatedParam
 		epsMax = value.isNaN() ? epsMax : value;
 		
 		String colorName = getSpeciesParameterString("epsColor", aSpeciesRoot, speciesDefaults);
-		epsColor = colorName.equals(null) ? epsColor : UnitConverter.getColor(colorName);
-
+		epsColor = colorName == null ? epsColor : UnitConverter.getColor(colorName);
+		
 		Boolean boolTemp = getSpeciesParameterBool("distMethod", aSpeciesRoot, speciesDefaults);
 		distMethod = boolTemp.equals(null) ? distMethod : boolTemp;
 	}

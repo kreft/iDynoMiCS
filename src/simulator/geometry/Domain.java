@@ -186,7 +186,7 @@ public class Domain implements IsComputationDomain
 		currentSim = aSim;
 		
 		// Now determine if this computation domain is 2D or 3D
-		is3D = (cdRoot.getChildAttrDbl("grid", "nDim")==3);
+		is3D = (cdRoot.getChildAttrInt("grid", "nDim") == 3);
 		_resolution = cdRoot.getParamLength("resolution");
 		
 		// Determine the size of this domain. If this is a chemostat, this is a
