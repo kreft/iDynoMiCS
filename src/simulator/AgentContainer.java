@@ -232,17 +232,15 @@ public class AgentContainer
 		else
 			maxPopLimit = root.getParamInt("maxPopLimit");
 
-		double value = agentTimeStep;
-
 		// Now deal with the agent timestep
-		if (Double.isNaN(value))
+		if (Double.isNaN(agentTimeStep))
 		{
 			AGENTTIMESTEP = SimTimer.getCurrentTimeStep();
 			LogFile.writeLog("Using global timestep of "+AGENTTIMESTEP+" for agentTimeStep");
 		}
 		else
 		{
-			AGENTTIMESTEP = value;
+			AGENTTIMESTEP = agentTimeStep;
 			if (AGENTTIMESTEP > SimTimer.getCurrentTimeStep()) 
 			{
 				LogFile.writeLog("ERROR: agentTimeStep in agentGrid markup MUST be "+
@@ -251,11 +249,11 @@ public class AgentContainer
 						"\tglobal time step is currently: "+SimTimer.getCurrentTimeStep());
 				throw new Exception("agentTimeStep too large");
 			}
-			LogFile.writeLog("Agent time step is... " + value);
+			LogFile.writeLog("Agent time step is... " + agentTimeStep);
 		}
 
 		// Now set the domain where this container is defined
-		domain = (Domain) aSimulator.world.getDomain(root.getParam("computationDomain"));
+		domain = aSimulator.world.getDomain(root.getParam("computationDomain"));
 		mySim = aSimulator;
 		
 		agentList = new LinkedList<SpecialisedAgent>();
@@ -1632,8 +1630,8 @@ public class AgentContainer
 		for (int index = 0; index < _nTotal; index++)
 			_grid[index] = new LocatedGroup(index, this, aSimulator);
 
-		for (int index = 0; index < _nTotal; index++){
-			_grid[index].init();}
+		for (int index = 0; index < _nTotal; index++)
+			_grid[index].init();
 
 
 	}
@@ -2011,8 +2009,8 @@ public class AgentContainer
 		int i = (int) Math.floor((index - (k * (_nI + 2) * (_nJ + 2)) - j
 				* (_nI + 2)));
 
-		return new ContinuousVector((i + .5 - 1) * _res, (j + .5 - 1) * _res,
-				(k + .5 - 1) * _res);
+		return new ContinuousVector((i - .5) * _res, (j - .5) * _res,
+				(k - .5) * _res);
 	}
 
 

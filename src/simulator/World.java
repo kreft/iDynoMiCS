@@ -109,7 +109,7 @@ public class World
 		{
 			if (domainList.get(i).getName().equals(cDName)) 
 			{
-				return (Domain) domainList.get(i); 
+				return domainList.get(i);
 			}
 		}
 		LogFile.writeLog("World.getDomain() found no domain"); 

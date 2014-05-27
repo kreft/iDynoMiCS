@@ -162,7 +162,7 @@ public class SpatialGrid implements Serializable {
 		else
 		{
 			// Obviously if we create only one cell in the Z dimension, the grid is 2D
-			_is3D = !(_nK==1);
+			_is3D = _nK > 1;
 
 			grid = new double[_nI+2][_nJ+2][_nK+2];
 		}
@@ -346,8 +346,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according X
 	 */
 	public double diff2X(int i, int j, int k) {
-		double value = (grid[i+1][j][k]+grid[i-1][j][k]-2*grid[i][j][k])/ExtraMath.sq(_reso);		
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double d2x = (grid[i+1][j][k] + grid[i-1][j][k] - 2 * grid[i][j][k]) / ExtraMath.sq(_reso);
+		return (Double.isNaN(d2x) || Double.isInfinite(d2x)) ? 0 : d2x;
 	}
 
 	/**
@@ -359,8 +359,11 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according X
 	 */
 	public double diff2X(DiscreteVector dV) {
-		double value = (grid[dV.i+1][dV.j][dV.k]+grid[dV.i-1][dV.j][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);		
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double d2x = (grid[dV.i+1][dV.j][dV.k]
+                        + grid[dV.i-1][dV.j][dV.k]
+                        - 2 * grid[dV.i][dV.j][dV.k]
+                     ) / ExtraMath.sq(_reso);
+		return (Double.isNaN(d2x) || Double.isInfinite(d2x)) ? 0 : d2x;
 	}
 
 	/**
@@ -374,8 +377,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according X
 	 */
 	public double diffX(int i, int j, int k) {
-		double value = (grid[i+1][j][k]-grid[i-1][j][k])/(2*_reso);		
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dx = (grid[i+1][j][k] - grid[i-1][j][k]) / (2*_reso);
+		return (Double.isNaN(dx) || Double.isInfinite(dx)) ? 0 : dx;
 	}
 
 	/**
@@ -387,8 +390,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according X
 	 */
 	public double diffX(DiscreteVector dV) {
-		double value = (grid[dV.i+1][dV.j][dV.k]-grid[dV.i-1][dV.j][dV.k])/(2*_reso);		
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dx = (grid[dV.i+1][dV.j][dV.k] - grid[dV.i-1][dV.j][dV.k]) / (2*_reso);
+		return (Double.isNaN(dx) || Double.isInfinite(dx)) ? 0 : dx;
 	}
 
 	/**
@@ -402,8 +405,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Y
 	 */
 	public double diff2Y(int i, int j, int k) {
-		double value =  (grid[i][j+1][k]+grid[i][j-1][k]-2*grid[i][j][k])/ExtraMath.sq(_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double d2y =  (grid[i][j+1][k] + grid[i][j-1][k] - 2 * grid[i][j][k]) / ExtraMath.sq(_reso);
+		return (Double.isNaN(d2y) || Double.isInfinite(d2y)) ? 0 : d2y;
 	}
 
 	/**
@@ -415,8 +418,11 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Y
 	 */
 	public double diff2Y(DiscreteVector dV) {
-		double value =  (grid[dV.i][dV.j+1][dV.k]+grid[dV.i][dV.j-1][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double d2y =  (grid[dV.i][dV.j+1][dV.k]
+                        + grid[dV.i][dV.j-1][dV.k]
+                        - 2 * grid[dV.i][dV.j][dV.k]
+                      ) / ExtraMath.sq(_reso);
+		return (Double.isNaN(d2y) || Double.isInfinite(d2y)) ? 0 : d2y;
 	}
 
 	/**
@@ -430,8 +436,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Y
 	 */
 	public double diffY(int i, int j, int k) {
-		double value =  (grid[i][j+1][k]-grid[i][j-1][k])/(2*_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dy =  (grid[i][j+1][k] - grid[i][j-1][k]) / (2*_reso);
+		return (Double.isNaN(dy) || Double.isInfinite(dy)) ? 0 : dy;
 	}
 	
 	/**
@@ -443,8 +449,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Y
 	 */
 	public double diffY(DiscreteVector dV) {
-		double value =  (grid[dV.i][dV.j+1][dV.k]-grid[dV.i][dV.j-1][dV.k])/(2*_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dy =  (grid[dV.i][dV.j+1][dV.k] - grid[dV.i][dV.j-1][dV.k]) / (2*_reso);
+		return (Double.isNaN(dy) || Double.isInfinite(dy)) ? 0 : dy;
 	}
 	
 
@@ -459,8 +465,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Z
 	 */
 	public double diff2Z(int i, int j, int k) {
-		double value =  (grid[i][j][k+1]+grid[i][j][k-1]-2*grid[i][j][k])/(_reso*_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double d2z = (grid[i][j][k+1] + grid[i][j][k-1] - 2 * grid[i][j][k]) / (_reso*_reso);
+		return (Double.isNaN(d2z) || Double.isInfinite(d2z)) ? 0 : d2z;
 	}
 
 	/**
@@ -474,8 +480,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Z
 	 */
 	public double diffZ(int i, int j, int k) {
-		double value =  (grid[i][j][k+1]-grid[i][j][k-1])/(2*_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dz =  (grid[i][j][k+1] - grid[i][j][k-1]) / (2*_reso);
+		return (Double.isNaN(dz) || Double.isInfinite(dz)) ? 0 : dz;
 	}
 	
 	/**
@@ -487,8 +493,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Z
 	 */
 	public double diffZ(DiscreteVector dV) {
-		double value =  (grid[dV.i][dV.j][dV.k+1]-grid[dV.i][dV.j][dV.k-1])/(2*_reso);
-		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
+		double dz =  (grid[dV.i][dV.j][dV.k+1] - grid[dV.i][dV.j][dV.k-1]) / (2*_reso);
+		return (Double.isNaN(dz) || Double.isInfinite(dz)) ? 0 : dz;
 	}
 	/**
 	 * \brief Computes the average concentration seen in a sphere (or cube) centered around a given point

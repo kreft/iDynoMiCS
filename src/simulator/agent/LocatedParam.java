@@ -112,7 +112,6 @@ public class LocatedParam extends ActiveParam
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
-		double value;
 
 		//sonia 28.04.2010
 		//the user can define the degree of variability in the division, split and death radius
@@ -121,41 +120,21 @@ public class LocatedParam extends ActiveParam
 		// AUGUST 2013 - Change such that these can be declared as defaults, rather than for EVERY species
 		// But can be overriden for each species, so need to check if in species - if not then check the defaults
 		// If not in defaults, the default value hard coded into iDynoMiCS (if present) will be used
-		
-		value = getSpeciesParameterLength("divRadius",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) divRadius = value;
-		
-		value = getSpeciesParameterDouble("divRadiusCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) divRadiusCV = value;
-		
-		value = getSpeciesParameterLength("deathRadius",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) deathRadius = value;
 
-		value = getSpeciesParameterDouble("deathRadiusCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) deathRadiusCV = value;
+		divRadius = getSpeciesParameterLength("divRadius", aSpeciesRoot, speciesDefaults, divRadius);
+		divRadiusCV = getSpeciesParameterDouble("divRadiusCV", aSpeciesRoot, speciesDefaults, divRadiusCV);
+		deathRadius = getSpeciesParameterLength("deathRadius", aSpeciesRoot, speciesDefaults, deathRadius);
+		deathRadiusCV = getSpeciesParameterDouble("deathRadiusCV", aSpeciesRoot, speciesDefaults, deathRadiusCV);
+		babyMassFrac = getSpeciesParameterDouble("babyMassFrac", aSpeciesRoot, speciesDefaults, babyMassFrac);
+		babyMassFracCV = getSpeciesParameterDouble("babyMassFracCV", aSpeciesRoot, speciesDefaults, babyMassFracCV);
+		shoveLimit = getSpeciesParameterLength("shoveLimit", aSpeciesRoot, speciesDefaults, shoveLimit);
+		shoveFactor = getSpeciesParameterLength("shoveFactor", aSpeciesRoot, speciesDefaults, shoveFactor);
 
-		value = getSpeciesParameterDouble("babyMassFrac",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) babyMassFrac = value;
-
-		value = getSpeciesParameterDouble("babyMassFracCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) babyMassFracCV = value;
-	
-		value = getSpeciesParameterLength("shoveLimit",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) shoveLimit = value;
-
-		value = getSpeciesParameterLength("shoveFactor",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) shoveFactor = value;
-		
 		// Attachment parameters - KA 170513
-		value = getSpeciesParameterLength("cellRunSpeed",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) cellRunSpeed = value;
-		
-		value = getSpeciesParameterLength("tumbleInt",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) tumbleInterval = value;
-				
-		value = getSpeciesParameterLength("stickinessAddition",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) stickinessAddition = value;
-		
+		cellRunSpeed = getSpeciesParameterLength("cellRunSpeed", aSpeciesRoot, speciesDefaults, cellRunSpeed);
+		tumbleInterval = getSpeciesParameterLength("tumbleInt", aSpeciesRoot, speciesDefaults, tumbleInterval);
+		stickinessAddition = getSpeciesParameterLength("stickinessAddition", aSpeciesRoot, speciesDefaults, stickinessAddition);
+
 	}
 	
 	/**

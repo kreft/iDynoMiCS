@@ -91,7 +91,7 @@ public class BactEPS extends Bacterium
 			updateSize();
 		} else {
 			// Update your mass and size			
-			double value = particleMass[epsIndex]*(deltaM);
+			double epsMass = particleMass[epsIndex]*(deltaM);
 			particleMass[epsIndex] *= 1-deltaM;
 			updateSize();
 						
@@ -99,7 +99,7 @@ public class BactEPS extends Bacterium
 			nEPS = _myNeighbors.size();			
 			for (int iNb = 0; iNb<nEPS; iNb++) {
 				aNb = _myNeighbors.removeFirst();
-				aNb.particleMass[epsIndex] += value/nEPS;
+				aNb.particleMass[epsIndex] += epsMass/nEPS;
 				aNb.updateSize();
 			}			
 		}

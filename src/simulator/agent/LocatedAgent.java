@@ -809,17 +809,17 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		_newLoc.add(_movement);
 		AllBC aBoundary = getDomain().testCrossedBoundary(_newLoc);
 		int nDim = (_agentGrid.is3D ? 3 : 2);
-		boolean test = (aBoundary!=null);
+		boolean boundaryCrossed = (aBoundary!=null);
 		int counter = 0;
 
 		// Test all boundaries and apply corrections according to crossed
 		// boundaries
-		while (test) {
+		while (boundaryCrossed) {
 			counter++;
 			aBoundary.applyBoundary(this, _newLoc);
 			aBoundary = getDomain().testCrossedBoundary(_newLoc);
 
-			test = (aBoundary!=null)|(counter>nDim);
+            boundaryCrossed = (aBoundary!=null)|(counter>nDim);
 			if (counter > nDim)
 				System.out.println("LocatedAgent.move() : problem!");
 		}
@@ -850,10 +850,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		if (isDead)
 			return;
 
-		double value = particleMass[catalystIndex]/aSpG.getVoxelVolume();
-		if (Double.isNaN(value) | Double.isInfinite(value))
-			value = 0;
-		aSpG.addValueAt(value, _location);
+		double density = particleMass[catalystIndex]/aSpG.getVoxelVolume();
+		if (Double.isNaN(density) | Double.isInfinite(density))
+			density = 0;
+		aSpG.addValueAt(density, _location);
 	}
 
 	/**
@@ -868,10 +868,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		if (isDead)
 			return;
 
-		double value = _totalMass/aSpG.getVoxelVolume();
-		if (Double.isNaN(value) | Double.isInfinite(value))
-			value = 0;
-		aSpG.addValueAt(value, _location);
+		double density = _totalMass/aSpG.getVoxelVolume();
+		if (Double.isNaN(density) | Double.isInfinite(density))
+			density = 0;
+		aSpG.addValueAt(density, _location);
 	}
 
 	/**
@@ -882,11 +882,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aSpG	Spatial grid used to sum volume
 	 */
 	public void fitVolRateOnGrid(SpatialGrid aSpG) {
-		double value;
-		value = _netVolumeRate/aSpG.getVoxelVolume();
-		if (Double.isNaN(value) | Double.isInfinite(value))
-			value = 0;
-		aSpG.addValueAt(value, _location);
+		double volRate = _netVolumeRate/aSpG.getVoxelVolume();
+		if (Double.isNaN(volRate) | Double.isInfinite(volRate))
+			volRate = 0;
+		aSpG.addValueAt(volRate, _location);
 	}
 
 	/**
@@ -903,12 +902,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 
 		// growthRate is in [fgX.hr-1] so convert to concentration:
 		// [fgX.um-3.hr-1 = gX.L-1.hr-1]
-		double value = growthRate[reactionIndex]/aRateGrid.getVoxelVolume();
+		double volRate = growthRate[reactionIndex]/aRateGrid.getVoxelVolume();
 
-		if (Double.isNaN(value) | Double.isInfinite(value))
-			value = 0;
+		if (Double.isNaN(volRate) | Double.isInfinite(volRate))
+			volRate = 0;
 
-		aRateGrid.addValueAt(value, _location);
+		aRateGrid.addValueAt(volRate, _location);
 	}
 
 	/* _______________ FILE OUTPUT _____________________ */

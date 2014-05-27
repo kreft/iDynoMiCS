@@ -134,7 +134,7 @@ public class ReactionFactor extends Reaction
 				iFactor++;
 			}
 		} catch (Exception e) {
-			LogFile.writeLog("Error met during ReactionFactor.init()");
+			LogFile.writeLog("Error met during ReactionFactor.init(): " + e.getMessage());
 		}
 	}
 

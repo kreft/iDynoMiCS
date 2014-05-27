@@ -34,16 +34,12 @@ public class SpeciesParam
 	 */
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
-		double value;
-		
 		// August 2013 - changed as this now may be specified in the species defaults and not for each species
 		// So use the new method
-		value = getSpeciesParameterDouble("initialMassCV",aSpeciesRoot,speciesDefaults);
-		if(!Double.isNaN(value)) initialMassCV = value;
-		
+		initialMassCV = getSpeciesParameterDouble("initialMassCV",aSpeciesRoot,speciesDefaults,initialMassCV);
 	}
 	
-	public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults, Double defaultValue)
 	{
 		if(!Double.isNaN(aSpeciesRoot.getParamLength(paramName)))
 		{
@@ -55,11 +51,15 @@ public class SpeciesParam
 		}
 		else
 		{
-			return Double.NaN;
+			return defaultValue;
 		}
 	}
+    public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+    {
+        return getSpeciesParameterLength(paramName, aSpeciesRoot, speciesDefaults, Double.NaN);
+    }
 	
-	public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults, Double defaultValue)
 	{
 		if(!Double.isNaN(aSpeciesRoot.getParamDbl(paramName)))
 		{
@@ -71,9 +71,14 @@ public class SpeciesParam
 		}
 		else
 		{
-			return Double.NaN;
+			return defaultValue;
 		}
 	}
+
+    public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+    {
+        return getSpeciesParameterDouble(paramName, aSpeciesRoot, speciesDefaults, Double.NaN);
+    }
 	
 	public String getSpeciesParameterString(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
