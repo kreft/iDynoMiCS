@@ -32,19 +32,6 @@ public class SimpleInhibition extends IsKineticFactor
 	 * Half maximum concentration of the solute
 	 */
 	private double _Ki;
-
-	/**
-	 * \brief Constructor to set kinetic parameters to the supplied values
-	 * 
-	 * Constructor to set kinetic parameters to the supplied values
-	 * 
-	 * @param Ki	Concentration of solute
-	 */
-	public SimpleInhibition(double Ki)
-	{
-		_Ki = Ki;
-		nParam = 1;
-	}
 	
 	/**
 	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed for easing the kinetic calculation
