@@ -36,68 +36,69 @@ public class LocatedParam extends ActiveParam
 	/**
 	 * Division radius (in µm)
 	 */
-	public double divRadius       = .97;
+	public Double divRadius = 0.97;
 	
 	/**
 	 * Degree of stochasticity used in determining cell division behaviour
 	 */
-	public double divRadiusCV     = .1;
+	public Double divRadiusCV = 0.1;
 
 	/**
 	 * Fraction of the mother's total mass that is given to the baby. Formerly called splitRatio
 	 */
-	public double babyMassFrac    = .5;
+	public Double babyMassFrac = 0.5;
 	
 	/**
 	 * Degree of stochasticity used in determining cell mass distribution
 	 */
-	public double babyMassFracCV  = .1;
+	public Double babyMassFracCV = 0.1;
 
 	/**
-	 * Minimal radius before death (in m)
+	 * Minimal radius before death (in µm)
 	 */
-	public double deathRadius     = .2;
+	public Double deathRadius = 0.2;
 	
 	/**
 	 * Degree of stochasticity used in determining cell death
 	 */
-	public double deathRadiusCV   = .1;
+	public Double deathRadiusCV = 0.1;
 
 	/**
 	 * Multiplier of the full radius to enhance distance between cells
 	 */
-	public double shoveFactor     = 1.15;
+	public Double shoveFactor = 1.15;
 
 	/**
 	 * Minimal distance between two cells (after shovingRadius computation)
 	 */
-	public double shoveLimit      = 0;
+	public Double shoveLimit = 0.0;
 	
 	/**
 	 * For simulations that model self attachment to the substratum, the agents move from the boundary layer in a random walk. This 
 	 * parameter captures the speed of that move (KA 170513)
 	 */
-	public double cellRunSpeed;
+	public Double cellRunSpeed = 0.0;
 	
 	/**
 	 * For simulations that model self attachment to the substratum, the agents move from the boundary layer in a random walk. This 
 	 * parameter captures the interval at which the cell will 'tumble' and change direction (KA 170513)
 	 */
-	public double tumbleInterval;
+	public Double tumbleInterval = 0.0;
 	
 	/**
 	 * Some cells (e.g. some e-coli species) will express molecules on the surface that will stick to any other surface. For versions of 
 	 * the simulation where self-attachment is being modelled, this parameter captures the extra cell dimension that needs to be considered 
 	 * in collision detection (to see if the agent sticks) (KA 170513)
 	 */
-	public double stickinessAddition;
+	public Double stickinessAddition = 0.0;
 
 	/**
 	 * \brief Create a new LocatedParam parameter storage object, calling the relevant extended class constructors
 	 * 
 	 * Create a new LocatedParam parameter storage object, calling the relevant extended class constructirs
 	 */
-	public LocatedParam() {
+	public LocatedParam()
+	{
 		super();
 	}
 
@@ -112,6 +113,7 @@ public class LocatedParam extends ActiveParam
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
+		Double value;
 
 		//sonia 28.04.2010
 		//the user can define the degree of variability in the division, split and death radius
@@ -120,21 +122,42 @@ public class LocatedParam extends ActiveParam
 		// AUGUST 2013 - Change such that these can be declared as defaults, rather than for EVERY species
 		// But can be overriden for each species, so need to check if in species - if not then check the defaults
 		// If not in defaults, the default value hard coded into iDynoMiCS (if present) will be used
+		
+		value = getSpeciesParameterLength("divRadius", aSpeciesRoot, speciesDefaults);
+		divRadius = value.isNaN() ? divRadius : value;
+		
+		value = getSpeciesParameterDouble("divRadiusCV", aSpeciesRoot, speciesDefaults);
+		divRadiusCV = value.isNaN() ? divRadiusCV : value;
+		
+		value = getSpeciesParameterLength("deathRadius", aSpeciesRoot, speciesDefaults);
+		deathRadius = value.isNaN() ? deathRadius : value;
 
-		divRadius = getSpeciesParameterLength("divRadius", aSpeciesRoot, speciesDefaults, divRadius);
-		divRadiusCV = getSpeciesParameterDouble("divRadiusCV", aSpeciesRoot, speciesDefaults, divRadiusCV);
-		deathRadius = getSpeciesParameterLength("deathRadius", aSpeciesRoot, speciesDefaults, deathRadius);
-		deathRadiusCV = getSpeciesParameterDouble("deathRadiusCV", aSpeciesRoot, speciesDefaults, deathRadiusCV);
-		babyMassFrac = getSpeciesParameterDouble("babyMassFrac", aSpeciesRoot, speciesDefaults, babyMassFrac);
-		babyMassFracCV = getSpeciesParameterDouble("babyMassFracCV", aSpeciesRoot, speciesDefaults, babyMassFracCV);
-		shoveLimit = getSpeciesParameterLength("shoveLimit", aSpeciesRoot, speciesDefaults, shoveLimit);
-		shoveFactor = getSpeciesParameterLength("shoveFactor", aSpeciesRoot, speciesDefaults, shoveFactor);
+		value = getSpeciesParameterDouble("deathRadiusCV", aSpeciesRoot, speciesDefaults);
+		deathRadiusCV = value.isNaN() ? deathRadiusCV : value;
 
+		value = getSpeciesParameterDouble("babyMassFrac", aSpeciesRoot, speciesDefaults);
+		babyMassFrac = value.isNaN() ? babyMassFrac : value;
+
+		value = getSpeciesParameterDouble("babyMassFracCV", aSpeciesRoot, speciesDefaults);
+		babyMassFracCV = value.isNaN() ? babyMassFracCV : value;
+	
+		value = getSpeciesParameterLength("shoveLimit", aSpeciesRoot, speciesDefaults);
+		shoveLimit = value.isNaN() ? shoveLimit : value;
+
+		value = getSpeciesParameterDouble("shoveFactor", aSpeciesRoot, speciesDefaults);
+		shoveFactor = value.isNaN() ? shoveFactor : value;
+		
 		// Attachment parameters - KA 170513
-		cellRunSpeed = getSpeciesParameterLength("cellRunSpeed", aSpeciesRoot, speciesDefaults, cellRunSpeed);
-		tumbleInterval = getSpeciesParameterLength("tumbleInt", aSpeciesRoot, speciesDefaults, tumbleInterval);
-		stickinessAddition = getSpeciesParameterLength("stickinessAddition", aSpeciesRoot, speciesDefaults, stickinessAddition);
-
+		// TODO RC - This should be read in as a speed, not as a length!
+		value = getSpeciesParameterLength("cellRunSpeed", aSpeciesRoot, speciesDefaults);
+		cellRunSpeed = value.isNaN() ? cellRunSpeed : value;
+		
+		value = getSpeciesParameterTime("tumbleInt",aSpeciesRoot,speciesDefaults);
+		tumbleInterval = value.isNaN() ? tumbleInterval : value;
+				
+		value = getSpeciesParameterLength("stickinessAddition",aSpeciesRoot,speciesDefaults);
+		stickinessAddition = value.isNaN() ? stickinessAddition : value;
+		
 	}
 	
 	/**
@@ -144,7 +167,7 @@ public class LocatedParam extends ActiveParam
 	 * 
 	 * @return	Double value stating the stored cell run speed for this species of agent
 	 */
-	public double getCellRunSpeed()
+	public Double getCellRunSpeed()
 	{
 		return cellRunSpeed;
 	}
@@ -158,9 +181,9 @@ public class LocatedParam extends ActiveParam
 	 * 
 	 * @return	Double value stating the stored stickiness radius value for agents of this species
 	 */
-	public double getStickinessRadius()
+	public Double getStickinessRadius()
 	{
-		return this.stickinessAddition;
+		return divRadius + stickinessAddition;
 	}
 	
 }

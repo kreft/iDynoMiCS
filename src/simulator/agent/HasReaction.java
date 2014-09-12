@@ -28,7 +28,7 @@ public interface HasReaction
 	 * @param aReaction	The reaction object that this agent will participate with
 	 * @param useDefaultParam	Whether or not the default reaction parameters should be used in this reaction
 	 */
-	public void addActiveReaction(Reaction aReaction, boolean useDefaultParam);
+	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam);
 
 	/**
 	 * \brief Add the details of a new reaction that a particular agent is to participate in
@@ -38,7 +38,7 @@ public interface HasReaction
 	 * @param aReaction	The reaction object that this agent will participate with
 	 * @param useDefaultParam	Whether or not the default reaction parameters should be used in this reaction
 	 */
-	public void addReaction(Reaction aReaction, boolean useDefaultParam);
+	public void addReaction(Reaction aReaction, Boolean useDefaultParam);
 
 	/**
 	 * \brief Remove a reaction from those that the agent is involved in
