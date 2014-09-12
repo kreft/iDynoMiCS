@@ -119,11 +119,11 @@ public abstract class AllBC{
      */
 	public void readGeometry(XMLParser geometryRoot, Domain aDomain) {
 		// Set the name of the boundary
-		_mySide = geometryRoot.getAttributeStr("name");
+		_mySide = geometryRoot.getAttribute("name");
 
 		// Set the class to use to define the shape
 		String className = "simulator.geometry.shape.";
-		className += geometryRoot.getChild("shape").getAttributeStr("class");
+		className += geometryRoot.getChild("shape").getAttribute("class");
 
 		// Build the instance used to describe the shape
 		try {
