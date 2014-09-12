@@ -12,11 +12,11 @@ package simulator.reaction.kinetic;
 import org.jdom.Element;
 
 /**
- * \brief Model a reaction using First Order Kinetics. Use of this kinetic is discouraged (Rob 071211)
+ * \brief Model a reaction using First Order Kinetics.
  * 
- * Model a reaction using First Order Kinetics. Use of this kinetic is discouraged (Rob 071211) as the kinetic value is independent of
- * solute concentration this can lead to negative concentration values. Note that LinearKinetic is a more suitable choice in many 
- * situations.
+ * Use of this kinetic is discouraged (Rob 071211) as the kinetic value is
+ * independent of solute concentration this can lead to negative concentration
+ * values. Note that LinearKinetic is a more suitable choice in many situations.
  */
 public class FirstOrderKinetic extends IsKineticFactor 
 {
@@ -24,86 +24,82 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * Serial version used for the serialisation of the class
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	/**
-	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed for easing the kinetic calculation
+	 * \brief Initialise the kinetic, reading in kinetic parameter information
+	 * from the protocol file and calculating any auxillaries needed for easing
+	 * the kinetic calculation.
 	 * 
-	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed 
-	 * for easing the kinetic calculation
-	 * 
-	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
+	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
 	public void init(Element defMarkUp) 
 	{
 		nParam = 0;
 	}
-
+	
 	/**
-	 * \brief Initialise the reaction from a parent of the agent
+	 * \brief Initialise the reaction from a parent of the agent.
 	 * 
-	 * Initialise the reaction from a parent of the agent
-	 * 
-	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
-	 * @param kineticParam	Array of parameters associated with this reaction
-	 * @param paramIndex	An index to the parameter array
+	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
+	 * @param kineticParam	Array of parameters associated with this reaction.
+	 * @param paramIndex	An index to the parameter array.
 	 */
-	public void initFromAgent(Element defMarkUp, double[] kineticParam, int paramIndex) {
+	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
+	{
+		
 	}
-
+	
 	/**
-	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
-	 * 
-	 * Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * \brief Calculate the value of the kinetic from a given level of solute,
+	 * an array containing parameters relating to the reaction, and an index to
+	 * this array.
 	 * 
 	 * @param solute	Double stating the level of that solute
 	 * @param paramTable	Array of parameters relating to this reaction
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
-	public double kineticValue(double solute, double[] paramTable, int index) {
-		return 1;
+	public Double kineticValue(Double solute, Double[] paramTable, int index)
+	{
+		return 1.0;
 	}
-
-	/**
-	 * \brief Calculate the value of the kinetic for a given level of solute
-	 * 
-	 * Calculate the value of the kinetic for a given level of solute
-	 * 
-	 * @param solute	Double stating the level of that solute
-	 * @return Double value stating the value of the kinetic for this level of solute
-	 * 
-	 */
-	public double kineticValue(double solute) {
-		return 1;
-	}
-
-	/**
-	 * \brief Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * @param solute	Solute level
-	 * @param paramTable	Array of parameters relating to this reaction
-	 * @param index	An index to the parameter array
-	 * @return	Level of the reaction kinetic
-	 */
-	public double kineticDiff(double solute, double[] paramTable, int index) {
-		return 0;
-	}
-
-	/**
-	 * \brief Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * @param solute	Solute level
-	 * @return	Level of the reaction kinetic
-	 */
-	public double kineticDiff(double solute) {
-		return 0;
-	}
-
 	
-
+	/**
+	 * \brief Calculate the kinetic rate for a given solute concentration.
+	 * 
+	 * @param solute	Double giving the solute concentration.
+	 * @return Double giving kinetic rate for this solute concentration.
+	 */
+	public Double kineticValue(Double solute)
+	{
+		return 1.0;
+	}
 	
+	/**
+	* \brief Used to compute the kinetic differential for a given solute
+	 * concentration.
+	 * 
+	 * @param solute	Solute concentration.
+	 * @param paramTable	Array of parameters relating to this reaction.
+	 * @param index	An index to the parameter array.
+	 * @return Double value of the kinetic differential for this solute
+	 * concentration.
+	 */
+	public Double kineticDiff(Double solute, Double[] paramTable, int index)
+	{
+		return 0.0;
+	}
+	
+	/**
+	 * \brief Used to compute the kinetic differential for a given solute
+	 * concentration.
+	 * 
+	 * @param solute	Solute concentration.
+	 * @return Double value of the kinetic differential for this solute
+	 * concentration.
+	 */
+	public Double kineticDiff(Double solute)
+	{
+		return 0.0;
+	}
 }

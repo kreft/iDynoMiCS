@@ -24,39 +24,38 @@ public class HillKinetic extends IsKineticFactor
 {
 
 	/**
-	 * Serial version used for the serialisation of the class
+	 * Serial version used for the serialisation of the class.
 	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Half-Maximum concentration of the solute of interest
+	 * Half-Maximum concentration of the solute of interest.
 	 */
-	private double            _Ks;
+	private Double _Ks;
 	
 	/**
-	 * The exponent
+	 * The exponent.
 	 */
-	private double            _h;
+	private Double _h;
 	
 	/**
-	 * Auxiliary used in the calculation of the kinetic
+	 * Auxiliary used in the calculation of the kinetic.
 	 */
-	private double            _KsH;
+	private Double _KsH;
 	
 	/**
-	 * Auxiliary used in the calculation of the kinetic
+	 * Auxiliary used in the calculation of the kinetic.
 	 */
-	private double 			  _KsPowH;
-
+	private Double _KsPowH;
+	
 	/**
-	 * \brief Constructs the kinetic - setting the half-maximum concentration and the exponent
+	 * \brief Constructs the kinetic, setting the half-maximum concentration
+	 * and the exponent.
 	 * 
-	 * Constructs the kinetic - setting the half-maximum concentration and the exponent
-	 * 
-	 * @param Ks	Half-Maximum concentration of the solute of interest
-	 * @param h	The exponent being used in the calculation
+	 * @param Ks Half-Maximum concentration of the solute of interest.
+	 * @param h	The exponent being used in the calculation.
 	 */
-	public HillKinetic(double Ks, double h) 
+	public HillKinetic(Double Ks, Double h) 
 	{
 		_Ks = Ks;
 		_h = h;
@@ -64,98 +63,97 @@ public class HillKinetic extends IsKineticFactor
 		_KsPowH = Math.pow(_Ks, _h);
 		nParam = 2;
 	}
-
+	
 	/**
-	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed for easing the kinetic calculation
+	 * \brief Initialise the kinetic, reading in kinetic parameter information
+	 * from the protocol file and calculating any auxillaries needed for easing
+	 * the kinetic calculation.
 	 * 
-	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed 
-	 * for easing the kinetic calculation
-	 * 
-	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
+	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
-	public void init(Element defMarkUp) {
+	public void init(Element defMarkUp)
+	{
 		_Ks = (new XMLParser(defMarkUp)).getParamDbl("Ks");
 		_h = (new XMLParser(defMarkUp)).getParamDbl("h");
 		_KsH = Math.pow(_Ks, _h)*_h;
 		_KsPowH = Math.pow(_Ks, _h);
 		nParam = 2;
 	}
-
+	
 	/**
-	 * \brief Initialise the reaction from a parent of the agent
+	 * \brief Initialise the reaction from a parent of the agent.
 	 * 
-	 * Initialise the reaction from a parent of the agent
-	 * 
-	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
-	 * @param kineticParam	Array of parameters associated with this reaction
-	 * @param paramIndex	An index to the parameter array
+	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
+	 * @param kineticParam	Array of parameters associated with this reaction.
+	 * @param paramIndex	An index to the parameter array.
 	 */
-	public void initFromAgent(Element defMarkUp, double[] kineticParam, int paramIndex) {
+	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
+	{
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl( "Ks");
 		kineticParam[paramIndex+1] = (new XMLParser(defMarkUp)).getParamDbl("h");
 	}
-
+	
 	/**
-	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * \brief Calculate the value of the kinetic from a given level of solute,
+	 * an array containing parameters relating to the reaction, and an index to
+	 * this array.
 	 * 
-	 * Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
-	 * 
-	 * @param solute	Double stating the level of that solute
-	 * @param paramTable	Array of parameters relating to this reaction
-	 * @param index	An index to the parameter array
-	 * @return Double value stating the value of the kinetic for this level of solute
+	 * @param solute Double of the solute concentration.
+	 * @param paramTable Array of parameters relating to this reaction.
+	 * @param index	An index to the parameter array.
+	 * @return Double value of the kinetic rate for this solute concentration.
 	 */
-	public double kineticValue(double solute, double[] paramTable, int index) {
-		return Math.pow(solute, paramTable[index+1])
-		        /(Math.pow(paramTable[index], paramTable[index+1])+Math.pow(solute,
-		                paramTable[index+1]));
+	public Double kineticValue(Double solute, Double[] paramTable, int index)
+	{
+		Double numerator, denominator;
+		numerator = Math.pow(solute, paramTable[index+1]);
+		denominator = Math.pow(paramTable[index], paramTable[index+1]);
+		denominator += Math.pow(solute, paramTable[index+1]);
+		return numerator / denominator;
 	}
 
 	/**
-	 * \brief Calculate the value of the kinetic for a given level of solute
+	 * \brief Calculate the kinetic rate for a given solute concentration.
 	 * 
-	 * Calculate the value of the kinetic for a given level of solute
-	 * 
-	 * @param solute	Double stating the level of that solute
-	 * @return Double value stating the value of the kinetic for this level of solute
-	 * 
+	 * @param solute	Double giving the solute concentration.
+	 * @return Double giving kinetic rate for this solute concentration.
 	 */
-	public double kineticValue(double solute) 
+	public Double kineticValue(Double solute) 
 	{
 		return Math.pow(solute,_h)/(_KsPowH+Math.pow(solute,_h));
 	}
-
-	/**
-	 * \brief Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * @param solute	Solute level
-	 * @return	Level of the reaction kinetic
-	 */
-	public double kineticDiff(double solute) {
-		return _KsH*Math.pow(solute, _h-1)/(ExtraMath.sq(_KsPowH+Math.pow(solute, _h)));
-	}
-
-	/**
-	 * \brief Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * Used to compute marginal difference kinetic values for a given solute level
-	 * 
-	 * @param solute	Solute level
-	 * @param paramTable	Array of parameters relating to this reaction
-	 * @param index	An index to the parameter array
-	 * @return	Level of the reaction kinetic
-	 */
-	public double kineticDiff(double solute, double[] paramTable, int index) {
-		return Math.pow(paramTable[index], paramTable[index+1])
-		        *paramTable[index+1]
-		        *Math.pow(solute, paramTable[index+1]-1)
-		        /(ExtraMath.sq(Math.pow(paramTable[index], paramTable[index+1])
-		                +Math.pow(solute, paramTable[index+1])));
-	}
-
 	
-
+	/**
+	 * \brief Used to compute the kinetic differential for a given solute
+	 * concentration.
+	 * 
+	 * @param solute	Solute concentration.
+	 * @return Double value of the kinetic differential for this solute
+	 * concentration.
+	 */
+	public Double kineticDiff(Double solute)
+	{
+		return _KsH * Math.pow(solute, _h-1) /
+							(ExtraMath.sq(_KsPowH + Math.pow(solute, _h)));
+	}
 	
+	/**
+	 * \brief Used to compute the kinetic differential for a given solute
+	 * concentration.
+	 * 
+	 * @param solute	Solute concentration.
+	 * @param paramTable	Array of parameters relating to this reaction.
+	 * @param index	An index to the parameter array.
+	 * @return Double value of the kinetic differential for this solute
+	 * concentration.
+	 */
+	public Double kineticDiff(Double solute, Double[] paramTable, int index)
+	{
+		Double numerator = Math.pow(paramTable[index], paramTable[index+1]);
+		numerator *= paramTable[index+1];
+		numerator *= Math.pow(solute, paramTable[index+1]-1);
+		Double denominator = Math.pow(paramTable[index], paramTable[index+1]);
+		denominator += Math.pow(solute, paramTable[index+1]); 
+		return numerator / ExtraMath.sq(denominator);
+	}	
 }
