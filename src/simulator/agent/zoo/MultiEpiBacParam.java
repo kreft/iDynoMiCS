@@ -22,33 +22,34 @@ import org.jdom.Element;
 import utils.*;
 
 /** Parameters common to all instances of a same species */
-	public class MultiEpiBacParam extends BactEPSParam {
-
+public class MultiEpiBacParam extends BactEPSParam
+	{
+		
 	// Serial version used for the serialisation of the class
 	private static final long serialVersionUID     = 1L;
-
-	public double             donorProbability    = 1;
-	public double             recipientProbability = 1;
-
+	
+	public double donorProbability = 1.0;
+	public double recipientProbability = 1.0;
+	
 	//Plasmid replication speed
-	public double             nBind                = 2;
-	public double             KSat                 = 0.132;
+	public double nBind = 2.0;
+	public double KSat = 0.132;
 	
 	// number of cells touched by hour
 	//sonia 11.10.2010 scan speed is now a plasmid parameter
 	//public double             scanSpeed;
-	public Color              dColor, tColor, rColor;
+	public Color dColor, tColor, rColor;
 	
 	// sonia: useful..
 	public String epiBacName;
 	
-
-	
-	public MultiEpiBacParam() {
+	public MultiEpiBacParam()
+	{
 		super();
 	}
-
-	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+	
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
 		double value;
 
@@ -79,11 +80,8 @@ import utils.*;
 		value = aSpeciesRoot.getParamDbl("KSat");
 		KSat = (Double.isNaN(value) ? KSat : value);
 		
-		
 		//retrieving bacteria names
 		epiBacName = aSpeciesRoot.getAttribute("name");
-
-		
 	}
 
 }

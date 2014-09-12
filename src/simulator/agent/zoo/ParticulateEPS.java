@@ -12,8 +12,9 @@ package simulator.agent.zoo;
 import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
-
+import simulator.reaction.Reaction;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -27,47 +28,46 @@ import utils.XMLParser;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class ParticulateEPS extends LocatedAgent {
-
+public class ParticulateEPS extends LocatedAgent
+{
 	/**
 	 * Serial version used for the serialisation of the class
 	 */
 	private static final long   serialVersionUID = 1L;
 
 	/**
-	 * \brief Default constructor, only called to create the progenitor of this species
-	 * 
-	 * Default constructor, only called to create the progenitor of this species
+	 * \brief Default constructor, only called to create the progenitor of this
+	 * species.
 	 */
-	public ParticulateEPS() {
+	public ParticulateEPS()
+	{
 		super();
 		_speciesParam = new ParticulateEPSParam();
 	}
-
+	
 	/**
-	 * \brief Creates a clone of this ParticulateEPS agent
+	 * \brief Creates a clone of this ParticulateEPS agent.
 	 * 
-	 * Creates a clone of this ParticulateEPS agent
-	 * 
-	 * @throws CloneNotSupportedException 	Exception thrown if the agent is a type that cannot be cloned
+	 * @throws CloneNotSupportedException Exception thrown if the agent is a
+	 * type that cannot be cloned.
 	 */
 	public Object clone() throws CloneNotSupportedException 
 	{
-		ParticulateEPS o = (ParticulateEPS) super.clone();
-		return o;
+		ParticulateEPS out = (ParticulateEPS) super.clone();
+		return out;
 	}
-
+	
 	/**
-	 * \brief Initialises the object by reading the relevant species information from the simulation XML protocol file
-	 * 
-	 *  Initialises the object by reading the relevant species information from the simulation XML protocol file
+	 * \brief Initialises the object by reading the relevant species
+	 * information from the simulation XML protocol file.
 	 */
-	public void initFromProtocolFile(Simulator aSimulator, XMLParser aSpeciesRoot) {
+	public void initFromProtocolFile(Simulator aSimulator, XMLParser aSpeciesRoot)
+	{
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		_agentGrid = aSimulator.agentGrid;
 		init();
 	}
-
+	
 	/**
 	 * \brief Create a Particulate EPS agent using information in a previous state or initialisation file
 	 * 
@@ -106,10 +106,10 @@ public class ParticulateEPS extends LocatedAgent {
 	 * @throws CloneNotSupportedException	Thrown if attempting to clone an agent type that does not implement Cloneable
 	 * @return	New instance of the ParticulateEPS species
 	 */
-	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException {
+	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException
+	{
 		ParticulateEPS baby = (ParticulateEPS) this.clone();
 		init();
-
 		return baby;
 	}
 
@@ -118,17 +118,19 @@ public class ParticulateEPS extends LocatedAgent {
 	 * 
 	 * Create a new Particulate EPS agent (who a priori is registered in at least one container)
 	 */
-	public void createNewAgent(ContinuousVector position) {
-		try {
+	public void createNewAgent(ContinuousVector position)
+	{
+		try
+		{
 			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
 			baby.mutatePop();
 			baby.setLocation(position);
 			baby.updateSize();
-
 			baby.registerBirth();
-
-		} catch (CloneNotSupportedException e) {
-			utils.LogFile.writeLog("Error met in ParticulateEPS:createNewAgent()");
+		}
+		catch (CloneNotSupportedException e)
+		{
+			LogFile.writeError(e, "ParticulateEPS.createNewAgent()");
 		}
 	}
 
@@ -216,10 +218,11 @@ public class ParticulateEPS extends LocatedAgent {
 	 * 
 	 * @return Boolean value noting whether the cell will die (true) or not (false)
 	 */
-	public boolean willDie() {
-		if (_totalMass<0) return true;
-		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
-		        getSpeciesParam().deathRadiusCV);
+	public boolean willDie()
+	{
+		if ( _totalMass < 0.0 )
+			return true;
+		return ( getRadius(true) <= this.getDeathRadius() );
 	}
 
 	/**
@@ -306,17 +309,18 @@ public class ParticulateEPS extends LocatedAgent {
 	}
 
 	/**
-	 * \brief Tests if the agent has to die and removes it from any container
+	 * \brief Tests if the agent has to die and removes it from any container.
 	 * 
-	 * Tests if the agent has to die and removes it from any container
-	 * 
-	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
+	 * @param isStarving Boolean noting whether the agent currently has
+	 * access to any resources.
 	 */
-	public void die(boolean isStarving) {
-		if (isStarving&_totalMass>0) transferBiomass();		
+	public void die(boolean isStarving)
+	{
+		if ( isStarving && (_totalMass > 0.0) )
+			transferBiomass();		
 		super.die(isStarving);
 	}
-
+	
 	/**
 	 * \brief Update the volume of this agent by examining the particle density
 	 * 
@@ -324,44 +328,44 @@ public class ParticulateEPS extends LocatedAgent {
 	 */
 	public void updateVolume() 
 	{
-		_volume = 0;
-		for (int i = 0; i<particleMass.length-1; i++)
+		_volume = 0.0;
+		for (int i = 0; i < particleMass.length - 1; i++)
 			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
-
+		
 		// Add the volume of the EPS capsule to the volume of the intracellular
 		// particles
-		int i = particleMass.length-1;
+		int i = particleMass.length - 1;
 		_totalVolume = _volume+particleMass[i]/getSpeciesParam().particleDensity[i];
-
 	}
-
+	
 	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * \brief Specifies the header of the columns of output information for
+	 * this agent.
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * Used in creation of results files.
 	 * 
-	 * @return	String specifying the header of each column of results associated with this agent
+	 * @return	String specifying the header of each column of results
+	 * associated with this agent.
 	 */
-	public String sendHeader() 
+	public StringBuffer sendHeader() 
 	{
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-
-		return tempString.toString();
+		StringBuffer tempString = super.sendHeader();
+		return tempString;
 	}
 
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
 	 * 
-	 * @return	String containing results associated with this agent
+	 * @return	String containing results associated with this agent.
 	 */
-	public String writeOutput() {
-		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-
-		return tempString.toString();
+	public StringBuffer writeOutput()
+	{
+		StringBuffer tempString = super.writeOutput();
+		return tempString;
 	}
 
 
@@ -376,11 +380,15 @@ public class ParticulateEPS extends LocatedAgent {
 		return (ParticulateEPSParam) _speciesParam;
 	}
 
-	//@Override
-	//protected void conjugate(double elapsedHGTtime) {
+	
+	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
 		// TODO Auto-generated method stub
 		
-	//}
+	}
 
-
+	
+	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
+		// TODO Auto-generated method stub
+		
+	}
 }
