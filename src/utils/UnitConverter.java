@@ -12,19 +12,20 @@ import java.awt.Color;
 /**
  * \brief Static class used to convert units (mass, length, time)
  * 
- * Static class used to convert units (mass, length, time). Internal units: Mass = femtograms (=1e-15 grams), Length = micrometer (=1e-6 meter), 
- * Time = hour
+ * Internal units:
+ *  - Mass = femtograms (=1e-15 grams)
+ *  - Length = micrometer (=1e-6 meter) 
+ *  - Time = hour
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
 public class UnitConverter 
 {
 
 	/**
-     * \brief Takes a unit of time and returns a factor to multiply a parameter by to obtain the correct unit (hour)
-     * 
-     * Takes a unit of time and returns a factor to multiply a parameter by to obtain the correct unit (hour)
+     * \brief Takes a unit of time and returns a factor to multiply a parameter by to obtain the correct unit (hour).
      * 
      * @param timeUnit	Unit of time for which a conversion is required
      * @return a factor to multiply to obtain the correct unit (hour)
@@ -82,7 +83,7 @@ public class UnitConverter
 			out = 1e3;
 			unit = "mm";
 		}
-		if (lengthUnit.contains("μm")) {
+		if (lengthUnit.contains("µm")) {
 			out = 1.0;
 			unit = "microm";
 		}
@@ -129,13 +130,13 @@ public class UnitConverter
 			unit = "mg";
 		}
 
-		if (massUnit.contains("μg")) {
+		if (massUnit.contains("µg")) {
 			out = 1e9;
-			unit = "μg";
+			unit = "µg";
 		}
 		if (massUnit.contains("ug")) {
 			out = 1e9;
-			unit = "μg";
+			unit = "µg";
 		}
 		if (massUnit.contains("fg")) {
 			out = 1;
@@ -170,13 +171,13 @@ public class UnitConverter
 			unit = "L";
 		}
 
-		if (massUnit.contains("μm")) {
+		if (massUnit.contains("µm")) {
 			out = 1;
-			unit = "μm";
+			unit = "µm";
 		}
 		if (massUnit.contains("um")) {
 			out = 1;
-			unit = "μm";
+			unit = "µm";
 		}
 
 		if (massUnit.contains(unit+"-")) {
