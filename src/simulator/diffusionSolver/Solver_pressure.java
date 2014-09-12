@@ -19,7 +19,7 @@ import utils.XMLParser;
  * 
  * Initialises and calculates pressure affect on the simulation domain
  * 
- * @author Andreas D�tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
@@ -79,7 +79,7 @@ public class Solver_pressure extends DiffusionSolver
 		_biovolume = new SoluteGrid(_domain.getBiomass());
 		_biovolume.gridName = "deltaVolume";
 
-		_solute[0] = new SinglegridPressure(aSimulator.getSolute("pressure"), _bLayer, 0);
+		_solute[0] = new SinglegridPressure(aSimulator.getSolute("pressure"), _bLayer, 0.0);
 		_solute[0].soluteName = "pressure";
 		_solute[0]._reac = _biovolume;
 
