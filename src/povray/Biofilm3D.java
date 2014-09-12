@@ -207,7 +207,7 @@ public class Biofilm3D implements Serializable
 	 * @param g	Amount of green colour to use in creating the colour of this cell
 	 * @param b	Amount of blue colour to use in creating the colour of this cell
 	 */
-	protected void addCell(float x, float y, float z, float rad, int r, int g, int b) 
+	protected void addCell(Double x, Double y, Double z, Double rad, int r, int g, int b) 
 	{
 		Color color = new Color(r, g, b);
 		_cells[_next] = new ParticleWithCapsule();

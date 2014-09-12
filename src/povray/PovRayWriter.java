@@ -80,7 +80,7 @@ public class PovRayWriter implements Serializable
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError(e.getLocalizedMessage(), "PovRayWriter.initPovRay()");
+			LogFile.writeError(e, "PovRayWriter.initPovRay()");
 		}
 	}
 
