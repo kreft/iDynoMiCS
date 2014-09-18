@@ -9,8 +9,6 @@
 package utils;
 
 import idyno.Idynomics;
-import idyno.SimTimer;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
@@ -18,8 +16,6 @@ import java.text.SimpleDateFormat;
 // log file where events are recorder
 import java.util.Calendar;
 import java.text.DecimalFormat;
-
-import Jama.Matrix;
 
 
 /**

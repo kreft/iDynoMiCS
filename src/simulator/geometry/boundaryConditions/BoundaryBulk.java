@@ -65,6 +65,7 @@ public class BoundaryBulk extends AllBC{
 	 * @param aDomain	The domain which this boundary condition is associated with
 	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) 
 	{
 		// Load the geometry of the boundary
@@ -84,6 +85,7 @@ public class BoundaryBulk extends AllBC{
 	 * 
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
 	{
 		// Store the concentration in the bulk
@@ -107,6 +109,7 @@ public class BoundaryBulk extends AllBC{
 	 *  @param timeStep	The internal timestep currently being applied in this simulation
 	 *  
 	 */
+	@Override
 	public void updateBulk(SoluteGrid[] allSG, SoluteGrid[] allRG, double timeStep) {
 		_connectedBulk.updateBulk(allSG, allRG, timeStep);
 	}
@@ -118,6 +121,7 @@ public class BoundaryBulk extends AllBC{
 	 * 
 	 * @return Bulk object that is connected to this boundary
 	 */
+	@Override
 	public Bulk getBulk() {
 		return _connectedBulk;
 	}
@@ -130,6 +134,7 @@ public class BoundaryBulk extends AllBC{
 	 * @param soluteIndex	Index of the solute in the simulation dictionary
 	 * @return	Value of solute in the connected bulk
 	 */
+	@Override
 	public double getBulkValue(int soluteIndex) 
 	{
 		return _connectedBulk.getValue(soluteIndex);
@@ -144,6 +149,7 @@ public class BoundaryBulk extends AllBC{
 	 * 
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
+	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) 
 	{
 		return cc;
@@ -156,6 +162,7 @@ public class BoundaryBulk extends AllBC{
      * 
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
+	@Override
 	public void setBoundary(LocatedGroup aGroup) {
 		aGroup.status = 3;
 		// status 3 -> bulk
@@ -169,6 +176,7 @@ public class BoundaryBulk extends AllBC{
 	 * @param anAgent	The LocatedAgent that has crossed the boundary
 	 * @param target	Vector of where this agent was going to be placed
 	 */
+	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) 
 	{
 		//sonia 27.04.2010
@@ -192,6 +200,7 @@ public class BoundaryBulk extends AllBC{
 	 * 
 	 * @return String noting the side of the domain that this condition applies to (i.e. x0z, xNz, etc)
 	 */
+	@Override
 	public String toString() 
 	{
 		return new String("Bulk:"+this._mySide);

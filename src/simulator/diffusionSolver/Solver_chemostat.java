@@ -124,6 +124,7 @@ public class Solver_chemostat extends DiffusionSolver
 	 * @param aSimulator	The current simulation object
 	 * @param xmlRoot	Root element of XML tags containing chemostat related parameters
 	 */
+	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot) 
 	{
 
@@ -199,6 +200,7 @@ public class Solver_chemostat extends DiffusionSolver
 	 * 
 	 * Initialise the concentration fields within the chemostat, getting concentration of any catalysts and storing this on a grid
 	 */
+	@Override
 	public void initializeConcentrationFields() {
 		try {
 			//reset biomass concentration in the grid
@@ -222,6 +224,7 @@ public class Solver_chemostat extends DiffusionSolver
 	 * Use the ODE solver to solve the diffusion reaction and update the bulk
 	 * 
 	 */
+	@Override
 	public void solveDiffusionReaction() 
 	{
 		//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);

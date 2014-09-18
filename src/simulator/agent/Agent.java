@@ -132,6 +132,7 @@ public abstract class Agent implements Cloneable {
 	 * 
 	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}

@@ -79,6 +79,7 @@ public class LightSource implements Serializable
 	 * 
 	 * @return String value summarising the information stored about this lightsource
 	 */
+	@Override
 	public String toString() {
 		return "light_source {\n"
 		+ "\t "

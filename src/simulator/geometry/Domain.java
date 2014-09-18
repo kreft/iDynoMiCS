@@ -312,6 +312,7 @@ public class Domain implements IsComputationDomain
      * @param newLoc	The location to test
      * @return	Boundary that the point has crossed (if applicable - null if no boundary crossed)
      */
+	@Override
 	public AllBC testCrossedBoundary(ContinuousVector newLoc) {
 		// Test on the domain grid if the new location is inside the domain
 		if (_domainGrid.isValid(newLoc)&&_domainGrid.getValueAt(newLoc)>=0) return null;
@@ -383,6 +384,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return LinkedList of boundary conditions for this domain
 	 */
+	@Override
 	public LinkedList<AllBC> getAllBoundaries() 
 	{
 		return _boundaryList;
@@ -420,6 +422,7 @@ public class Domain implements IsComputationDomain
 	 * Method to refresh relative diffusivity and boundary layer grids to ensure biomass updated this step is included. 
 	 * Used in the creation of output files
 	 */
+	@Override
 	public void refreshBioFilmGrids() 
 	{
 		//sonia:chemostat
@@ -501,6 +504,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return LinkedList of DiscreteVectors with the limit of the boundary layer
 	 */
+	@Override
 	public LinkedList<DiscreteVector> getBorder() {
 		double v;
 		LinkedList<DiscreteVector> border = new LinkedList<DiscreteVector>();
@@ -690,6 +694,7 @@ public class Domain implements IsComputationDomain
      * @return SpatialGrid within this domain
      */
 
+	@Override
 	public SpatialGrid getGrid() {
 		return _domainGrid;
 	}
@@ -701,6 +706,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return Name of this domain
 	 */
+	@Override
 	public String getName() {
 		return domainName;
 	}
@@ -723,6 +729,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return	SoluteGrid containing diffusivity grid statistics
 	 */
+	@Override
 	public SoluteGrid getDiffusivity() {
 		return _diffusivityGrid;
 	}
@@ -734,6 +741,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return	SoluteGrid containing boundary between bulk and biofilm
 	 */
+	@Override
 	public SoluteGrid getBoundaryLayer() 
 	{
 		return _boundaryLayer;
@@ -746,6 +754,7 @@ public class Domain implements IsComputationDomain
 	 * 
 	 * @return	SoluteGrid containing biomass throughout this domain
 	 */
+	@Override
 	public SoluteGrid getBiomass() {
 		return _biomassGrid;
 	}

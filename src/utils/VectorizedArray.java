@@ -122,6 +122,8 @@ public class VectorizedArray
 	/**
 	 * \brief Return the minimum value of the array
 	 * 
+	 * TODO (elegant like in MatrixOperations?)
+	 * 
 	 * Return the minimum value of the array
 	 * 
 	 * @return Double value which is the minimum value in the array

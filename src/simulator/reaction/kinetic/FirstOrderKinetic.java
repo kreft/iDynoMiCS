@@ -26,13 +26,15 @@ public class FirstOrderKinetic extends IsKineticFactor
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed for easing the kinetic calculation
+	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file 
+	 * and calculating any auxillaries needed for easing the kinetic calculation
 	 * 
-	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed 
-	 * for easing the kinetic calculation
+	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file 
+	 * and calculating any auxillaries needed for easing the kinetic calculation
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
 	 */
+	@Override
 	public void init(Element defMarkUp) 
 	{
 		nParam = 0;
@@ -47,19 +49,23 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction
 	 * @param paramIndex	An index to the parameter array
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, double[] kineticParam, int paramIndex) {
 	}
 
 	/**
-	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing 
+	 * parameters relating to the reaction, and an index to this array
 	 * 
-	 * Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * Calculate the value of the kinetic from a given level of solute, an array containing 
+	 * parameters relating to the reaction, and an index to this array
 	 * 
 	 * @param solute	Double stating the level of that solute
 	 * @param paramTable	Array of parameters relating to this reaction
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
+	@Override
 	public double kineticValue(double solute, double[] paramTable, int index) {
 		return 1;
 	}
@@ -73,6 +79,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 * 
 	 */
+	@Override
 	public double kineticValue(double solute) {
 		return 1;
 	}
@@ -87,6 +94,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute, double[] paramTable, int index) {
 		return 0;
 	}
@@ -99,6 +107,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param solute	Solute level
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute) {
 		return 0;
 	}

@@ -40,6 +40,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
 	 */
+	@Override
 	public void init(Element defMarkUp) {
 		_K = (new XMLParser(defMarkUp)).getParamDbl("K");
 		nParam = 1;
@@ -54,6 +55,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction
 	 * @param paramIndex	An index to the parameter array
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, double[] kineticParam, int paramIndex) {
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("K");
 	}
@@ -68,6 +70,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
+	@Override
 	public double kineticValue(double solute, double[] paramTable, int index) {
 		return paramTable[index]*solute;
 	}
@@ -81,6 +84,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 * 
 	 */
+	@Override
 	public double kineticValue(double solute) {
 		return _K*solute;
 	}
@@ -95,6 +99,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute, double[] paramTable, int index) {
 		return paramTable[index];
 	}
@@ -107,6 +112,7 @@ public class LinearKinetic extends IsKineticFactor
 	 * @param solute	Solute level
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute) {
 		return _K;
 	}

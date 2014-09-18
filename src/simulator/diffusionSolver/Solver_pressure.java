@@ -64,6 +64,7 @@ public class Solver_pressure extends DiffusionSolver
 	 * @param aSimulator	The current simulation object
 	 * @param xmlRoot	XML tags containing relevant parameters for intialising this object
 	 */
+	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot) {
 		super.init(aSimulator, xmlRoot);
 
@@ -90,6 +91,7 @@ public class Solver_pressure extends DiffusionSolver
 	 * 
 	 * Initialise concentration fields. Refreshes domain and biomass grids and sets pressure across the grid to zero
 	 */
+	@Override
 	public void initializeConcentrationFields() 
 	{
 		// Refresh then insert here the boundary layer and the diffusivity grid

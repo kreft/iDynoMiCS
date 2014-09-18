@@ -22,6 +22,7 @@ public abstract class InfoAgent extends SpecialisedAgent implements HasSpecies {
 	 * 
 	 * Called at each time step of the simulation to compute agent characteristics
 	 */
+	@Override
 	public abstract void internalStep();
 
 }

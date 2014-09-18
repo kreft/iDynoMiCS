@@ -206,6 +206,7 @@ public class ParticleWithCapsule implements Serializable
 	 * 
 	 * @return String value summarising the information stored about this particle with capsule
 	 */
+	@Override
 	public String toString() {
 
 		// bvm 27.1.2009: modified this output to use color definitions and

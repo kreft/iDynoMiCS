@@ -409,6 +409,7 @@ public class LocatedGroup {
 	 * @return	Double distance between the two points
 	 * @deprecated
 	 */
+	@Deprecated
 	public double computeDifferenceVector(ContinuousVector me, ContinuousVector him,
 			ContinuousVector move) {
 		double gridLength;
@@ -597,6 +598,7 @@ public class LocatedGroup {
 	public static class TValueComparator implements java.util.Comparator<Object> 
 	{
 
+		@Override
 		public int compare(Object b1, Object b2) 
 		{
 			double f1=((LocatedGroup) b1).erosionTime;
@@ -620,6 +622,7 @@ public class LocatedGroup {
 	 */
 	public static class DistanceValueComparator implements java.util.Comparator<LocatedGroup> {
 
+		@Override
 		public int compare(LocatedGroup b1, LocatedGroup b2) {
 			double out = b1.distanceFromCarrier-b2.distanceFromCarrier;
 

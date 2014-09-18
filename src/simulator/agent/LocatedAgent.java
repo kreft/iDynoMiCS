@@ -142,6 +142,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		_speciesParam = new LocatedParam();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	/**
 	 * \brief Creates a daughter Located Agent by cloning this agent and parameter objects
@@ -161,7 +162,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 
 		o._agentGridIndex = this._agentGridIndex;
 
-		return (Object) o;
+		return o;
 	}
 
 	/**
@@ -208,6 +209,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
 	 * species is registered into the agent grid
 	 */
+	@Override
 	public void registerBirth() {
 		// Register on species and reaction guilds
 		super.registerBirth();
@@ -222,6 +224,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param xmlMarkUp	A species mark-up within the specified protocol file
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) 
 	{	
 		super.initFromProtocolFile(aSim, xmlMarkUp);
@@ -239,6 +242,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
 	 */
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
 		// this routine will read data from the end of the singleAgentData array
@@ -289,6 +293,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * Called at each time step of the simulation to compute cell growth, update size, and monitor cell death. Also determines whether 
 	 * the agent has reached the size at which it must divide
 	 */
+	@Override
 	protected void internalStep() {
 		// Compute mass growth over all compartments
 		grow();
@@ -310,6 +315,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Update the radius of the agent from the current mass (and then the volume) of the agent (EPS included)
 	 */
+	@Override
 	public void updateSize() 
 	{
 		// Update the totalMass field (sum of the particles masses)
@@ -390,6 +396,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Kills an agent. Called by detachment and starving test
 	 */
+	@Override
 	public void die(boolean isStarving) {
 		super.die(isStarving);
 	}
@@ -401,6 +408,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @throws CloneNotSupportedException	Thrown if the agent cannot be cloned
 	 */
+	@Override
 	public void makeKid() throws CloneNotSupportedException {
 
 		// Create the new instance
@@ -487,6 +495,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutatePop() 
 	{
 		// Mutate parameters inherited
@@ -525,6 +534,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
+	@Override
 	public double interact(boolean MUTUAL, boolean shoveOnly, boolean seq,
 			double gain) {
 		boolean willShove = false;
@@ -768,6 +778,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * With the agent move calculated, apply this movement, taking care to respect boundary conditions
 	 * 
 	 */
+	@Override
 	public double move() {
 		if (!_movement.isValid()) {
 			LogFile.writeLog("Incorrect movement coordinates");
@@ -832,6 +843,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * free to choose which fields to mutate for each different class by a simple redefinition
 	 * 
 	 */
+	@Override
 	public void mutateAgent() {
 		// Mutate parameters inherited
 		super.mutateAgent();
@@ -846,6 +858,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aSpG	Spatial grid used to sum catalysing mass
 	 * @param catalystIndex	Index of the compartment of the cell supporting the reaction
 	 */
+	@Override
 	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
 		if (isDead)
 			return;
@@ -863,6 +876,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @param aSpG	Spatial grid used to sum total mass
 	 */
+	@Override
 	public void fitMassOnGrid(SpatialGrid aSpG) 
 	{
 		if (isDead)
@@ -896,6 +910,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aRateGrid	Spatial grid used to store total reaction rate
 	 * @param reactionIndex	Index of this declared reaction in the simulation dictionary
 	 */
+	@Override
 	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
 		if (isDead)
 			return;
@@ -919,6 +934,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
+	@Override
 	public String sendHeader() {
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
@@ -937,6 +953,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
+	@Override
 	public String writeOutput() {
 		// write the data matching the header file
 		StringBuffer tempString = new StringBuffer(super.writeOutput());
@@ -1021,6 +1038,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return LocatedParam object of parameters associated with this agent
 	 */
+	@Override
 	public LocatedParam getSpeciesParam() {
 		return (LocatedParam) _speciesParam;
 	}
@@ -1178,6 +1196,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return Boolean noting whether the agent has a move to perform
 	 */
+	@Override
 	public boolean isMoving() {
 		return (_movement.norm()>_totalRadius/10);
 	}
@@ -1245,6 +1264,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public static class detPriorityComparator implements java.util.Comparator<Object> {
 
+		@Override
 		public int compare(Object b1, Object b2) {
 			return (((LocatedAgent) b1).detPriority>((LocatedAgent) b2).detPriority ? 1 : -1);
 		}
@@ -1258,6 +1278,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public static class totalMassComparator implements java.util.Comparator<Object> {
 
+		@Override
 		public int compare(Object b1, Object b2) {
 			return (((LocatedAgent) b1)._totalMass>((LocatedAgent) b2)._totalMass ? 1 : -1);
 		}
@@ -1319,6 +1340,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return Integer grid index of where this agent is placed
 	 */
+	@Override
 	public int getGridIndex() {
 		return _agentGridIndex;
 	}

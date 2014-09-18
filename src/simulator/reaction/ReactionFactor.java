@@ -90,6 +90,7 @@ public class ReactionFactor extends Reaction
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
+	@Override
 	public void init(Simulator aSim, XMLParser xmlRoot) 
 	{
 
@@ -148,6 +149,7 @@ public class ReactionFactor extends Reaction
 	 * @param aReactionRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
+	@Override
 	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) 
 	{
 		// Call the init of the parent class (populate yield arrays)
@@ -198,6 +200,7 @@ public class ReactionFactor extends Reaction
 	 * @param mass	Mass of the catalyst (cell...)
 	 * @param t	Time
 	 */
+	@Override
 	public void computeUptakeRate(double[] s, double mass, double t) {
 
 		// First compute specific rate
@@ -225,6 +228,7 @@ public class ReactionFactor extends Reaction
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
+	@Override
 	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
 
 		// Build the array of concentration seen by the agent
@@ -238,6 +242,7 @@ public class ReactionFactor extends Reaction
 	 * 
 	 * @param s	Array of solute concentration
 	 */
+	@Override
 	public void computeSpecificGrowthRate(double[] s) {
 		_specRate = _muMax;
 		int soluteIndex;
@@ -270,6 +275,7 @@ public class ReactionFactor extends Reaction
 	 * 
 	 * @param s	Temporary container for solute concentration 
 	 */
+	@Override
 	public void updateMarginalMu(double[] s) 
 	{
 		int soluteIndex;
@@ -294,6 +300,7 @@ public class ReactionFactor extends Reaction
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
+	@Override
 	public double computeSpecRate(double[] s){
 		double specRate = _muMax;
 
@@ -311,6 +318,7 @@ public class ReactionFactor extends Reaction
 	 * @param s	Temporary container for solute concentration 
 	 * @return Marginal diff array
 	 */
+	@Override
 	public double[] computeMarginalDiffMu(double[] s){
 		int soluteIndex;
 
@@ -338,6 +346,7 @@ public class ReactionFactor extends Reaction
 	 * @param s	Array of solute concentration
 	 * @param anAgent	Parameters used are those defined for THIS agent
 	 */
+	@Override
 	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
 		double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
 
@@ -393,6 +402,7 @@ public class ReactionFactor extends Reaction
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to time
 	 */ 
+	@Override
 	public Matrix calcdMUdT(Matrix S, double biomass){
 		Matrix dMUdT = new Matrix(nSolute, 1, 0);
 
@@ -423,6 +433,7 @@ public class ReactionFactor extends Reaction
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
 	 */ 
+	@Override
 	public Matrix calcdMUdS(Matrix S, double biomass){	
 		Matrix dMUdY = new Matrix (nSolute, nSolute, 0);
 
@@ -467,6 +478,7 @@ public class ReactionFactor extends Reaction
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The marginal growth rate
 	 */
+	@Override
 	public double computeMassGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
@@ -480,6 +492,7 @@ public class ReactionFactor extends Reaction
 	 * @param anAgent	Specific growth rate for this ActiveAgent
 	 * @return	The specific growth rate
 	 */
+	@Override
 	public double computeSpecGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;

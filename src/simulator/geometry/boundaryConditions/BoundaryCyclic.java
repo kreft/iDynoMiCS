@@ -77,6 +77,7 @@ public class BoundaryCyclic extends AllBC
 	 * @param aDomain	The domain which this boundary condition is associated with
 	 * @param aBCParser	The XML tags that have declared this boundary in the protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCParser) 
 	{
 		_mySide = aBCParser.getAttributeStr("name");
@@ -102,6 +103,7 @@ public class BoundaryCyclic extends AllBC
 	 * @param geometryRoot	XML tags in the protocol file that describe this boundary
 	 * @param aDomain	The domain which this boundary is associated with
 	 */
+	@Override
 	public void readGeometry(XMLParser geometryRoot, Domain aDomain) {
 		List<Element> shapeList = geometryRoot.getChildren("shape");
 		String className;
@@ -134,6 +136,7 @@ public class BoundaryCyclic extends AllBC
 	 * 
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
+	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) 
 	{
 		ContinuousVector nCC = _myShape.intersection(cc, _myShape.getNormalInside(cc));
@@ -150,6 +153,7 @@ public class BoundaryCyclic extends AllBC
      * 
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
+	@Override
 	public void setBoundary(LocatedGroup aGroup) {
 		aGroup.status = -1;
 		// status -1 -> outside
@@ -163,6 +167,7 @@ public class BoundaryCyclic extends AllBC
 	 * @param anAgent	The Located Agent which is attempting to cross the boundary
 	 * @param target	The target position that the agent is moving to
 	 */
+	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
 		// Determine the intersection with the crossed boundary
 		vectorIn = _myShape.intersection(anAgent.getLocation(), anAgent.getMovement());
@@ -185,6 +190,7 @@ public class BoundaryCyclic extends AllBC
 	 * 
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
 	{
 		// 2D simulations: activeForSolute is false for x0y/xNy and true for x0z/xNz
@@ -274,6 +280,7 @@ public class BoundaryCyclic extends AllBC
 	 * @param cc	ContinuousVector to check
 	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
 	 */
+	@Override
 	public boolean isOutside(ContinuousVector cc) {
 		return _myShape.isOutside(cc);
 	}
@@ -299,6 +306,7 @@ public class BoundaryCyclic extends AllBC
 	 * @param cc	The continuous vector of points to calculate how far the point is from the boundary
 	 * @return	Double value stating the distance fromt the point to the boundary
 	 */
+	@Override
 	public double getDistance(ContinuousVector cc) {
 		return _myShape.getDistance(cc);
 	}
@@ -324,6 +332,7 @@ public class BoundaryCyclic extends AllBC
 	 * 
 	 * @return String noting the side of the domain that this condition applies to (i.e. x0z, xNz, etc)
 	 */
+	@Override
 	public String toString() {
 		return new String("Cyclic:"+this._mySide);
 	}

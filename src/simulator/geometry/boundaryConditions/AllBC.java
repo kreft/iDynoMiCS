@@ -98,9 +98,9 @@ public abstract class AllBC{
 	}
 	
 	/**
-	 * \brief Initialises the boundary condition. Should be overriden by each boundary condition class file
+	 * \brief Initialises the boundary condition. Should be overridden by each boundary condition class file
 	 * 
-	 * Initialises the boundary condition. This method should be overriden by each boundary condition class file
+	 * Initialises the boundary condition. This method should be overridden by each boundary condition class file
 	 * 
 	 * @param aSim	The current simulation object used to simulate the conditions specified in this protocol file
 	 * @param aDomain	The computation domain to which this boundary condition is assigned

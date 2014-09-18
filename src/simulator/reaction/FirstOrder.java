@@ -33,6 +33,7 @@ public class FirstOrder extends Reaction {
 	private static int          iSolute;
 
 	/* _______________________ CONSTRUCTOR _________________________ */
+	@Override
 	public void init(Simulator aSim, XMLParser aReactionRoot) {
 		super.init(aSim, aReactionRoot);
 		_k = aReactionRoot.getParamTime("k");	
@@ -43,6 +44,7 @@ public class FirstOrder extends Reaction {
 
 	/**
 	 */
+	@Override
 	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
@@ -88,6 +90,8 @@ public class FirstOrder extends Reaction {
      * @param anAgent	The agent
      * @deprecated
      */
+	@Deprecated
+	@Override
 	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
@@ -97,6 +101,8 @@ public class FirstOrder extends Reaction {
 	 * @deprecated
 	 * 
 	 */
+	@Deprecated
+	@Override
 	public void computeSpecificGrowthRate(double[] s) {
 		_specRate = this._k;
 	}
@@ -107,6 +113,8 @@ public class FirstOrder extends Reaction {
      * @param anAgent Parameters used are those defined for THIS agent
      * @deprecated
      */
+	@Deprecated
+	@Override
 	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
 		_specRate = anAgent.reactionKinetic[reactionIndex][0];
 	}
@@ -117,11 +125,13 @@ public class FirstOrder extends Reaction {
      * @param anAgent
      * @return
      */
+	@Override
 	public double computeMassGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
 
+	@Override
 	public double computeSpecGrowthRate(ActiveAgent anAgent) {
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;

@@ -50,6 +50,7 @@ public class BoundaryConstant extends AllBC{
 	 * @param aDomain	The domain which this boundary condition is associated with
 	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) {
 		// Load the geometry of the boundary
 		readGeometry(aBoundCondMarkUp, aDomain);
@@ -66,6 +67,7 @@ public class BoundaryConstant extends AllBC{
 	 * 
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) {
 		// Some internal variables
 		double bulkValue = _connectedBulk.getValue(aSoluteGrid.soluteIndex);
@@ -87,6 +89,7 @@ public class BoundaryConstant extends AllBC{
 	 * 
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
+	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) {
 		return cc;
 	}
@@ -98,6 +101,7 @@ public class BoundaryConstant extends AllBC{
      * 
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
+	@Override
 	public void setBoundary(LocatedGroup aGroup) {
 		aGroup.status = 3;
 		// status 3 -> bulk
@@ -111,6 +115,7 @@ public class BoundaryConstant extends AllBC{
 	 * @param anAgent	The LocatedAgent that has crossed the boundary
 	 * @param target	Vector of where this agent was going to be placed
 	 */
+	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
 		
 		//sonia 27.04.2010

@@ -53,6 +53,7 @@ public class Episome extends InfoAgent {
 		_speciesParam = new EpisomeParam();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
 		Episome o = (Episome) super.clone();
@@ -65,7 +66,7 @@ public class Episome extends InfoAgent {
 		o.lastExchange = this.lastExchange;
 		o.lastReception = this.lastReception;
 
-		return (Object) o;
+		return o;
 	}
 
 	/**
@@ -86,6 +87,7 @@ public class Episome extends InfoAgent {
 
 	/* ______________________ CREATION _____________________________ */
 
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) {
 		// Initilaisation of the Located agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -110,6 +112,7 @@ public class Episome extends InfoAgent {
 		}
 	}
 
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
 		// this writes no unique values, so doesn't need unique reading-in
 		// (for a template on how to read in data, look in LocatedAgent.java)
@@ -132,6 +135,7 @@ public class Episome extends InfoAgent {
 	/**
 	 * 
 	 */
+	@Override
 	public Episome sendNewAgent() throws CloneNotSupportedException {
 		Episome baby = (Episome) this.clone();
 		baby.init();
@@ -141,6 +145,7 @@ public class Episome extends InfoAgent {
 	/**
 	 * 
 	 */
+	@Override
 	public void createNewAgent() {
 		try {
 			// Clone the plamid
@@ -156,6 +161,7 @@ public class Episome extends InfoAgent {
 		}
 	}
 
+	@Override
 	public void mutatePop() {
 		// Mutate inherited parameters
 		super.mutatePop();
@@ -163,12 +169,14 @@ public class Episome extends InfoAgent {
 		// Now mutate your parameters
 	}
 
+	@Override
 	public void registerBirth() {
 		_species.notifyBirth();
 	}
 
 	/* __________________________ CELL DIVISION ____________________________ */
 
+	@Override
 	public void makeKid() throws CloneNotSupportedException {
 		// Clone the plamid
 		Episome baby = this.sendNewAgent();
@@ -180,6 +188,7 @@ public class Episome extends InfoAgent {
 		baby.registerBirth();
 	}
 
+	@Override
 	public void mutateAgent() {
 		// Mutate inherited parameters
 		super.mutateAgent();
@@ -189,6 +198,7 @@ public class Episome extends InfoAgent {
 
 	/* _______________________________________________________________________ */
 
+	@Override
 	public void internalStep() {
 	}
 
@@ -251,6 +261,7 @@ public class Episome extends InfoAgent {
 		}
 	}
 
+	@Override
 	public EpisomeParam getSpeciesParam() {
 		return (EpisomeParam) _speciesParam;
 	}
@@ -285,6 +296,7 @@ public class Episome extends InfoAgent {
 
 	/* _______________ FILE OUTPUT _____________________ */
 
+	@Override
 	public String sendHeader() {
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
@@ -295,6 +307,7 @@ public class Episome extends InfoAgent {
 		return tempString.toString();
 	}
 
+	@Override
 	public String writeOutput() {
 		// write the data matching the header file
 		// (for a template on how to write data, look in LocatedAgent.java)

@@ -132,6 +132,7 @@ public class Camera implements Serializable
 	 * 
 	 * @return String value summarising the information stored about this camera
 	 */
+	@Override
 	public String toString() {
 		return "camera {\n"+ "\t"+ location
 			+ "\n"+ "\t "

@@ -876,7 +876,7 @@ public class SpatialGrid implements Serializable {
 		case 3:
 			return _nK*_reso;
 		default:
-			return (double) 0;
+			return 0;
 		}
 	}
 

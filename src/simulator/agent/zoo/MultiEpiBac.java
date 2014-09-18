@@ -74,6 +74,7 @@ public class MultiEpiBac extends BactEPS {
 		_speciesParam = new MultiEpiBacParam();
 	}
 
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		MultiEpiBac o = (MultiEpiBac) super.clone();
 		o._plasmidHosted = new Vector <MultiEpisome>();
@@ -84,7 +85,7 @@ public class MultiEpiBac extends BactEPS {
 			o._plasmidHosted.add(newEpisome);	
 		}
 
-		return (Object) o;
+		return o;
 	}
 
 
@@ -92,6 +93,7 @@ public class MultiEpiBac extends BactEPS {
 	/**
 	 * Called during species creation to build the progenitor
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSimulator, XMLParser aSpeciesRoot) {
 		// Initialisation of the Located agent
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -130,6 +132,7 @@ public class MultiEpiBac extends BactEPS {
 	//super.initFromResultFile(aSim, remainingSingleAgentData);
 	//}
 
+	@Override
 	public MultiEpiBac sendNewAgent() throws CloneNotSupportedException {
 		MultiEpiBac baby = (MultiEpiBac) this.clone();
 		baby.init();
@@ -137,6 +140,7 @@ public class MultiEpiBac extends BactEPS {
 	}
 
 
+	@Override
 	public void createNewAgent(ContinuousVector position) {
 		try {
 			// Clone the agent
@@ -153,6 +157,7 @@ public class MultiEpiBac extends BactEPS {
 		}
 	}
 
+	@Override
 	public void mutatePop() {
 		// Mutate inherited parameters
 		super.mutatePop();
@@ -161,6 +166,7 @@ public class MultiEpiBac extends BactEPS {
 
 	/* ______________________ CELL DIVISION ___________________ */
 
+	@Override
 	public void mutateAgent() {
 		// Mutate inherited parameters
 		super.mutateAgent();
@@ -169,9 +175,10 @@ public class MultiEpiBac extends BactEPS {
 		// Now mutate your parameters
 	}
 
+	@Override
 	public void makeKid() throws CloneNotSupportedException {
 		// Create the new instance
-		MultiEpiBac baby = (MultiEpiBac) sendNewAgent();
+		MultiEpiBac baby = sendNewAgent();
 		baby.mutateAgent();
 
 		// Update the lineage
@@ -211,6 +218,7 @@ public class MultiEpiBac extends BactEPS {
 	/**
 	 * Method called by the STEP method (cf. the Agent class)
 	 */
+	@Override
 	public void internalStep() {
 
 		// Check if some plasmid has a null copy number and remove it if
@@ -257,6 +265,7 @@ public class MultiEpiBac extends BactEPS {
 
 
 
+	@Override
 	public void grow() {
 		double deltaMass;
 		int reacIndex;
@@ -402,6 +411,7 @@ public class MultiEpiBac extends BactEPS {
 	/**
 	 * Remove agent and all references from the system
 	 */
+	@Override
 	public void die(boolean isStarving) {
 		super.die(isStarving);
 	}
@@ -782,6 +792,7 @@ public class MultiEpiBac extends BactEPS {
 		}
 	}
 
+	@Override
 	public MultiEpiBacParam getSpeciesParam() {
 		return (MultiEpiBacParam) _speciesParam;
 	}
@@ -791,6 +802,7 @@ public class MultiEpiBac extends BactEPS {
 	 * @return color of the host if empty, color of the first hosted plasmid
 	 * else
 	 */
+	@Override
 	public Color getColor() {
 
 		MultiEpiBacParam param = getSpeciesParam();
@@ -838,6 +850,7 @@ public class MultiEpiBac extends BactEPS {
 		return index;
 	}
 
+	@Override
 	public String sendHeader() {
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = new StringBuffer(super.sendHeader());
@@ -851,6 +864,7 @@ public class MultiEpiBac extends BactEPS {
 		return tempString.toString();
 	}
 
+	@Override
 	public String writeOutput() {
 		//super.writeOutput();	
 		//tempString.delete(tempString.length()-2, tempString.length());
@@ -899,25 +913,26 @@ public class MultiEpiBac extends BactEPS {
 		return tempString.toString();
 	}
 
+	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException {
 		MultiEpiBacParam param = getSpeciesParam();
 
 		fr.write("#declare "+_species.speciesName+"_d = color rgb < ");
-		fr.write(((float) param.dColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.dColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.dColor.getBlue()) / 255.0 + " >");
+		fr.write((param.dColor.getRed()) / 255.0 + " , ");
+		fr.write((param.dColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.dColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 
 		fr.write("#declare "+_species.speciesName+"_r = color rgb < ");
-		fr.write(((float) param.rColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.rColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.rColor.getBlue()) / 255.0 + " >");
+		fr.write((param.rColor.getRed()) / 255.0 + " , ");
+		fr.write((param.rColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.rColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 
 		fr.write("#declare "+_species.speciesName+"_t = color rgb < ");
-		fr.write(((float) param.tColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.tColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.tColor.getBlue()) / 255.0 + " >");
+		fr.write((param.tColor.getRed()) / 255.0 + " , ");
+		fr.write((param.tColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.tColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 	}
 

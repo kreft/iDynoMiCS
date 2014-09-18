@@ -63,18 +63,18 @@ public class PovRayWriter implements Serializable
 	{
 		try 
 		{
-			dir = outPath+File.separator;
+			dir = outPath+java.io.File.separator;
 			// Create the PovRay description object
 			_povRay = new Povray3DScene(aSim, aSim.world.domainList.get(0).getName());
-			_povRay.writePovrayIncFiles(dir+"lastIter"+File.separator);			
+			_povRay.writePovrayIncFiles(dir+"lastIter"+java.io.File.separator);			
 
 			// Create the archive file in which these
 			_vArchive = new File(dir+"povray"+".zip");
-			File incFile=new File(dir+"lastIter"+File.separator+"sceneheader.inc");
-			incFile.copyTo(new File(dir+"povray.zip"+File.separator+"sceneheader.inc"));
+			File incFile=new File(dir+"lastIter"+java.io.File.separator+"sceneheader.inc");
+			incFile.copyTo(new File(dir+"povray.zip"+java.io.File.separator+"sceneheader.inc"));
 
-			incFile=new File(dir+"lastIter"+File.separator+"scenefooter.inc");
-			incFile.copyTo(new File(dir+"povray.zip"+File.separator+"scenefooter.inc"));
+			incFile=new File(dir+"lastIter"+java.io.File.separator+"scenefooter.inc");
+			incFile.copyTo(new File(dir+"povray.zip"+java.io.File.separator+"scenefooter.inc"));
 			File.update(_vArchive);
 
 		} 
@@ -97,10 +97,10 @@ public class PovRayWriter implements Serializable
 		try 
 		{
 			// Create the povray file
-			File f = new File(_povRay.writeModelState(dir+"lastIter"+File.separator+"it(last).pov"));
+			File f = new File(_povRay.writeModelState(dir+"lastIter"+java.io.File.separator+"it(last).pov"));
 
 			// Copy the povray file inside the archive
-			f.copyTo(new File(dir+"povray.zip"+File.separator+"it("+fileIndex+").pov"));
+			f.copyTo(new File(dir+"povray.zip"+java.io.File.separator+"it("+fileIndex+").pov"));
 			File.update(_vArchive);
 
 		} 

@@ -66,13 +66,15 @@ public class HillKinetic extends IsKineticFactor
 	}
 
 	/**
-	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed for easing the kinetic calculation
+	 * \brief Initialise the kinetic, reading in kinetic parameter information from the protocol file 
+	 * and calculating any auxiliaries needed for easing the kinetic calculation
 	 * 
-	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file and calculating any auxillaries needed 
-	 * for easing the kinetic calculation
+	 * Initialise the kinetic, reading in kinetic parameter information from the protocol file 
+	 * and calculating any auxiliaries needed for easing the kinetic calculation
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file
 	 */
+	@Override
 	public void init(Element defMarkUp) {
 		_Ks = (new XMLParser(defMarkUp)).getParamDbl("Ks");
 		_h = (new XMLParser(defMarkUp)).getParamDbl("h");
@@ -90,21 +92,25 @@ public class HillKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction
 	 * @param paramIndex	An index to the parameter array
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, double[] kineticParam, int paramIndex) {
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl( "Ks");
 		kineticParam[paramIndex+1] = (new XMLParser(defMarkUp)).getParamDbl("h");
 	}
 
 	/**
-	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * \brief Calculate the value of the kinetic from a given level of solute, an array containing 
+	 * parameters relating to the reaction, and an index to this array
 	 * 
-	 * Calculate the value of the kinetic from a given level of solute, an array containing parameters relating to the reaction, and an index to this array
+	 * Calculate the value of the kinetic from a given level of solute, an array containing 
+	 * parameters relating to the reaction, and an index to this array
 	 * 
 	 * @param solute	Double stating the level of that solute
 	 * @param paramTable	Array of parameters relating to this reaction
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
+	@Override
 	public double kineticValue(double solute, double[] paramTable, int index) {
 		return Math.pow(solute, paramTable[index+1])
 		        /(Math.pow(paramTable[index], paramTable[index+1])+Math.pow(solute,
@@ -120,6 +126,7 @@ public class HillKinetic extends IsKineticFactor
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 * 
 	 */
+	@Override
 	public double kineticValue(double solute) 
 	{
 		return Math.pow(solute,_h)/(_KsPowH+Math.pow(solute,_h));
@@ -133,6 +140,7 @@ public class HillKinetic extends IsKineticFactor
 	 * @param solute	Solute level
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute) {
 		return _KsH*Math.pow(solute, _h-1)/(ExtraMath.sq(_KsPowH+Math.pow(solute, _h)));
 	}
@@ -147,6 +155,7 @@ public class HillKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public double kineticDiff(double solute, double[] paramTable, int index) {
 		return Math.pow(paramTable[index], paramTable[index+1])
 		        *paramTable[index+1]

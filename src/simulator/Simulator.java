@@ -500,7 +500,7 @@ public class Simulator
 			try
 			{
 				String rSeed = localRoot.getParam("randomSeed");
-				randomSeed = (long) Integer.parseInt(rSeed);
+				randomSeed = Integer.parseInt(rSeed);
 				LogFile.writeLog("Using random seed in protocol file: "+randomSeed);
 			}
 			catch (Exception e)
@@ -1088,8 +1088,8 @@ public class Simulator
 		boolean creatingAgents = false;
 		
 		// Now check the injection period. 
-		if(simTimer.getCurrentTime()>=speciesList.get(spIndex).cellInjectionStartHour
-			&& simTimer.getCurrentTime()<=speciesList.get(spIndex).cellInjectionEndHour)
+		if(SimTimer.getCurrentTime()>=speciesList.get(spIndex).cellInjectionStartHour
+			&& SimTimer.getCurrentTime()<=speciesList.get(spIndex).cellInjectionEndHour)
 			{
 				// We're in a cell injection period. In this time, we model cells being injected into the domain. These may then
 				// attach at a different frequency to when this injection is off
@@ -1129,7 +1129,7 @@ public class Simulator
 		// in hours. Thus we need to work out we are injecting the correct number of cells here.
 		
 		int wholeAgentsThisTimeStep = (int)(cellAttachmentFrequency * SimTimer.getCurrentTimeStep());
-		double remainder = (cellAttachmentFrequency * SimTimer.getCurrentTimeStep()) - (double)wholeAgentsThisTimeStep;
+		double remainder = (cellAttachmentFrequency * SimTimer.getCurrentTimeStep()) - wholeAgentsThisTimeStep;
 		
 		if(remainder>0)
 		{

@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import org.jdom.Element;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
@@ -434,9 +433,11 @@ public class XMLParser implements Serializable
 
 	@SuppressWarnings("unchecked")
 	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the String value of a specified detail within that tag
+	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * String value of a specified detail within that tag
 	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the value of a specified detail within that tag
+	 * Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * String value of a specified detail within that tag
 	 * 
 	 * @param paramName	The parameter name for which the value is required
 	 * @param detailName	The name of the detail element which is part of that tag, if present
@@ -459,9 +460,11 @@ public class XMLParser implements Serializable
 
 	@SuppressWarnings("unchecked")
 	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name, in a specified unit to find the String value of a specified detail within that tag
+	 * \brief Searches through the attributes of the XML tags of a given parameter name, 
+	 * in a specified unit to find the String value of a specified detail within that tag
 	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the value of a specified detail within that tag
+	 * Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * value of a specified detail within that tag
 	 * 
 	 * @param paramName	The parameter name for which the value is required
 	 * @param detailName	The name of the detail element which is part of that tag, if present
@@ -574,9 +577,6 @@ public class XMLParser implements Serializable
 		}
 		return _localRoot;
 	}
-
-	@SuppressWarnings("unchecked")
-	
 	
 	/**
 	 * \brief Return the string value of an attribute of the current localroot of the XML file
@@ -600,7 +600,8 @@ public class XMLParser implements Serializable
 	 */
 	public Double getAttributeDbl(String attributeName) 
 	{
-		// KA NOV 13 - Added a return of NaN if the attribute was not found. Required when setting up the cell birth area by volume/area
+		// KA NOV 13 - Added a return of NaN if the attribute was not found. 
+		// Required when setting up the cell birth area by volume/area
 		try
 		{
 			return Double.parseDouble(getAttributeStr(attributeName));
@@ -670,7 +671,7 @@ public class XMLParser implements Serializable
 	 * @return	List of XML elements containing the children of the specified tag name
 	 */
 	public List<Element> getChildren(String childName) {
-		return (List<Element>) _localRoot.getChildren(childName);
+		return _localRoot.getChildren(childName);
 	}
 
 	/**
@@ -734,9 +735,13 @@ public class XMLParser implements Serializable
 		
 
 	/**
-	 * \brief Used for Epi-Bac scenarios - retrieving list of environments to which this species is sensitive to and the correspondent probability of dying if under the influence of that environment
+	 * \brief Used for Epi-Bac scenarios - retrieving list of environments to which this species 
+	 * is sensitive to and the correspondent probability of dying if under the influence of 
+	 * that environment
 	 * 
-	 * Used for Epi-Bac scenarios - retrieving list of environments to which this species is sensitive to and the correspondent probability of dying if under the influence of that environment
+	 * Used for Epi-Bac scenarios - retrieving list of environments to which this species 
+	 * is sensitive to and the correspondent probability of dying if under the influence of 
+	 * that environment
 	 * 
 	 * @param childName	The name of the XML tag that contains the information on this parameter
 	 * @param attrName	The name of the first attribute within that XML tag
