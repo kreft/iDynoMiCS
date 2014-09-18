@@ -831,6 +831,10 @@ A few general points about protocol files:
 		<param name="shoveFactor" unit="um">1.15</param>
 		<param name="shoveLimit" unit="um">0</param>
 
+		<param name="cellRunSpeed" unit="um/sec">30.0</param>
+		<param name="tumbleInt" unit="seconds">5</param>dist
+		<param name="stickinessRadius" unit="um">0.5</param>
+
 		<param name="epsMax">0.1</param>
 		<param name="kHyd" unit="hr-1">0.007</param>
 
