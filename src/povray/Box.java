@@ -96,6 +96,7 @@ public class Box implements Serializable
 	 * 
 	 * @return String value containing all the attributes of this box
 	 */
+	@Override
 	public String toString() {
 		return "box {\n"
 			+ "\t "

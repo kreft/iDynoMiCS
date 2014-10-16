@@ -188,6 +188,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 * 
 	 * @return String containing the points in this vector.
 	 */
+	@Override
 	public String toString()
 	{
 		return ExtraMath.toString(x, false)+",\t"+ExtraMath.toString(y, false)+
@@ -352,6 +353,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 * 
 	 * @throws CloneNotSupportedException Thrown if the object cannot be cloned.
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
 		return super.clone();
@@ -364,6 +366,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 * 
 	 * @param other	ContinuousVector to compare this continuous vector object to.
 	 */
+	@Override
 	public int compareTo(ContinuousVector other) 
     {
 		int valueComparison = this.x.compareTo(other.x);

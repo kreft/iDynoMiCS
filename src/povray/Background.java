@@ -60,6 +60,7 @@ public class Background implements Serializable
 	 * 
 	 * @return String value denoting what colour the vector represents
 	 */
+	@Override
 	public String toString() {
 		return "background {\n"
 		+ "\t" + color + "\n"

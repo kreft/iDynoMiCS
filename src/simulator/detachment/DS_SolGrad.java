@@ -49,6 +49,7 @@ public class DS_SolGrad extends LevelSet
 	 * @param anAgentGrid	Associated grid of agents
 	 * @param root	XML tag containing information related to this detachment mechanism
 	 */
+	@Override
 	public void init(AgentContainer anAgentGrid, XMLParser root) {
 		super.init(anAgentGrid, root);
 		// kDet has units of: um2.hr-1
@@ -68,6 +69,7 @@ public class DS_SolGrad extends LevelSet
 	 * @return Double stating local detachment speed for this group
 	 *
 	 */
+	@Override
 	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) 
 	{
 		// If group is above threshold, definitely remove

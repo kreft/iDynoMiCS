@@ -51,6 +51,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * @throws CloneNotSupportedException Exception thrown if the agent is a
 	 * type that cannot be cloned.
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException 
 	{
 		ParticulateEPS out = (ParticulateEPS) super.clone();
@@ -61,6 +62,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * \brief Initialises the object by reading the relevant species
 	 * information from the simulation XML protocol file.
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSimulator, XMLParser aSpeciesRoot)
 	{
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -76,6 +78,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
 	 */
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
 		// this writes no unique values, so doesn't need unique reading-in
@@ -106,8 +109,13 @@ public class ParticulateEPS extends LocatedAgent
 	 * @throws CloneNotSupportedException	Thrown if attempting to clone an agent type that does not implement Cloneable
 	 * @return	New instance of the ParticulateEPS species
 	 */
+<<<<<<< HEAD
 	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException
 	{
+=======
+	@Override
+	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException {
+>>>>>>> master
 		ParticulateEPS baby = (ParticulateEPS) this.clone();
 		init();
 		return baby;
@@ -118,11 +126,18 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * Create a new Particulate EPS agent (who a priori is registered in at least one container)
 	 */
+<<<<<<< HEAD
 	public void createNewAgent(ContinuousVector position)
 	{
 		try
 		{
 			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
+=======
+	@Override
+	public void createNewAgent(ContinuousVector position) {
+		try {
+			ParticulateEPS baby = sendNewAgent();
+>>>>>>> master
 			baby.mutatePop();
 			baby.setLocation(position);
 			baby.updateSize();
@@ -145,7 +160,7 @@ public class ParticulateEPS extends LocatedAgent
 	 */
 	public boolean createByExcretion(Bacterium mother, double ratio) {
 		try {
-			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
+			ParticulateEPS baby = sendNewAgent();
 			baby._movement.reset();
 			// randomize its mass
 			baby.mutatePop();
@@ -184,7 +199,7 @@ public class ParticulateEPS extends LocatedAgent
 	 */
 	public boolean createInertByExcretion(Bacterium mother, double ratio) {
 		try {
-			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
+			ParticulateEPS baby = sendNewAgent();
 
 			// randomize its mass
 			baby.mutatePop();
@@ -218,11 +233,19 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return Boolean value noting whether the cell will die (true) or not (false)
 	 */
+<<<<<<< HEAD
 	public boolean willDie()
 	{
 		if ( _totalMass < 0.0 )
 			return true;
 		return ( getRadius(true) <= this.getDeathRadius() );
+=======
+	@Override
+	public boolean willDie() {
+		if (_totalMass<0) return true;
+		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
+		        getSpeciesParam().deathRadiusCV);
+>>>>>>> master
 	}
 
 	/**
@@ -230,6 +253,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutatePop() 
 	{
 		super.mutatePop();
@@ -241,6 +265,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. Also determines whether 
 	 * the agent has reached the size at which it must divide, and monitors agent death
 	 */
+	@Override
 	public void internalStep() 
 	{
 		// Compute mass growth over all compartments and update radius, mass and
@@ -263,6 +288,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return Boolean value noting whether the cell will divide (true) or not (false)
 	 */
+	@Override
 	public boolean willDivide() 
 	{
 		return getRadius(true)>getSpeciesParam().divRadius;
@@ -314,10 +340,16 @@ public class ParticulateEPS extends LocatedAgent
 	 * @param isStarving Boolean noting whether the agent currently has
 	 * access to any resources.
 	 */
+<<<<<<< HEAD
 	public void die(boolean isStarving)
 	{
 		if ( isStarving && (_totalMass > 0.0) )
 			transferBiomass();		
+=======
+	@Override
+	public void die(boolean isStarving) {
+		if (isStarving&_totalMass>0) transferBiomass();		
+>>>>>>> master
 		super.die(isStarving);
 	}
 	
@@ -326,6 +358,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * Update the volume of this agent by examining the particle density
 	 */
+	@Override
 	public void updateVolume() 
 	{
 		_volume = 0.0;
@@ -347,7 +380,12 @@ public class ParticulateEPS extends LocatedAgent
 	 * @return	String specifying the header of each column of results
 	 * associated with this agent.
 	 */
+<<<<<<< HEAD
 	public StringBuffer sendHeader() 
+=======
+	@Override
+	public String sendHeader() 
+>>>>>>> master
 	{
 		StringBuffer tempString = super.sendHeader();
 		return tempString;
@@ -362,10 +400,19 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return	String containing results associated with this agent.
 	 */
+<<<<<<< HEAD
 	public StringBuffer writeOutput()
 	{
 		StringBuffer tempString = super.writeOutput();
 		return tempString;
+=======
+	@Override
+	public String writeOutput() {
+		// write the data matching the header file
+		StringBuffer tempString = new StringBuffer(super.writeOutput());
+
+		return tempString.toString();
+>>>>>>> master
 	}
 
 
@@ -376,6 +423,7 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return Object of ParticulateParam that stores the parameters associated with this species
 	 */
+	@Override
 	public ParticulateEPSParam getSpeciesParam() {
 		return (ParticulateEPSParam) _speciesParam;
 	}

@@ -50,6 +50,7 @@ public class EpiBac extends BactEPS
 		_speciesParam = new EpiBacParam();
 	}
 
+	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
 		EpiBac out = (EpiBac) super.clone();
@@ -67,6 +68,7 @@ public class EpiBac extends BactEPS
 	/**
 	 * Called during species creation to build the progenitor.
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSimulator,
 												XMLParser aSpeciesRoot)
 	{
@@ -79,6 +81,8 @@ public class EpiBac extends BactEPS
 		init();
 	}
 
+
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
 	{
 		// find the position to start at by using length and number of values read
@@ -97,6 +101,7 @@ public class EpiBac extends BactEPS
 		super.initFromResultFile(aSim, remainingSingleAgentData);
 	}
 
+	@Override
 	public EpiBac sendNewAgent() throws CloneNotSupportedException
 	{
 		EpiBac baby = (EpiBac) this.clone();
@@ -104,11 +109,19 @@ public class EpiBac extends BactEPS
 		return baby;
 	}
 
+	/**
+	 * TODO Consider deleting
+	 */
+	@Override
 	public void createNewAgent(ContinuousVector position)
 	{
 		super.createNewAgent(position);
 	}
-
+	
+	/**
+	 * TODO Consider deleting
+	 */
+	@Override
 	public void mutatePop()
 	{
 		// Mutate inherited parameters
@@ -118,6 +131,10 @@ public class EpiBac extends BactEPS
 
 	/* ______________________ CELL DIVISION ___________________ */
 
+	/**
+	 * TODO Consider deleting
+	 */
+	@Override
 	public void mutateAgent()
 	{
 		// Mutate inherited parameters
@@ -125,10 +142,11 @@ public class EpiBac extends BactEPS
 		// Now mutate your parameters
 	}
 
+	@Override
 	public void makeKid() throws CloneNotSupportedException
 	{
 		// Create the new instance
-		EpiBac baby = (EpiBac) sendNewAgent();
+		EpiBac baby = sendNewAgent();
 		baby.mutateAgent();
 		// Update the lineage
 		recordGenealogy(baby);
@@ -151,6 +169,7 @@ public class EpiBac extends BactEPS
 	/**
 	 * Method called by the STEP method (cf. the Agent class)
 	 */
+	@Override
 	public void internalStep()
 	{
 		// Check if some plasmid has a null copy number and remove it if
@@ -222,8 +241,11 @@ public class EpiBac extends BactEPS
 	}
 
 	/**
-	 * Remove agent and all references from the system
+	 * Remove agent and all references from the system.
+	 * 
+	 * TODO Consider deleting
 	 */
+	@Override
 	public void die(boolean isStarving)
 	{
 		super.die(isStarving);
@@ -390,6 +412,8 @@ public class EpiBac extends BactEPS
 			addActiveReaction(allReactions[aReaction], true);
 	}
 
+	
+	@Override
 	public EpiBacParam getSpeciesParam()
 	{
 		return (EpiBacParam) _speciesParam;
@@ -439,6 +463,7 @@ public class EpiBac extends BactEPS
 	/**
 	 * Used to write povray files (replaces the version in LocatedAgent)
 	 */
+	@Override
 	public String getName()
 	{
 		if (_plasmidHosted.size() == 0)
@@ -454,6 +479,7 @@ public class EpiBac extends BactEPS
 	/**
 	 * Used to write povray files
 	 */
+	@Override
 	public Color getColor()
 	{
 		EpiBacParam param = getSpeciesParam();
@@ -473,14 +499,16 @@ public class EpiBac extends BactEPS
 
 	/* _______________ FILE OUTPUT _____________________ */
 
-	public StringBuffer sendHeader()
+
+	@Override
+	public String sendHeader()
 	{
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = super.sendHeader();
 		tempString.append(",status,copyNumber,lastReception,lastExchange");
 		return tempString;
 	}
-
+	
 	/**
 	 * \brief Creates an output string of information generated on this
 	 * particular agent.
@@ -490,6 +518,7 @@ public class EpiBac extends BactEPS
 	 * 
 	 * @return	String containing results associated with this agent.
 	 */
+	@Override
 	public StringBuffer writeOutput()
 	{
 		StringBuffer tempString = super.writeOutput();
@@ -564,26 +593,27 @@ public class EpiBac extends BactEPS
 	 * 
 	 * @param theFile
 	 */
+	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException
 	{
 		EpiBacParam param = getSpeciesParam();
 
 		fr.write("#declare "+_species.speciesName+"_d = color rgb < ");
-		fr.write(((float) param.dColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.dColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.dColor.getBlue()) / 255.0 + " >");
+		fr.write((param.dColor.getRed()) / 255.0 + " , ");
+		fr.write((param.dColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.dColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 
 		fr.write("#declare "+_species.speciesName+"_r = color rgb < ");
-		fr.write(((float) param.rColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.rColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.rColor.getBlue()) / 255.0 + " >");
+		fr.write((param.rColor.getRed()) / 255.0 + " , ");
+		fr.write((param.rColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.rColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 
 		fr.write("#declare "+_species.speciesName+"_t = color rgb < ");
-		fr.write(((float) param.tColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.tColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.tColor.getBlue()) / 255.0 + " >");
+		fr.write((param.tColor.getRed()) / 255.0 + " , ");
+		fr.write((param.tColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.tColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 	}
 }

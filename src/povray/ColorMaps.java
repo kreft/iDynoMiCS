@@ -38,9 +38,9 @@ public abstract class ColorMaps implements Serializable
 		//make sure f is not negative nor greater than 1
 		f = (f < 0 ? 0 : f);
 		f = (f > 1 ? 1.0f : f);
-		float r = (float) c.getRed() / 255.0f;
-		float g = (float) c.getGreen() / 255.0f;
-		float b = (float) c.getBlue() / 255.0f;
+		float r = c.getRed() / 255.0f;
+		float g = c.getGreen() / 255.0f;
+		float b = c.getBlue() / 255.0f;
 		return new Color(brightenValue(r, f), brightenValue(g, f),
 				brightenValue(b, f));
 	}

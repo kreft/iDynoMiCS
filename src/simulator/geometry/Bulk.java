@@ -423,7 +423,7 @@ public class Bulk
 
 			oldValue = _bulkValue[iGrid];
 
-			aDomain = (Domain) soluteGrid[iGrid].getDomain();
+			aDomain = soluteGrid[iGrid].getDomain();
 
 			// Ask for the interface between bulk and D-R field
 			border = aDomain.getBorder();

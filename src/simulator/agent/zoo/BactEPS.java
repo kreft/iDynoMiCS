@@ -45,6 +45,7 @@ public class BactEPS extends Bacterium
 	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
 	 * monitors agent death. In this case also manages EPS hydrolysis
 	 */
+	@Override
 	protected void internalStep() {
 		// Compute mass growth over all compartments
 		grow();
@@ -65,6 +66,7 @@ public class BactEPS extends Bacterium
 	 * 
 	 * Manages EPS hydrolyse by the agent and distribution between neighbouring agents
 	 */
+	@Override
 	public void manageEPS() 
 	{
 
@@ -124,6 +126,7 @@ public class BactEPS extends Bacterium
 	 * 
 	 * @return Object of BactEPSParam that stores the parameters associated with this species
 	 */
+	@Override
 	public BactEPSParam getSpeciesParam() {
 		return (BactEPSParam) _speciesParam;
 	}

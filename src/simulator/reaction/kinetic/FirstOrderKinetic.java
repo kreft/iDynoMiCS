@@ -32,6 +32,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
+	@Override
 	public void init(Element defMarkUp) 
 	{
 		nParam = 0;
@@ -44,9 +45,9 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction.
 	 * @param paramIndex	An index to the parameter array.
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
-		
 	}
 	
 	/**
@@ -59,6 +60,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
+	@Override
 	public Double kineticValue(Double solute, Double[] paramTable, int index)
 	{
 		return 1.0;
@@ -70,6 +72,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @param solute	Double giving the solute concentration.
 	 * @return Double giving kinetic rate for this solute concentration.
 	 */
+	@Override
 	public Double kineticValue(Double solute)
 	{
 		return 1.0;
@@ -85,6 +88,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute, Double[] paramTable, int index)
 	{
 		return 0.0;
@@ -98,6 +102,7 @@ public class FirstOrderKinetic extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute)
 	{
 		return 0.0;

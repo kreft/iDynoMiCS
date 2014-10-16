@@ -262,7 +262,7 @@ public class FluctEnv extends Bulk {
         	for (int i=startPos; i<envCumProb[startPos].length; i++){
         		for ( int j=0; j<envCumProb.length; j++){
         			if( envCumProb[startPos][j] > rand){
-        				cumProb = (Double)envCumProb[startPos][j];
+        				cumProb = envCumProb[startPos][j];
         				counterA++;
         				break loop1;		
         				}
@@ -275,7 +275,7 @@ public class FluctEnv extends Bulk {
             for (int row=currentPos; row<envCumProb[currentPos].length; row++){
             	for ( int column=0; column<envCumProb.length; column++){
             		if( envCumProb[currentPos][column] > rand){
-            			cumProb = (Double)envCumProb[currentPos][column];
+            			cumProb = envCumProb[currentPos][column];
             			break loop2;		
             		}	
             	}
@@ -306,7 +306,7 @@ public class FluctEnv extends Bulk {
          loop3:
          for (int r=startPos; r<envCumProb[startPos].length; r++){
              for (int c=0; c<envCumProb[r].length; c++){
-                 if((Double) cumProb == envCumProb[startPos][c]){
+                 if(cumProb == envCumProb[startPos][c]){
                         indices.set(0,startPos);
                         indices.set(1,c);  
                         indcounter2++;             
@@ -318,7 +318,7 @@ public class FluctEnv extends Bulk {
         	loop4:
             for (int r=currentPos; r<envCumProb[currentPos].length; r++){
                 for (int c=0; c<envCumProb[r].length; c++){
-                    if((Double) cumProb == envCumProb[currentPos][c]){
+                    if(cumProb == envCumProb[currentPos][c]){
                            indices.set(0,currentPos);
                            indices.set(1,c);    
                            break loop4;

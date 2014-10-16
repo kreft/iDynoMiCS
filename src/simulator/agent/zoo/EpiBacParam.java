@@ -36,11 +36,16 @@ public class EpiBacParam extends BactEPSParam
 		super();
 	}
 
+<<<<<<< HEAD
 	/**
 	 * 
 	 */
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
+=======
+	@Override
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+>>>>>>> master
 		super.init(aSim, aSpeciesRoot,speciesDefaults);
 		String colorName;
 

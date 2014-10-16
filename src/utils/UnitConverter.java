@@ -61,6 +61,8 @@ public class UnitConverter
 	/**
 	 * \brief Takes a length unit and returns a double value of length for that unit
 	 * 
+	 * TODO 1 Converter?
+	 * 
 	 * Takes a length unit and returns a length value of mass for that unit
 	 * 
 	 * @param lengthUnit	String containing a unit of length (m,cm,etc)
@@ -96,8 +98,8 @@ public class UnitConverter
 			unit = "fm";
 		}
 
-		if (lengthUnit.contains(unit+"-")) {
-			out = 1/out;
+		if (lengthUnit.contains(unit+"-1")) {
+			out = 1.0/out;
 		}
 
 		return out;
@@ -144,7 +146,7 @@ public class UnitConverter
 		}
 
 		if (massUnit.contains(unit+"-1")) {
-			out = 1/out;
+			out = 1.0/out;
 		}
 		return out;
 	}
@@ -180,8 +182,8 @@ public class UnitConverter
 			unit = "µm";
 		}
 
-		if (massUnit.contains(unit+"-")) {
-			out = 1/out;
+		if (massUnit.contains(unit+"-1")) {
+			out = 1.0/out;
 		}
 		return out;
 	}

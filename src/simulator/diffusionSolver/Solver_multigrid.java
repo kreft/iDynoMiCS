@@ -60,6 +60,7 @@ public class Solver_multigrid extends DiffusionSolver {
 	protected int				nPosSteps;
 	protected Domain            _domain;
 
+	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot) {
 		super.init(aSimulator, xmlRoot);
 
@@ -101,6 +102,7 @@ public class Solver_multigrid extends DiffusionSolver {
 		}
 	}
 
+	@Override
 	public void initializeConcentrationFields() {
 		minimalTimeStep = SimTimer.getCurrentTimeStep()/10;
 
@@ -126,6 +128,7 @@ public class Solver_multigrid extends DiffusionSolver {
 	/**
 	 * Solve by iterative relaxation
 	 */
+	@Override
 	public void solveDiffusionReaction() {
 		double timeToSolve = SimTimer.getCurrentTimeStep();
 		internalIteration = 0;
