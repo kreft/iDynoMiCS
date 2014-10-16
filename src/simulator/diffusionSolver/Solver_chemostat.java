@@ -9,18 +9,21 @@
  */
 package simulator.diffusionSolver;
 
-import java.util.ArrayList;
 import Jama.Matrix;
-import simulator.Simulator;
-import simulator.SoluteGrid;
-import simulator.diffusionSolver.multigrid.MultigridSolute;
-import simulator.geometry.Bulk;
-import simulator.geometry.Domain;
-import simulator.geometry.boundaryConditions.AllBC;
-import utils.LogFile;
-import utils.XMLParser;
+import java.util.ArrayList;
+
 import idyno.Idynomics;
 import idyno.SimTimer;
+import simulator.diffusionSolver.multigrid.MultigridSolute;
+import simulator.Simulator;
+import simulator.SoluteGrid;
+import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.Bulk;
+import simulator.geometry.Domain;
+import utils.ExtraMath;
+import utils.LogFile;
+import utils.XMLParser;
+
 
 public class Solver_chemostat extends DiffusionSolver 
 {
@@ -111,7 +114,7 @@ public class Solver_chemostat extends DiffusionSolver
 	 * Jacobian matrix: on each row an "F" (the rate of change of a substrate concentration) is differentiated with respect to each 
 	 * of the substrate concentrations (arranged on the columns).
 	 */ 
-	protected double[][] soluteYield;
+	protected Double[][] soluteYield;
 	
 	
 
@@ -147,11 +150,17 @@ public class Solver_chemostat extends DiffusionSolver
 
 		// The soluteYield (constant) and allDiffReac (variable) will be used for 
 		// calculating the Jacobian matrix
-		soluteYield = new double [nReaction][nSolute];
-		try{
+		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
+		try
+		{
 			for (int i = 0; i < nReaction; i++)
 				soluteYield[i] = _reactions.get(i).getSoluteYield();
-		}catch(Exception e){LogFile.writeLogAlways("Error creating solute fields in Solver_chemostat.init()");}
+		}
+		catch(Exception e)
+		{
+			LogFile.writeError(e,
+					  "Solver_chemostat.init() while creating solute yields");
+		}
 		// Initialize array of reactive biomasses
 		_reactiveBiomass = new MultigridSolute[nReaction];
 		try{
@@ -230,138 +239,124 @@ public class Solver_chemostat extends DiffusionSolver
 	}
 
 	/**
-	 * \brief ODE solver for calculating the diffusion reactions
+	 * \brief ODE solver for calculating the diffusion reactions.
 	 * 
-	 * ODE solver for calculating the diffusion reactions
-	 * 
-	 * @param t0	Simulation time
-	 * @param rtol	Relative tolerance of the calculated error
-	 * @param hmax	Maximum internal step of the solver
+	 * @param t0 Simulation time.
+	 * @param rtol Relative tolerance of the calculated error.
+	 * @param hmax Maximum internal step of the solver.
 	 */
-	public void odeSolver(double t0, double rtol, double hmax) {
-
-		Matrix y       = new Matrix(nSolute,1,0);
-		Matrix ynext   = new Matrix(nSolute,1,0);
+	public void odeSolver(double t0, double rtol, double hmax)
+	{
+		Matrix y       = new Matrix(nSolute, 1, 0.0);
+		Matrix ynext   = new Matrix(nSolute, 1, 0.0);
 		double t, tnext, tfinal;
 		double h, error;
-		Matrix f1      = new Matrix(nSolute,1,0);
-		Matrix f2      = new Matrix(nSolute,1,0);
-		Matrix W       = new Matrix (nSolute, nSolute, 0);
-		Matrix invW    = new Matrix (nSolute, nSolute, 0);
-		Matrix k1      = new Matrix (nSolute, 1, 0);
-		Matrix k2      = new Matrix (nSolute, 1, 0);
-		Matrix k3      = new Matrix (nSolute, 1, 0);
-		Matrix kaux    = new Matrix (nSolute, 1, 0);
-		Matrix dFdY    = new Matrix (nSolute, nSolute, 0);
-		Matrix dYdT    = new Matrix (nSolute, 1, 0);
-		Matrix dFdT    = new Matrix (nSolute, 1, 0);
-		Matrix sInflow = new Matrix (nSolute, 1, 0); // This is counted as a variable as solute may be pulsed
-
-
-		// We reset t and tnext to zero and find how long the current time-step is
-		t = 0;
-		tnext = 0;
-		h = 0;
-		tfinal =  SimTimer.getCurrentTimeStep();
-		// The error estimate is set back to zero for each global time-step
-		error = 0;
-
-		for (int iSol = 0; iSol<nSolute; iSol++) {
-			y.set(iSol, 0,  allSolute[iSol].grid[0][0][0]);
-		}
+		Matrix f1      = new Matrix(nSolute, 1, 0.0);
+		Matrix f2      = new Matrix(nSolute, 1, 0.0);
+		Matrix W       = new Matrix(nSolute, nSolute, 0.0);
+		Matrix invW    = new Matrix(nSolute, nSolute, 0.0);
+		Matrix k1      = new Matrix(nSolute, 1, 0.0);
+		Matrix k2      = new Matrix(nSolute, 1, 0.0);
+		Matrix k3      = new Matrix(nSolute, 1, 0.0);
+		Matrix kaux    = new Matrix(nSolute, 1, 0.0);
+		Matrix dFdY    = new Matrix(nSolute, nSolute, 0.0);
+		Matrix dYdT    = new Matrix(nSolute, 1, 0.0);
+		Matrix dFdT    = new Matrix(nSolute, 1, 0.0);
+		// sInflow is counted as a variable as solute may be pulsed.
+		Matrix sInflow = new Matrix(nSolute, 1, 0.0); 
 		
-		// Check if the Sinflow has changed (solutes may be pulsed)
+		// We reset t and tnext to zero and find how long the current time-step is.
+		t = 0.0;
+		tnext = 0.0;
+		h = 0.0;
+		tfinal =  SimTimer.getCurrentTimeStep();
+		// The error estimate is set back to zero for each global time-step.
+		error = 0.0;
+		
+		for (int iSol = 0; iSol < nSolute; iSol++)
+			y.set(iSol, 0,  allSolute[iSol].grid[0][0][0]);
+		
+		// Check if the Sinflow has changed (solutes may be pulsed).
 		sInflow = updateSInflow(sInflow);
-
+		
 		dYdT = calcdYdT(y, sInflow, dYdT);
-
-
+		
 		// Control statement in case hmax > global time-step
-		while (hmax > tfinal) {
+		while (hmax > tfinal)
+		{
 			hmax *= 0.5;
 			rtol *= 0.5;
 		}
-
+		
 		// hmax is our first attempted step - if it is too large then it will be reduced
 		h = hmax;
-
-
-
+		
 		//>>>>>>>>>>---> LOOP for h-steps <---<<<<<<<<<<//
 		boolean lastStep = false;
 
-		while (!lastStep) {
-
+		while ( ! lastStep )
+		{
 			// If a step is successful then h will be increased:
 			// this stops it from growing too large
 			h = Math.min(hmax,h);
-
-			// If the time step is within 5% of tfinal, take h = tfinal-t;
-			if (t + (1.05 * h) >= tfinal){
+			
+			// If the time step is within 5% of tfinal, take h = tfinal-t.
+			if (t + (1.05 * h) >= tfinal)
+			{
 				h = tfinal - t;
 				lastStep = true;
 			}
-
-			// tdel is a mini time-step used for calculating the value of dFdT 
+			
+			// tdel is a mini time-step used for calculating the value of dFdT. 
 			double tdel = sqrtE*(t+h);
 			dFdT = calcdFdT(y, dFdT, sInflow, tdel);
 			//LogFile.writeMatrix("t = "+t+", dFdT = ", dFdT);
 
-			// Update the uptake rates and diffuptake rates and then the dFdY Jacobian matrix
-			//updateDerivatives(y, dFdY);
+			// Update the uptake rates and diffuptake rates and then the dFdY
+			// Jacobian matrix
 			dFdY = calcJacobian(y,dFdY);
-			//LogFile.writeMatrix("dFdY = ",dFdY);
-
+			
 			//>>>---> LOOP for trying out this h <---<<<//
-			// 
 			boolean noFailed = true;
 			boolean usingHMin = false;
-			while (true) {
-
-				//LogFile.writeLog("h = "+h);
-				if (lastStep){
+			while (true)
+			{
+				if (lastStep)
 					tnext = tfinal;
-				} else {
+				else
 					tnext = t + h;
-				}
-
+				
 				// The Rosenbrock method
-				//LogFile.writeLog("Starting Rosenbrock. dFdY(0,0) = "+dFdY.get(0, 0));
-				try {
+				try
+				{
 					// W = I - h * d * dFdY
 					W = dFdY.times(-h*d);
-					//LogFile.writeLog("W(0,0) = "+W.get(0, 0));
 					W.plusEquals(Matrix.identity(nSolute,nSolute));
 					if (W.cond() > 10)
 						LogFile.writeLogAlways("Warning (ODEsolver): Condition of W is "+W.cond());
 					invW = W.inverse();
-
+					
 					// k1 = invW * ( dYdT(y) + h * d * dFdT )
 					k1.timesEquals(0);
 					k1 = invW.times( dFdT.times(h*d).plus(dYdT) );
-					//LogFile.writeLog("k1 = "+k1.get(0,0));
-
+					
 					// f1 = dYdT(y + k1*h/2)
 					f1.timesEquals(0);
 					f1 = calcdYdT( k1.times(h/2).plus(y) , sInflow, f1);
-					//LogFile.writeLog("f1 = "+f1.get(0,0));
-
+					
 					// k2 = invW * ( f1 - k1 ) + k1
 					k2.timesEquals(0);
 					k2 = invW.times( f1.minus(k1) );
 					k2.plusEquals(k1);
-					//LogFile.writeLog("k2 = "+k2.get(0,0));
-
+					
 					// ynext = y + h * k2
 					ynext.timesEquals(0);
 					ynext = k2.times(h).plus(y);
-					//LogFile.writeLog("ynext = "+ynext.get(0,0));
-
+					
 					// f2 = dYdT(ynext)
 					f2.timesEquals(0);
 					f2 = calcdYdT(ynext, sInflow, f2);
-					//LogFile.writeLog("f2 = "+f2.get(0,0));
-
+					
 					// k3 = invW * ( f2 - e32*(k2-f1) - 2*(k1-y) + h*d*dFdT )
 					// Setting kaux as expression inside brackets
 					k3.timesEquals(0);
@@ -371,235 +366,232 @@ public class Solver_chemostat extends DiffusionSolver
 					kaux.minusEquals( k1.minus(y).times(2) );
 					kaux.plusEquals( dFdT.times(h*d));
 					k3 = invW.times(kaux);
-					//LogFile.writeLog("k3 = "+k3.get(0,0));
 					// error = (h/6) * (k1 - 2*k2 + k3)/y
 					kaux.timesEquals(0);
+					
 					// We now use kaux to estimate the error of this step
-
 					for (int i = 0; i < nSolute; i++)
 						kaux.set(i,0, 1/Math.min(y.get(i,0),ynext.get(i,0)));
-					//LogFile.writeLog("y "+y.get(0, 0)+", ynext "+ynext.get(0,0)+", kaux "+kaux.get(0,0));
 					kaux.arrayTimesEquals( k1.minus( k2.times(2) ).plus(k3).times(h/6) );
 					//kaux = k1.minus( k2.times(2) ).plus(k3).times(h/6);
 					// We now calculate the error
 					error = 0;
 					for (int i = 0; i < nSolute; i++)
 						error = Math.max(error, kaux.get(i,0));
-					//LogFile.writeLog("error = "+error);
-
-				} catch (Exception e) {
-					LogFile.writeLogAlways("Error in Solver_chemostat.rosenbrock() : " + e);}
-
-
-				// The solution is accepted if the weighted error is less than the relative tolerance rtol.
-				if(error > rtol) { 
-
+				}
+				catch (Exception e)
+				{
+					LogFile.writeError(e, "Solver_chemostat.ODEsolver() Rosenbrock step");
+				}
+				
+				// The solution is accepted if the weighted error is less than
+				// the relative tolerance rtol.
+				// If the step fails, calculate a new h based on thestandard rule for 
+				// selecting a step size in numerical integration of initial value problems:
+				// hn+1 = (rtol / error) ^ (1/order of method,in our case is 3) * hn;
+				// 90% of this estimated value is then used in the next step to
+				// decrease the probability of further failures.
+				// Reference: GEAR, C. W. 1971. Numerical Initial Value Problems in 
+				// Ordinary Differential Equations. Prentice-Hall, Englewood Cliffs, N.J.
+				if(error > rtol)
+				{ 
 					noFailed = false;
-					lastStep = false;		
-
-					// If the step fails, calculate a new h based on the standard rule for 
-					// selecting a step size in numerical integration of initial value problems: 
-					// hn+1 = (rtol / error) ^ (1/order of method,in our case is 3) * hn;
-					// 90% of this estimated value is then used in the next step to
-					// decrease the probability of further failures.
-
-					// Reference: GEAR, C. W. 1971. Numerical Initial Value Problems in 
-					// Ordinary Differential Equations. Prentice-Hall, Englewood Cliffs, N.J.
-
-					if (usingHMin){
+					lastStep = false;
+					if ( usingHMin )
 						break;
-					} else {
+					else
+					{
 						if (EPS*t > h * 0.9*(Math.pow((rtol/error), power)))
 							usingHMin = true;
 						h =  Math.max(EPS*t, h * 0.9*(Math.pow((rtol/error), power)));
 					}
-					// Note that EPS*t = hmin (variable previously used)
-
-
-				}else{
-					//LogFile.writeLog("tnext = "+t+", ynext = "+ynext.get(1,0)+", dYdT = "+dYdT.get(1,0));
+					// Note that EPS*t = hmin (variable previously used).
+				}
+				else
 					break;
-				}// End of if(error > rtol)
 				LogFile.writeLog("error = "+error+", rtol = "+rtol+", h = "+h);
 			}// End of while(true)
-
-			//If there were no failures compute a new h.
-			if(noFailed) {
-				// We use the same formula as before to compute a new step, h. But in addition,
-				// we adjust the next time step depending on how stiff the problem is.
-
-				// Reference: Shampine LF. 1982. Implementation of Rosenbrock Methods. 
-				// ACM Transactions on Mathematical Software. 8: 93-113.
+			
+			// If there were no failures compute a new h. We use the same
+			// formula as before to compute a new step, h. But in addition, we
+			// adjust the next time step depending on how stiff the problem is.
+			// If the system is extremely stiff, the increase is limited to 1.2.
+			// Otherwise, the increase is set to a factor of 5.
+			// Reference: Shampine LF. 1982. Implementation of Rosenbrock
+			// Methods. ACM Transactions on Mathematical Software. 8: 93-113.
+			if(noFailed)
+			{
 				double test = Math.pow((rtol/error), power);
-
-				if(test<1.2) {
-					// If the system is extremely stiff, the increase is limited to 1.2
+				if ( test < 1.2 )
 					h *= test;
-				} else {
-					// Otherwise, the increase is set to a factor of 5
+				else
 					h *= 5;
-				}
-
-
-			}// End of if(noFailed)
-
+			}
+			
 			// Update the time and the substrate concentration
 			t = tnext;
-
-			for (int iSol = 0; iSol < nSolute; iSol++){
-				// For each solute we check first whether its concentration should remain constant
-				if (!isConstSol[iSol]){
-					// We then see if its concentration has gone negative (this is a problem!)
-					if (y.get(iSol,0) < 0){
-						y.set(iSol, 0, 0);
+			
+			// For each solute we check first whether its concentration should
+			// remain constant. We then see if its concentration has gone
+			// negative (this is a problem!)
+			for (int iSol = 0; iSol < nSolute; iSol++)
+				if ( ! isConstSol[iSol] )
+				{
+					if ( y.get(iSol,0) < 0.0 )
+					{
+						y.set(iSol, 0, 0.0);
 						LogFile.writeLogAlways("Warning! Solute has gone negative");
-					} else {
-						y.set(iSol, 0, ynext.get(iSol, 0));
 					}
+					else
+						y.set(iSol, 0, ynext.get(iSol, 0));
 				}
-			}// End of for(int iSol=0; iSol<nSolute; iSol++)
-
+			// End of for(int iSol=0; iSol<nSolute; iSol++)
 			dYdT = f2.copy();
-			//LogFile.writeMatrix("y = ", y);
-			//LogFile.writeMatrix("dYdT = ", dYdT);
-
 		}// End of while(!lastStep)
-
-		//LogFile.writeMatrix("y = ", y);
-		//LogFile.writeMatrix("dYdT = ", dYdT);
-		//LogFile.writeMatrix("dFdT = ", dFdT);
-		//LogFile.writeMatrix("dFdY = ", dFdY);
+		
+		// Assuming all is well, we then update allSolute to the appropriate value
 		for (int iSol = 0; iSol < nSolute; iSol++)
-			// Assuming all is well, we then update allSolute to the appropriate value
 			allSolute[iSol].setAllValueAt(y.get(iSol,0));
 	}
-
+	
 	/**
-	 * \brief Calculates the derivative of substrate concentration (a function parameter) with respect to time. 
+	 * \brief Calculates the derivative of substrate concentration (a function
+	 * parameter) with respect to time. 
 	 * 
-	 * Calculates the derivative of substrate concentration (a function parameter) with respect to time. As part of this process the 
-	 * allReac and allDiffReac values are set according to the (possibly hypothetical) values at substrate concentration S - you'll 
-	 * probably want to rerun calcReacRateAndDiffRate(y); afterwards to get allReac and allDiffReac to the correct values.
+	 * As part of this process the allReac and allDiffReac values are set
+	 * according to the (possibly hypothetical) values at substrate
+	 * concentration S - you'll probably want to rerun
+	 * calcReacRateAndDiffRate(y); afterwards to get allReac and allDiffReac to
+	 * the correct values.
 	 * 
-	 * @param S	Temporary container for solute concentration
-	 * @param sInflow	Matrix of solute flow information (if solutes are pulsed)
-	 * @param dYdT	Matrix to store the derivatives of substrate concentration
-	 * @return Matrix of the derivatives of substrate concentration
+	 * @param S Temporary container for solute concentration.
+	 * @param sInflow Matrix of solute flow information (if solutes are pulsed).
+	 * @param dYdT Matrix to store the derivatives of substrate concentration.
+	 * @return Matrix of the derivatives of substrate concentration.
 	 */
 	public Matrix calcdYdT(Matrix S, Matrix sInflow, Matrix dYdT) 
 	{
 		try 
 		{
 			dYdT = sInflow.minus(S).times(Dilution);
-			//LogFile.writeMatrix("D(Sin - S) = ", dYdT);
-
-			for (int iReac = 0; iReac < nReaction; iReac++){
-				//LogFile.writeLog("Reaction "+iReac);
-				dYdT.plusEquals(_reactions.get(iReac).calcdMUdT(S, _reactiveBiomass[iReac]._conc[0].grid[0][0][0]));
+			for (int iReac = 0; iReac < nReaction; iReac++)
+			{
+				dYdT.plusEquals(_reactions.get(iReac).calcdMUdT(S,
+							_reactiveBiomass[iReac]._conc[0].grid[0][0][0]));
 			}
-		} catch (Exception e) {
-			LogFile.writeLogAlways("Error in Solver_chemostat.calcdYdT() : " + e);}
-		//LogFile.writeMatrix("calcdYdT makes dYdT to be", dYdT);
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "Solver_chemostat.calcdYdT()");
+		}
 		return dYdT;
 	}
-
-	/** \brief Provides an estimate of how F (the derivative of S w.r.t. time) is changing (i.e. the second derivative).
+	
+	/** \brief Provides an estimate of how F (the derivative of S w.r.t. time)
+	 * is changing (i.e. the second derivative).
 	 * 
-	 * Provides an estimate of how F (the derivative of S w.r.t. time) is changing (i.e. the second derivative). Note that calcdYdT 
-	 * is called with the hypothetical S-value of y + dYdT * tdel, so we'll need to recall calcReacRateAndDiffRate(S) with S as just y.
+	 * Note that calcdYdT is called with the hypothetical S-value of
+	 * y + dYdT * tdel, so we'll need to recall calcReacRateAndDiffRate(S) with
+	 * S as just y.
 	 * 	
-	 * @param S	Temporary container for solute concentration
-	 * @param dFdT	Estimation of how the derivative of solutes with regard to time is changing
-	 * @param sInflow	Matrix of solute flow information (if solutes are pulsed)
-	 * @param tdel	Mini time-step used for calculating the value of dFdT 
+	 * @param S	Temporary container for solute concentration.
+	 * @param dFdT Estimation of how the derivative of solutes with regard to
+	 * time is changing.
+	 * @param sInflow Matrix of solute flow information (if solutes are
+	 * pulsed).
+	 * @param tdel Mini time-step used for calculating the value of dFdT.
 	 */
 	public Matrix calcdFdT(Matrix S, Matrix dFdT, Matrix sInflow, double tdel) 
 	{
-		Matrix Snext = new Matrix (nSolute, 1, 0);
-		Matrix dYdT = new Matrix (nSolute, 1, 0);
-
+		Matrix Snext = new Matrix(nSolute, 1, 0.0);
+		Matrix dYdT = new Matrix(nSolute, 1, 0.0);
+		
 		// ynext = y + tdel * dYdT
 		dYdT = calcdYdT(S, sInflow, dYdT);
 		Snext = S.plus(dYdT.times(tdel));
-
+		
 		// dFdT = ( dYdT(ynext) - dYdT(y) )/tdel
 		dFdT = calcdYdT(Snext, sInflow, dFdT);
 		dFdT.minusEquals(dYdT);
 		dFdT.timesEquals(1/tdel);
-
-		// We recalculate dYdT to make sure that marginalMu values are correct
+		
+		// We recalculate dYdT to make sure that marginalMu values are correct.
 		dYdT = calcdYdT(S, sInflow, dYdT);
-
+		
 		return dFdT;
 	}
 
 	/**
-	 * \brief Calculate the Jacobian matrix - the partial derivatives of the rate of change of each substrate
+	 * \brief Calculate the Jacobian matrix - the partial derivatives of the
+	 * rate of change of each substrate.
 	 * 
-	 * The Jacobian matrix dFdY gives the partial derivatives of the rate of change of each substrate (F = dYdT, or equivalently, dSdT) 
-	 * with respect to each substrate. Rows correspond to substrates being differentiated (first by time to give F, then by other 
-	 * substrate concentrations to give the elements of this matrix) and columns to the substrate with respect to which we are 
-	 * differentiating.
+	 * The Jacobian matrix dFdY gives the partial derivatives of the rate of
+	 * change of each substrate (F = dYdT, or equivalently, dSdT) with respect
+	 * to each substrate. Rows correspond to substrates being differentiated
+	 * (first by time to give F, then by other substrate concentrations to give
+	 * the elements of this matrix) and columns to the substrate with respect
+	 * to which we are differentiating.
 	 * 
-	 * @param S	Temporary container for solute concentration
-	 * @param dFdY	Jacobian matrix being calculated
-	 * @return Matrix containing partial derivatives of rate of change of each substrate
+	 * @param S Temporary container for solute concentration.
+	 * @param dFdY Jacobian matrix being calculated.
+	 * @return Matrix containing partial derivatives of rate of change of each
+	 * substrate.
 	 */
-	public Matrix calcJacobian(Matrix S, Matrix dFdY) {
-
-		double biomass = 0;
+	public Matrix calcJacobian(Matrix S, Matrix dFdY)
+	{
+		double biomass = 0.0;
 		dFdY = Matrix.identity(nSolute,nSolute).times(-Dilution);
-
-		for (int iReac = 0; iReac < nReaction; iReac++){
-			//LogFile.writeLog("Reaction "+iReac);
-			// biomass is the total particle mass in the system which catalyses this reaction
+		
+		for (int iReac = 0; iReac < nReaction; iReac++)
+		{
+			// Biomass is the total particle mass in the system which catalyses
+			// this reaction.
 			biomass = _reactiveBiomass[iReac]._conc[0].grid[0][0][0];
 			dFdY.plusEquals(_reactions.get(iReac).calcdMUdS(S, biomass));
 		}
-
 		return dFdY;
 	}
-
+	
 	/**
-	 * \brief Find the connected bulks and update their concentrations
-	 * 
-	 * Find the connected bulks and update their concentrations
+	 * \brief Find the connected bulks and update their concentrations.
 	 */
 	public void updateBulk() 
 	{
-		try {
+		try
+		{
 			for (AllBC aBC : myDomain.getAllBoundaries())
-				if (aBC.hasBulk()) aBC.updateBulk(allSolute, allReac, 0);
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Solver_chemostat.updateBulk() : " + e);}
+				if (aBC.hasBulk())
+					aBC.updateBulk(allSolute, allReac, 0.0);
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "Solver_chemostat.updateBulk()");
+		}
 	}
-
+	
 	/**
-	 * \brief Check if the Sinflow has changed (solutes may be pulsed)
+	 * \brief Check if the Sinflow has changed (solutes may be pulsed).
 	 * 
-	 * Check if the Sinflow has changed (solutes may be pulsed)
-	 * 
-	 * @param sInflow	Matrix of solutes in flow
-	 * @return	Updated matrix showing solute flow levels
+	 * @param sInflow	Matrix of solutes in flow.
+	 * @return	Updated matrix showing solute flow levels.
 	 */
-	public Matrix updateSInflow(Matrix sInflow) {
-		try {
-
-			for (AllBC aBC : _domain.getAllBoundaries()){
-				if (aBC.hasBulk()){
+	public Matrix updateSInflow(Matrix sInflow)
+	{
+		try
+		{
+			for (AllBC aBC : _domain.getAllBoundaries())
+				if ( aBC.hasBulk() )
+				{
 					Bulk aBulk = aBC.getBulk();
-					if(aBulk.getName().equals("chemostat")){
+					if ( aBulk.getName().equals("chemostat") )
 						for (int i = 0; i < nSolute; i++)
 							sInflow.set(i, 0, aBulk._sIn[i]);
-					}
-				}	
-			}
-
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Solver_chemostat.updateSInflow() : " + e);}
-
+				}
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "Solver_chemostat.updateSInflow()");
+		}
 		return sInflow;
-
 	}
-
 }

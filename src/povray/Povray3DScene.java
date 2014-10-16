@@ -299,7 +299,7 @@ public class Povray3DScene implements Serializable
 	 * @param g	Amount of green colour to use in creating the colour of this cell
 	 * @param b	Amount of blue colour to use in creating the colour of this cell
 	 */
-	public void addCell(float x, float y, float z, float rad, int r, int g, int b) {
+	public void addCell(Double x, Double y, Double z, Double rad, int r, int g, int b) {
 		_biofilm.addCell(x, y, z, rad, r, g, b);
 	}
 

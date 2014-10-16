@@ -56,63 +56,70 @@ public class Species implements Serializable
 	/**
 	 * The number of species in the simulation
 	 */
-	public int                 speciesIndex;
+	public int speciesIndex;
 	
 	/**
 	 * Colour used to distinguish this species in POV-Ray output images
 	 */
-	public Color               color;
+	public Color color;
 
 	/**
 	 *  Computational domain that this species is associated with
 	 */
-	public Domain              domain;
+	public Domain domain;
 	
 	/**
 	 * Stores the position of agents that are swimming below the boundary until they meet the surface or the biofilm. Used in self-attach
 	 * simulations
 	 */
-	public ContinuousVector 	swimmingAgentPosition;
+	public ContinuousVector swimmingAgentPosition = new ContinuousVector();
+	
+	/**
+	 * Stores the movement vector of agents that are swimming below the
+	 * boundary until they meet the surface or the biofilm. Used in self-attach
+	 * simulations.
+	 */
+	public ContinuousVector swimMovement = new ContinuousVector();
 	
 	/**
 	 * For self-attachment scenarios, the hour at which the injection of cells into the domain will start
 	 */
-	public double				cellInjectionStartHour;
+	public Double cellInjectionStartHour = 0.0;
 	
 	/**
 	 * For self-attachment scenarios, the frequency (agents per hour) that attach to the substratum surface when entering from the  
 	 * boundary layer, when cells are being injected into the domain
 	 */
-	public double 				injectionOnAttachmentFrequency;
+	public Double injectionOnAttachmentFrequency = 0.0;
 
 	/**
 	 * For self-attachment scenarios, the hour at which the injection of cells into the domain will stop
 	 */
-	public double 				cellInjectionEndHour;
+	public Double cellInjectionEndHour = 0.0;
 	
 	/**
 	 * For self-attachment scenarios, the frequency (agents per hour) that attach to the substratum surface when entering from the  
 	 * boundary layer, when cells are being injected into the domain
 	 */
-	public double 				injectionOffAttachmentFrequency;
+	public Double injectionOffAttachmentFrequency = 0.0;
 	
 	/**
 	 * Used in self-attachment cases where the number of agents specified in the protocol file leaves a remainder per timestep. When this 
 	 * remainder reaches 1, a new cell is introduced to the simulation
 	 */
-	public double				newAgentCounter;
+	public Double newAgentCounter = 0.0;
 	
 	/**
 	 * For self-attaching species, this holds the XY angle the cell is moving. This is global as this may change due to bouncing of 
 	 * boundaries
 	 */
-	public double				angleOfMovingAgentXY;
+	public Double angleOfMovingAgentXY = 0.0;
 	
 	/**
 	 * For self-attaching species, this holds the XZ angle the cell is moving (if 3D). This is global as this may change due to bouncing of 
 	 * boundaries
 	 */
-	public double				angleOfMovingAgentXZ;
+	public Double angleOfMovingAgentXZ = 0.0;
 
 	/**
 	 * Specialised agent from which objects of this species are created
@@ -122,7 +129,7 @@ public class Species implements Serializable
 	/**
 	 * Count of the population of this particular species in the simulation
 	 */
-	protected int              _population      = 0;
+	protected int _population = 0;
 
 	/**
 	 * \brief Creates a species object from that specified in the XML protocol file
@@ -141,7 +148,8 @@ public class Species implements Serializable
 		String colorName = aSpRoot.getParam("color");
 		
 		// Set the colour to white if not specified
-		if (colorName==null) colorName = "white";
+		if ( colorName == null )
+			colorName = "white";
 		// Translate this text string into a colour
 		color = utils.UnitConverter.getColor(colorName);
 
@@ -169,7 +177,8 @@ public class Species implements Serializable
 
 		// Set the computational domain this species is associated with
 		// KA Aug 13 - changed as this may be a default
-		domain = aSimulator.world.getDomain(_progenitor.getSpeciesParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
+		domain = aSimulator.world.getDomain(
+				_progenitor.getSpeciesParam().getSpeciesParameterString("computationDomain", aSpRoot, speciesDefaults));
 	}
 
 	/**
@@ -204,82 +213,38 @@ public class Species implements Serializable
 	}
 
 	/**
-	 * \brief Used in 'one-time' attachment scenarios, where clones of the progenitor are created in the birth area of the substratum
+	 * \brief Used in 'one-time' attachment scenarios, where clones of the
+	 * progenitor are created in the birth area of the substratum.
 	 * 
-	 * Used in 'one-time' attachment scenarios, where clones of the progenitor are created in the birth area of the substratum
-	 * 
-	 * @param spRoot	The XML mark-up group for a particular species being created
+	 * @param spRoot The XML mark-up group for a particular species being
+	 * created.
 	 */
 	public void createPop(XMLParser spRoot) 
 	{
-		double howMany = spRoot.getAttributeDbl("number");
+		int howMany = spRoot.getAttributeInt("number");
+		if ( howMany <= 0 )
+			return;
 	
 		// Define the birth area - this is taken from the coordinates tags in the protocol file
 		// (Nov13) OR if an initial area is not declared, this is the whole Y and Z of the domain with a height of 1.
 		ContinuousVector[] _initArea = defineSquareArea(spRoot);
-		String logStatement;
-		
-		if(Double.isNaN(howMany))
-		{
-			// User has declared a set number to be added over a specified area (for 3D) or length (for 2D)
-			// We assume the user has declared the number of cells they want in millimetres in both cases
-						
-			// Now we need the area of the initial area / whole domain (depending how this has been declared) to calculate the number
-			// of agents required. Make sure this is calculated in mm not microns
-			if(domain.is3D) 
-			{
-				double cellsPerArea = spRoot.getAttributeDbl("cellsperMM2");
-				double birthRegionArea = ((_initArea[1].y-_initArea[0].y)/1000)
-										*((_initArea[1].z-_initArea[0].z)/1000);
-				howMany = Math.floor(cellsPerArea * birthRegionArea);
-				
-				logStatement = "by specifying "+cellsPerArea+" cells per mm2";
-			}
-			else
-			{
-				
-				double cellsPerLength = spRoot.getAttributeDbl("cellsperMM");
-				double birthRegionLength = ((_initArea[1].y-_initArea[0].y)/1000);
-				howMany = Math.floor(cellsPerLength * birthRegionLength);
-				logStatement = "by specifying "+cellsPerLength+" cells per mm";
-			}			
-		}
-		else
-		{
-			
-			logStatement = "by specifying "+howMany+" cells for a stated initial area";
-		}
-		
-		// Now we have a number and a birth area, we can add the cells
-		if (howMany==0) return;
-
 		// Create all the required agents
-		ContinuousVector cc;
-			
-		for (int i = 0; i<howMany; i++) 
-		{
-			if (_progenitor instanceof LocatedAgent) 
+		ContinuousVector cc = new ContinuousVector();
+
+		for (int i = 0; i < howMany; i++) 
+			if ( _progenitor instanceof LocatedAgent ) 
 			{
-				cc = new ContinuousVector();
-							
-				if(!Simulator.isChemostat)
-				{
-					// Set coordinates within the birth area - randomly
+				// Set coordinates within the birth area - randomly
+				if( ! Simulator.isChemostat )					
 					shuffleCoordinates(cc, _initArea);
-					
-				}
-				
+
 				// Create the agent at these coordinates
 				((LocatedAgent) _progenitor).createNewAgent(cc);
-				
-			} 
-			else 
-			{
-				_progenitor.createNewAgent();
 			}
-		}
-
-		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created, "+logStatement);
+			else
+				_progenitor.createNewAgent();
+		
+		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created");
 	}
 	
 	
@@ -299,7 +264,7 @@ public class Species implements Serializable
 	 * @param spRoot	The Species markup from the protocol file for one particular species being initialised
 	 * @param numberAttachedInjectedAgents	The number of agents of this type that need to be created in this global timestep
 	 */
-	public void createBoundaryLayerPop(XMLParser spRoot, double numberAttachedInjectedAgents)
+	public void createBoundaryLayerPop(XMLParser spRoot, int numberAttachedInjectedAgents)
 	{
 		// Create all the required agents
 		
@@ -307,41 +272,49 @@ public class Species implements Serializable
 		// Just out of interest, I've decided to keep a count of how many cells are required for this to happen
 		int totalNumberOfInjectedAgents = 0;
 		int agentsReturnedToBulk = 0;
-		double requiredNumAttachedAgents = numberAttachedInjectedAgents;
+		int requiredNumAttachedAgents = numberAttachedInjectedAgents;
 		
-		while(numberAttachedInjectedAgents > 0) 
+		// Temporary DiscreteVector to make finding the boundary layer tidier.
+		DiscreteVector dV = new DiscreteVector();
+		
+		while ( numberAttachedInjectedAgents > 0 ) 
 		{
 			totalNumberOfInjectedAgents++;
 			
 			if (_progenitor instanceof LocatedAgent) 
 			{
-				this.swimmingAgentPosition = new ContinuousVector();
+				swimmingAgentPosition.reset();
 				
 				// Now to choose coordinates for this particular agent
 				// boolean used to check that the coordinate chosen is ok
 				boolean test = true;
 				while (test) 
 				{
-					// This cell needs to take a random location in the Z and Y directions. The X will come from the position of the boundary layer 
-					// on those axis. Generate these random numbers
-					this.swimmingAgentPosition.y = ExtraMath.getUniRandDbl()*domain.length_Y;
+					// This cell needs to take a random location in the Z and Y
+					// directions. The X will come from the position of the
+					// boundary layer on those axes. Generate these randomly.
+					swimmingAgentPosition.y =
+							ExtraMath.getUniRandDbl()*domain.length_Y;
+					if ( domain.is3D )
+						swimmingAgentPosition.z =
+						ExtraMath.getUniRandDbl()*domain.length_Z;
 					
-					if(domain.is3D)
-						this.swimmingAgentPosition.z = ExtraMath.getUniRandDbl()*domain.length_Z;
-					else
-						this.swimmingAgentPosition.z = 0;
-				
-					// Now to work out the X coordinate. This is based on where the top of the boundary layer is when this agent is created.
-					// The top of the boundary layer is calculated in Domain at each step. Now the resolution differs (this is in nIxnJxnK rather than 
-					// microns - so this will need to be converted accordingly
-					// Formula to calculate this - get the value from the top of the boundary layer. Reduce by 1 (such that the micron value will be 
-					// the top of the layer. Multiply by resolution of this simulation
-					this.swimmingAgentPosition.x = ((domain._topOfBoundaryLayer
-							[((int) Math.ceil((this.swimmingAgentPosition.y/domain._resolution)))+1]
-							[((int) Math.ceil((this.swimmingAgentPosition.z/domain._resolution)))+1])-1)*domain._resolution;
-							
-					// Check this is ok
-					test = !(domain.testCrossedBoundary(this.swimmingAgentPosition)==null);
+					// Now to work out the X coordinate. This is based on where
+					// the top of the boundary layer is when this agent is
+					// created. The top of the boundary layer is calculated in
+					// Domain at each step. Now the resolution differs (this is
+					// in nI x nJ x nK rather than microns - so this will need
+					// to be converted accordingly. Method to calculate this:
+					// - get the value from the top of the boundary layer
+					// - reduce by 1 (such that the micron value will be the
+					// 						 top of the layer) 
+					// - multiply by resolution of this domain.
+					dV.set(swimmingAgentPosition, domain._resolution);
+					swimmingAgentPosition.x =
+							domain._topOfBoundaryLayer[dV.j][dV.k] -1;
+					swimmingAgentPosition.x *= domain._resolution;
+					// Check this is ok.
+					test = !( domain.testCrossedBoundary(swimmingAgentPosition) == null );
 				}
 				
 				// Now we can do the run and tumble motion of these cells
@@ -366,14 +339,17 @@ public class Species implements Serializable
 			}
 			else 
 			{
+				// If this isn't a located species, just create a new agent.
 				_progenitor.createNewAgent();
 			}
 		}
 		// Write the stats to the log file incase of interest
-		LogFile.writeLog(requiredNumAttachedAgents+" agents of species "+speciesName+" for self-attachment successfully created");
-		LogFile.writeLog(totalNumberOfInjectedAgents+" agents of species "+speciesName+" attempted to attach");
-		LogFile.writeLog(agentsReturnedToBulk+" agents of species "+speciesName+" returned to the bulk");
-		
+		LogFile.writeLog(requiredNumAttachedAgents+" agents of species "+
+				speciesName+" for self-attachment successfully created");
+		LogFile.writeLog(totalNumberOfInjectedAgents+" agents of species "+
+				speciesName+" attempted to attach");
+		LogFile.writeLog(agentsReturnedToBulk+" agents of species "+
+				speciesName+" returned to the bulk");
 	}
 	
 	/**
@@ -407,8 +383,11 @@ public class Species implements Serializable
 		// or biofilm
 		// Eventually we will look to change this tumble interval, as this can be used to alter cell movement when under chemotaxis
 		
-		double distanceEachTumble = ((LocatedAgent) _progenitor).getSpeciesParam().cellRunSpeed *
-									((LocatedAgent) _progenitor).getSpeciesParam().tumbleInterval;
+		Double distanceEachTumble = getLocatedParam().cellRunSpeed * getLocatedParam().tumbleInterval;
+		Double distanceToMoveThisTumble = 0.0;
+		Double distanceAgentMoves = 0.0;
+		
+		Double distanceSeekingAgent = getLocatedParam().getStickinessRadius();
 		
 		// We will use a integer flag system to determine what has happened to the cell after a run
 		// 0 - no attachment, must do another run
@@ -416,45 +395,38 @@ public class Species implements Serializable
 		// 2 - cell has returned into the bulk (and thus is discarded)
 		int cellRunResult = 0;
 		
-		while(cellRunResult==0)
+		while ( true )
 		{
 			// Now work out the new position of the cell based on the distance covered this tumble
-			// Firstly calculate that direction - generate a random angle between 0 and 360
-			this.setAgentAngleOfMovement();
-				
-			// Now we're going to break the move down into chunks such that collision or move over the boundary can be detected
-			// The size of the chunk is going to be the resolution of the agent grid
-				
-			double distanceMovedThisTumble = distanceEachTumble;
-			while(distanceMovedThisTumble > 0 && cellRunResult==0)
+			// Now work out the new position of the cell based on the distance
+			// covered this tumble. Firstly calculate that direction - generate
+			// a random angle between 0 and 360.
+			setAgentAngleOfMovement();
+
+			// Now we're going to break the move down into chunks such that
+			// collision or move over the boundary can be detected. The size of
+			// the chunk is going to be the resolution of the agent grid.
+			distanceToMoveThisTumble = distanceEachTumble;
+			while ( distanceToMoveThisTumble > 0.0 )
 			{
-				// If the cell has less distance to move remaining that the resolution, should only move that much
-				double distanceAgentMoves;
-				
-				// KA 03613 - move is radius of the cell + it's stickiness
-				if(distanceMovedThisTumble > (((LocatedAgent) _progenitor).getSpeciesParam().divRadius 
-				+ ((LocatedAgent) _progenitor).getSpeciesParam().stickinessAddition))
-				{
-					distanceAgentMoves = (((LocatedAgent) _progenitor).getSpeciesParam().divRadius 
-							+ ((LocatedAgent) _progenitor).getSpeciesParam().stickinessAddition);
-				}
-				else
-				{
-					distanceAgentMoves = distanceMovedThisTumble;
-				}
-				
-					
+				// If the cell has less distance to move remaining that the
+				// resolution, should only move that much.
+				distanceAgentMoves =
+						Math.min(distanceToMoveThisTumble, distanceSeekingAgent);
+
 				calculateNewAgentPosition(distanceAgentMoves);
-				
-				// Now need to check for collision on any point of that path
+
+				// Now need to check for collision on any point of that path.
 				cellRunResult = checkAgentMove(distanceAgentMoves);
-				
-				// Subtract the distance moved in this mini move
-				distanceMovedThisTumble = distanceMovedThisTumble - distanceAgentMoves;
+
+				// Add the distance moved in this mini move to the tally.
+				distanceToMoveThisTumble -= distanceAgentMoves;
+
+				// If the cell has finished moving, we can return the result. 
+				if ( cellRunResult != 0)
+					return cellRunResult;
 			}
-			
 		}
-		return cellRunResult;
 	}
 	
 	/**
@@ -465,14 +437,12 @@ public class Species implements Serializable
 	 */
 	public void setAgentAngleOfMovement()
 	{
-		Random r = new Random();
+		angleOfMovingAgentXY = ExtraMath.getUniRandDbl(0.0, 2*Math.PI);
 		
-		this.angleOfMovingAgentXY = 0 + 360 * r.nextDouble();
-		
-		if(domain.is3D)
-			this.angleOfMovingAgentXZ = 0 + 360 * r.nextDouble();
+		if( domain.is3D )
+			angleOfMovingAgentXZ = ExtraMath.getUniRandDbl(0.0, 2*Math.PI);
 		else
-			this.angleOfMovingAgentXZ = 0;
+			angleOfMovingAgentXZ = 0.0;
 	}
 	
 	/**
@@ -484,15 +454,17 @@ public class Species implements Serializable
 	 * 
 	 * @param distanceAgentMoves	Distance that the agent is to move
 	 */
-	public void calculateNewAgentPosition(double distanceAgentMoves)
+	public void calculateNewAgentPosition(Double distanceAgentMoves)
 	{
-		// Now calculate where this angle would place the agent
-		// Angle must be converted from degrees to radians for this to work
-		this.swimmingAgentPosition.x = this.swimmingAgentPosition.x + distanceAgentMoves * 
-				Math.cos(Math.toRadians(this.angleOfMovingAgentXY)) * Math.cos(Math.toRadians(this.angleOfMovingAgentXZ));
-		this.swimmingAgentPosition.y = this.swimmingAgentPosition.y + distanceAgentMoves * Math.sin(Math.toRadians(this.angleOfMovingAgentXY));
-		this.swimmingAgentPosition.z = this.swimmingAgentPosition.z + distanceAgentMoves * Math.sin(Math.toRadians(this.angleOfMovingAgentXZ));
-
+		// Now calculate where this angle would place the agent.
+		swimMovement.set(
+				Math.cos(angleOfMovingAgentXY)*Math.cos(angleOfMovingAgentXZ),
+				Math.sin(angleOfMovingAgentXY),
+				Math.sin(angleOfMovingAgentXZ));
+		
+		swimMovement.times(distanceAgentMoves);
+		
+		swimmingAgentPosition.add(swimMovement);
 	}
 	
 	/**
@@ -510,79 +482,86 @@ public class Species implements Serializable
 	 * @param distanceMoving	Distance the agent is moving (in microns) in this move
 	 * @return	Integer noting the fate of this move (0 move ok (after adjustment if required), 1 if attached to surface, 2 if returned to bulk
 	 */
-	public int agentMoveBorderCheck(double distanceMoving)
+	public int agentMoveBorderCheck()
 	{
 		// Simplest test to do first is to check if any boundaries have been crossed
-		AllBC boundaryCrossed = domain.testCrossedBoundary(this.swimmingAgentPosition);
+		AllBC boundaryCrossed = domain.testCrossedBoundary(swimmingAgentPosition);
 	
 		// First is a simple test - has the cell returned to the bulk
 		// If this is the case, we can just forget this and have another go
 		// The cell will only have the capability to return to the bulk if the angle has it moving upwards or directly across
 		// (i.e 0-90 and 270-360 degrees)
-		if(!isNewCoordAboveBoundaryLayer())
+		if ( isNewCoordAboveBoundaryLayer() )
 		{
-			// Now to see if the move takes the point outside any of the boundaries
-		
-			if(boundaryCrossed != null)
-			{
-				if(boundaryCrossed.getSideName().equals("y0z"))
-				{
-					// Detected that the move has crossed the substratum, thus the cell has hit the biofilm. 
-					// A return of 1 indicates that this is the case
-					// Hit the biofilm, so set the species coordinates as required
-					
-					// We may have hit the biofilm but the Y and Z coordinates in this generated move may still be negative (as they may have 
-					// gone over another boundary. So before we set the final x, we should check Y and Z
-					// So firstly, set the X position onto the surface
-					this.swimmingAgentPosition.x = ExtraMath.getUniRandDbl();
-					
-					// Now set the final X position
-					AllBC boundaryCrossedNewCheck = domain.testCrossedBoundarySelfAttach(this.swimmingAgentPosition);
-					
-					if(boundaryCrossedNewCheck != null)
-					{
-						if(boundaryCrossedNewCheck.getSideName().equals("xNz") || boundaryCrossedNewCheck.getSideName().equals("x0z"))
-							this.correctCrossedLeftRightBoundaries(boundaryCrossedNewCheck, distanceMoving);
-						else
-							this.correctCrossedFrontBackBoundaries(boundaryCrossedNewCheck, distanceMoving);
-						
-					}
-					
-					
-					return 1;
-				}
-				else if(boundaryCrossed.getSideName().equals("xNz") || boundaryCrossed.getSideName().equals("x0z"))
-				{
-					this.correctCrossedLeftRightBoundaries(boundaryCrossed, distanceMoving);
-					
-					return 0;
-				}
-				// Deal with 3D boundary too
-				else if (boundaryCrossed.getSideName().equals("x0y") || boundaryCrossed.getSideName().equals("xNy"))
-				{
-					this.correctCrossedFrontBackBoundaries(boundaryCrossed, distanceMoving);
-					
-					return 0;
-					
-				}
-				else
-				{
-					// This needs to be here so the function returns something. However this deals with the top boundary (yNz) and this
-					// has already been dealt with by the crossed bulk method. So it is highly doubtful we will ever end up here
-					 return 0;
-				}
-			}
-			else
-			{
-				// No borders crossed, not back in the bulk
-				return 0;
-			}
+			// The cell has returned into the bulk, and thus this try is over.
+			// Return 2 so the process starts with a new cell.
+			return 2;
 		}
 		else
 		{
-			// The cell has returned into the bulk, and thus this try is over. Return 2 so the process starts with a new cell
-			return 2;
-		}	
+			// Now to see if the move takes the point outside any of the boundaries
+			if ( boundaryCrossed == null )
+			{
+				// No borders crossed, not back in the bulk.
+				return 0;
+			}
+			else
+			{
+				String boundaryCrossedName = boundaryCrossed.getSideName();
+
+				if ( boundaryCrossedName.equals("y0z") )
+				{
+					// Detected that the move has crossed the substratum, thus
+					// the cell has hit the biofilm. A return of 1 indicates
+					// that this is the case.
+					// Hit the biofilm, so set the species coordinates as required.
+
+					// We may have hit the biofilm but the Y and Z coordinates
+					// in this generated move may still be negative (as they
+					// may have gone over another boundary). So before we set
+					// the final x, we should check Y and Z.
+					// So firstly, set the X position onto the surface
+					swimmingAgentPosition.x = ExtraMath.getUniRandDbl();
+
+					// Now set the final X position.
+					// Do a new check on the boundary crossed.
+					boundaryCrossed = domain.testCrossedBoundarySelfAttach(
+							swimmingAgentPosition);
+
+					boundaryCrossedName = boundaryCrossed.getSideName();
+
+					if ( boundaryCrossed != null )
+						if(boundaryCrossedName.equals("xNz") ||
+								boundaryCrossedName.equals("x0z"))
+							correctCrossedLeftRightBoundaries(boundaryCrossed);
+						else
+							correctCrossedFrontBackBoundaries(boundaryCrossed);
+					return 1;
+				}
+
+				else if ( boundaryCrossedName.equals("xNz") ||
+						boundaryCrossedName.equals("x0z") )
+				{
+					correctCrossedLeftRightBoundaries(boundaryCrossed);
+					return 0;
+				}
+				// Deal with 3D boundary too
+				else if ( boundaryCrossedName.equals("x0y") ||
+						boundaryCrossedName.equals("xNy") )
+				{
+					correctCrossedFrontBackBoundaries(boundaryCrossed);
+					return 0;
+				}
+				else
+				{
+					// This needs to be here so the function returns something.
+					// However this deals with the top boundary (yNz) and this
+					// has already been dealt with by the crossed bulk method.
+					// So it is highly doubtful we will ever end up here.
+					return 0;
+				}
+			}	
+		}
 	}						
 	
 	/**
@@ -600,7 +579,7 @@ public class Species implements Serializable
 	public int checkAgentMove(double distanceMoving)
 	{
 		// Firstly, check if this move crosses any of the boundaries
-		int checkBoundaries = agentMoveBorderCheck(distanceMoving);
+		int checkBoundaries = agentMoveBorderCheck();
 		
 		if(checkBoundaries == 1)
 		{
@@ -616,33 +595,9 @@ public class Species implements Serializable
 		{
 			// The agent has not crossed boundaries, yet has not yet stuck
 			// Thus we need to determine if it is near a biofilm
-			int bioFilmAttachment = this.checkForBioFilmContact(distanceMoving);
+			int bioFilmAttachment = checkForBioFilmContact();
 			
 			return bioFilmAttachment;
-		}
-	}
-	
-	/**
-	 * \brief Utility for determining how far a moving agent has moved past a boundary. Used in cyclic boundaries
-	 * 
-	 * Utility for determining how far a moving agent has moved past a boundary. Used in cyclic boundaries where if an agent has moved 
-	 * past a boundary yet should appear that distance on the other side
-	 * 
-	 * @param newCoordinate	The new coordinate that is over the boundary
-	 * @param lengthOfSide	The length of that side of the domain
-	 * @param boundaryCrossed	The boundary that has been crossed in this agents move
-	 * @return	Double noting the distance that this agent should reappear on the opposite side
-	 */
-	public double determineDistanceOverBoundary(double newCoordinate,double lengthOfSide,AllBC boundaryCrossed)
-	{
-		if(boundaryCrossed.getSideName().equals("xNy") || boundaryCrossed.getSideName().equals("xNz"))
-			return newCoordinate - lengthOfSide;
-		else
-		{
-			if(newCoordinate>=0)
-				return newCoordinate - lengthOfSide;
-			else
-				return lengthOfSide + newCoordinate;
 		}
 	}
 	
@@ -655,42 +610,25 @@ public class Species implements Serializable
 	 * @param boundaryCrossed	The boundary that has been detected to have been crossed
 	 * @param distanceMoving	The distance that the cell is moving in this step of its repositioning
 	 */
-	public void correctCrossedLeftRightBoundaries(AllBC boundaryCrossed, double distanceMoving)
+	public void correctCrossedLeftRightBoundaries(AllBC boundaryCrossed)
 	{
 		// Cell has passed through the boundary on the left or right hand side
 		// If is cyclic, the point is deemed to reappear at the opposite side
 		if(boundaryCrossed.isCyclic())
 		{
-			// Calculate new point on the opposite side. 
-			// This will be inside the grid at the amount that the move would have taken the point outside of the grid
-			
-			// Get the difference in J coordinate
-			this.swimmingAgentPosition.y = determineDistanceOverBoundary(this.swimmingAgentPosition.y,(currentSimulator.agentGrid.get_nJ()*domain._resolution),boundaryCrossed);
+			// This will be inside the grid at the amount that the move would
+			// have taken the point outside of the grid.
+			swimmingAgentPosition.y =
+					swimmingAgentPosition.y % domain.length_Y;
 		}
 		else
 		{
-			// Can simply take the correct value of the new Y coordinate and reflect it the correct side of the boundary
-			if(this.swimmingAgentPosition.y<0)
-				this.swimmingAgentPosition.y = Math.abs(this.swimmingAgentPosition.y);
-			else
-				// gone over the other boundary, max size of the domain
-				this.swimmingAgentPosition.y = ((domain._nJ*domain._resolution) - (this.swimmingAgentPosition.y - (domain._nJ*domain._resolution))-1);
-			
-			// Now we need to change the angle to note the change of direction
-			this.angleOfMovingAgentXY = 360 - this.angleOfMovingAgentXY;
-			
-			// Worth checking the Z here if we're 3D - as we may have gone over a corner, and these may need reflecting in too
-			if(domain.is3D)
-			{
-				if(this.swimmingAgentPosition.z<0)
-					this.swimmingAgentPosition.z = Math.abs(this.swimmingAgentPosition.z);
-				else
-					// gone over the other boundary, max size of the domain
-					this.swimmingAgentPosition.z = (domain._nK*domain._resolution) - (this.swimmingAgentPosition.z - (domain._nK*domain._resolution));
-				
-				// Note the change in the Z angle to note we've reflected
-				this.angleOfMovingAgentXZ = 360 - this.angleOfMovingAgentXZ;
-			}
+			// Can simply take the correct value of the new Y coordinate and
+			// reflect it the correct side of the boundary.
+			swimmingAgentPosition.y = 
+					-swimmingAgentPosition.y % domain.length_Y;
+			// Now we need to change the angle to note the change of direction.
+			angleOfMovingAgentXY = 2*Math.PI - angleOfMovingAgentXY;
 		}
 	}
 	
@@ -703,43 +641,27 @@ public class Species implements Serializable
 	 * @param boundaryCrossed	The boundary that has been detected to have been crossed
 	 * @param distanceMoving	The distance that the cell is moving in this step of its repositioning
 	 */
-	public void correctCrossedFrontBackBoundaries(AllBC boundaryCrossed, double distanceMoving)
+	public void correctCrossedFrontBackBoundaries(AllBC boundaryCrossed)
 	{
 		// Cell has passed through the boundary on the front or back of the grid
 		// If is cyclic, the point is deemed to reappear at the opposite side
 		if(boundaryCrossed.isCyclic())
 		{
-			// Calculate new point on the opposite side. 
-			// This will be inside the grid at the amount that the move would have taken the point outside of the grid
-			
-			// Get the difference in K coordinate 
-			this.swimmingAgentPosition.z = determineDistanceOverBoundary(this.swimmingAgentPosition.z,(currentSimulator.agentGrid.get_nK()*domain._resolution),boundaryCrossed);
+			// This will be inside the grid at the amount that the move would
+			// have taken the point outside of the grid.
+			swimmingAgentPosition.z =
+					swimmingAgentPosition.z % domain.length_Z;
 		}
 		else
 		{
-			// Can simply take the correct value of the new Y coordinate and reflect it the correct side of the boundary
-			if(this.swimmingAgentPosition.z<0)
-				this.swimmingAgentPosition.z = Math.abs(this.swimmingAgentPosition.z);
-			else
-				// gone over the other boundary, max size of the domain
-			this.swimmingAgentPosition.z = (domain._nK*domain._resolution) - (this.swimmingAgentPosition.z - (domain._nK*domain._resolution));
-						
+			// Can simply take the correct value of the new Z coordinate and
+			// reflect it the correct side of the boundary.
+			swimmingAgentPosition.z =
+					-swimmingAgentPosition.z % domain.length_Z;
+
 			// Now we need to change the angle to note the change of direction
-			this.angleOfMovingAgentXZ = 360 - this.angleOfMovingAgentXZ;
-						
-			// Worth checking the Y here - as we may have gone over a corner, and these may need reflecting in too
-			
-			if(this.swimmingAgentPosition.y<0)
-				this.swimmingAgentPosition.y = Math.abs(this.swimmingAgentPosition.y);
-			else
-				// gone over the other boundary, max size of the domain
-				this.swimmingAgentPosition.y = (domain._nJ*domain	._resolution) - (this.swimmingAgentPosition.y - (domain._nJ*domain._resolution));
-						
-			// Note the change in the Z angle to note we've reflected
-			this.angleOfMovingAgentXY = 360 - this.angleOfMovingAgentXY;
-			
+			angleOfMovingAgentXZ = 2*Math.PI - angleOfMovingAgentXZ;
 		}
-		
 	}
 	
 	/**
@@ -753,32 +675,29 @@ public class Species implements Serializable
 	 */
 	public boolean isNewCoordAboveBoundaryLayer()
 	{
-		boolean returnedToBulk = false;
-		
-		// Get the top of the bulk - note we may need to correct here. The method that calls this calculates new positions. However this is 
-		// run before it is determined whether any boundaries have been crossed (as it would be silly to check all boundaries when there is a 
-		// high chance, especially at the start, that the cell may return into the bulk. Thus, a high Y or Z value may be sent in here, which 
-		// when referenced to the boundary layer array, will cause an error. So if the Y or Z values are higher than the size of the grid, 
-		// we will use the size of the grid as the array reference
-		if(this.swimmingAgentPosition.y > domain._nJ*domain._resolution)
-			this.swimmingAgentPosition.y = (domain._nJ*domain._resolution)-1;
-		
-		if(this.swimmingAgentPosition.z > domain._nK*domain._resolution)
-			this.swimmingAgentPosition.z = (domain._nK*domain._resolution)-1;
-			
-		// Now calculate the top of the boundary layer at the y and z coordinate
-		double boundaryAtThisPoint = 
-			domain._topOfBoundaryLayer[((((int)(this.swimmingAgentPosition.y/domain._resolution)))+1)]
-								      [((((int)(this.swimmingAgentPosition.z/domain._resolution)))+1)]*domain._resolution;
-		
-		
+		// Get the top of the bulk - note we may need to correct here. The
+		// method that calls this calculates new positions. However this is run 
+		// before it is determined whether any boundaries have been crossed (as
+		// it would be silly to check all boundaries when there is a high
+		// chance, especially at the start, that the cell may return into the
+		// bulk. Thus, a high Y or Z value may be sent in here, which when
+		// referenced to the boundary layer array, will cause an error. So if
+		// the Y or Z values are higher than the size of the grid, we will use
+		// the size of the grid as the array reference
+		if (swimmingAgentPosition.y > domain.length_Y)
+			swimmingAgentPosition.y = domain.length_Y - 1;
+
+		if (swimmingAgentPosition.z > domain.length_Z)
+			swimmingAgentPosition.z = domain.length_Z - 1;
+
+		// Now calculate the top of the boundary layer at the y, z coordinate.
+		int j = (int) (swimmingAgentPosition.y/domain._resolution);
+		int k = (int) (swimmingAgentPosition.z/domain._resolution);
+		double boundaryAtThisPoint = domain._topOfBoundaryLayer[j+1][k+1];
+		boundaryAtThisPoint *= domain._resolution;
+
 		// Check if we are above it
-		if(boundaryAtThisPoint < this.swimmingAgentPosition.x)
-		{
-			returnedToBulk = true;
-		}
-				
-		return returnedToBulk;
+		return ( swimmingAgentPosition.x > boundaryAtThisPoint ); 
 	}
 	
 	/**
@@ -794,63 +713,73 @@ public class Species implements Serializable
 	 * @param distanceMoving	The distance (in microns) that the agent is swimming through the domain
 	 * @return	Integer between 0 and 2, noting no attachment (0), contact with the biofilm or surface (1), or return to the bulk (2)
 	 */
-	public int checkForBioFilmContact(double distanceMoving)
+	public int checkForBioFilmContact()
 	{
 		int attachedToBioFilm = 0;
 		
-		// Get the index of the voxel that the agent resides in
-		int index = currentSimulator.agentGrid.getIndexedPosition(this.swimmingAgentPosition);
-		// Get the status of this voxel. This will be a 1 if considered part of the biofilm
+		// Get the index of the voxel that the agent resides in.
+		int index = currentSimulator.agentGrid.getIndexedPosition(
+				swimmingAgentPosition);
+		// Get the status of this voxel.
+		// This will be a 1 if considered part of the biofilm.
 		int voxelStatus = currentSimulator.agentGrid.getVoxelStatus(index);
-		
-		while(voxelStatus == 1 && attachedToBioFilm == 0)
+
+		Double distanceSeekingAgent = getLocatedParam().getStickinessRadius();
+
+		while ( (voxelStatus == 1) && (attachedToBioFilm == 0) )
 		{
-			// The move hits the biofilm
-			// We did think this was sufficient - however the cell may have entered a grid space deemed to be part of the biofilm, 
-			// yet still be a large distance from any other agent. Thus its move needs to continue
-			
-			// Lets break it into smaller chunks, and determine when the agent is in contact with another. We can do this using the
-			// agent radius + stickiness as a distance
-			
-			double distanceSeekingAgent = ((LocatedAgent) _progenitor).getSpeciesParam().divRadius 
-										+ ((LocatedAgent) _progenitor).getSpeciesParam().stickinessAddition;
-			
-			// Now go through each agent and determine if this is within that distance from an agent
+			// The move hits the biofilm.
+			// We did think this was sufficient - however the cell may have
+			// entered a grid space deemed to be part of the biofilm, yet still
+			// be a large distance from any other agent. Thus its move needs to
+			// continue. Let's break it into smaller chunks, and determine when
+			// the agent is in contact with another. We can do this using the
+			// agent radius + stickiness as a distance.
+
+			// Now go through each agent and determine if this is within that
+			// distance from an agent.
 			if(isAgentInContactWithAgentInBiofilm(index, distanceSeekingAgent))
 			{
-				// can return 1 as there is contact with an agent on the biofilm surface
-				// Set the coordinates as this final position
-				//cc.x = cc_For_Checking.x; cc.y = cc_For_Checking.y; cc.z = cc_For_Checking.z;
+				// can return 1 as there is contact with an agent on the
+				// biofilm surface Set the coordinates as this final position.
 				attachedToBioFilm = 1;
 			}
 			else
 			{
-				// We need to shift the agent position, and then give the same test a try
-				this.calculateNewAgentPosition(distanceSeekingAgent);
-				
-				// just check that this has not crossed any boundaries
-				int boundaryCheck = this.agentMoveBorderCheck(distanceMoving);
-				if(boundaryCheck == 1)
-					// this move has taken the agent directly onto the surface, where we assume this attaches
+				// We need to shift the agent position, and then give the same
+				// test a try.
+				calculateNewAgentPosition(distanceSeekingAgent);
+
+				// Just check that this has not crossed any boundaries.
+				int boundaryCheck = agentMoveBorderCheck();
+				if ( boundaryCheck == 1 )
+					// this move has taken the agent directly onto the surface,
+					// where we assume this attaches.
 					attachedToBioFilm = 1;
-				else if(boundaryCheck == 2)
-					// this move has taken the agent back into the bulk, so we can discard this agent
+				else if ( boundaryCheck == 2 )
+					// This move has taken the agent back into the bulk, so we
+					// can discard this agent.
 					attachedToBioFilm = 2;
 				else
 				{
-					// the move is ok, but we're still not yet attached anywhere
-					
-					// Now this move may have taken the agent into a different voxel - so we need to get the voxel status
-					// If this is the case, and the voxel status is again 1, then this routine continues. Else run and tumble should 
+					// The move is ok, but we're still not yet attached anywhere
+					// Now this move may have taken the agent into a different
+					// voxel - so we need to get the voxel status.
+					// If this is the case, and the voxel status is again 1,
+					// then this routine continues. Else run and tumble should 
 					// recommence (as dictated by the while loop)
-					index = currentSimulator.agentGrid.getIndexedPosition(this.swimmingAgentPosition);
-					voxelStatus = currentSimulator.agentGrid.getVoxelStatus(index);
+					index = currentSimulator.agentGrid.
+							getIndexedPosition(swimmingAgentPosition);
+					voxelStatus = currentSimulator.agentGrid.
+							getVoxelStatus(index);
 				}
 			}
 		}
-		
-		// The while loop has either ended as we are in a voxel that is not in 'biofilm' status, we have attached, or we are back in 
-		// the bulk. Whichever, set the coordinates to be the final check and return the relevant flag integer
+
+		// The while loop has either ended as we are in a voxel that is not in
+		// 'biofilm' status, we have attached, or we are back in the bulk.
+		// Whichever, set the coordinates to be the final check and return the
+		// relevant flag integer.
 		
 		return attachedToBioFilm;
 	}
@@ -868,32 +797,20 @@ public class Species implements Serializable
 	 * @param distanceSeekingAgent	The distance within which two cells are deemed to be in contact
 	 * @return	Boolean noting whether the agent is in contact with an agent in the biofilm
 	 */
-	public boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
+	public Boolean isAgentInContactWithAgentInBiofilm(int gridIndex, double distanceSeekingAgent)
 	{
-		// Get the agents within that grid voxel
-		LocatedGroup agentsInGrid = currentSimulator.agentGrid.returnGroupInVoxel(gridIndex);
-		boolean contactMade = false;
+		LocatedGroup agentsInGrid = currentSimulator.agentGrid.
+												returnGroupInVoxel(gridIndex);
 		
-		// Now iterate through each one
-		for(int j=0;j<agentsInGrid.group.size() && !contactMade;j++)
-		{
-			LocatedAgent aLoc = agentsInGrid.group.get(j);
-	
-			// Now we're going to work out how far we are from any of the agents in the grid. If we're close enough, move done
-			// shoving can then sort out distance between the two cells
-			// If not, we'll do another move
-	
-			double distanceBetweenAgents = Math.sqrt( Math.pow((aLoc.getLocation().x - this.swimmingAgentPosition.x),2) +
-					                                  Math.pow((aLoc.getLocation().y - this.swimmingAgentPosition.y),2) + 
-				                                      Math.pow((aLoc.getLocation().z - this.swimmingAgentPosition.z),2));
-	
-			if(distanceBetweenAgents<=distanceSeekingAgent)
-			{
-				contactMade = true;
-			}
-		}
-		
-		return contactMade;
+		Double dist = 0.0;
+		// Now iterate through each one. If we're close enough, move done.
+		// Shoving can then sort out distance between the two cells.
+		for (LocatedAgent aLoc : agentsInGrid.group)
+			dist = aLoc.getLocation().distance(swimmingAgentPosition); 
+			if ( dist <= distanceSeekingAgent )
+				return true;
+		// If not, we'll do another move.
+		return false;
 	}
 
 	/**
@@ -901,7 +818,8 @@ public class Species implements Serializable
 	 * 
 	 * Increases the population of this species when one agent is added
 	 */
-	public void notifyBirth() {
+	public void notifyBirth()
+	{
 		_population++;
 	}
 
@@ -910,7 +828,8 @@ public class Species implements Serializable
 	 * 
 	 * Reduces the population of this species when one agent is removed
 	 */
-	public void notifyDeath() {
+	public void notifyDeath()
+	{
 		_population--;
 	}
 
@@ -922,7 +841,8 @@ public class Species implements Serializable
 	 * @return a clone of the progenitor
 	 * @throws CloneNotSupportedException
 	 */
-	public SpecialisedAgent sendNewAgent() throws CloneNotSupportedException {
+	public SpecialisedAgent sendNewAgent() throws CloneNotSupportedException
+	{
 		return _progenitor.sendNewAgent();
 	}
 
@@ -933,7 +853,8 @@ public class Species implements Serializable
 	 * 
 	 * @return	Integer value noting the population of this species
 	 */
-	public int getPopulation() {
+	public int getPopulation()
+	{
 		return _population;
 	}
 
@@ -973,7 +894,18 @@ public class Species implements Serializable
 	{
 		return currentSimulator.speciesList.get(currentSimulator.getSpeciesIndex(speciesName));
 	}
-
+	
+	/**
+	 * \brief Return the parameters associated with this species
+	 * (SpeciesParam object).
+  	 * 
+	 * @return	SpeciesParam object associated with this Species.
+	 */
+	public LocatedParam getLocatedParam()
+	{
+		return ((LocatedAgent) _progenitor).getSpeciesParam();
+	}
+	
 	/**
 	 * \brief Defines a region of the computation domain where a new species may be created, using restrictions in the protocol file
 	 * 
@@ -995,7 +927,7 @@ public class Species implements Serializable
 		
 		// KA NOV 13 - CHANGED THIS, AS WE'RE GOING TO LET THE USER NOT DECLARE AN INITIAL AREA IF THEY WANT THE CELLS SPREAD ACROSS
 		// THE WHOLE DOMAIN. THUS THIS NEEDS CHECKING AND FIXING
-		if(area.size()>0)
+		if( area.size() > 0 )
 		{
 			// First Coordinate Tag
 			ContinuousVector cc1 = new ContinuousVector((Element) area.get(0));
@@ -1004,11 +936,21 @@ public class Species implements Serializable
 	
 			// Set each point
 			initArea[0].x = Math.min(cc1.x, cc2.x);
-			initArea[0].y = Math.min(cc1.y, cc2.y);
-			initArea[0].z = Math.min(cc1.z, cc2.z);
 			initArea[1].x = Math.max(cc1.x, cc2.x);
+			
+			initArea[0].y = Math.min(cc1.y, cc2.y);
 			initArea[1].y = Math.max(cc1.y, cc2.y);
-			initArea[1].z = Math.max(cc1.z, cc2.z);
+			
+			// In the case of 2D simulation, the agent's z-coordinate is 0.
+			if ( domain.is3D )
+			{
+				initArea[0].z = Math.min(cc1.z, cc2.z);
+				initArea[1].z = Math.max(cc1.z, cc2.z);
+			}
+			else
+			{
+				initArea[0].z = initArea[1].z = 0.0;
+	  		}
 	
 		}
 		else
@@ -1016,19 +958,12 @@ public class Species implements Serializable
 			// NO INITIAL AREA HAS BEEN DECLARED, USE THE WHOLE SUBSTRATUM. NOTE THAT THE X (HEIGHT) COORDINATE IS SET TO 1 SO THE
 			// CELLS ARE PLACED NEAR THE SUBSTRATUM
 			// Set each point
-			initArea[0].x = 0;
-			initArea[0].y = 0;
-			initArea[0].z = 0;
+			initArea[0].x = 0.0;
+			initArea[0].y = 0.0;
+			initArea[0].z = 0.0;
 			initArea[1].x = 1.0;
 			initArea[1].y = domain.length_Y;
 			initArea[1].z = domain.length_Z;
-		}
-		
-		// In the case of 2D simulation, the agent's z-coordinate is 0.
-		if (!domain.is3D) 
-		{
-			initArea[0].z = 0;
-			initArea[1].z = 0;
 		}
 		
 		return initArea;

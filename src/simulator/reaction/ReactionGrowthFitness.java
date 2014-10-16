@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import org.jdom.Element;
 
 import Jama.Matrix;
-
 import simulator.Simulator;
 import simulator.agent.ActiveAgent;
 import simulator.agent.zoo.MultiEpiBac;
 import simulator.agent.zoo.MultiEpisomeParam;
 import simulator.reaction.kinetic.IsKineticFactor;
+import utils.ExtraMath;
 import utils.LogFile;
 import utils.UnitConverter;
 import utils.XMLParser;
@@ -80,7 +80,7 @@ public class ReactionGrowthFitness extends Reaction{
 	/**
 	 * Used to calculate diff uptake rate of solute
 	 */
-	private double[]		  marginalDiffMu;
+	private Double[] marginalDiffMu;
 	
 	/**
 	 * Holds the unit of the parameter declared in the XML protocol file
@@ -107,7 +107,7 @@ public class ReactionGrowthFitness extends Reaction{
 		_kineticFactor = new IsKineticFactor[xmlRoot.getChildren("kineticFactor").size()];
 		_soluteFactor = new int[_kineticFactor.length];
 		marginalMu = new double[_kineticFactor.length];
-		marginalDiffMu = new double[_kineticFactor.length];
+		marginalDiffMu = ExtraMath.newDoubleArray(_kineticFactor.length);
 
 		// muMax is the first factor
 		unit = new StringBuffer("");
@@ -116,7 +116,8 @@ public class ReactionGrowthFitness extends Reaction{
 
 		int iFactor = 0;
 		int iSolute;
-		try {
+		try
+		{
 			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 
@@ -128,7 +129,7 @@ public class ReactionGrowthFitness extends Reaction{
 				iFactor++;
 			}
 
-			_kineticParam = new double[getTotalParam()];
+			_kineticParam = ExtraMath.newDoubleArray(getTotalParam());
 			_kineticParam[0] = _muMax;
 
 			paramIndex = 1;
@@ -142,8 +143,10 @@ public class ReactionGrowthFitness extends Reaction{
 				paramIndex += _kineticFactor[iFactor].nParam;
 				iFactor++;
 			}
-		} catch (Exception e) {
-			LogFile.writeLog("Error met during ReactionFactor.init()");
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ReactionFactor.init()");
 		}
 	}
 
@@ -161,7 +164,7 @@ public class ReactionGrowthFitness extends Reaction{
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
 
-		anAgent.reactionKinetic[reactionIndex] = new double[getTotalParam()];
+		anAgent.reactionKinetic[reactionIndex] = ExtraMath.newDoubleArray(getTotalParam());
 
 		// Set muMax
 		unit = new StringBuffer("");
@@ -203,18 +206,17 @@ public class ReactionGrowthFitness extends Reaction{
 	 * 
 	 * @param s	Temporary container for solute concentration 
 	 */
-	public void updateMarginalMu(double[] s) {
+	public void updateMarginalMu(Double[] s)
+	{
 		int soluteIndex;
-
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor < _soluteFactor.length; iFactor++)
+		{
 			soluteIndex = _soluteFactor[iFactor];
-			if (soluteIndex==-1) {
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0);
-			} else {
+			if (soluteIndex==-1)
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0);
+			else
 				marginalMu[iFactor] = _kineticFactor[iFactor]
 				                                     .kineticValue(s[_soluteFactor[iFactor]]);
-			}
-			//LogFile.writeLog("soluteIndex = "+soluteIndex+", marginalMu = "+marginalMu[iFactor]);
 		}
 	}
 
@@ -228,43 +230,39 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param mass	Mass of the catalyst (cell...)
 	 * @param tdel	Time
 	 */
-	public void computeUptakeRate(double[] s, double mass, double tdel) {
-
+	public void computeUptakeRate(Double[] s, Double mass, Double tdel)
+	{
 		// First compute specific rate
 		computeSpecificGrowthRate(s);
-
-		//sonia:chemostat 27.11.09
-		if(Simulator.isChemostat){
-
-			for (int iSolute : _mySoluteIndex) {
+		// Now compute uptake rate
+		if(Simulator.isChemostat)
+		{
+			// TODO Rob 31 Jul 2014: Does this ever get called? Solver_chemostat doesn't seem to use it.
+			// (tdel*mass*Dil) is very strange
+			for (int iSolute : _mySoluteIndex)
 				_uptakeRate[iSolute] = (tdel*mass*Dil) + (mass *_specRate*_soluteYield[iSolute] ) ;
-
-			}
 			int iSolute;
-			for (int i = 0; i<_soluteFactor.length; i++) {
+			for (int i = 0; i<_soluteFactor.length; i++)
+			{
 				iSolute = _soluteFactor[i];
-				if(iSolute!=-1){	
+				if(iSolute!=-1)	
 					_diffUptakeRate[iSolute] =(tdel*mass*Dil) + (mass*marginalDiffMu[i]*_soluteYield[iSolute])  ;	
-				}
 			}
-
-		}else{
-
-			// Now compute uptake rate
-			for (int iSolute : _mySoluteIndex) {
+		}
+		else
+		{
+			for (int iSolute : _mySoluteIndex)
 				_uptakeRate[iSolute] = mass*_specRate*_soluteYield[iSolute];
-			}
-
 			int iSolute;
-			for (int i = 0; i<_soluteFactor.length; i++) {
+			for (int i = 0; i<_soluteFactor.length; i++)
+			{
 				iSolute = _soluteFactor[i];
 				if(iSolute!=-1)
 					_diffUptakeRate[iSolute] = mass*marginalDiffMu[i]*_soluteYield[iSolute];
 			}
 		}
-
 	}
-
+	
 	/**
 	 * \brief Compute the specific growth rate
 	 * 
@@ -273,12 +271,11 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s	Temporary container for solute concentration 
 	 * @return	The specific growth rate
 	 */
-	public double computeSpecRate(double[] s) {
-		double specRate = _muMax;
-
+	public Double computeSpecRate(Double[] s)
+	{
+		Double specRate = _muMax;
 		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
 			specRate *= marginalMu[iFactor];
-
 		return specRate;
 	}
 
@@ -289,16 +286,20 @@ public class ReactionGrowthFitness extends Reaction{
 	 * 
 	 * @param s	Array of solute concentration
 	 */
-	public void computeSpecificGrowthRate(double[] s) {
+	public void computeSpecificGrowthRate(Double[] s)
+	{
 		_specRate = _muMax;
 		int soluteIndex;
-
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
+		{
 			soluteIndex = _soluteFactor[iFactor];
-			if (soluteIndex==-1) {
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0);
-				marginalDiffMu[iFactor] = _muMax*_kineticFactor[iFactor].kineticDiff(0);
-			} else {
+			if (soluteIndex==-1)
+			{
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0);
+				marginalDiffMu[iFactor] = _muMax*_kineticFactor[iFactor].kineticDiff(0.0);
+			}
+			else
+			{
 				marginalMu[iFactor] = _kineticFactor[iFactor]
 				                                     .kineticValue(s[_soluteFactor[iFactor]]);
 				marginalDiffMu[iFactor] = _muMax
@@ -306,10 +307,13 @@ public class ReactionGrowthFitness extends Reaction{
 			}
 		}
 
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++)
+		{
 			_specRate *= marginalMu[iFactor];
-			for (int jFactor = 0; jFactor<_soluteFactor.length; jFactor++) {
-				if (jFactor!=iFactor) marginalDiffMu[jFactor] *= marginalMu[iFactor];
+			for (int jFactor = 0; jFactor<_soluteFactor.length; jFactor++)
+			{
+				if (jFactor!=iFactor)
+					marginalDiffMu[jFactor] *= marginalMu[iFactor];
 			}
 		}
 	}
@@ -322,7 +326,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * 
 	 * @return	marginalDiffMu array
 	 */
-	public double[] getMarginalDiffMu() 
+	public Double[] getMarginalDiffMu() 
 	{
 		return marginalDiffMu;
 	}
@@ -336,67 +340,72 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
 	 */ 
-	public Matrix calcdMUdS(Matrix S, double biomass) {
-		Matrix dMUdY = new Matrix (nSolute, nSolute, 0);
-
-		try {
-			double[] s = new double[nSolute];
-
+	public Matrix calcdMUdS(Matrix S, Double biomass)
+	{
+		Matrix dMUdY = new Matrix (nSolute, nSolute, 0.0);
+		try
+		{
+			// No need to initialise this with ExtraMath.newDoubleArray(nI)
+			Double[] s = new Double[nSolute];
 			for (int i = 0; i < nSolute; i++)
-				s[i] = S.get(i,0);
-
+				s[i] = S.get(i, 0);
+			
 			updateMarginalMu(s);
 			marginalDiffMu = computeMarginalDiffMu(s);
 
-			int iSol = 0;
-			int jSol = 0;
+			int iSol, jSol;
 			// The affecting solute
-			for (int iFactor = 0; iFactor < _kineticFactor.length; iFactor++){
+			for (int iFactor = 0; iFactor < _kineticFactor.length; iFactor++)
+			{
 				iSol = _soluteFactor[iFactor];
-				if (iSol > -1){
+				if (iSol > -1)
+				{
 					// The affected solute
-					for (int jIndex = 0; jIndex < _mySoluteIndex.length; jIndex++){
+					for (int jIndex = 0; jIndex < _mySoluteIndex.length; jIndex++)
+					{
 						jSol = _mySoluteIndex[jIndex];
 						dMUdY.set(jSol, iSol, marginalDiffMu[iFactor]*_soluteYield[jSol]);
-						//LogFile.writeLog("At "+iSol+", "+jSol+" mDMu = "+marginalDiffMu[iFactor]+" & sY = "+_soluteYield[jSol]);
 					}
 				}
 			}
-
 			dMUdY.timesEquals(biomass);
-		}catch (Exception e) {
-			LogFile.writeLog("Error in ReactionFactorWithConstant.calcdMUdS() : "+e); }
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ReactionFactorWithConstant.calcdMUdS()");
+		}
 		return dMUdY;
 	}
 
 	/**
 	 * \brief Calculate the rate of change of each uptake rate with respect to time.
 	 * 
-	 * Calculate the rate of change of each uptake rate with respect to time. dMUdT = catalyticBiomass*specificGrowthRate*soluteYield.
-	 * Returned as a matrix
+	 * dMUdT = catalyticBiomass*specificGrowthRate*soluteYield.
 	 * 
-	 * @param S	Temporary container for solute concentration
-	 * @param biomass	Total particle mass in the system which catalyses this reaction
-	 * @return Matrix containing rate of change of each uptake rate with respect to time
+	 * @param S	Temporary container for solute concentration.
+	 * @param biomass	Total particle mass in the system which catalyses this reaction.
+	 * @return Matrix containing rate of change of each uptake rate with respect to time.
 	 */ 
-	public Matrix calcdMUdT(Matrix S, double biomass) {
-		Matrix dMUdT = new Matrix(nSolute, 1, 0);
-
-		try {
-			double[] s = new double[nSolute];
-
-			for (int i = 0; i < nSolute; i++) {
+	public Matrix calcdMUdT(Matrix S, Double biomass)
+	{
+		Matrix dMUdT = new Matrix(nSolute, 1, 0.0);
+		try
+		{
+			// No need to initialise this with ExtraMath.newDoubleArray(nI)
+			Double[] s = new Double[nSolute];
+			for (int i = 0; i < nSolute; i++)
+			{
 				s[i] = S.get(i,0);
 				dMUdT.set(i, 0, _soluteYield[i]);
 			}
-
 			updateMarginalMu(s);
 			_specRate = computeSpecRate(s);
-
 			dMUdT.timesEquals(_specRate*biomass);
-		} catch (Exception e) {
-			LogFile.writeLog("Error in Reaction.calcdMUdT() : "+e); }
-		//LogFile.writeMatrix("dMUdT = ",dMUdT);
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "ReactionFactorWithConstant.calcdMUdT()");
+		}
 		return dMUdT;
 	}
 
@@ -408,81 +417,82 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s	Temporary container for solute concentration 
 	 * @return Marginal diff array
 	 */
-	public double[] computeMarginalDiffMu(double[] s) {
+	public Double[] computeMarginalDiffMu(Double[] s)
+	{
 		int soluteIndex;
-
-		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
+		for (int iFactor = 0; iFactor < _soluteFactor.length; iFactor++)
+		{
 			soluteIndex = _soluteFactor[iFactor];
-			if (soluteIndex==-1) {
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0);
-			} else {
+			if (soluteIndex==-1)
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0);
+			else
+			{
 				marginalDiffMu[iFactor] = _muMax
 				*_kineticFactor[iFactor].kineticDiff(s[_soluteFactor[iFactor]]);
 			}
-			for (int jFactor = 0; jFactor<_soluteFactor.length; jFactor++) {
-				if (jFactor!=iFactor) marginalDiffMu[jFactor] *= marginalMu[iFactor];
+			for (int jFactor = 0; jFactor < _soluteFactor.length; jFactor++)
+			{
+				if (jFactor!=iFactor)
+					marginalDiffMu[jFactor] *= marginalMu[iFactor];
 			}
 		}
-
 		return marginalDiffMu;
 	}
-
+	
 	/* __________________ Methods called by the agents ___________________ */
-
+	
 	/**
+	 * TODO Check that plFitness should be initialised as 0 rather than as 1
+	 * 
 	 * @param anAgent
 	 * @return the marginal growth rate (i.e the specific growth rate times the
 	 * mass of the particle which is mediating this reaction)
 	 */
-	public double computeMassGrowthRate(ActiveAgent anAgent) {
-
-		ArrayList<Double> costs = new ArrayList<Double>();
-		costs = setYield(anAgent);
-
-		double plFitness=0;
-		for (int i=0; i<costs.size(); i++)
-			plFitness -= costs.get(i);
-
+	public Double computeMassGrowthRate(ActiveAgent anAgent)
+	{
+		Double plFitness = 0.0;
+		for (Double cost : setYield(anAgent))
+			plFitness -= cost;
+		
 		//computing _specRate
 		computeSpecificGrowthRate(anAgent);
-
-		return _specRate*plFitness*anAgent.getParticleMass(_catalystIndex);
-
+		
+		return _specRate * plFitness * anAgent.getParticleMass(_catalystIndex);
 	}
 
-	public double computeSpecGrowthRate(ActiveAgent anAgent) {
-		ArrayList<Double> costs = new ArrayList<Double>();
-		costs = setYield(anAgent);
-
-		double plFitness = 1;
-		for (int i=0; i<costs.size(); i++)
-			plFitness -= costs.get(i);
-
+	public Double computeSpecGrowthRate(ActiveAgent anAgent)
+	{
+		Double plFitness = 1.0;
+		for (Double cost : setYield(anAgent))
+			plFitness -= cost;
+		
 		//computing _specRate
 		computeSpecificGrowthRate(anAgent);
-
+		
 		return _specRate*plFitness;
 	}
-
+	
 	/**
-	 * Compute specific growth rate in function to concentrations sent
-	 * @param s : array of solute concentration
+	 * Compute specific growth rate in function to concentrations sent.
+	 * 
+	 * @param s Double[] array of solute concentrations.
 	 * @param anAgent Parameters used are those defined for THIS agent
 	 */
-	public void computeSpecificGrowthRate(double[] s, ActiveAgent anAgent) {
-		double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
-
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
+	{
+		Double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
+		
 		// First multiplier is muMax
 		_specRate = kineticParam[0];
 		paramIndex = 1;
-
+		
 		// Compute contribution of each limiting solute
 		for (int iFactor = 0; iFactor<_soluteFactor.length; iFactor++) {
 			if (_soluteFactor[iFactor]==-1) { //meaning, if there's no such solute
-				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0, kineticParam,
+				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(0.0, kineticParam,
 						paramIndex);
 				marginalDiffMu[iFactor] = _muMax
-				*_kineticFactor[iFactor].kineticDiff(0, kineticParam, paramIndex);
+				*_kineticFactor[iFactor].kineticDiff(0.0, kineticParam, paramIndex);
 				paramIndex += _kineticFactor[iFactor].nParam;
 			} else {
 				marginalMu[iFactor] = _kineticFactor[iFactor].kineticValue(
@@ -512,9 +522,8 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
-	public void computeSpecificGrowthRate(ActiveAgent anAgent) {
-
-		// Build the array of concentration seen by the agent
+	public void computeSpecificGrowthRate(ActiveAgent anAgent)
+	{
 		computeSpecificGrowthRate(readConcentrationSeen(anAgent, _soluteList), anAgent);
 	}
 
@@ -526,41 +535,32 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param anAgent
 	 */
 
-	public ArrayList<Double> setYield(ActiveAgent anAgent){
-
-		double plCopyNum;
-		double initialCost;
-		double rateDec; 
-		double basalCost;
-		double plCost;
-		double timeSpentInHost;
+	public ArrayList<Double> setYield(ActiveAgent anAgent)
+	{
+		Double plCopyNum, initialCost, rateDec, basalCost, plCost, timeSpentInHost;
 		ArrayList<Double> plTotalCosts = new ArrayList<Double>();
-
-		if(anAgent instanceof MultiEpiBac){	
+		
+		if(anAgent instanceof MultiEpiBac)
+		{	
 			MultiEpiBac anEpiBac = (MultiEpiBac) anAgent;
 			//System.out.println("plasmid list size " + anEpiBac._plasmidHosted.size());
-			if(!(anEpiBac._plasmidHosted.size()==0)){	
-				for (int pl=0; pl< anEpiBac._plasmidHosted.size(); pl++){
-
-					MultiEpisomeParam plParam = anEpiBac._plasmidHosted.get(pl).getSpeciesParam();
+			if(anEpiBac.plasmidHosted.size() > 0)
+			{	
+				for (int pl=0; pl< anEpiBac.plasmidHosted.size(); pl++)
+				{
+					MultiEpisomeParam plParam = anEpiBac.plasmidHosted.get(pl).getSpeciesParam();
 					initialCost = plParam.initialCost;
 					//System.out.println("plasmidCost is " + initialCost);
 					rateDec = plParam.rateDec;
 					basalCost = plParam.basalCost;
-					plCopyNum = anEpiBac._plasmidHosted.get(pl)._nCopy;
-					// Rob 3/3/11: Never used
-					//double euler = Math.E;
-
-					timeSpentInHost = SimTimer.getCurrentTime()-anEpiBac._plasmidHosted.get(pl).timeSpentInHost;
+					plCopyNum = anEpiBac.plasmidHosted.get(pl)._nCopy;
+					timeSpentInHost = SimTimer.getCurrentTime()-anEpiBac.plasmidHosted.get(pl).timeSpentInHost;
 					//sonia: the cost of a plasmid increases additively as its copy number goes up
 					plCost = (initialCost*(Math.exp((-(rateDec*timeSpentInHost))))+ basalCost)*plCopyNum;
-
 					plTotalCosts.add(plCost);					
 				}
 			}
 		}
-
 		return plTotalCosts;	
 	}
-
 }

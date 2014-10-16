@@ -71,9 +71,12 @@ public class BactEPS extends Bacterium
 		LocatedAgent aNb;
 		double deltaM;int nEPS;
 
-		if (!_hasEps) { return; }
+		if ( ! _hasEps )
+			return;
+		
 		int epsIndex = particleMass.length-1;	
-		if (particleMass[epsIndex]==0) return;
+		if ( particleMass[epsIndex].equals(0.0))
+			return;
 		
 
 		
@@ -85,13 +88,16 @@ public class BactEPS extends Bacterium
 		//List all close EPS particles of your EPS species		
 		findCloseSiblings(_epsSpecies.speciesIndex);		
 				
-		if (_myNeighbors.isEmpty()) {
+		if (_myNeighbors.isEmpty())
+		{
 			// Create an EPS agent and send him part of the capsule		
 			excreteEPS(deltaM);
 			updateSize();
-		} else {
+		}
+		else
+		{
 			// Update your mass and size			
-			double epsMass = particleMass[epsIndex]*(deltaM);
+			double value = particleMass[epsIndex]*(deltaM);
 			particleMass[epsIndex] *= 1-deltaM;
 			updateSize();
 						
@@ -99,7 +105,7 @@ public class BactEPS extends Bacterium
 			nEPS = _myNeighbors.size();			
 			for (int iNb = 0; iNb<nEPS; iNb++) {
 				aNb = _myNeighbors.removeFirst();
-				aNb.particleMass[epsIndex] += epsMass/nEPS;
+				aNb.particleMass[epsIndex] += value/nEPS;
 				aNb.updateSize();
 			}			
 		}

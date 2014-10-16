@@ -44,38 +44,38 @@ public class LocatedGroup {
 	/**
 	 * Concentration of species in this group, thus area represented
 	 */
-	public double[]                 speciesConcentration;
+	public Double[] speciesConcentration;
 	
 	/**
 	 * Total volume of agents in this group
 	 */
-	public double                   totalVolume        = 0;
+	public Double totalVolume = 0.0;
 	
-	public double                   deltaV             = 0;
+	public Double deltaV = 0.0;
 	
 	/**
 	 * Total concentration of agents in this group
 	 */
-	public double                   totalConcentration = 0;
+	public Double totalConcentration = 0.0;
 	
 	/**
 	 * Total mass of agents in this group
 	 */
-	public double                   totalMass          = 0;
+	public Double totalMass = 0.0;
 	
-	public double                   erosionTime        = Double.NaN;
+	public Double erosionTime = Double.NaN;
 	
 	/**
 	 * Distance of the group at this location from the carrier
 	 */
-	public double                   distanceFromCarrier;
+	public Double distanceFromCarrier = 0.0;
 	
 	/**
 	 * Distance of the group at this location from the bulk
 	 */
-	public double 					distanceFromBulk;
+	public Double distanceFromBulk = 0.0;
 	
-	public double 					ratio;
+	public Double ratio = 0.0;
 
 	/**
 	 * The index of the grid at which this located group represents
@@ -149,14 +149,14 @@ public class LocatedGroup {
 		// Spatial location of the group
 		gridIndex = index;
 		
-		ratio = 0;
+		ratio = 0.0;
 
 		// Coordinates if padding is removed
 		dc = agentGrid.getGridPosition(gridIndex);
 		cc = agentGrid.getGridLocation(gridIndex);
 
 		// Initialise biomass statistics
-		speciesConcentration = new double[aSimulator.speciesDic.size()];
+		speciesConcentration = ExtraMath.newDoubleArray(aSimulator.speciesDic.size());
 
 		// Check if the group is inside the domain
 		isOutside = false;
@@ -193,8 +193,9 @@ public class LocatedGroup {
 	 * Refresh status and concentration of the group
 	 * 
 	 */
-	public void refreshElement() {
-		double volume, value;
+	public void refreshElement()
+	{
+		Double volume, value;
 		volume = ExtraMath.cube(agentGrid.getResolution());
 		//sonia:chemostat
 		if(Simulator.isChemostat){
@@ -205,9 +206,9 @@ public class LocatedGroup {
 			if (isCarrier) status = 0;
 		}
 		// Refresh biomass density
-		totalConcentration = 0;
-		totalMass = 0;
-		Arrays.fill(speciesConcentration, 0);
+		totalConcentration = 0.0;
+		totalMass = 0.0;
+		Arrays.fill(speciesConcentration, 0.0);
 
 		for (LocatedAgent aLoc : group) {
 			totalMass += aLoc.getTotalMass();
@@ -228,11 +229,12 @@ public class LocatedGroup {
 	 * 
 	 * @return	Double noting the total volume of agents in this group
 	 */
-	public double refreshVolume() {
-		totalVolume = 0;
-		for (LocatedAgent aLoc : group) {
+	public double refreshVolume()
+	{
+		totalVolume = 0.0;
+		for (LocatedAgent aLoc : group)
 			totalVolume += aLoc.getVolume(true);
-		}
+		
 		return totalVolume;
 	}
 
@@ -245,18 +247,23 @@ public class LocatedGroup {
 	 * @param deltaT	DeltaT
 	 * @return	Norm of the movement vector under the affect of the pressure gradient
 	 */
-	public double computeMove(SoluteGrid pressure, double deltaT) 
+	public Double computeMove(SoluteGrid pressure, Double deltaT) 
 	{
-		if (this.isOutside) move.reset();
-		else {
+		if (this.isOutside)
+			resetMove();
+		else
+		{
 			move = pressure.getGradient(this.cc);
-			if (!move.isValid()) move.reset();
-			move.times(-deltaT);
+			if (move.isValid())
+				move.times(-deltaT);
+			else
+				resetMove();
 		}
 		return move.norm();
 	}
 
-	public void resetMove() {
+	public void resetMove()
+	{
 		move.reset();
 	}
 
@@ -301,15 +308,12 @@ public class LocatedGroup {
 	 * Remove an agent from this LocatedGroup
 	 * @param anAgent	LocatedAgent to remove from this group
 	 */
-	public void remove(LocatedAgent anAgent) {
+	public void remove(LocatedAgent anAgent)
+	{
 		group.remove(anAgent);
-		//sonia:chemostat
-
-		if(Simulator.isChemostat){
-
-		}else{
-			if (group.isEmpty()) status = 2;
-		}
+		
+		if ( group.isEmpty() && !Simulator.isChemostat )
+			status = 2;
 	}
 
 	/**
@@ -332,8 +336,9 @@ public class LocatedGroup {
 	 * 
 	 * @param aLoc	LocatedAgent which is to be shuffled
 	 */
-	public void host(LocatedAgent aLoc) {
-		double res = agentGrid.getResolution();
+	public void host(LocatedAgent aLoc)
+	{
+		Double res = agentGrid.getResolution();
 		ContinuousVector cc = aLoc.getLocation();
 		cc.y = ExtraMath.getUniRand(this.cc.y-res/2, this.cc.y+res/2);
 		cc.z = ExtraMath.getUniRand(this.cc.z-res/2, this.cc.z+res/2);
@@ -349,32 +354,36 @@ public class LocatedGroup {
 	 * @param i	The current I grid element
 	 * @return	Located group reached by that move
 	 */
-	public LocatedGroup moveX(int i) {
+	public LocatedGroup moveX(int i)
+	{
 		int delta = (int) Math.signum(i);
 		LocatedGroup out = nbhGroup[delta+1][1][1];
 		i -= delta;
-		while (i!=0) {
+		while (i != 0)
+		{
 			out = moveX(delta);
 			i -= delta;
 		}
 		return out;
 	}
-
+	
 	/**
 	 * \brief Move the Y parameter by a specified amount
 	 * 
 	 * Move the Y parameter by a specified amount
 	 * 
-	 * @param i	The current grid element
+	 * @param j	The current grid element
 	 * @return	Located group reached by that move
 	 */
-	public LocatedGroup moveY(int i) {
-		int delta = (int) Math.signum(i);
+	public LocatedGroup moveY(int j)
+	{
+		int delta = (int) Math.signum(j);
 		LocatedGroup out = nbhGroup[1][delta+1][1];
-		i -= delta;
-		while (i!=0) {
+		j -= delta;
+		while (j != 0)
+		{
 			out = moveY(delta);
-			i -= delta;
+			j -= delta;
 		}
 		return out;
 	}
@@ -384,16 +393,18 @@ public class LocatedGroup {
 	 * 
 	 * Move the Z parameter by a specified amount
 	 * 
-	 * @param i	The current grid element
+	 * @param k	The current grid element
 	 * @return	Located group reached by that move
 	 */
-	public LocatedGroup moveZ(int i) {
-		int delta = (int) Math.signum(i);
+	public LocatedGroup moveZ(int k)
+	{
+		int delta = (int) Math.signum(k);
 		LocatedGroup out = nbhGroup[1][1][delta+1];
-		i -= delta;
-		while (i!=0) {
+		k -= delta;
+		while (k != 0)
+		{
 			out = moveZ(delta);
-			i -= delta;
+			k -= delta;
 		}
 		return out;
 	}
@@ -436,7 +447,7 @@ public class LocatedGroup {
 			}
 
 		} else {
-			move.z = 0;
+			move.z = 0.0;
 		}
 		double d = Math.sqrt(move.x*move.x+move.y*move.y+move.z*move.z);
 
@@ -448,16 +459,18 @@ public class LocatedGroup {
 	 * 
 	 * Compute distance to closest carrier and closest bulk
 	 */
-	public void distanceFromBorders() {
+	public void distanceFromBorders()
+	{
 		LinkedList<AllBC> allBoundary = agentGrid.domain.getAllBoundaries();
-
-		double valueCarrier = Double.MAX_VALUE;
-		double valueBulk = Double.MAX_VALUE;
-
+		
+		Double valueCarrier = Double.MAX_VALUE;
+		Double valueBulk = Double.MAX_VALUE;
+		
 		for (AllBC aBoundary : allBoundary) {
-			if (aBoundary.isSupport()) valueCarrier = Math.min(valueCarrier, aBoundary
-					.getDistance(cc));
-			if (aBoundary.hasBulk()) valueBulk = Math.min(valueBulk, aBoundary.getDistance(cc));
+			if (aBoundary.isSupport())
+				valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
+			if (aBoundary.hasBulk())
+				valueBulk = Math.min(valueBulk, aBoundary.getDistance(cc));
 		}
 		distanceFromCarrier = valueCarrier;
 		distanceFromBulk = valueBulk;
@@ -476,10 +489,11 @@ public class LocatedGroup {
 		DiscreteVector nbhDC = new DiscreteVector();
 
 		// Build neighbourhood reference map
-		for (int i = 0; i<3; i++) {
-			for (int j = 0; j<3; j++) {
-				for (int k = 0; k<3; k++) {
-					try {
+		for (int i = 0; i<3; i++) 
+			for (int j = 0; j<3; j++)
+				for (int k = 0; k<3; k++)
+					try
+					{
 						// Get your supposed neighbour
 						nbhDC.set(dc.i+i-1, dc.j+j-1, dc.k+k-1);
 						index = agentGrid.getIndexedPosition(nbhDC);
@@ -488,12 +502,14 @@ public class LocatedGroup {
 						// conditions until no more boundaries are crossed; the neighbor will
 						// then be within the domain if appropriate (periodic boundary) or will
 						// be the outside-domain neighbor that was picked originally
-						if (shovGrid[index].isOutside) {
+						if (shovGrid[index].isOutside)
+						{
 							int oldindex;
 							do {
 								oldindex = index;
 								aBC = agentGrid.domain.testCrossedBoundary(shovGrid[index].cc);
-								if (aBC == null) break; // no boundary was crossed
+								if (aBC == null)
+									break; // no boundary was crossed
 								index = agentGrid.getIndexedPosition(aBC.lookAt(shovGrid[index].cc));
 							} while (oldindex != index);
 						}
@@ -501,13 +517,11 @@ public class LocatedGroup {
 						// Store the reference to your neighbour
 						nbhIndex[i][j][k] = index;
 						nbhGroup[i][j][k] = shovGrid[index];
-					} catch (Exception e) {
-						// nothing done here
-
 					}
-				}
-			}
-		}
+					catch (Exception e)
+					{
+						// nothing done here
+					}
 	}
 
 	/**

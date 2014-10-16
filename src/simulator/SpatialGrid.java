@@ -49,7 +49,7 @@ public class SpatialGrid implements Serializable {
 	/**
 	 * The solute grid - a three dimesional array of double values
 	 */
-	public double[][][]       grid;
+	public Double[][][]       grid;
 
 	/**
 	 * Number of grid voxels in I direction
@@ -69,12 +69,12 @@ public class SpatialGrid implements Serializable {
 	/**
 	 * Grid resolution = side length of a voxel
 	 */
-	protected double          _reso;
+	protected Double          _reso;
 
 	/**
 	 * Boolean noting whether this grid is 3D (true) or 2D (false)
 	 */
-	protected boolean         _is3D;
+	protected Boolean         _is3D;
 
 	
 	/**
@@ -95,14 +95,12 @@ public class SpatialGrid implements Serializable {
 	 * @param nK	The number of grid locations in the K direction
 	 * @param resolution the grid resolution
 	 */
-	public SpatialGrid(int nI, int nJ, int nK, double resolution) {
+	public SpatialGrid(int nI, int nJ, int nK, Double resolution) {
 
 		//sonia:chemostat
 		// set the size of the spatial grid to 1,1,1
 		if(Simulator.isChemostat){
-			_nI = 1;
-			_nJ = 1;
-			_nK = 1;
+			_nI = _nJ = _nK = 1;
 		}else{
 			_nI = nI;
 			_nJ = nJ;
@@ -123,14 +121,12 @@ public class SpatialGrid implements Serializable {
 	 * @param nJ	The number of grid locations in the J direction
 	 * @param resolution the grid resolution
 	 */
-	public SpatialGrid(int nI, int nJ, double resolution) {
-		//sonia:chemostat
-		// Rob 17/8/2011: this doesn't seem to be called by anything
-
-		if(Simulator.isChemostat){
-			_nI = 1;
-			_nJ = 1;
-		}else{    // 2D biofilm
+	public SpatialGrid(int nI, int nJ, Double resolution)
+	{
+		if(Simulator.isChemostat)
+			_nI = _nJ = 1;
+		else
+		{
 			_nI = nI;
 			_nJ = nJ;
 		}
@@ -156,15 +152,15 @@ public class SpatialGrid implements Serializable {
 			//set the size of the grid to be 1,1,1 and not a padded grid
 			
 			_is3D = false;
-			grid = new double [1][1][1];
+			grid = ExtraMath.newDoubleArray(1, 1, 1);
 
 		}
 		else
 		{
 			// Obviously if we create only one cell in the Z dimension, the grid is 2D
-			_is3D = _nK > 1;
+			_is3D = ! (_nK==1);
 
-			grid = new double[_nI+2][_nJ+2][_nK+2];
+			grid = ExtraMath.newDoubleArray(_nI+2, _nJ+2, _nK+2);
 		}
 	
 		// KA 28/3/13 - this was turned off when I started recommenting iDynoMiCS - no reason given here but may need checking
@@ -181,11 +177,12 @@ public class SpatialGrid implements Serializable {
 	 * @param dC	DiscreteVector to validate
 	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
-	public boolean isValid(DiscreteVector dC) {
-		boolean out = true;
-		out &= (dC.i>=0)&(dC.i<_nI);
-		out &= (dC.j>=0)&(dC.j<_nJ);
-		out &= (dC.k>=0)&(dC.k<_nK);
+	public Boolean isValid(DiscreteVector dC)
+	{
+		Boolean out = true;
+		out &= (dC.i >= 0) && (dC.i < _nI);
+		out &= (dC.j >= 0) && (dC.j < _nJ);
+		out &= (dC.k >= 0) && (dC.k < _nK);
 		return out;
 	}
 
@@ -197,11 +194,11 @@ public class SpatialGrid implements Serializable {
 	 * @param dC	DiscreteVector to validate
 	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
-	public boolean isValidOrPadded(DiscreteVector dC) {
-		boolean out = true;
-		out &= (dC.i>=-1)&(dC.i<=_nI);
-		out &= (dC.j>=-1)&(dC.j<=_nJ);
-		out &= (dC.k>=-1)&(dC.k<=_nK);
+	public Boolean isValidOrPadded(DiscreteVector dC) {
+		Boolean out = true;
+		out &= (dC.i>=-1) && (dC.i<=_nI);
+		out &= (dC.j>=-1) && (dC.j<=_nJ);
+		out &= (dC.k>=-1) && (dC.k<=_nK);
 		return out;
 	}
 
@@ -215,11 +212,12 @@ public class SpatialGrid implements Serializable {
 	 * @param k K Coordinate of the grid location
 	 * @return Boolean stating whether this location is valid (true) or outside the grid
 	 */
-	public boolean isValidorPadded(int i, int j, int k) {
-		boolean out = true;
-		out &= (i>=0)&(i<=_nI);
-		out &= (j>=0)&(j<=_nJ);
-		out &= (k>=0)&(k<=_nK);
+	public Boolean isValidorPadded(int i, int j, int k)
+	{
+		Boolean out = true;
+		out &= (i>=0) && (i<=_nI);
+		out &= (j>=0) && (j<=_nJ);
+		out &= (k>=0) && (k<=_nK);
 		return out;
 	}
 
@@ -271,9 +269,9 @@ public class SpatialGrid implements Serializable {
 	 * @param dC	DiscreteVector to be transformed
 	 * @return	ContinuousVector created from this discrete position
 	 */
-	public ContinuousVector getContinuousCoordinates(DiscreteVector dC) {
-		ContinuousVector cc = new ContinuousVector(dC, _reso);
-		return cc;
+	public ContinuousVector getContinuousCoordinates(DiscreteVector dC)
+	{
+		return new ContinuousVector(dC, _reso);
 	}
 
 	/**
@@ -286,9 +284,9 @@ public class SpatialGrid implements Serializable {
 	 * @param k K Coordinate of the grid location
 	 * @return	ContinuousVector created from these voxel coordinates
 	 */
-	public ContinuousVector getContinuousCoordinates(int i, int j, int k) {
-		ContinuousVector cc = new ContinuousVector((i+.5)*_reso, (j+.5)*_reso, (k+.5)*_reso);
-		return cc;
+	public ContinuousVector getContinuousCoordinates(int i, int j, int k)
+	{
+		return new ContinuousVector((i+.5)*_reso, (j+.5)*_reso, (k+.5)*_reso);
 	}
 
 	/**
@@ -298,7 +296,8 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return Maximum value of the grid
 	 */
-	public double getMax() {
+	public double getMax()
+	{
 		return MatrixOperations.max(grid);
 	}
 
@@ -346,8 +345,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according X
 	 */
 	public double diff2X(int i, int j, int k) {
-		double d2x = (grid[i+1][j][k] + grid[i-1][j][k] - 2 * grid[i][j][k]) / ExtraMath.sq(_reso);
-		return (Double.isNaN(d2x) || Double.isInfinite(d2x)) ? 0 : d2x;
+		double value = (grid[i+1][j][k]+grid[i-1][j][k]-2*grid[i][j][k])/ExtraMath.sq(_reso);		
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -359,11 +358,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according X
 	 */
 	public double diff2X(DiscreteVector dV) {
-		double d2x = (grid[dV.i+1][dV.j][dV.k]
-                        + grid[dV.i-1][dV.j][dV.k]
-                        - 2 * grid[dV.i][dV.j][dV.k]
-                     ) / ExtraMath.sq(_reso);
-		return (Double.isNaN(d2x) || Double.isInfinite(d2x)) ? 0 : d2x;
+		double value = (grid[dV.i+1][dV.j][dV.k]+grid[dV.i-1][dV.j][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);		
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -377,8 +373,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according X
 	 */
 	public double diffX(int i, int j, int k) {
-		double dx = (grid[i+1][j][k] - grid[i-1][j][k]) / (2*_reso);
-		return (Double.isNaN(dx) || Double.isInfinite(dx)) ? 0 : dx;
+		double value = (grid[i+1][j][k]-grid[i-1][j][k])/(2*_reso);		
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -390,8 +386,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according X
 	 */
 	public double diffX(DiscreteVector dV) {
-		double dx = (grid[dV.i+1][dV.j][dV.k] - grid[dV.i-1][dV.j][dV.k]) / (2*_reso);
-		return (Double.isNaN(dx) || Double.isInfinite(dx)) ? 0 : dx;
+		double value = (grid[dV.i+1][dV.j][dV.k]-grid[dV.i-1][dV.j][dV.k])/(2*_reso);		
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -405,8 +401,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Y
 	 */
 	public double diff2Y(int i, int j, int k) {
-		double d2y =  (grid[i][j+1][k] + grid[i][j-1][k] - 2 * grid[i][j][k]) / ExtraMath.sq(_reso);
-		return (Double.isNaN(d2y) || Double.isInfinite(d2y)) ? 0 : d2y;
+		double value =  (grid[i][j+1][k]+grid[i][j-1][k]-2*grid[i][j][k])/ExtraMath.sq(_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -418,11 +414,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Y
 	 */
 	public double diff2Y(DiscreteVector dV) {
-		double d2y =  (grid[dV.i][dV.j+1][dV.k]
-                        + grid[dV.i][dV.j-1][dV.k]
-                        - 2 * grid[dV.i][dV.j][dV.k]
-                      ) / ExtraMath.sq(_reso);
-		return (Double.isNaN(d2y) || Double.isInfinite(d2y)) ? 0 : d2y;
+		double value =  (grid[dV.i][dV.j+1][dV.k]+grid[dV.i][dV.j-1][dV.k]-2*grid[dV.i][dV.j][dV.k])/ExtraMath.sq(_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -436,8 +429,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Y
 	 */
 	public double diffY(int i, int j, int k) {
-		double dy =  (grid[i][j+1][k] - grid[i][j-1][k]) / (2*_reso);
-		return (Double.isNaN(dy) || Double.isInfinite(dy)) ? 0 : dy;
+		double value =  (grid[i][j+1][k]-grid[i][j-1][k])/(2*_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 	
 	/**
@@ -449,8 +442,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Y
 	 */
 	public double diffY(DiscreteVector dV) {
-		double dy =  (grid[dV.i][dV.j+1][dV.k] - grid[dV.i][dV.j-1][dV.k]) / (2*_reso);
-		return (Double.isNaN(dy) || Double.isInfinite(dy)) ? 0 : dy;
+		double value =  (grid[dV.i][dV.j+1][dV.k]-grid[dV.i][dV.j-1][dV.k])/(2*_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 	
 
@@ -465,8 +458,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 2nd spatial derivative according Z
 	 */
 	public double diff2Z(int i, int j, int k) {
-		double d2z = (grid[i][j][k+1] + grid[i][j][k-1] - 2 * grid[i][j][k]) / (_reso*_reso);
-		return (Double.isNaN(d2z) || Double.isInfinite(d2z)) ? 0 : d2z;
+		double value =  (grid[i][j][k+1]+grid[i][j][k-1]-2*grid[i][j][k])/(_reso*_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 
 	/**
@@ -480,8 +473,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Z
 	 */
 	public double diffZ(int i, int j, int k) {
-		double dz =  (grid[i][j][k+1] - grid[i][j][k-1]) / (2*_reso);
-		return (Double.isNaN(dz) || Double.isInfinite(dz)) ? 0 : dz;
+		double value =  (grid[i][j][k+1]-grid[i][j][k-1])/(2*_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 	
 	/**
@@ -493,8 +486,8 @@ public class SpatialGrid implements Serializable {
 	 * @return 1st spatial derivative according Z
 	 */
 	public double diffZ(DiscreteVector dV) {
-		double dz =  (grid[dV.i][dV.j][dV.k+1] - grid[dV.i][dV.j][dV.k-1]) / (2*_reso);
-		return (Double.isNaN(dz) || Double.isInfinite(dz)) ? 0 : dz;
+		double value =  (grid[dV.i][dV.j][dV.k+1]-grid[dV.i][dV.j][dV.k-1])/(2*_reso);
+		return ((Double.isNaN(value)|Double.isInfinite(value))?0:value);
 	}
 	/**
 	 * \brief Computes the average concentration seen in a sphere (or cube) centered around a given point
@@ -784,8 +777,15 @@ public class SpatialGrid implements Serializable {
 			}
 		}
 	}
-
-
+	
+	/**
+	 * \brief Set all meshes of the grid to zero.
+	 */
+	public void resetToZero()
+	{
+		setAllValueAt(0.0);
+	}
+	
 	/**
 	 * \brief Return the number of voxels in the X direction
 	 * 
@@ -866,7 +866,7 @@ public class SpatialGrid implements Serializable {
 	 * @param axeCode	The direction of which the length is required: 1-X, 2-Y, 3-Z
 	 * @return Double value stating the length (in distance unit) along a direction ignoring padding bands
 	 */ 
-	public double getGridLength(int axeCode) 
+	public Double getGridLength(int axeCode) 
 	{
 		switch (axeCode) {
 		case 1:
@@ -876,7 +876,7 @@ public class SpatialGrid implements Serializable {
 		case 3:
 			return _nK*_reso;
 		default:
-			return (double) 0;
+			return 0.0;
 		}
 	}
 
@@ -887,7 +887,8 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return	Double value stating the volume of one voxel of the spatial grid
 	 */
-	public double getVoxelVolume() {
+	public Double getVoxelVolume()
+	{
 		return ExtraMath.cube(_reso);
 	}
 
@@ -898,7 +899,8 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return the spatial grid
 	 */
-	public double[][][] getGrid() {
+	public Double[][][] getGrid()
+	{
 		return grid;
 	}
 
@@ -909,7 +911,8 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return	A clone of this spatial grid
 	 */
-	public double[][][] getCloneGrid(){
+	public Double[][][] getCloneGrid()
+	{
 		return grid.clone();
 	}
 
@@ -920,7 +923,7 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return	Double value stating the resolution (in micrometers) of this grid
 	 */
-	public double getResolution() 
+	public Double getResolution() 
 	{
 		return _reso;
 	}
@@ -932,13 +935,9 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @return	Boolean noting whether this grid is 3D (true) or 2D (false)
 	 */
-	public boolean is3D() {
-		//sonia:chemostat
-		if(Simulator.isChemostat){
-			return false;
-		}else{
-			return _is3D;
-		}
+	public Boolean is3D()
+	{
+		return ( ! Simulator.isChemostat ) && _is3D;
 	}
 
 	/**
@@ -946,8 +945,9 @@ public class SpatialGrid implements Serializable {
 	 * 
 	 * @param u	Matrix of values which to set the spatial grid to
 	 */
-	public void setGrid(double[][][] u) {
-		utils.MatrixOperations.copyValuesTo(grid,u);
+	public void setGrid(Double[][][] u)
+	{
+		utils.MatrixOperations.copyValuesTo(grid, u);
 	}
 
 	/**
@@ -987,41 +987,38 @@ public class SpatialGrid implements Serializable {
 			bufferState.write(Double.toString(grid[0][0][0]));
 			bufferState.write(";\n");
 
-		}else{
+		}
+		else
+		{
 
 			// KA 06062013 - turned off the printing of the padding. Will need to ensure this is clear from v1.2
 			// Fill the mark-up
-			if (_nK==1) {
+			if (_nK==1)
+			{
 				// We have a 2D grid
-				
-				
-				for (int i = 1; i<_nI+1; i++) {
-					for (int j = 1; j<_nJ+1; j++) {
-						//bufferState.write(Arrays.toString(grid[i][j]));
-						bufferState.write(Double.toString(grid[i][j][1]));
+				for (int i = 1; i<_nI+1; i++)
+					for (int j = 1; j<_nJ+1; j++)
+					{
+						bufferState.write(grid[i][j][1].toString());
 						bufferState.write(";\n");
 					}
-				}
-			} else {
+			}
+			else
+			{
 				// We have a 3D grid 
-				for (int i = 1; i<_nI+1; i++) {
-					for (int j = 1; j<_nJ+1; j++) {
-						for (int k=1; k<_nK+1; k++) {
-							// bufferState.write(Arrays.toString(grid[i][j]));
-							bufferState.write(Double.toString(grid[i][j][k]));
+				for (int i = 1; i<_nI+1; i++)
+					for (int j = 1; j<_nJ+1; j++)
+						for (int k=1; k<_nK+1; k++)
+						{
+							bufferState.write(grid[i][j][k].toString());
 							bufferState.write(";\n");
 						}
-					}
-				}
 			}
 		}
 
 		// Close the mark-up
 		bufferState.write("\n</solute>\n");
 		
-		
-		
-
 	}
 
 }

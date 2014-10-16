@@ -69,6 +69,7 @@ public class SoluteGrid extends SpatialGrid
 	 */
 	public SoluteGrid(Simulator aSim, XMLParser xmlRoot) 
 	{
+		double value;
 		StringBuffer unit = new StringBuffer("");
 
 		// Name the grid
@@ -82,9 +83,9 @@ public class SoluteGrid extends SpatialGrid
 
 		// Now to set the resolution and create the grid
 		// First check whether a specific resolution has been set for this grid
-		double resolution = xmlRoot.getParamLength("resolution");
+		value = xmlRoot.getParamLength("resolution");
 		
-		if (Double.isNaN(resolution))
+		if (Double.isNaN(value)) 
 		{
 			// Use that from the domain itself if not
 			useDomaingrid();
@@ -92,25 +93,25 @@ public class SoluteGrid extends SpatialGrid
 		else 
 		{
 			// Specify the resolution from that specified in the protocol file
-			specifyResolution(resolution);
+			specifyResolution(value);
 		}
 		
 		// Now initialise the grid - setting the grid to the required size
 		initGrids();
 		
 		// Set the diffusivity - if specified in the XML file
-		double diffusivityUnit = xmlRoot.getParamDbl("diffusivity", unit);
-		diffusivityUnit *= UnitConverter.time(unit.toString());
-		diffusivityUnit *= UnitConverter.length(unit.toString());
-		diffusivityUnit *= UnitConverter.length(unit.toString());
-		diffusivity = diffusivityUnit;
+		value = xmlRoot.getParamDbl("diffusivity", unit);
+		value *= UnitConverter.time(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		diffusivity = value;
 
 		// Set the initial concentration
-		double concentration = xmlRoot.getParamDbl("concentration");
+		value = xmlRoot.getParamDbl("concentration");
 		// If no value specified, use the maximal concentration of the bulks
-		if (Double.isNaN(concentration)) concentration = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
+		if (Double.isNaN(value)) value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
 		// Set the grid to this initial concentration
-		setAllValueAt(concentration);
+		setAllValueAt(value);
 		
 	}
 

@@ -26,7 +26,7 @@ public class BactEPSParam extends BacteriumParam
 	/**
 	 * Hydrolysis speed of capsule EPS (h-1)
 	 */
-	public double             kHyd           = 0.007;
+	public double kHyd = 0.007;
 
 	/**
 	 * \brief Creates a parameter storage object for the Bacterium EPS species type
@@ -48,10 +48,10 @@ public class BactEPSParam extends BacteriumParam
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		super.init(aSim,aSpeciesRoot,speciesDefaults);
-		double value;
+		Double value;
 
-		value = aSpeciesRoot.getParamDbl("kHyd");
-		if(!Double.isNaN(value)) kHyd = value;		
+		value = getSpeciesParameterDouble("kHyd", aSpeciesRoot, speciesDefaults);
+		kHyd = value.isNaN() ? kHyd : value;		
 	}
 
 }

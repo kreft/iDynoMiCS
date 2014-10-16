@@ -22,7 +22,7 @@ public class SpeciesParam
 	/**
 	 * Double used to vary the initial masses of the agents. Defaults to 0.1, but can be set in protocol file
 	 */
-	public double initialMassCV = .1;
+	public double initialMassCV = 0.1;
 
 	/**
 	 * \brief Read in specific parameters for this species, changing the default if required
@@ -34,67 +34,85 @@ public class SpeciesParam
 	 */
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
+		Double value;
+
 		// August 2013 - changed as this now may be specified in the species defaults and not for each species
 		// So use the new method
-		initialMassCV = getSpeciesParameterDouble("initialMassCV",aSpeciesRoot,speciesDefaults,initialMassCV);
-	}
-	
-	public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults, Double defaultValue)
-	{
-		if(!Double.isNaN(aSpeciesRoot.getParamLength(paramName)))
-		{
-			return aSpeciesRoot.getParamLength(paramName);
-		}
-		else if(!Double.isNaN(speciesDefaults.getParamLength(paramName)))
-		{
-			return speciesDefaults.getParamLength(paramName);
-		}
-		else
-		{
-			return defaultValue;
-		}
-	}
-    public double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
-    {
-        return getSpeciesParameterLength(paramName, aSpeciesRoot, speciesDefaults, Double.NaN);
-    }
-	
-	public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults, Double defaultValue)
-	{
-		if(!Double.isNaN(aSpeciesRoot.getParamDbl(paramName)))
-		{
-			return aSpeciesRoot.getParamDbl(paramName);
-		}
-		else if(!Double.isNaN(speciesDefaults.getParamDbl(paramName)))
-		{
-			return speciesDefaults.getParamDbl(paramName);
-		}
-		else
-		{
-			return defaultValue;
-		}
+		value = getSpeciesParameterDouble("initialMassCV",aSpeciesRoot,speciesDefaults);
+		initialMassCV = value.isNaN() ? initialMassCV : value;
+
 	}
 
-    public double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
-    {
-        return getSpeciesParameterDouble(paramName, aSpeciesRoot, speciesDefaults, Double.NaN);
-    }
-	
 	public String getSpeciesParameterString(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		if(aSpeciesRoot.getParam(paramName)!= null)
-		{
+		if ( aSpeciesRoot.getParam(paramName) !=  null )
 			return aSpeciesRoot.getParam(paramName);
-		}
-		else if(speciesDefaults.getParam(paramName)!= null)
-		{
+		if ( speciesDefaults.getParam(paramName) != null)
 			return speciesDefaults.getParam(paramName);
-		}
-		else
-		{
-			return null;
-		}
+		return null;
 	}
 
+	public Integer getSpeciesParameterInteger(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamInt(paramName)) )
+			return aSpeciesRoot.getParamInt(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamInt(paramName)) )
+			return speciesDefaults.getParamInt(paramName);
+		return 0;
+	}
+
+	public Double getSpeciesParameterDouble(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamDbl(paramName)) )
+			return aSpeciesRoot.getParamDbl(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamDbl(paramName)) )
+			return speciesDefaults.getParamDbl(paramName);
+		return Double.NaN;
+	}
+
+	public Double getSpeciesParameterLength(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamLength(paramName)) )
+			return aSpeciesRoot.getParamLength(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamLength(paramName)) )
+			return speciesDefaults.getParamLength(paramName);
+		return Double.NaN;
+	}
+
+	public Double getSpeciesParameterMass(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamMass(paramName)) )
+			return aSpeciesRoot.getParamMass(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamMass(paramName)) )
+			return speciesDefaults.getParamMass(paramName);
+		return Double.NaN;
+	}
+
+	public Double getSpeciesParameterTime(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamTime(paramName)) )
+			return aSpeciesRoot.getParamTime(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamTime(paramName)) )
+			return speciesDefaults.getParamTime(paramName);
+		return Double.NaN;
+	}
+
+	public Double getSpeciesParameterConc(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( ! Double.isNaN(aSpeciesRoot.getParamConc(paramName)) )
+			return aSpeciesRoot.getParamConc(paramName);
+		if ( ! Double.isNaN(speciesDefaults.getParamConc(paramName)) )
+			return speciesDefaults.getParamConc(paramName);
+		return Double.NaN;
+	}
+
+	public Boolean getSpeciesParameterBool(String paramName, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
+		if ( aSpeciesRoot.getParamBool(paramName) != null )
+			return aSpeciesRoot.getParamBool(paramName);
+		if ( speciesDefaults.getParamBool(paramName) != null )
+			return speciesDefaults.getParamBool(paramName);
+		return null;
+	}
 
 }

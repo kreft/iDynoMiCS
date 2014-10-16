@@ -151,7 +151,8 @@ public abstract class Agent implements Cloneable {
 	 * Implemented fully by agent types that extend Agent
 	 * 
 	 */
-	public void step() {
+	public void step()
+	{
 		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
@@ -181,10 +182,9 @@ public abstract class Agent implements Cloneable {
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader() {
+	public StringBuffer sendHeader() {
 		// return the header file for this agent's values	
-		StringBuffer tempString = new StringBuffer("family,genealogy,generation,birthday");
-		return tempString.toString();
+		return new StringBuffer("family,genealogy,generation,birthday");
 	}
 
 	/**
@@ -194,11 +194,10 @@ public abstract class Agent implements Cloneable {
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
-	public String writeOutput() {
+	public StringBuffer writeOutput()
+	{
 		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer("");
-		tempString.append(_family+","+_genealogy+","+_generation+","+_birthday);
-		return tempString.toString();
+		return new StringBuffer(_family+","+_genealogy+","+_generation+","+_birthday);
 	}
 
 	/**

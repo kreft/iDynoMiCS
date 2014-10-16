@@ -50,7 +50,7 @@ public interface HasSpecies
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader();
+	public StringBuffer sendHeader();
 	
 	/**
 	 * \brief Return the set of parameters that is associated with the object of this species

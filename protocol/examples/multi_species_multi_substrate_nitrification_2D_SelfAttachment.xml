@@ -756,7 +756,7 @@ A few general points about protocol files:
 		<param name="cellInjectionStartHour" unit="hour">0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
 
 		<!-- Hour to stop cell injection -->
 		<param name="cellInjectionEndHour" unit="hour">72</param>
@@ -786,8 +786,8 @@ A few general points about protocol files:
 		<param name="shoveLimit" unit="um">0.</param>
 
 		<param name="cellRunSpeed" unit="um/sec">30.0</param>
-		<param name="tumbleInt" unit="seconds">5</param>dist
-		<param name="stickinessRadius" unit="um">0.5</param>
+		<param name="tumbleInt" unit="seconds">5</param>
+		<param name="stickinessAddition" unit="um">0.5</param>
 
 		<param name="epsMax">0.1</param>
 		<param name="kHyd" unit="hr-1">0.007</param>
@@ -802,7 +802,7 @@ A few general points about protocol files:
 		<param name="cellInjectionStartHour" unit="hour">0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
 
 		<!-- Hour to stop cell injection -->
 		<param name="cellInjectionEndHour" unit="hour">72</param>
@@ -831,6 +831,10 @@ A few general points about protocol files:
 		<param name="shoveFactor" unit="um">1.15</param>
 		<param name="shoveLimit" unit="um">0</param>
 
+        <param name="cellRunSpeed" unit="um/sec">30.0</param>
+		<param name="tumbleInt" unit="seconds">2</param>
+		<param name="stickinessAddition" unit="um">0.5</param>
+
 		<param name="epsMax">0.1</param>
 		<param name="kHyd" unit="hr-1">0.007</param>
 
@@ -857,12 +861,6 @@ A few general points about protocol files:
 				<param name="switch">lessThan</param>
 				<param name="concentration" unit="g.L-1">0.2e-3</param>
 			</onCondition>
-			-->
-			<!--
-			<onCondition type="biomass" name="biomass">
-				<param name="switch">lessThan</param>
-				<param name="mass" unit="fg">5000</param>
-			</onCondition>-->
 		</reactionSwitch>
 
 		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
@@ -871,7 +869,7 @@ A few general points about protocol files:
 		<param name="cellInjectionStartHour" unit="hour">0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">5</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
 
 		<!-- Hour to stop cell injection -->
 		<param name="cellInjectionEndHour" unit="hour">72</param>

@@ -54,82 +54,82 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * Radius of this agent
 	 */
-	protected double                   _radius;
+	protected Double _radius = 0.0;
 	
 	/**
 	 * Cell radius including any capsules
 	 */
-	protected double					_totalRadius;
+	protected Double _totalRadius = 0.0;
 	
 	/**
 	 * Radius at which this agent will divide
 	 */
-	protected double				   _myDivRadius;
+	protected Double _myDivRadius = 0.0;
 	
 	/**
 	 * Radius at which agent death is triggered
 	 */
-	protected double					_myDeathRadius;
+	protected Double _myDeathRadius = 0.0;
 	
 	/**
 	 * Volume of this agent
 	 */
-	protected double                   _volume;
+	protected Double _volume = 0.0;
 	
 	/**
 	 * Cell volume including any capsules
 	 */
-	protected double					_totalVolume;
+	protected Double _totalVolume = 0.0;
 	
 	/**
 	 * Agent position - continuous coordinates
 	 */
-	protected ContinuousVector         _location          = new ContinuousVector();
+	protected ContinuousVector _location = new ContinuousVector();
 	
 	/**
 	 * ContinuousVector noting the move that will be applied to the agents position
 	 */
-	protected ContinuousVector         _movement          = new ContinuousVector();
+	protected ContinuousVector _movement = new ContinuousVector();
 	
 	/**
 	 * Direction in which this cell divides
 	 */
-	protected ContinuousVector         _divisionDirection = new ContinuousVector();
+	protected ContinuousVector _divisionDirection = new ContinuousVector();
 	
 	/**
 	 * List of neighbouring agents in this agents vicinity
 	 */
-	protected LinkedList<LocatedAgent> _myNeighbors       = new LinkedList<LocatedAgent>();
+	protected LinkedList<LocatedAgent> _myNeighbors = new LinkedList<LocatedAgent>();
 
 	/**
 	 * Index of the agent position on the vectorized grid
 	 */
-	protected int                      _agentGridIndex;
+	protected int _agentGridIndex;
 	
 	/**
 	 * Boolean noting whether this agent is interacting with a surface (true) or not (false)
 	 */
-	protected boolean                  _isAttached        = false;
+	protected Boolean _isAttached = false;
 
 	/**
 	 * Detachment priority
 	 */
-	public double                       detPriority = 0;
+	public Double detPriority = 0.0;
 
 	/**
 	 * Stores the simulation time since the last division check
 	 */
-	public double                      _timeSinceLastDivisionCheck = Double.MAX_VALUE;
+	public Double _timeSinceLastDivisionCheck = Double.MAX_VALUE;
 
 	/**
 	 * Distance based probability from a given neighbour (used in HGT). Sonia 8-12-2010
 	 */
-	public double					_distProb = 0; 								
+	public Double _distProb = 0.0; 								
 	
 	/**
 	 * Cumulative probability as to whether the plasmid will be transferred 
 	 */
-	public double					_distCumProb = 0; 	
+	public Double _distCumProb = 0.0; 	
 
 
 	/**
@@ -137,7 +137,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Constructor used to generate progenitor and initialise an object to store relevant parameters
 	 */
-	public LocatedAgent() {
+	public LocatedAgent()
+	{
 		super();
 		_speciesParam = new LocatedParam();
 	}
@@ -255,11 +256,11 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 
 			// Rob: this is necessary for the case when biofilm agents in one simulation
 			// are transferred into a chemostat for the next.
-			_location.set(0, 0, 0);
+			_location.reset();
 
 		}else{
 
-			double newAgentX, newAgentY, newAgentZ;
+			Double newAgentX, newAgentY, newAgentZ;
 			newAgentX = Double.parseDouble(singleAgentData[iDataStart]);
 			newAgentY = Double.parseDouble(singleAgentData[iDataStart+1]);
 			newAgentZ = Double.parseDouble(singleAgentData[iDataStart+2]);
@@ -367,7 +368,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			return false;
 
 		// at this point we will actually check whether to divide
-		_timeSinceLastDivisionCheck = 0;
+		_timeSinceLastDivisionCheck = 0.0;
 
 		return getRadius(false) > this._myDivRadius;
 	}
@@ -380,7 +381,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return	Boolean stating whether cell death should be triggered (true) or not (false)
 	 */
 	public boolean willDie() {
-		if (_totalMass < 0)
+		if (_totalMass < 0.0)
 			return true;
 		return getRadius(false) <= this._myDeathRadius;
 	}
@@ -432,7 +433,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		}
 		// Now register the agent inside the guilds and the agent grid
 		baby.registerBirth();
-		baby._netVolumeRate = 0;
+		baby._netVolumeRate = 0.0;
 
 		
 	}
@@ -525,7 +526,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
-	public double interact(boolean MUTUAL, boolean shoveOnly, boolean seq,
+	public Double interact(boolean MUTUAL, boolean shoveOnly, boolean seq,
 			double gain) {
 		boolean willShove = false;
 
@@ -557,7 +558,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		if (seq)
 			return move();
 		else
-			return 0;
+			return 0.0;
 	}
 
 	/**
@@ -667,40 +668,40 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @see addPullMovement works in 2 and 3D
 	 */
 	public double computeDifferenceVector(ContinuousVector me,
-			ContinuousVector him) {
-		double gridLength;
+														ContinuousVector him) {
+		Double gridLength;
 
-		_diff.x = me.x-him.x;
+		_diff.sendDiff(me, him);
+		
 		// check periodicity in X
 		gridLength = _species.domain.length_X;
 		if (Math.abs(_diff.x) > .5 * gridLength)
 			_diff.x -= Math.signum(_diff.x) * gridLength;
 
-		_diff.y = me.y-him.y;
+		
 		// check periodicity in Y
 		gridLength = _species.domain.length_Y;
 
 		if (Math.abs(_diff.y) > .5 * gridLength)
 			_diff.y -= Math.signum(_diff.y) * gridLength;
 
-		if (_agentGrid.is3D) {
-			_diff.z = me.z-him.z;
+		if (_agentGrid.is3D)
+		{
 			// check periodicity in Z
 			gridLength = _species.domain.length_Z;
 			if (Math.abs(_diff.z) > .5 * gridLength)
 				_diff.z -= Math.signum(_diff.z) * gridLength;
 
-		} else {
-			_diff.z = 0;
 		}
-		double d = Math.sqrt(_diff.x * _diff.x + _diff.y * _diff.y + _diff.z
-				* _diff.z);
+		
+		Double d = _diff.norm();
 
-		if (d==0) {
+		if ( d.equals(0.0) )
+		{
 			d = 1e-2*_radius;
 			_diff.alea(_agentGrid.is3D);
 		}
-
+		
 		return d;
 	}
 
@@ -768,21 +769,24 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * With the agent move calculated, apply this movement, taking care to respect boundary conditions
 	 * 
 	 */
-	public double move() {
-		if (!_movement.isValid()) {
+	public Double move()
+	{
+		if (!_movement.isValid())
+		{
 			LogFile.writeLog("Incorrect movement coordinates");
 			_movement.reset();
 		}
 
-		if (!_agentGrid.is3D&&_movement.z!=0) {
-			_movement.z = 0;
+		if ( !(_agentGrid.is3D) && !(_movement.z.equals(0.0)) )
+		{
+			_movement.z = 0.0;
 			_movement.reset();
-			LogFile.writeLog("Try to move in z direction !");
+			LogFile.writeLog("Agent tried to move in Z direction!");
 		}
 
 		// No movement planned, finish here
 		if (_movement.isZero())
-			return 0;
+			return 0.0;
 
 		// Test the boundaries
 		checkBoundaries();
@@ -791,7 +795,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		_location.set(_newLoc);
 		_agentGrid.registerMove(this);
 
-		double delta = _movement.norm();
+		Double delta = _movement.norm();
 		_movement.reset();
 
 		return delta/_totalRadius;
@@ -809,19 +813,20 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		_newLoc.add(_movement);
 		AllBC aBoundary = getDomain().testCrossedBoundary(_newLoc);
 		int nDim = (_agentGrid.is3D ? 3 : 2);
-		boolean boundaryCrossed = (aBoundary!=null);
+		Boolean test = ( aBoundary != null );
 		int counter = 0;
 
 		// Test all boundaries and apply corrections according to crossed
 		// boundaries
-		while (boundaryCrossed) {
+		while (test)
+		{
 			counter++;
 			aBoundary.applyBoundary(this, _newLoc);
 			aBoundary = getDomain().testCrossedBoundary(_newLoc);
 
-            boundaryCrossed = (aBoundary!=null)|(counter>nDim);
+			test = (aBoundary != null) || (counter > nDim);
 			if (counter > nDim)
-				System.out.println("LocatedAgent.move() : problem!");
+				System.out.println("Problem in LocatedAgent.checkBoundaries()");
 		}
 	}
 
@@ -846,14 +851,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aSpG	Spatial grid used to sum catalysing mass
 	 * @param catalystIndex	Index of the compartment of the cell supporting the reaction
 	 */
-	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex) {
+	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex)
+	{
 		if (isDead)
 			return;
 
-		double density = particleMass[catalystIndex]/aSpG.getVoxelVolume();
-		if (Double.isNaN(density) | Double.isInfinite(density))
-			density = 0;
-		aSpG.addValueAt(density, _location);
+		Double value = particleMass[catalystIndex]/aSpG.getVoxelVolume();
+		if ( Double.isNaN(value) || Double.isInfinite(value) )
+			value = 0.0;
+		aSpG.addValueAt(value, _location);
 	}
 
 	/**
@@ -868,10 +874,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		if (isDead)
 			return;
 
-		double density = _totalMass/aSpG.getVoxelVolume();
-		if (Double.isNaN(density) | Double.isInfinite(density))
-			density = 0;
-		aSpG.addValueAt(density, _location);
+		Double value = _totalMass/aSpG.getVoxelVolume();
+		if ( Double.isNaN(value) || Double.isInfinite(value) )
+			value = 0.0;
+		aSpG.addValueAt(value, _location);
 	}
 
 	/**
@@ -881,11 +887,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @param aSpG	Spatial grid used to sum volume
 	 */
-	public void fitVolRateOnGrid(SpatialGrid aSpG) {
-		double volRate = _netVolumeRate/aSpG.getVoxelVolume();
-		if (Double.isNaN(volRate) | Double.isInfinite(volRate))
-			volRate = 0;
-		aSpG.addValueAt(volRate, _location);
+	public void fitVolRateOnGrid(SpatialGrid aSpG)
+	{
+		Double value = _netVolumeRate/aSpG.getVoxelVolume();
+		if ( Double.isNaN(value) || Double.isInfinite(value) )
+			value = 0.0;
+		aSpG.addValueAt(value, _location);
 	}
 
 	/**
@@ -896,18 +903,19 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aRateGrid	Spatial grid used to store total reaction rate
 	 * @param reactionIndex	Index of this declared reaction in the simulation dictionary
 	 */
-	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex) {
+	public void fitReacRateOnGrid(SpatialGrid aRateGrid, int reactionIndex)
+	{
 		if (isDead)
 			return;
-
+		
 		// growthRate is in [fgX.hr-1] so convert to concentration:
 		// [fgX.um-3.hr-1 = gX.L-1.hr-1]
-		double volRate = growthRate[reactionIndex]/aRateGrid.getVoxelVolume();
+		Double value = growthRate[reactionIndex]/aRateGrid.getVoxelVolume();
 
-		if (Double.isNaN(volRate) | Double.isInfinite(volRate))
-			volRate = 0;
+		if (Double.isNaN(value) | Double.isInfinite(value))
+			value = 0.0;
 
-		aRateGrid.addValueAt(volRate, _location);
+		aRateGrid.addValueAt(value, _location);
 	}
 
 	/* _______________ FILE OUTPUT _____________________ */
@@ -919,15 +927,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader() {
+	public StringBuffer sendHeader()
+	{
 		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-		tempString.append(",");
-
+		StringBuffer tempString = super.sendHeader();
+		
 		// location info and radius
-		tempString.append("locationX,locationY,locationZ,radius,totalRadius");
-
-		return tempString.toString();
+		tempString.append(",locationX,locationY,locationZ,radius,totalRadius");
+		
+		return tempString;
 	}
 
 	/**
@@ -937,16 +945,16 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
-	public String writeOutput() {
+	public StringBuffer writeOutput()
+	{
 		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-		tempString.append(",");
-
+		StringBuffer tempString = super.writeOutput();
+		
 		// location info and radius
-		tempString.append(_location.x+","+_location.y+","+_location.z+",");
+		tempString.append(","+_location.x+","+_location.y+","+_location.z+",");
 		tempString.append(_radius+","+_totalRadius);
-
-		return tempString.toString();
+		
+		return tempString;
 	}
 
 	/* _______________ RADIUS, MASS AND VOLUME _____________________ */
@@ -956,8 +964,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Compute the volume on the basis of the mass and density of different compounds defined in the cell
 	 */
-	public void updateVolume() {
-		_volume = 0;
+	public void updateVolume()
+	{
+		_volume = 0.0;
 		for (int i = 0; i<particleMass.length; i++) {
 			_volume += particleMass[i]/getSpeciesParam().particleDensity[i];
 		}
@@ -1061,9 +1070,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		return (withCapsule ? _totalMass : _totalMass);
 	}
 
-	public double getMaximumRadius() {
-		return getSpeciesParam().divRadius
-		* (1 + getSpeciesParam().divRadiusCV);
+	public double getMaximumRadius()
+	{
+		return getSpeciesParam().divRadius * (1 + getSpeciesParam().divRadiusCV);
 	}
 
 	/**
@@ -1085,7 +1094,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	Boolean noting whether this agent contains any inert particles
 	 */
-	public boolean hasInert() {
+	public boolean hasInert()
+	{
 		return false;
 	}
 
@@ -1131,7 +1141,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public double getInteractDistance(LocatedAgent baby) {
 		return getShoveRadius() + baby.getShoveRadius()
-		+ ((LocatedParam) _speciesParam).shoveLimit;
+								+ ((LocatedParam) _speciesParam).shoveLimit;
 	}
 
 	/**
@@ -1178,7 +1188,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return Boolean noting whether the agent has a move to perform
 	 */
-	public boolean isMoving() {
+	public Boolean isMoving() {
 		return (_movement.norm()>_totalRadius/10);
 	}
 
@@ -1262,7 +1272,18 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			return (((LocatedAgent) b1)._totalMass>((LocatedAgent) b2)._totalMass ? 1 : -1);
 		}
 	}
-
+	
+	/**
+	 * \brief Return the distance from this agent to a ContinuousVector.
+	 * 
+	 * @param cV	ContinuousVector to find distance to.
+	 * @return distance between this agent and cV (assuming cyclic boundaries).
+	 */
+	public Double getDistance(ContinuousVector cV)
+	{
+		return computeDifferenceVector(_location, cV);
+	}
+	
 	/**
 	 * \brief Return the distance between two agents
 	 * 
@@ -1271,8 +1292,9 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @param aLoc	LocatedAgent to find distance to
 	 * @return distance between two agents (assuming cyclic boundaries)
 	 */
-	public double getDistance(LocatedAgent aLoc) {
-		return computeDifferenceVector(_location, aLoc._location);
+	public Double getDistance(LocatedAgent aLoc)
+	{
+		return getDistance(aLoc._location);
 	}
 
 	/**
@@ -1284,21 +1306,11 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 */
 	public void setLocation(ContinuousVector cc) 
 	{
-
-		//sonia:chemostat
-		//set the location of the newborns to zero
-
-		if(Simulator.isChemostat){
-			cc.set(0,0,0);
-			_location.x = cc.x;
-			_location.y = cc.y;
-			_location.z = cc.z;
-
-		}else{
-			_location.x = cc.x;
-			_location.y = cc.y;
-			_location.z = cc.z;
-		}
+		// In a chemostat set the location of the newborns to zero.
+		if(Simulator.isChemostat)
+			_location.reset();
+		else
+			_location.set(cc);
 	}
 
 	/**

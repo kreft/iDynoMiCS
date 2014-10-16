@@ -72,7 +72,9 @@ public abstract class DiffusionSolver
 	protected ArrayList<Integer>  _soluteIndex = new ArrayList<Integer>();
 
 	protected double              internTimeStep;
-
+	
+	protected double 			  minimalTimeStep;
+	
 	protected double              internalIteration;
 	
 	protected double              maxIteration = 1;

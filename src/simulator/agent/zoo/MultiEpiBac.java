@@ -13,39 +13,34 @@
 package simulator.agent.zoo;
 
 import java.awt.Color;
-import java.util.*;
-
-import idyno.SimTimer;
-
-import org.jdom.Element;
-
-import utils.ExtraMath;
-import utils.XMLParser;
-
-
-import simulator.Simulator;
-import simulator.agent.*;
-import simulator.geometry.ContinuousVector;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.Math;
+import java.util.*;
+import org.jdom.Element;
 
-public class MultiEpiBac extends BactEPS {
+import idyno.SimTimer;
+import simulator.agent.*;
+import simulator.geometry.ContinuousVector;
+import simulator.Simulator;
+import utils.ExtraMath;
+import utils.XMLParser;
 
+public class MultiEpiBac extends BactEPS
+{
 	/* Parameters mutated from species parameters ___________________________ */
 	/* Parameters specific to the agent _____________________________________ */
 
 	public static StringBuffer plasmidTempString;
 
 	// Plasmid hosted by this agent
-	public Vector <MultiEpisome> _plasmidHosted   = new Vector <MultiEpisome>();
+	public Vector <MultiEpisome> plasmidHosted = new Vector<MultiEpisome>();
 
 	//not being used in this version
-	private double _lastReception=0;
-	private double _lastExchange=0;
-	private int _nCopy=0;
-	private int _status=0;
+	private Double _lastReception = 0.0;
+	private Double _lastExchange = 0.0;
+	private int _nCopy = 0;
+	private int _status = 0;
 
 	//sonia: 14-05-09
 	//conjugation management
@@ -76,12 +71,12 @@ public class MultiEpiBac extends BactEPS {
 
 	public Object clone() throws CloneNotSupportedException {
 		MultiEpiBac o = (MultiEpiBac) super.clone();
-		o._plasmidHosted = new Vector <MultiEpisome>();
+		o.plasmidHosted = new Vector <MultiEpisome>();
 		MultiEpisome newEpisome;
-		for (MultiEpisome anEpisome : _plasmidHosted) {
+		for (MultiEpisome anEpisome : plasmidHosted) {
 			newEpisome = (MultiEpisome) anEpisome.clone();
 			newEpisome.setHost(o);
-			o._plasmidHosted.add(newEpisome);	
+			o.plasmidHosted.add(newEpisome);	
 		}
 
 		return (Object) o;
@@ -200,8 +195,8 @@ public class MultiEpiBac extends BactEPS {
 		// that is they'll have the same copy number as their progenitors
 
 		// Both daughters cells have cloned plasmids ; apply the segregation
-		for (int i = 0; i<_plasmidHosted.size(); i++) {
-			_plasmidHosted.get(i).segregation(baby._plasmidHosted.get(i));
+		for (int i = 0; i<plasmidHosted.size(); i++) {
+			plasmidHosted.get(i).segregation(baby.plasmidHosted.get(i));
 
 		}
 
@@ -257,51 +252,47 @@ public class MultiEpiBac extends BactEPS {
 
 
 
-	public void grow() {
-		double deltaMass;
+	public void grow()
+	{
+		Double deltaMass;
 		int reacIndex;
-		_netGrowthRate = 0;
-		_netVolumeRate = 0;
+		_netGrowthRate = 0.0;
+		_netVolumeRate = 0.0;
 		// Compute mass growth rate of each active reaction
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++) {
+		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
+		{
 			// Compute the growth rate
 			reacIndex = reactionActive.get(iReac);
 			growthRate[reacIndex] = allReactions[reacIndex].computeMassGrowthRate(this);
-
 			// Apply the growth rate on the particles
-			for (int i = 0; i<particleYield[reacIndex].length; i++) {
+			for (int i = 0; i<particleYield[reacIndex].length; i++)
+			{
 				deltaMass = particleYield[reacIndex][i]*growthRate[reacIndex];
-
 				_netGrowthRate += deltaMass;
 				_netVolumeRate += deltaMass/getSpeciesParam().particleDensity[i];
-
 				particleMass[i] += (deltaMass*SimTimer.getCurrentTimeStep());	
-
 			}
-
 		}
-
 	}
-
-
+	
 	/**
 	 * Remove a plasmid if its copy number reaches 0
 	 */
-	protected void checkMissingPlasmid() {
-
-		Iterator<MultiEpisome> iter = _plasmidHosted.iterator();
-
-		while (iter.hasNext()) {
+	protected void checkMissingPlasmid()
+	{
+		Iterator<MultiEpisome> iter = plasmidHosted.iterator();
+		while (iter.hasNext())
+		{
 			MultiEpisome anEpisome = iter.next();
-			if (anEpisome.getCopyNumber()<=0) {
+			if ( anEpisome.getCopyNumber() <= 0 )
+			{
 				losePlasmid(anEpisome);
 				anEpisome.die();
 				iter.remove();
 			}
 		}
-
 	}
-
+	
 	/**
 	 * test if this cell can be a recipient for a given plasmid
 	 * @param aPlasmid
@@ -327,12 +318,12 @@ public class MultiEpiBac extends BactEPS {
 		// sonia: 02.03.2010 test whether the partner contains any plasmids and if these are 
 		// compatible (i.e., if they can replicate in the same cell) with the incoming plasmid
 
-		int plListSize = partner._plasmidHosted.size();
+		int plListSize = partner.plasmidHosted.size();
 		ArrayList<String> plHostedNames = new ArrayList<String>();
 
 		if(plListSize>0){
 			for (int i=0; i<plListSize; i++){
-				plHostedNames.add(partner._plasmidHosted.get(i).getName());
+				plHostedNames.add(partner.plasmidHosted.get(i).getName());
 			}
 
 
@@ -370,9 +361,9 @@ public class MultiEpiBac extends BactEPS {
 		// For each plasmid ready to conjugate search a number of potential recipients (partners) and conjugate
 
 		//Randomise list of plasmids, specially useful in the incompatible plasmids scenario
-		Collections.shuffle(_plasmidHosted, ExtraMath.random);
+		Collections.shuffle(plasmidHosted, ExtraMath.random);
 
-		for (MultiEpisome aPlasmid : _plasmidHosted) {
+		for (MultiEpisome aPlasmid : plasmidHosted) {
 
 			//if(Simulator.isChemostat){
 
@@ -689,7 +680,7 @@ public class MultiEpiBac extends BactEPS {
 	public void addPlasmid(String plasmidName) {
 		try {
 			MultiEpisome aPlasmid = (MultiEpisome) _species.getSpecies(plasmidName).sendNewAgent();
-			_plasmidHosted.add(aPlasmid);
+			plasmidHosted.add(aPlasmid);
 			aPlasmid.setHost(this);
 			//sonia: 08-06-09
 			//when the cells carrying a plasmid are created we must set the field "timeSpentInHost" of the plasmid
@@ -741,7 +732,7 @@ public class MultiEpiBac extends BactEPS {
 
 			// register the plasmid to the host	
 			//
-			partner._plasmidHosted.add(baby);	
+			partner.plasmidHosted.add(baby);	
 			partner.addPlasmidReaction(aPlasmid);
 
 			//StringBuffer partnerInfo = new StringBuffer();
@@ -796,13 +787,13 @@ public class MultiEpiBac extends BactEPS {
 		MultiEpiBacParam param = getSpeciesParam();
 		boolean test = false;
 
-		if (_plasmidHosted.size()==0){
+		if (plasmidHosted.size()==0){
 			//localAgent.setLocalAgentColor(param.rColor);
 			return param.rColor;
 		}
 		loopCol:
-			for(int i=0; i< _plasmidHosted.size(); i++){
-				test = _plasmidHosted.get(i).isTransConjugant();
+			for(int i=0; i< plasmidHosted.size(); i++){
+				test = plasmidHosted.get(i).isTransConjugant();
 				if(test){
 					break loopCol;
 				}
@@ -827,60 +818,55 @@ public class MultiEpiBac extends BactEPS {
 	}
 
 
-	public int getPlasmidIndex(String plasmidName, Vector <MultiEpisome> plasmidList){
+	public int getPlasmidIndex(String plasmidName, Vector <MultiEpisome> plasmidList)
+	{
 		int index=0;
-
-		for (int i=0; i<plasmidList.size(); i++){
-			if(plasmidList.get(i).getName().equals(plasmidName)){
+		for (int i = 0; i < plasmidList.size(); i++)
+			if(plasmidList.get(i).getName().equals(plasmidName))
 				index = i;
-			}
-		}		
 		return index;
 	}
 
-	public String sendHeader() {
+	public StringBuffer sendHeader()
+	{
 		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-
-		//for(Episome anEpi : _plasmidHosted){	
-		tempString.append(",");
-		tempString.append("plasmid,copyNumber,transconjugant");
-
-		//}
-
-		return tempString.toString();
+		StringBuffer tempString = super.sendHeader();
+		tempString.append(",plasmid,copyNumber,transconjugant");
+		return tempString;
 	}
-
-	public String writeOutput() {
-		//super.writeOutput();	
-		//tempString.delete(tempString.length()-2, tempString.length());
-		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-
+	
+	/**
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
+	 * 
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
+	 * 
+	 * @return	String containing results associated with this agent.
+	 */
+	public StringBuffer writeOutput()
+	{
+		StringBuffer tempString = super.writeOutput();
+		
 		//if (!_plasmidHosted.isEmpty()){
 		//tempString.append(",");
 		//}
-
-
-		for(MultiEpisome anEpi : _plasmidHosted){	
+		
+		for(MultiEpisome anEpi : plasmidHosted)
+		{	
 			tempString.append(",");
 			tempString.append(anEpi.getSpeciesParam().plasmidName + ",");
 			tempString.append(anEpi.getCopyNumber()+ ",");
 			//sonia:
 			//count cells that carry a certain type of plasmid; the copy number of the plasmid is irrelevant
 			//for the time being --> that's done in the matlab scripts analysing the agent_sum xml files 
-
-			if(anEpi.isTransConjugant()){
+			
+			if(anEpi.isTransConjugant())
 				tempString.append("1");
-				//tempString.append( ",");
-			}else{
+			else
 				tempString.append("0");
-				//tempString.append( ",");
-			}
-
 		}
-
-
+		
 		//sonia: this will be used when we want to know the information about the partner, to be able to see
 		//where the conjugation events take place spatially
 		/* if(conjResult){					
@@ -889,14 +875,11 @@ public class MultiEpiBac extends BactEPS {
 				tempString.append("1");
 				tempString.append("," + plasmidVector.get(i)+"," + partnerVector.get(i));
 				tempString.append(";\n");
-
 			}
-
 		}*/
 		plasmidVector.clear();
 		partnerVector.clear();
-
-		return tempString.toString();
+		return tempString;
 	}
 
 	public void writePOVColorDefinition(FileWriter fr) throws IOException {

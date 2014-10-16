@@ -16,11 +16,11 @@ import org.jdom.Element;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.SpatialGrid;
-
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 import simulator.geometry.shape.IsShape;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -79,7 +79,7 @@ public class BoundaryCyclic extends AllBC
 	 */
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCParser) 
 	{
-		_mySide = aBCParser.getAttributeStr("name");
+		_mySide = aBCParser.getAttribute("name");
 		
 		// in 3D, all cyclic boundaries are active
 		if(aDomain.is3D) activeForSolute=true;
@@ -102,26 +102,29 @@ public class BoundaryCyclic extends AllBC
 	 * @param geometryRoot	XML tags in the protocol file that describe this boundary
 	 * @param aDomain	The domain which this boundary is associated with
 	 */
-	public void readGeometry(XMLParser geometryRoot, Domain aDomain) {
+	public void readGeometry(XMLParser geometryRoot, Domain aDomain)
+	{
 		List<Element> shapeList = geometryRoot.getChildren("shape");
 		String className;
-
-		try {
+		try 
+		{
 			// Build first shape;
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(0).getAttributeValue("class");
 			_myShape = (IsShape) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(shapeList.get(0)), aDomain);
-			_mySide = geometryRoot.getAttributeStr("name");
-
+			_mySide = geometryRoot.getAttribute("name");
 			// Build opposite side shape
-
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(1).getAttributeValue("class");
 			_myOppShape = (IsShape) Class.forName(className).newInstance();
 			_myOppShape.readShape(new XMLParser(shapeList.get(1)), aDomain);
 
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e,
+						"BoundaryCyclic.readGeometry(geometryRoot, aDomain)");
 		}
 	}
 	
@@ -209,7 +212,7 @@ public class BoundaryCyclic extends AllBC
 			// Build translator between both boundaries
 			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/aSoluteGrid.getResolution());
 			translator.set(_myOppShape.getNormalDC());
-			translator.times(k-1);
+			translator.times(k - 1);
 
 			// Initialise the course along the shape of the boundary
 			_myShape.readyToFollowBoundary(aSoluteGrid);

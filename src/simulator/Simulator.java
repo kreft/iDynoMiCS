@@ -326,7 +326,7 @@ public class Simulator
 	 * 
 	 * @return Boolean stating if the simulation is running (true) or has stopped (false)
 	 */
-	public boolean simulationIsRunning() 
+	public Boolean simulationIsRunning() 
 	{
 		return !SimTimer.simIsFinished();
 	}
@@ -377,9 +377,10 @@ public class Simulator
 			// this will output if we're close to the output period but haven't
 			// quite hit it (which happens sometimes due to floating point issues)
 			// (this will also output for sure on the last step) 
-			if ( ((SimTimer.getCurrentTime()-_lastOutput)
-					>= (_outputPeriod - 0.01*SimTimer.getCurrentTimeStep())) ||
-					SimTimer.simIsFinished() ) {
+			Double testTime = SimTimer.getCurrentTime() - _lastOutput;
+			testTime -= _outputPeriod - 0.01*SimTimer.getCurrentTimeStep();
+			if ( ( testTime >= 0.0 ) || SimTimer.simIsFinished() )
+			{
 				writeReport();
 				
 				//sonia 26.04.2010
@@ -395,11 +396,11 @@ public class Simulator
 			// Rob 11/2/2012
 			// If this is an invComp simulation (default is false), stop if there are fewer than
 			// two species remaining
-			if (invComp) {
-				int nSpecies = speciesDic.size();
+			if (invComp)
+			{
 				int specAlive = 0;
 				
-				for (int iSpecies = 0; iSpecies<nSpecies; iSpecies++) {
+				for (int iSpecies = 0; iSpecies<speciesDic.size(); iSpecies++) {
 					if (speciesList.get(iSpecies).getPopulation() > 0)
 						specAlive++; 
 				}
@@ -413,7 +414,7 @@ public class Simulator
 		}
 		catch(Exception e)
 		{
-			e.printStackTrace();
+			LogFile.writeError(e, "Simulator.step()");
 		}
 	}
 
@@ -449,10 +450,12 @@ public class Simulator
 		// Put in an IF to check as if using protocol files for previous versions, this tag may not be present
 		// We want this to remain at the default "onetime" rather than be set to null if the tag is not present
 		// KA 170513
-		if(localRoot.getParam("attachment")!=null)
+		// RC 200113 - Changed so we don't use selfattach in a chemostat! 
+		if ( (localRoot.getParam("attachment") != null) && (! isChemostat) )
 		{
 			attachmentMechanism = localRoot.getParam("attachment");
 		}
+		LogFile.writeLog("Attachment mechanism is "+attachmentMechanism);
 
 		// Now we need to determine if a random.state file exists. This is used to initialise the random number generator
 		//sonia 05.2011 bug fix: the code was not finding the random.state file because no path was 
@@ -683,10 +686,10 @@ public class Simulator
 		{
 
 			XMLParser aBulkRoot = new XMLParser(aBulkMarkUp);
-			bulkName = aBulkRoot.getAttributeStr("name");
+			bulkName = aBulkRoot.getAttribute("name");
 
 			// check to make sure the bulk exists
-			if (!world.containsBulk(bulkName))
+			if ( ! world.containsBulk(bulkName) )
 				throw new Exception("Bulk "+bulkName+" is not specified in protocol file");
 
 			LogFile.writeLog("\t\tInitializing bulk '"+bulkName+"' from input file.");
@@ -698,7 +701,7 @@ public class Simulator
 			{
 				XMLParser aSoluteRoot = new XMLParser(aSoluteMarkUp);
 
-				soluteName = aSoluteRoot.getAttributeStr("name");
+				soluteName = aSoluteRoot.getAttribute("name");
 				soluteIndex = getSoluteIndex(soluteName);
 
 				// check consistency with protocol file declarations
@@ -973,8 +976,8 @@ public class Simulator
 			spIndex = getSpeciesIndex(aSpeciesRoot.getAttribute("name"));
 			
 			// check consistency with protocol file declarations
-			boolean isConsistent = (speciesList.get(counterSpecies).speciesName.equals(aSpeciesRoot
-					.getAttributeStr("name")));
+			boolean isConsistent = 
+					(speciesList.get(counterSpecies).speciesName.equals(aSpeciesRoot.getAttribute("name")));
 			
 			if (!isConsistent) throw new Exception("Agent input file is inconsistent with protocol file: ");
 			
@@ -1259,8 +1262,8 @@ public class Simulator
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError("System description of grids failed:"+e.getMessage(),
-			"Simulator.writeReport()");
+			LogFile.writeError(e,
+					"Simulator.writeReport() System description of agents");
 		}
 
 		try 
@@ -1287,8 +1290,8 @@ public class Simulator
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeError("System description of agents failed:"+e.getMessage(),
-			"Simulator.writeReport()");
+			LogFile.writeError(e,
+						"Simulator.writeReport() System description of grids");
 		}
 
 	}

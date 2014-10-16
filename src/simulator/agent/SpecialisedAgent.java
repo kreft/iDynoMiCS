@@ -13,8 +13,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import simulator.AgentContainer;
 import simulator.Simulator;
-import simulator.SoluteGrid;
-import simulator.geometry.ContinuousVector;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -42,7 +40,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	/**
 	 * Boolean noting whether this agent is still active in the simulation
 	 */
-	public boolean           isDead = false;
+	public Boolean           isDead = false;
 	
 	/**
 	 * Set of parameters associated with this specialised agent
@@ -101,13 +99,14 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
 	 */
-	public Object clone() throws CloneNotSupportedException {
-		SpecialisedAgent o = (SpecialisedAgent) super.clone();
+	public Object clone() throws CloneNotSupportedException
+	{
+		SpecialisedAgent out = (SpecialisedAgent) super.clone();
 
 		// Copy the references (superficial copy)
-		o._species = this._species;
-		o._speciesParam = this._speciesParam;
-		return (Object) o;
+		out._species = this._species;
+		out._speciesParam = this._speciesParam;
+		return (Object) out;
 	}
 
 	/**
@@ -166,7 +165,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(boolean isStarving) {
+	public void die(Boolean isStarving) {
 		// If you are too small, you must die !
 		// Decrease the population of your species
 		_species.notifyDeath();
@@ -181,8 +180,9 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @return	0
 	 */
-	public double move() {
-		return 0;
+	public Double move()
+	{
+		return 0.0;
 	}
 
 
@@ -250,7 +250,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 *  
 	 * @return	Boolean value noting whether this agent will be detached
 	 */
-	public boolean willDetach() {
+	public Boolean willDetach() {
 		return false;
 	}
 
@@ -276,8 +276,8 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
-	public double interact(boolean MUTUAL, boolean pull, boolean seq, double gain) {
-		return 0;
+	public Double interact(boolean MUTUAL, boolean pull, boolean seq, double gain) {
+		return 0.0;
 	}
 
 	/**
@@ -287,7 +287,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 *  
 	 * @return	Boolean noting whether or not this agent is moving
 	 */
-	public boolean isMoving() {
+	public Boolean isMoving() {
 		return false;
 	}
 

@@ -19,8 +19,8 @@ import java.awt.Color;
 import utils.XMLParser;
 
 /** Parameters common to all instances of a same species */
-public class EpiBacParam extends BactEPSParam {
-
+public class EpiBacParam extends BactEPSParam
+{
 	// number of cells contacted per hour
 	public double scanSpeed;
 
@@ -31,11 +31,16 @@ public class EpiBacParam extends BactEPSParam {
 	// colors for povray output
 	public Color dColor, tColor, rColor;
 
-	public EpiBacParam() {
+	public EpiBacParam()
+	{
 		super();
 	}
 
-	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+	/**
+	 * 
+	 */
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
 		super.init(aSim, aSpeciesRoot,speciesDefaults);
 		String colorName;
 
@@ -43,9 +48,11 @@ public class EpiBacParam extends BactEPSParam {
 
 		// if these values are not input, make them large negative to have no effect
 		lowTonusCutoff = aSpeciesRoot.getParamDbl("lowTonusCutoff");
-		if (Double.isNaN(lowTonusCutoff)) lowTonusCutoff = -Double.MAX_VALUE;
+		if (Double.isNaN(lowTonusCutoff))
+			lowTonusCutoff = -Double.MAX_VALUE;
 		highTonusCutoff = aSpeciesRoot.getParamDbl("highTonusCutoff");
-		if (Double.isNaN(highTonusCutoff)) highTonusCutoff = -Double.MAX_VALUE;
+		if (Double.isNaN(highTonusCutoff))
+			highTonusCutoff = -Double.MAX_VALUE;
 
 		colorName = aSpeciesRoot.getParam("donorColor");
 		if (colorName == null)
@@ -62,6 +69,4 @@ public class EpiBacParam extends BactEPSParam {
 			colorName = "white";
 		rColor = utils.UnitConverter.getColor(colorName);
 	}
-
-
 }

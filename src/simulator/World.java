@@ -34,7 +34,7 @@ import simulator.geometry.*;
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham, UK
  */
-public class World 
+public class World
 {
 
 	/**
@@ -78,7 +78,7 @@ public class World
 		} 
 		catch(Exception e) 
 		{
-			LogFile.writeLog("Error trying to create bulks in World.init(): "+e);
+			LogFile.writeError(e, "World.init() while creating bulks");
 		} 
 		
 		try 
@@ -89,7 +89,7 @@ public class World
 		} 
 		catch(Exception e)
 		{
-			LogFile.writeLog("Error trying to create domains in World.init(): "+e);
+			LogFile.writeError(e, "World.init() while creating domains");
 		} 
 
 	}
@@ -109,7 +109,7 @@ public class World
 		{
 			if (domainList.get(i).getName().equals(cDName)) 
 			{
-				return domainList.get(i);
+				return (Domain) domainList.get(i); 
 			}
 		}
 		LogFile.writeLog("World.getDomain() found no domain"); 

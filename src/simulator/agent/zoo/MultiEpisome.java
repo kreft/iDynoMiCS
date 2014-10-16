@@ -422,15 +422,16 @@ public class MultiEpisome extends InfoAgent {
 
 
 	// TODO
-	public String sendHeader() {
-		return "locationX;locationY;locationZ;mass;radius;growthRate";
+	public StringBuffer sendHeader()
+	{
+		return new StringBuffer("locationX,locationY,locationZ,mass,radius,growthRate");
 	}
 
 	// TODO
-	public String writeOutput() {
-		// Now send your data
+	public StringBuffer writeOutput()
+	{
 		//tempString.append("copyNumber,transconjugant;");
-		return (_species.speciesName);
+		return new StringBuffer(_species.speciesName);
 	}
 
 

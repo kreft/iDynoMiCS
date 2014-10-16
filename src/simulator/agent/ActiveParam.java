@@ -12,7 +12,7 @@ package simulator.agent;
 import java.util.Arrays;
 
 import org.jdom.Element;
-
+import utils.ExtraMath;
 import simulator.Simulator;
 import utils.XMLParser;
 
@@ -36,27 +36,27 @@ public class ActiveParam extends SpeciesParam
 	/**
 	 *  Density of different cell compartments ; by convention the first one is the cell, the last one is the extracellular eps
 	 */
-	public double[]   particleDensity;
+	public Double[]   particleDensity;
 
 	/**
 	 * Solute yield from the reaction
 	 */
-	public double[][] soluteYield;
+	public Double[][] soluteYield;
 	
 	/**
 	 * Particle yield from the reaction
 	 */
-	public double[][] particleYield;
+	public Double[][] particleYield;
 	
 	/**
 	 * Kinetic information for this reaction
 	 */
-	public double[][] reactionKinetic;
+	public Double[][] reactionKinetic;
 
 	/**
 	 * For each defined solute the contribution of a cell when it dies
 	 */
-	public double[]   lysisYield;
+	public Double[]   lysisYield;
 
 	/* ______________ UNIVERSAL MUTATOR _________________________________ */
 	/**
@@ -77,12 +77,15 @@ public class ActiveParam extends SpeciesParam
 		int nReaction = aSim.reactionList.length;
 		int nSolute = aSim.soluteList.length;
 
-		particleDensity = new double[nParticle];
+		particleDensity = ExtraMath.newDoubleArray(nParticle);
 		Arrays.fill(particleDensity, Double.POSITIVE_INFINITY);
 
-		reactionKinetic = new double[nReaction][];
-		soluteYield = new double[nReaction][nSolute];		
-		particleYield = new double[nReaction][nParticle];		
+		// Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
+		// as the number of j-elements in each i-array varies. Each i-array is
+		// cloned from the reaction mark up, via ActiveAgent.
+		reactionKinetic = new Double[nReaction][];
+		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);		
+		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);			
 
 		XMLParser parser;
 		int particleIndex;
@@ -95,7 +98,8 @@ public class ActiveParam extends SpeciesParam
 			// Set the density of the particular compound
 			particleIndex = aSim.getParticleIndex(parser.getAttribute("name"));
 			particleDensity[particleIndex] = parser.getParamConc("density");
-			if(Double.isNaN(particleDensity[particleIndex])){
+			if( particleDensity[particleIndex].isNaN() )
+			{
 				// The density is specified elsewhere
 				parser = new XMLParser(aSpeciesRoot.getElement().getParentElement());
 				parser = new XMLParser(parser.getChildSuchAttribute("particle", "name", aSim.particleDic.get(particleIndex)));

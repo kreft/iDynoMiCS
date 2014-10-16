@@ -56,44 +56,49 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	/**
 	 * Net growth rate of this agent due to reactions
 	 */
-	protected double             _netGrowthRate = 0;
+	protected Double _netGrowthRate = 0.0;
 	
 	/**
 	 * Net volume change rate of this agent due to reactions
 	 */
-	protected double             _netVolumeRate = 0;
+	protected Double _netVolumeRate = 0.0;
 
 	/**
 	 * Growth rate of this agent due to reactions
 	 */
-	protected double[]           growthRate;
+	protected Double[] growthRate;
+	
+	/**
+	 * The change to each particle due to reactions. Units fg.
+	 */
+	protected Double[] deltaParticle;
 	
 	// Reaction parameters : (potentially)mutated from species parameters
 	
 	/**
 	 * Solute yield for reactions involving this agent
 	 */
-	public double[][]            soluteYield;
+	public Double[][] soluteYield;
 	
 	/**
 	 * Array of the kinetic factor parameters for the reactions this agent is involved in
 	 */
-	public double[][]            reactionKinetic;
+	public Double[][] reactionKinetic;
 	
 	/**
 	 * Particle yield for reactions involving this agent
 	 */
-	public double[][]            particleYield;
+	public Double[][] particleYield;
 
 	/**
 	 * Mass of the agent (table for all particles belonging to the agent)
 	 */
-	public Double[]              particleMass;
+	public Double[] particleMass;
 	
 	/**
 	 * Sum of masses of all particles
 	 */
-	protected Double             _totalMass;
+	protected Double _totalMass;
 
 	/**
 	 * \brief Creates an ActiveAgent object and initialises the object in which associated parameters are stored
@@ -145,6 +150,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 			particleMass[particleIndex] = parser.getParamMass("mass");
 		}
 		
+		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
+		
 		updateMass();
 		
 		/* Create description of reactions _________________________________ */
@@ -153,11 +160,15 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		allReactions = aSim.reactionList;
 		reactionKnown = new ArrayList<Integer>();
 		reactionActive = new ArrayList<Integer>();
-		growthRate = new double[nReaction];
+		growthRate = ExtraMath.newDoubleArray(nReaction);
 
-		soluteYield = new double[nReaction][nSolute];
-		reactionKinetic = new double[nReaction][];
-		particleYield = new double[nReaction][nParticle];
+		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
+		// Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
+		// as the number of j-elements in each i-array varies. Each i-array is
+		// cloned from the reaction mark up, so no need to fill with zeros now.
+		reactionKinetic = new Double[nReaction][];
+		
+		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
 
 		// Read the XML file
 
@@ -210,7 +221,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		// Particle Masses
 		for (int iComp = 0; iComp<particleMass.length; iComp++)
 			particleMass[iComp] = Double.parseDouble(singleAgentData[iDataStart+iComp]);
-
+		
+		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
+		
 		// other values
 		_netGrowthRate = Double.parseDouble(singleAgentData[iDataStart+particleMass.length]);
 		_netVolumeRate = Double.parseDouble(singleAgentData[iDataStart+particleMass.length+1]);
@@ -275,33 +288,34 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
 	 */
-	public Object clone() throws CloneNotSupportedException {
-		ActiveAgent o = (ActiveAgent) super.clone();
-		// Shallow copy : the reaction are not cloned
-		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
-		o.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
-		o.allReactions = this.allReactions.clone();
-
-		o.growthRate = new double[growthRate.length];
-
-		o.soluteYield = new double[soluteYield.length][];
-		for (int iter = 0; iter<soluteYield.length; iter++) {
-			o.soluteYield[iter] = this.soluteYield[iter].clone();
+	public Object clone() throws CloneNotSupportedException
+	{
+		ActiveAgent out = (ActiveAgent) super.clone();
+		out.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
+		out.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
+		out.allReactions = this.allReactions.clone();
+		out.growthRate = ExtraMath.newDoubleArray(this.growthRate.length);
+		// No need to initialise out.soluteYield, out.reactionKinetic, or
+		// out.particleYield using ExtraMath.newDoubleArray() as their elements
+		// are all cloned from this agent.
+		out.soluteYield = new Double[this.soluteYield.length][];
+		for (int iter = 0; iter < this.soluteYield.length; iter++)
+			out.soluteYield[iter] = this.soluteYield[iter].clone();
+		out.reactionKinetic = new Double[this.reactionKinetic.length][];
+		out.particleYield = new Double[this.particleYield.length][];
+		for (int iter = 0; iter < this.reactionKnown.size(); iter++)
+		{
+			int jReac = this.reactionKnown.get(iter);
+			if ( ! this.reactionKinetic[jReac].equals(null) )
+				out.reactionKinetic[jReac] = this.reactionKinetic[jReac].clone();
+			else
+				out.reactionKinetic[jReac] = ExtraMath.newDoubleArray(1);
+			out.particleYield[jReac] = this.particleYield[jReac].clone();
 		}
+			
+		out.particleMass = this.particleMass.clone();
 
-		o.reactionKinetic = new double[reactionKinetic.length][];
-		o.particleYield = new double[particleYield.length][];
-
-		for (int iter = 0; iter<reactionKnown.size(); iter++) {
-			int jReac = reactionKnown.get(iter);
-			if (this.reactionKinetic[jReac]!=null) o.reactionKinetic[jReac] = this.reactionKinetic[jReac]
-			                                                                                       .clone();
-			o.particleYield[jReac] = this.particleYield[jReac].clone();
-		}
-
-		o.particleMass = this.particleMass.clone();
-
-		return (Object) o;
+		return (Object) out;
 	}
 
 	/**
@@ -323,12 +337,12 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(boolean isStarving) {
+	public void die(boolean isStarving)
+	{
 		super.die(isStarving);
 		// If you are too small, you must die !
 		// Decrease the population of your species
-
-
+		
 		// Unregister from the metabolic guilds
 		unregisterFromAllActiveReactions();
 	}
@@ -343,17 +357,32 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		grow();
 		updateSize();
 	}
+	
+	/**
+	 * \brief Put growth rates into effect by changing the particle masses.
+	 */
+	public void grow()
+	{
+		updateGrowthRates();
 
+		// We adjust the particle masses after calculating all the deltaParticle values
+		// so that the reactions occur simultaneously
+		for (int i = 0; i < particleMass.length; i++)
+			particleMass[i] += deltaParticle[i];
+	}
+	
 	/**
 	 * \brief Perform agent growth by calling all active reaction pathways.
 	 * 
-	 * Perform agent growth by calling all active reaction pathways.
 	 */
-	protected void grow()
+	protected void updateGrowthRates()
 	{
 		Double deltaMass = 0.0;
-		Double[] deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
+		for (int i = 0; i < particleMass.length; i++)
+			deltaParticle[i] = 0.0;
+		
 		int reacIndex = 0;
+		// TODO RC 20 Jan 2014: Shouldn't this be the agentTimeStep?
 		Double tStep = SimTimer.getCurrentTimeStep();
 		Double catMass = 0.0; // Catalyst mass
 		Double catYield = 0.0;
@@ -390,46 +419,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 			}
 		}
 		
-		// We adjust the particle masses after calculating all the deltaParticle values
-		// so that the reactions occur simultaneously
-		for (int i = 0; i<particleMass.length; i++)
-			particleMass[i] += deltaParticle[i];
-	}
-	
-	public void updateGrowthRates() {
-	// Rob 30/1/2013: Added so that agent_State outputs will be more accurate
-		Double tStep = SimTimer.getCurrentTimeStep();
-		Double deltaMass = 0.0;
-		int reacIndex = 0;
-		Double catMass = 0.0; // Catalyst mass
-		_netGrowthRate = 0;
-		_netVolumeRate = 0;
-
-		// Compute mass growth rate of each active reaction
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
-		{
-			// Compute the growth rate
-			reacIndex = reactionActive.get(iReac);
-			catMass = particleMass[allReactions[reacIndex]._catalystIndex];
-			// get the growth rate in [fgX.hr-1]
-			growthRate[reacIndex] = allReactions[reacIndex].computeSpecGrowthRate(this);
-
-			for (int i = 0; i<particleYield[reacIndex].length; i++)
-			{
-				if (allReactions[reacIndex].autocatalytic)
-				{
-					Double catYield = particleYield[reacIndex][allReactions[reacIndex]._catalystIndex];
-					deltaMass = catMass * (particleYield[reacIndex][i]/catYield)
-							* Math.expm1(catYield * growthRate[reacIndex]*tStep)/tStep;
-				}
-				else
-				{
-					deltaMass = catMass * particleYield[reacIndex][i]*growthRate[reacIndex];
-				}
-				_netGrowthRate += deltaMass;
-				_netVolumeRate += deltaMass/getSpeciesParam().particleDensity[i];
-			}
-		}
 	}
 	
 	/**
@@ -605,18 +594,13 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader() {
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-		tempString.append(",");
-
-		// particle types
-		for (int i = 0; i<particleMass.length; i++) {
-			tempString.append(_species.currentSimulator.particleDic.get(i));
-			tempString.append(",");
-		}
-		tempString.append("growthRate,volumeRate");
-		return tempString.toString();
+	public StringBuffer sendHeader()
+	{
+		StringBuffer tempString = super.sendHeader();
+		for (String particle : _species.currentSimulator.particleDic)
+			tempString.append(","+particle);
+		tempString.append(",growthRate,volumeRate");
+		return tempString;
 	}
 
 	/**
@@ -626,20 +610,17 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
-	public String writeOutput() {
+	public StringBuffer writeOutput() {
 		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-		tempString.append(",");
+		StringBuffer tempString = super.writeOutput();
 
 		// Mass of different particles
-		for (int i = 0; i<particleMass.length; i++) {
-			tempString.append(particleMass[i]);
-			tempString.append(",");
-		}
+		for (int i = 0; i < particleMass.length; i++)
+			tempString.append(","+particleMass[i]);
+		
 		// Agent growth and volume rates
-		tempString.append(_netGrowthRate+","+_netVolumeRate);
-
-		return tempString.toString();
+		tempString.append(","+_netGrowthRate+","+_netVolumeRate);
+		return tempString;
 	}
 
 	/**
@@ -649,7 +630,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 *
 	 * @return Double stating the total mass of this agent
 	 */
-	public double getTotalMass() {
+	public Double getTotalMass() {
 		return _totalMass;
 	}
 
@@ -660,7 +641,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 *
 	 * @return Double stating the particle mass of this agent
 	 */
-	public double getParticleMass(int particleIndex) {
+	public Double getParticleMass(int particleIndex)
+	{
 		return particleMass[particleIndex];
 	}
 
@@ -671,7 +653,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 *
 	 * @return Double stating the net growth rate of this agent
 	 */
-	public double getNetGrowth() {
+	public Double getNetGrowth()
+	{
 		return _netGrowthRate;
 	}
 
@@ -682,7 +665,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 *
 	 * @return Double stating the volume growth rate of this agent
 	 */
-	public double getVolGrowth() {
+	public Double getVolGrowth()
+	{
 		return _netVolumeRate;
 	}
 
@@ -693,7 +677,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 *
 	 * @param value	Double stating the net growth rate of this agent
 	 */
-	public void setNetGrowth(double value) {
+	public void setNetGrowth(Double value)
+	{
 		_netGrowthRate = value;
 	}
 
@@ -705,7 +690,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param indexReaction	Index to a reaction in the simulation dictionary
 	 * @return	Double array of the solute yields for that reaction
 	 */
-	public double[] getSoluteYield(int indexReaction) {
+	public Double[] getSoluteYield(int indexReaction)
+	{
 		return soluteYield[indexReaction];
 	}
 
@@ -717,7 +703,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param indexReaction	Index to a reaction in the simulation dictionary
 	 * @return	Double array of the rection kinetic parameters for that reaction
 	 */
-	public double[] getReactionKinetic(int indexReaction) {
+	public Double[] getReactionKinetic(int indexReaction)
+	{
 		return reactionKinetic[indexReaction];
 	}
 
@@ -728,7 +715,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return ActiveParam object containing the species associated with this agent
 	 */
-	public ActiveParam getSpeciesParam() {
+	public ActiveParam getSpeciesParam()
+	{
 		return (ActiveParam) _speciesParam;
 	}
 

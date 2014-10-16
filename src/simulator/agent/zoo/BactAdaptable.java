@@ -386,40 +386,37 @@ public class BactAdaptable extends BactEPS
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
-	public String sendHeader() {
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = new StringBuffer(super.sendHeader());
-		tempString.append(",");
-		
-		// switch state and timing info
-		tempString.append("state,turnOn,turnOff,timeRequestTurnOn,timeRequestTurnOff");
-
-		return tempString.toString();
-	}
+	public StringBuffer sendHeader() 
+	{
+		StringBuffer tempString = super.sendHeader();
+		tempString.append(",state,turnOn,turnOff,timeRequestTurnOn,timeRequestTurnOff");
+		return tempString;
+  	}
 
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
-	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
-	 * 
-	 * @return	String containing results associated with this agent
-	 */
-	public String writeOutput() {
-		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-		tempString.append(",");
-
-		// switch state and timing info
-
-		if (switchState)   tempString.append("1,");
-		else			   tempString.append("0,");
-		if (turnSwitchOn)  tempString.append("1,");
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
+  	 * 
+	 * Used in creation of results files.
+	 * Writes the data matching the header file.
+  	 * 
+	 * @return	String containing results associated with this agent.
+  	 */
+	public StringBuffer writeOutput()
+	{
+  		// write the data matching the header file
+		StringBuffer tempString = super.writeOutput();
+  		tempString.append(",");
+  		// switch state and timing info
+  		if (switchState)   tempString.append("1,");
+  		else			   tempString.append("0,");
+  		if (turnSwitchOn)  tempString.append("1,");
 		else			   tempString.append("0,");
 		if (turnSwitchOff) tempString.append("1,");
 		else			   tempString.append("0,");
 		tempString.append(timeOfRequestToSwitchOn+","+timeOfRequestToSwitchOff);
 
-		return tempString.toString();
+		return tempString;
 	}
 	
 	

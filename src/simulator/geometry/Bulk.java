@@ -12,19 +12,16 @@
 
 package simulator.geometry;
 
-import idyno.SimTimer;
-
 import java.util.*;
-
 import org.jdom.Element;
 
+import idyno.SimTimer;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
-
-import utils.XMLParser;
-import utils.ResultFile;
 import utils.LogFile;
+import utils.ResultFile;
+import utils.XMLParser;
 
 /**
  * \brief Define the bulk: an object used to define the environment connected to the simulated system
@@ -432,7 +429,7 @@ public class Bulk
 			border = aDomain.getBorder();
 
 			// Sum the flow; this yields units of [g.m-2.h-1]
-			flow = new ContinuousVector(0, 0, 0);
+			flow = new ContinuousVector();
 			for (DiscreteVector aDC : border) {
 				computeFlow(soluteGrid[iGrid], aDC, flow);
 			}
@@ -515,7 +512,7 @@ public class Bulk
 		_j = aDC.j;
 		_k = aDC.k;
 		double D = aSG.getDiffusivity(); // this is already in units um2/hour
-		double[][][] u = aSG.grid;       // units of fg/um3
+		Double[][][] u = aSG.grid;       // units of fg/um3
 		double r = aSG.getResolution();  // units of um
 
 		// factor converts units: from fg/(um2.h) to g/(m2.h)
@@ -586,7 +583,8 @@ public class Bulk
 	public double getTimeConstraint() {
 		double out = ExtraMath.max(_dT);
 		for (int iGrid = 0; iGrid<_dT.length; iGrid++) {
-			if (_dT[iGrid]==0) continue;
+			if (_dT[iGrid].equals(0.0))
+				continue;
 			out = Math.min(out, Math.abs(_dT[iGrid]));
 		}
 		if (out==0) out = Double.POSITIVE_INFINITY;
