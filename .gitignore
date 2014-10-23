@@ -1,4 +1,5 @@
 .idea
+.project
 *.iml
 bin
 random.state
