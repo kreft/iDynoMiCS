@@ -220,11 +220,16 @@ public class SinglegridPressure
 		        *(u[_i][_j][_k+1]-u[_i][_j][_k])+(2)*(u[_i][_j][_k-1]-u[_i][_j][_k]))
 		        *h2i+_reac.grid[_i][_j][_k];
 	}
-
+	
+	/** 
+	 * TODO do properly (it's kinda just coppied from MultigridSolute)
+	 * 
+	 * @param h2i
+	 * @return
+	 */
 	private double computeDiffLop(double h2i)
 	{
-		return -12.0 * h2i;
-		//return -h2i*(6.0f*1+1+1+1+1+1+1)+0;
+		return -h2i*(12)+0;
 	}
 	
 	/* _________________________ TOOLBOX ____________________________ */

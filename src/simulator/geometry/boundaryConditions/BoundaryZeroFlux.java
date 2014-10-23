@@ -46,6 +46,7 @@ public class BoundaryZeroFlux  extends AllBC
 	 * @param aDomain	The domain which this boundary condition is associated with
 	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) 
 	{
 		readGeometry(aBoundCondMarkUp, aDomain);
@@ -62,6 +63,7 @@ public class BoundaryZeroFlux  extends AllBC
 	 * 
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
 	{
 		
@@ -86,6 +88,7 @@ public class BoundaryZeroFlux  extends AllBC
 	 * 
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
+	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) {
 		return cc;
 	}
@@ -97,6 +100,7 @@ public class BoundaryZeroFlux  extends AllBC
      * 
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
+	@Override
 	public void setBoundary(LocatedGroup aGroup) 
 	{
 		// status 0 -> carrier
@@ -111,6 +115,7 @@ public class BoundaryZeroFlux  extends AllBC
 	 * @param anAgent	The Located Agent which is attempting to cross the boundary
 	 * @param target	The target position that the agent is moving to
 	 */
+	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
 		// Define coordinates of the corrected position
 		_myShape.orthoProj(target,target);
@@ -137,6 +142,7 @@ public class BoundaryZeroFlux  extends AllBC
 	 * 
 	 * @return String noting the side of the domain that this condition applies to (i.e. x0z, xNz, etc)
 	 */
+	@Override
 	public String toString(){
 		return new String("ZeroFlux:"+this._mySide);
 	}

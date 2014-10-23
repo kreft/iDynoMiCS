@@ -44,6 +44,7 @@ public class Jfilter implements FilenameFilter
 	 * @param filename	The filename being checked against the filter
 	 * @return Boolean value noting whether or not the file ends with the extension
 	 */
+	@Override
 	public boolean accept(File directory, String filename) 
 	{
 

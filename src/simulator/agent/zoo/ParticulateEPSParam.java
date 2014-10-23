@@ -51,6 +51,7 @@ public class ParticulateEPSParam extends LocatedParam
 	 * specified in the protocol file.
 	 * @param aSpeciesRoot A species mark-up within the specified protocol file.
 	 */
+	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		double value;

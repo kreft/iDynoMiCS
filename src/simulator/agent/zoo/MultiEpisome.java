@@ -63,6 +63,7 @@ public class MultiEpisome extends InfoAgent {
 	}
 
 	//sonia 12.10.09
+	@Override
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException {
 		MultiEpisome o = (MultiEpisome) super.clone();
@@ -74,7 +75,7 @@ public class MultiEpisome extends InfoAgent {
 		//sonia 11.10.2010
 		o.nbhList = (LinkedList<LocatedAgent>) this.nbhList.clone();
 
-		return (Object) o;
+		return o;
 	}
 
 	/**
@@ -99,6 +100,7 @@ public class MultiEpisome extends InfoAgent {
 
 	/* ______________________ CREATION _____________________________ */
 
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) {
 		// Initialisation of the Located agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -149,6 +151,7 @@ public class MultiEpisome extends InfoAgent {
 	/**
      * 
      */
+	@Override
 	public MultiEpisome sendNewAgent() throws CloneNotSupportedException {
 		MultiEpisome baby = (MultiEpisome) this.clone();
 		baby.init();
@@ -158,6 +161,7 @@ public class MultiEpisome extends InfoAgent {
 	/**
      * 
      */
+	@Override
 	public void createNewAgent() {
 		try {
 			// Clone the plasmid
@@ -174,6 +178,7 @@ public class MultiEpisome extends InfoAgent {
 		}
 	}
 
+	@Override
 	public void mutatePop() {
 		// Mutate inherited parameters
 		super.mutatePop();
@@ -181,12 +186,14 @@ public class MultiEpisome extends InfoAgent {
 		// Now mutate your parameters
 	}
 
+	@Override
 	public void registerBirth() {
 		_species.notifyBirth();
 	}
 
 	/* __________________________ CELL DIVISION ____________________________ */
 
+	@Override
 	public void makeKid() throws CloneNotSupportedException {
 		// Clone the plamid
 		MultiEpisome baby = this.sendNewAgent();
@@ -198,6 +205,7 @@ public class MultiEpisome extends InfoAgent {
 		baby.registerBirth();
 	}
 
+	@Override
 	public void mutateAgent() {
 		// Mutate inherited parameters
 		super.mutateAgent();
@@ -211,6 +219,7 @@ public class MultiEpisome extends InfoAgent {
 
 	/* _______________________________________________________________________ */
 
+	@Override
 	public void internalStep() {
 		//sonia 6.10.09
 		// for now we will only have a fixed number of plasmid copies, hence there will be 
@@ -371,6 +380,7 @@ public class MultiEpisome extends InfoAgent {
 	
 	
 	
+	@Override
 	public MultiEpisomeParam getSpeciesParam() {
 		return (MultiEpisomeParam) _speciesParam;
 	}
@@ -418,30 +428,18 @@ public class MultiEpisome extends InfoAgent {
 		//return SimTimer.getCurrentTime()-lastReception<getSpeciesParam().receptionLag;
 	}
 	
-
-
-
 	// TODO
+	@Override
 	public StringBuffer sendHeader()
 	{
 		return new StringBuffer("locationX,locationY,locationZ,mass,radius,growthRate");
 	}
 
 	// TODO
+	@Override
 	public StringBuffer writeOutput()
 	{
 		//tempString.append("copyNumber,transconjugant;");
 		return new StringBuffer(_species.speciesName);
-	}
-
-
-
-	//@Override
-	//protected void conjugate(double elapsedHGTtime) {
-		// TODO Auto-generated method stub
-		
-	//}
-	
-	
-	
+	}	
 }

@@ -91,6 +91,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @throws CloneNotSupportedException 	Thrown if the agent cannot be cloned
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		Bacterium out = (Bacterium) super.clone();
 		out._hasEps = this._hasEps;
@@ -106,6 +107,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) 
 	{
 		// Initialisation of the Active agent
@@ -145,6 +147,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
 	 */
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
 		// this writes no unique values, so doesn't need unique reading-in
 		// (for a template on how to read in data, look in LocatedAgent.java)
@@ -173,6 +176,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @throws CloneNotSupportedException	Exception thrown if the object cannot be cloned
 	 */
+	@Override
 	public Bacterium sendNewAgent() throws CloneNotSupportedException 
 	{
 		// Clone the agent and initialise it
@@ -186,12 +190,13 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * Create a new Bacterium agent (who a priori is registered in at least one container). This agent is located on the relevant grid
 	 */
+	@Override
 	public void createNewAgent(ContinuousVector position) 
 	{
 		try 
 		{
 			// Get a clone of the progenitor
-			Bacterium baby = (Bacterium) sendNewAgent();
+			Bacterium baby = sendNewAgent();
 			baby.giveName();
 
 
@@ -227,6 +232,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 *  Mutates inherited parameters and distributes particle mass - either exponentially or normally, dependent on value of distMethod
 	 */
+	@Override
 	public void mutatePop() 
 	{
 		// Mutate inherited parameters
@@ -247,6 +253,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 *  Mutate inherited agent parameters after agent division. 
 	 */
+	@Override
 	public void mutateAgent() {
 		// Mutate inherited parameters
 		super.mutateAgent();
@@ -261,6 +268,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @throws CloneNotSupportedException	Exception thrown if the object cannot be cloned
 	 */
+	@Override
 	public void makeKid() throws CloneNotSupportedException {
 		super.makeKid();
 	}
@@ -279,6 +287,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
 	 * monitors agent death
 	 */
+	@Override
 	protected void internalStep() {
 		// Compute mass growth over all compartments
 		grow();
@@ -305,7 +314,8 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(boolean isStarving)
+	@Override
+	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
 		if (isStarving && _hasEps)
@@ -355,10 +365,11 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	/**
 	 * \brief Determines if this agent has reached either the radius size limit at which it will die, or a state of zero mass
 	 * 
-	 * Determines if this agent has reached either the radius size limit at which it will die, or a state of zero mass
+	 * TODO Since this only returns super, it is pointless! Consider deleting. 
 	 * 
 	 * @return Boolean value noting whether the cell will die (true) or not (false)
 	 */
+	@Override
 	public boolean willDie()
 	{
 		return super.willDie();
@@ -395,10 +406,11 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	/**
 	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * TODO Consider deleting
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
+	@Override
 	public StringBuffer sendHeader()
 	{
 		return super.sendHeader();
@@ -407,14 +419,14 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	/**
 	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * TODO Consider deleting
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
+	@Override
 	public StringBuffer writeOutput()
 	{
-		StringBuffer tempString = super.writeOutput();
-		return tempString;
+		return super.writeOutput();
   	}
 
 
@@ -425,6 +437,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * Update the volume of this agent by examining the particle density
 	 */
+	@Override
 	public void updateVolume()
 	{
 		_totalVolume = 0.0;
@@ -449,6 +462,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @return Object of BacteriumParam that stores the parameters associated with this species
 	 */
+	@Override
 	public BacteriumParam getSpeciesParam() {
 		return (BacteriumParam) _speciesParam;
 	}
@@ -460,6 +474,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 *  
 	 *  @return Boolean noting whether this bacterium object contains eps particles
 	 */
+	@Override
 	public boolean hasEPS() {
 		return _hasEps;
 	}
@@ -471,6 +486,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 *  
 	 *  @return Boolean noting whether this bacterium object contains inert particles
 	 */
+	@Override
 	public boolean hasInert() {
 		return _hasInert;
 	}
@@ -493,6 +509,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @return Double noting the fraction of the bacterium that is active
 	 */
+	@Override
 	public double getActiveFrac()
 	{
 		if ( ! hasInert() )
@@ -505,8 +522,6 @@ public class Bacterium extends LocatedAgent implements Cloneable
   		return val;
   	}
 
-
-
 	/**
 	 * \brief Send the colour associated to the species to the defined EPS capsule (if appropriate)
 	 * 
@@ -514,6 +529,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @return Color object that this species of Bacterium has been assigned
 	 */
+	@Override
 	public Color getColorCapsule() {
 		if (_epsSpecies==null) return getSpeciesParam().epsColor;
 		else return _epsSpecies.color;
@@ -527,6 +543,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * 
 	 * @return Color object that this species of Bacterium has been assigned
 	 */
+	@Override
 	public Color getColor() {
 		return super.getColor();
 

@@ -58,6 +58,7 @@ public class GridElementFloat
      */
 	public static class TValueComparator implements java.util.Comparator<Object> {
 
+		@Override
 		public int compare(Object b1, Object b2) {
 			double z1 = ((GridElementFloat) b1).getValue();
 			double z2 = ((GridElementFloat) b2).getValue();

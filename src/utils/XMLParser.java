@@ -438,9 +438,11 @@ public class XMLParser implements Serializable
 
 	@SuppressWarnings("unchecked")
 	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the String value of a specified detail within that tag
+	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * String value of a specified detail within that tag
 	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the value of a specified detail within that tag
+	 * Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * String value of a specified detail within that tag
 	 * 
 	 * @param paramName	The parameter name for which the value is required
 	 * @param detailName	The name of the detail element which is part of that tag, if present
@@ -463,9 +465,11 @@ public class XMLParser implements Serializable
 
 	@SuppressWarnings("unchecked")
 	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name, in a specified unit to find the String value of a specified detail within that tag
+	 * \brief Searches through the attributes of the XML tags of a given parameter name, 
+	 * in a specified unit to find the String value of a specified detail within that tag
 	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the value of a specified detail within that tag
+	 * Searches through the attributes of the XML tags of a given parameter name to find the 
+	 * value of a specified detail within that tag
 	 * 
 	 * @param paramName	The parameter name for which the value is required
 	 * @param detailName	The name of the detail element which is part of that tag, if present
@@ -727,9 +731,13 @@ public class XMLParser implements Serializable
 		
 
 	/**
-	 * \brief Used for Epi-Bac scenarios - retrieving list of environments to which this species is sensitive to and the correspondent probability of dying if under the influence of that environment
+	 * \brief Used for Epi-Bac scenarios - retrieving list of environments to which this species 
+	 * is sensitive to and the correspondent probability of dying if under the influence of 
+	 * that environment
 	 * 
-	 * Used for Epi-Bac scenarios - retrieving list of environments to which this species is sensitive to and the correspondent probability of dying if under the influence of that environment
+	 * Used for Epi-Bac scenarios - retrieving list of environments to which this species 
+	 * is sensitive to and the correspondent probability of dying if under the influence of 
+	 * that environment
 	 * 
 	 * @param childName	The name of the XML tag that contains the information on this parameter
 	 * @param attrName	The name of the first attribute within that XML tag

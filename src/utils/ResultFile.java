@@ -60,7 +60,7 @@ public class ResultFile
 	private String               _dir;
 
 	/**
-	 * Buffered output stram used to write simulation statistics to file
+	 * Buffered output stream used to write simulation statistics to file
 	 */
 	private BufferedOutputStream buffer;
 	
@@ -82,7 +82,7 @@ public class ResultFile
 	{
 		// Set directory and filename
 		_prefix = fileName;
-		_dir = outPath+File.separator;
+		_dir = outPath+java.io.File.separator;
 		_fileIndex = iter;
 
 		// Create the archive file
@@ -105,8 +105,8 @@ public class ResultFile
 		{
 			// bvm added 26.1.2009: use simulation iterate for file name 
 			_fileIndex = iter;
-			newFile = new File(_dir+"lastIter"+File.separator+_prefix+"(last).xml");
-			archiveFile = new File(_dir+_prefix+".zip"+File.separator
+			newFile = new File(_dir+"lastIter"+java.io.File.separator+_prefix+"(last).xml");
+			archiveFile = new File(_dir+_prefix+".zip"+java.io.File.separator
 									+_prefix+"("+_fileIndex+").xml");
 			// Create the streams to write in the file
 			_out = new FileOutputStream(newFile);

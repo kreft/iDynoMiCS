@@ -96,6 +96,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param xmlRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
+	@Override
 	public void init(Simulator aSim, XMLParser xmlRoot) {
 
 		// Call the init of the parent class (populate yield arrays)
@@ -160,6 +161,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param aReactionRoot	The XML object containing the definition of one reaction in the protocol file
 	 * @see Simulator.createReaction()
 	 */
+	@Override
 	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
@@ -206,6 +208,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * 
 	 * @param s	Temporary container for solute concentration 
 	 */
+	@Override
 	public void updateMarginalMu(Double[] s)
 	{
 		int soluteIndex;
@@ -230,6 +233,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param mass	Mass of the catalyst (cell...)
 	 * @param tdel	Time
 	 */
+	@Override
 	public void computeUptakeRate(Double[] s, Double mass, Double tdel)
 	{
 		// First compute specific rate
@@ -286,6 +290,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * 
 	 * @param s	Array of solute concentration
 	 */
+	@Override
 	public void computeSpecificGrowthRate(Double[] s)
 	{
 		_specRate = _muMax;
@@ -340,6 +345,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param biomass	Total particle mass in the system which catalyses this reaction
 	 * @return Matrix containing rate of change of each uptake rate with respect to each solute
 	 */ 
+	@Override
 	public Matrix calcdMUdS(Matrix S, Double biomass)
 	{
 		Matrix dMUdY = new Matrix (nSolute, nSolute, 0.0);
@@ -386,6 +392,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param biomass	Total particle mass in the system which catalyses this reaction.
 	 * @return Matrix containing rate of change of each uptake rate with respect to time.
 	 */ 
+	@Override
 	public Matrix calcdMUdT(Matrix S, Double biomass)
 	{
 		Matrix dMUdT = new Matrix(nSolute, 1, 0.0);
@@ -417,6 +424,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s	Temporary container for solute concentration 
 	 * @return Marginal diff array
 	 */
+	@Override
 	public Double[] computeMarginalDiffMu(Double[] s)
 	{
 		int soluteIndex;
@@ -448,6 +456,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @return the marginal growth rate (i.e the specific growth rate times the
 	 * mass of the particle which is mediating this reaction)
 	 */
+	@Override
 	public Double computeMassGrowthRate(ActiveAgent anAgent)
 	{
 		Double plFitness = 0.0;
@@ -460,6 +469,7 @@ public class ReactionGrowthFitness extends Reaction{
 		return _specRate * plFitness * anAgent.getParticleMass(_catalystIndex);
 	}
 
+	@Override
 	public Double computeSpecGrowthRate(ActiveAgent anAgent)
 	{
 		Double plFitness = 1.0;
@@ -478,6 +488,7 @@ public class ReactionGrowthFitness extends Reaction{
 	 * @param s Double[] array of solute concentrations.
 	 * @param anAgent Parameters used are those defined for THIS agent
 	 */
+	@Override
 	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
 	{
 		Double[] kineticParam = anAgent.reactionKinetic[reactionIndex];
@@ -514,14 +525,13 @@ public class ReactionGrowthFitness extends Reaction{
 	}
 
 	/**
-	 * \brief Return the specific reaction rate for a given agent
-	 * 
-	 * Return the specific reaction rate for a given agent
+	 * \brief Return the specific reaction rate for a given agent.
 	 * 
 	 * @param anAgent	Agent to use to determine solute concentration and calculate reaction rate
 	 * @see ActiveAgent.grow()
 	 * @see Episome.computeRate(EpiBac)
 	 */
+	@Override
 	public void computeSpecificGrowthRate(ActiveAgent anAgent)
 	{
 		computeSpecificGrowthRate(readConcentrationSeen(anAgent, _soluteList), anAgent);

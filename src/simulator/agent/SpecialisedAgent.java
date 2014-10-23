@@ -77,6 +77,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) 
 	{
 		try 
@@ -99,6 +100,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
 		SpecialisedAgent out = (SpecialisedAgent) super.clone();
@@ -114,6 +116,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Create a new agent with mutated parameters based on species default values
 	 */
+	@Override
 	public abstract void createNewAgent();
 
 	/**
@@ -121,6 +124,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Implemented by classes that extend this class - obtain another instance of the same species (totally independent)
 	 */
+	@Override
 	public abstract SpecialisedAgent sendNewAgent() throws CloneNotSupportedException;
 
 	/**
@@ -128,6 +132,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutateAgent() 
 	{
 		// Mutate parameters inherited
@@ -140,6 +145,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutatePop() 
 	{
 		// Mutate parameters inherited
@@ -152,6 +158,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
 	 * species is registered into the agent grid
 	 */
+	@Override
 	public void registerBirth() {
 		_agentGrid = _species.currentSimulator.agentGrid;
 		_agentGrid.registerBirth(this);
@@ -202,6 +209,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * Returns the object containing a set of parameters associated with a particular agent (species)
 	 */
+	@Override
 	public SpeciesParam getSpeciesParam() 
 	{
 		return _speciesParam;
@@ -225,6 +233,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param aSpecies	A species object to use as the progenitor
 	 */
+	@Override
 	public void setSpecies(Species aSpecies) 
 	{
 		_species = aSpecies;
@@ -302,9 +311,9 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 */
 	public void writePOVColorDefinition(FileWriter fr) throws IOException {
 		fr.write("#declare "+_species.speciesName+" = color rgb < ");
-		fr.write(((float) _species.color.getRed()) / 255.0 + " , ");
-		fr.write(((float) _species.color.getGreen()) / 255.0 + " , ");
-		fr.write(((float) _species.color.getBlue()) / 255.0 + " >");
+		fr.write((_species.color.getRed()) / 255.0 + " , ");
+		fr.write((_species.color.getGreen()) / 255.0 + " , ");
+		fr.write((_species.color.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 	}
 }

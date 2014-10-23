@@ -138,6 +138,7 @@ public class Update_IDynomics extends JFrame
 		cancel = new JButton("Cancel Update");
 		cancel.addActionListener(new ActionListener() 
 		{
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
@@ -164,6 +165,7 @@ public class Update_IDynomics extends JFrame
 	private void download() 
 	{
 		worker = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try 
 				{
@@ -450,6 +452,7 @@ public class Update_IDynomics extends JFrame
 	 */
 	public static void main(String args[]) {
 		java.awt.EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() 
 			{
 				new Update_IDynomics().setVisible(true);

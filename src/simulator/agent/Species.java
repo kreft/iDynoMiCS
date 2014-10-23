@@ -930,9 +930,9 @@ public class Species implements Serializable
 		if( area.size() > 0 )
 		{
 			// First Coordinate Tag
-			ContinuousVector cc1 = new ContinuousVector((Element) area.get(0));
+			ContinuousVector cc1 = new ContinuousVector(area.get(0));
 			// Second Coordinate Tag
-			ContinuousVector cc2 = new ContinuousVector((Element) area.get(1));
+			ContinuousVector cc2 = new ContinuousVector(area.get(1));
 	
 			// Set each point
 			initArea[0].x = Math.min(cc1.x, cc2.x);

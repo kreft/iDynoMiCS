@@ -20,7 +20,6 @@ import simulator.detachment.*;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
-import simulator.reaction.Reaction;
 import simulator.SpatialGrid;
 import utils.ResultFile;
 import utils.XMLParser;

@@ -30,6 +30,7 @@ public abstract class GridOperations {
 	 * @return Vectorized array in one dimension
 	 * @deprecated
 	 */
+	@Deprecated
 	public static double[] vectorizeArray(double[][][] originalArray) {
 		double[] transformed = new double[originalArray.length
 				* originalArray[0].length * originalArray[0][0].length];
@@ -54,6 +55,7 @@ public abstract class GridOperations {
 	 * @return Vectorized array in one dimension
 	 * @deprecated
 	 */
+	@Deprecated
 	public static double[] vectorizeArray(double[][] originalArray) {
 		double[] transformed = new double[originalArray.length
 				* originalArray[0].length];
@@ -77,6 +79,7 @@ public abstract class GridOperations {
 	 * @return the reshaped array
 	 * @deprecated
 	 */
+	@Deprecated
 	public static double[][][] reshapeArray(double[] vectorized, int nI,
 			int nJ, int nK) {
 		if (nI * nJ * nK != vectorized.length)
@@ -106,6 +109,7 @@ public abstract class GridOperations {
 	 * @return the greatest common divisor (int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public static int gcd(int a, int b) {
 		if (b == 0)
 			return a;

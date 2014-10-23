@@ -56,6 +56,7 @@ public class MonodKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction.
 	 * @param paramIndex	An index to the parameter array.
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ks");
@@ -72,6 +73,7 @@ public class MonodKinetic extends IsKineticFactor
 	 * @return Double value stating the value of the kinetic for this level of
 	 * solute.
 	 */
+	@Override
 	public Double kineticValue(Double solute, Double[] paramTable, int index)
 	{
 		return solute/(paramTable[index]+solute);
@@ -87,7 +89,8 @@ public class MonodKinetic extends IsKineticFactor
 	 * solute.
 	 * 
 	 */
-	public Double kineticValue(Double solute) 
+	@Override
+	public Double kineticValue(Double solute)
 	{
 		return solute/(_Ks+solute);
 	}
@@ -101,6 +104,7 @@ public class MonodKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array.
 	 * @return	Level of the reaction kinetic
 	 */
+	@Override
 	public Double kineticDiff(Double solute, Double[] paramTable, int index)
 	{
 		return paramTable[index]/ExtraMath.sq(paramTable[index]+solute);
@@ -113,6 +117,7 @@ public class MonodKinetic extends IsKineticFactor
 	 * @param solute Solute concentration.
 	 * @return	Level of the reaction kinetic.
 	 */
+	@Override
 	public Double kineticDiff(Double solute)
 	{
 		return _Ks/ExtraMath.sq(_Ks+solute);

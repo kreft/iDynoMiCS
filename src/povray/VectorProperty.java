@@ -87,6 +87,7 @@ public class VectorProperty  implements Serializable
 	 * 
 	 * @return String value summarising this vector object
 	 */
+	@Override
 	public String toString() {
 		int n = _values.length;
 		String out = _name + " <";

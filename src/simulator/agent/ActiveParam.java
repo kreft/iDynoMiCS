@@ -67,6 +67,7 @@ public class ActiveParam extends SpeciesParam
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
 	{
 		// Initialize simple parameter

@@ -164,14 +164,16 @@ public abstract class MatrixOperations
 			for (int j = 1; j < a[i].length-1; j++)
 				for (int k = 1; k < a[i][j].length-1; k++)
 					norm += ExtraMath.sq(a[i][j][k]);
-		return (double) Math.sqrt(norm);
+		return Math.sqrt(norm);
 	}
 	
 	/**
      * \brief Compute the average of a given matrix (excepting padding).
      * 
-     * @param a	The matrix for which the average should be computed.
-     * @return Double value that is the average of the matrix.
+     * TODO Make better (padding more obvious, etc)
+     * 
+     * @param a	The matrix for which the average should be computed
+     * @return Double value that is the average of the matrix
      */
 	public static Double computeAverage(Double[][][] a)
 	{
@@ -195,6 +197,15 @@ public abstract class MatrixOperations
 		return sum;
 	}
 	
+	/**
+	 * \brief Compute the sum of all elemets in the grit and returns (padding excluded)
+	 * it along with the Matrix itself
+	 * 
+	 * TODO 
+	 * 
+	 * @param a
+	 * @return
+	 */
 	
 	public static double computeSumP2(Double[][][] a)
 	{
@@ -213,6 +224,8 @@ public abstract class MatrixOperations
 	/**
      * \brief Compute and return the sum of all elements in the grid, padding
      * included.
+     *
+     * TODO (integrate in computeSUM)
      * 
      * @param a	The matrix for which the sum should be computed.
      * @return the sum of all elements of a grid.

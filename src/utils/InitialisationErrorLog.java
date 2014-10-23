@@ -8,14 +8,14 @@
  */
 package utils;
 
+import idyno.Idynomics;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import idyno.Idynomics;
+import java.text.DecimalFormat;
 
 /**
  * \brief Creates and updates a simulation initialisation error log file for
