@@ -109,13 +109,9 @@ public class ParticulateEPS extends LocatedAgent
 	 * @throws CloneNotSupportedException	Thrown if attempting to clone an agent type that does not implement Cloneable
 	 * @return	New instance of the ParticulateEPS species
 	 */
-<<<<<<< HEAD
+	@Override
 	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException
 	{
-=======
-	@Override
-	public ParticulateEPS sendNewAgent() throws CloneNotSupportedException {
->>>>>>> master
 		ParticulateEPS baby = (ParticulateEPS) this.clone();
 		init();
 		return baby;
@@ -126,18 +122,12 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * Create a new Particulate EPS agent (who a priori is registered in at least one container)
 	 */
-<<<<<<< HEAD
+	@Override
 	public void createNewAgent(ContinuousVector position)
 	{
 		try
 		{
 			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
-=======
-	@Override
-	public void createNewAgent(ContinuousVector position) {
-		try {
-			ParticulateEPS baby = sendNewAgent();
->>>>>>> master
 			baby.mutatePop();
 			baby.setLocation(position);
 			baby.updateSize();
@@ -233,19 +223,12 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return Boolean value noting whether the cell will die (true) or not (false)
 	 */
-<<<<<<< HEAD
+	@Override
 	public boolean willDie()
 	{
 		if ( _totalMass < 0.0 )
 			return true;
 		return ( getRadius(true) <= this.getDeathRadius() );
-=======
-	@Override
-	public boolean willDie() {
-		if (_totalMass<0) return true;
-		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().deathRadius,
-		        getSpeciesParam().deathRadiusCV);
->>>>>>> master
 	}
 
 	/**
@@ -340,16 +323,11 @@ public class ParticulateEPS extends LocatedAgent
 	 * @param isStarving Boolean noting whether the agent currently has
 	 * access to any resources.
 	 */
-<<<<<<< HEAD
-	public void die(boolean isStarving)
+	@Override
+	public void die(Boolean isStarving)
 	{
 		if ( isStarving && (_totalMass > 0.0) )
-			transferBiomass();		
-=======
-	@Override
-	public void die(boolean isStarving) {
-		if (isStarving&_totalMass>0) transferBiomass();		
->>>>>>> master
+			transferBiomass();
 		super.die(isStarving);
 	}
 	
@@ -377,15 +355,13 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * Used in creation of results files.
 	 * 
+	 * TODO Consider deleting
+	 * 
 	 * @return	String specifying the header of each column of results
 	 * associated with this agent.
 	 */
-<<<<<<< HEAD
-	public StringBuffer sendHeader() 
-=======
 	@Override
-	public String sendHeader() 
->>>>>>> master
+	public StringBuffer sendHeader()  
 	{
 		StringBuffer tempString = super.sendHeader();
 		return tempString;
@@ -398,21 +374,15 @@ public class ParticulateEPS extends LocatedAgent
 	 * Used in creation of results files.
 	 * Writes the data matching the header file.
 	 * 
+	 * TODO Consider deleting
+	 * 
 	 * @return	String containing results associated with this agent.
 	 */
-<<<<<<< HEAD
+	@Override
 	public StringBuffer writeOutput()
 	{
 		StringBuffer tempString = super.writeOutput();
 		return tempString;
-=======
-	@Override
-	public String writeOutput() {
-		// write the data matching the header file
-		StringBuffer tempString = new StringBuffer(super.writeOutput());
-
-		return tempString.toString();
->>>>>>> master
 	}
 
 

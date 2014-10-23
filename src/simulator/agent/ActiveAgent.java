@@ -345,7 +345,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
 	@Override
-	public void die(boolean isStarving)
+	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
 		// If you are too small, you must die !
@@ -461,7 +461,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
 	 */
 	@Override
-	public void addReaction(Reaction aReaction, boolean useDefaultParam) {
+	public void addReaction(Reaction aReaction, Boolean useDefaultParam)
+	{
 		// Add the reaction to the list of known reaction
 		reactionKnown.add(aReaction.reactionIndex);
 
@@ -493,7 +494,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 */
 	@Override
-	public void addActiveReaction(Reaction aReaction, boolean useDefaultParam) {
+	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam)
+	{
 		addReaction(aReaction, useDefaultParam);
 		switchOnReaction(aReaction);
 	}

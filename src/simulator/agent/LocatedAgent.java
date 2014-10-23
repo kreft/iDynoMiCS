@@ -398,7 +398,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * Kills an agent. Called by detachment and starving test
 	 */
 	@Override
-	public void die(boolean isStarving) {
+	public void die(Boolean isStarving)
+	{
 		super.die(isStarving);
 	}
 

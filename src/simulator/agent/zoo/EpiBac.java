@@ -246,7 +246,7 @@ public class EpiBac extends BactEPS
 	 * TODO Consider deleting
 	 */
 	@Override
-	public void die(boolean isStarving)
+	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
 	}
@@ -501,7 +501,7 @@ public class EpiBac extends BactEPS
 
 
 	@Override
-	public String sendHeader()
+	public StringBuffer sendHeader()
 	{
 		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = super.sendHeader();

@@ -45,7 +45,6 @@ public class MonodKinetic extends IsKineticFactor
 	 */
 	public void init(Element defMarkUp)
 	{
-	public void init(Element defMarkUp) {
 		_Ks = (new XMLParser(defMarkUp)).getParamDbl("Ks");
 		nParam = 1;
 	}

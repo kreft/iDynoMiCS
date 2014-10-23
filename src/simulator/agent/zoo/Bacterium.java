@@ -315,7 +315,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
 	@Override
-	public void die(boolean isStarving)
+	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
 		if (isStarving && _hasEps)
