@@ -12,10 +12,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
+import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 
 /**
@@ -189,7 +191,8 @@ public class XMLParser implements Serializable
 	 * @param childName	The XML tag name to return
 	 * @return	An XML parser containing the tags relating to this XML child tag
 	 */
-	public XMLParser getChild(String childName) {
+	public XMLParser getChild(String childName)
+	{
 		return new XMLParser(getChildElement(childName));
 	}
 
@@ -402,12 +405,25 @@ public class XMLParser implements Serializable
 	 * 
 	 * Used for boundary conditions and specifications of birth area of agents.
 	 * 
-	 * @param paramName	The protocol file parameter specified as X,Y,and Z coordinated
-	 * @return	A discrete vector containing these three coordinates
+	 * @param paramName	The protocol file parameter specified as I, J, and K
+	 * coordinates.
+	 * @return	A discrete vector containing these three coordinates.
 	 */
-	public DiscreteVector getParamXYZ(String paramName)
+	public DiscreteVector getParamIJK(String paramName)
 	{
 		return new DiscreteVector(getParamMarkUp(paramName));
+	}
+	
+	/**
+	 * \brief Converts coordinates specified in the protocol file into a
+	 * continuous vector.
+	 * 
+	 * @param paramName
+	 * @return
+	 */
+	public ContinuousVector getParamXYZ(String paramName)
+	{
+		return new ContinuousVector(getParamMarkUp(paramName));
 	}
 	
 	/**

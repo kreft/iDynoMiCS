@@ -1,11 +1,13 @@
 /**
  * \package simulator.geometry.shape
- * \brief Package of utilities that assist with managing the boundary conditions in iDynoMiCS
+ * \brief Package of utilities that assist with managing the boundary
+ * conditions in iDynoMiCS.
  * 
- * Package of utilities that assist with managing the boundary conditions in iDynoMiCS. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.geometry.shape;
 
@@ -34,22 +36,22 @@ public class Planar implements IsShape, Serializable
 	/**
 	 * A point on the plane.
 	 */ 
-	private DiscreteVector _pointDCIn;
+	private DiscreteVector _dPointOnPlane;
 	
 	/**
 	 * A vector normal to the plane and going outside the domain.
 	 */
-	private DiscreteVector _vectorDCOut;
+	private DiscreteVector _dVectorOut;
 	
 	/**
 	 * A point on the plane (ContinuousVector).
 	 */ 
-	private ContinuousVector _pointIn;
+	private ContinuousVector _cPointOnPlane;
 	
 	/**
 	 * A vector normal to the plan and going outside the domain (ContinuousVector)
 	 */
-	private ContinuousVector _vectorOut;
+	private ContinuousVector _cVectorOut;
 	
 	/**
 	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
@@ -72,11 +74,6 @@ public class Planar implements IsShape, Serializable
 	 * Range of discrete coordinates met on this shape
 	 */
 	private int vMax;
-	
-	/**
-	 * Temporary continuous vector to use in calculations.
-	 */
-	private static ContinuousVector tempVar = new ContinuousVector();
 	
 	/**
 	 * Index used to check whether a point is within the shape.
@@ -110,262 +107,296 @@ public class Planar implements IsShape, Serializable
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
-		_pointDCIn = shapeRoot.getParamXYZ("pointIn");
-		_vectorDCOut = shapeRoot.getParamXYZ("vectorOut");
+		_dPointOnPlane = shapeRoot.getParamIJK("pointIn");
+		_dVectorOut = shapeRoot.getParamIJK("vectorOut");
 		
 		// Translate them into continuous coordinates.
 		Double res = aDomain.getGrid().getResolution();
-		_pointIn = new ContinuousVector();
-		_pointIn.x = (_pointDCIn.i+(1-_vectorDCOut.i)/2)*res;
-		_pointIn.y = (_pointDCIn.j+(1-_vectorDCOut.j)/2)*res;
-		_pointIn.z = (_pointDCIn.k+(1-_vectorDCOut.k)/2)*res;
+		_cPointOnPlane = new ContinuousVector();
+		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*res;
+		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*res;
+		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*res;
 		
 		// TODO investigate why the resolution is irrelevant here.
-		_vectorOut = new ContinuousVector();
-		_vectorOut.x = (double) _vectorDCOut.i;
-		_vectorOut.y = (double) _vectorDCOut.j;
-		_vectorOut.z = (double) _vectorDCOut.k;
+		_cVectorOut = new ContinuousVector();
+		_cVectorOut.x = (double) _dVectorOut.i;
+		_cVectorOut.y = (double) _dVectorOut.j;
+		_cVectorOut.z = (double) _dVectorOut.k;
 		
-		// Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
-		// plane.
+		/* Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
+		 * plane.
+		 */
 		u = new DiscreteVector();
 		v = new DiscreteVector();
-		_vectorDCOut.orthoVector(u, v);
+		_dVectorOut.orthoVector(u, v);
 	}
-
+	
 	/**
-	 * \brief Test if a given set of coordinates is outside this shape
+	 * \brief Test if a given set of coordinates is outside this shape.
 	 * 
-	 * Test if a given set of coordinates is outside this shape
-	 * 
-	 * @param cc	ContinuousVector containing the coordinates of a point to test
-	 * @return	Boolean noting whether this coordinate is inside or outside this shape
+	 * @param point	ContinuousVector containing the coordinates of a point to
+	 * test.
+	 * @return	Boolean noting whether this coordinate is inside or outside
+	 * this shape.
 	 */
-	public Boolean isOutside(ContinuousVector cc) {
-		tempVar.x = -_pointIn.x+cc.x;
-		tempVar.y = -_pointIn.y+cc.y;
-		tempVar.z = -_pointIn.z+cc.z;
-
-		return (_vectorOut.cosAngle(tempVar)>0);
-	}
-
-	/**
-     * Computes orthogonal distance and if this distance is lower than the resolution and if the point is outside, 
-     * then the point tested is declared to be on the boundary of the domain
-     * 
-	 * @param cC	ContinuousVector containing the coordinates of a point to test
-	 * @param res	Resolution of the domain that this shape is associated with
-	 * @return	Boolean noting whether this coordinate is on the boundary of the domain
-	 */
-	public Boolean isOnBoundary(ContinuousVector cC, double res) {
-		return (isOutside(cC)&&(cC.distance(getOrthoProj(cC))<=res));
-	}
-
-	/**
-     * \brief Calculates the coordinates of the interaction between a line (point a vector) and the plane
-     * 
-     * Calculates the coordinates of the interaction between a line (point a vector) and the plane. Returns null if none exists
-     * 
-     * @param position	Position used to calculate the line
-     * @param vector	Vector of coordinate positions used to calculate the line
-     * @return : coordinates of the intersection between a line and the plane
-     */
-	public ContinuousVector intersection(ContinuousVector position, ContinuousVector vector)
+	public Boolean isOutside(ContinuousVector point)
 	{
-		// Determine the constant term for the equation of the plane
-		double d = -_vectorOut.prodScalar(_pointIn);
+		//tempVar.x = -_pointIn.x + point.x;
+		//tempVar.y = -_pointIn.y + point.y;
+		//tempVar.z = -_pointIn.z + point.z;
 		
-		// the line will never cross this plane
-		if ( _vectorOut.prodScalar(vector).equals(0.0) )
+		ContinuousVector temp = new ContinuousVector(point);
+		temp.subtract(_cPointOnPlane);
+		
+		return ( _cVectorOut.cosAngle(temp) > 0 );
+	}
+	
+	/**
+     * Computes orthogonal distance and if this distance is lower than the
+     * resolution and if the point is outside, then the point tested is
+     * declared to be on the boundary of the domain.
+     * 
+	 * @param point	ContinuousVector containing the coordinates of a point to
+	 * test.
+	 * @param res	Resolution of the domain that this shape is associated
+	 * with.
+	 * @return	Boolean noting whether this coordinate is on the boundary of
+	 * the domain.
+	 */
+	public Boolean isOnBoundary(ContinuousVector point, Double res)
+	{
+		return isOutside(point) && (point.distance(getOrthoProj(point))<=res);
+	}
+	
+	/**
+     * \brief Calculates the coordinates of the interaction between a line 
+     * (point a vector) and the plane.
+     * 
+     * Returns null if none exists.
+     * 
+     * @param position	Position used to calculate the line.
+     * @param vector	Vector of coordinate positions used to calculate the
+     * line.
+     * @return Coordinates of the intersection between a line and the plane.
+     */
+	public ContinuousVector intersection(ContinuousVector position, 
+											ContinuousVector vector)
+	{
+		// If the line is parallel to his plane, return null.
+		if ( _cVectorOut.prodScalar(vector).equals(0.0) )
 			return null;
 		
-		double k = (-d-_vectorOut.prodScalar(position))/_vectorOut.prodScalar(vector);
+		// Determine the constant term for the equation of the plane
+		Double d = -_cVectorOut.prodScalar(_cPointOnPlane);
+				
+		
+		Double k = - (d + _cVectorOut.prodScalar(position))/
+										_cVectorOut.prodScalar(vector);
 		
 		ContinuousVector out = new ContinuousVector();
-		out.x = position.x+k*vector.x;
-		out.y = position.y+k*vector.y;
-		out.z = position.z+k*vector.z;
+		out.x = position.x + k*vector.x;
+		out.y = position.y + k*vector.y;
+		out.z = position.z + k*vector.z;
 		return out;
 	}
-
+	
 	/**
-	 * \brief Takes a vector and returns that vector pointing towards the inside of the shape
+	 * \brief Takes a vector and returns that vector pointing towards the
+	 * inside of the shape.
 	 * 
-	 * Takes a vector and returns that vector pointing towards the inside of the shape
-	 * 
-	 * @param cc	Vector outside the shape
-	 * @return ContinuousVector that is pointing towards the inside of the shape
+	 * @param cc	Vector outside the shape.
+	 * @return ContinuousVector that is pointing towards the inside of the
+	 * shape.
 	 * 
 	 */
-	public ContinuousVector getNormalInside(ContinuousVector cc) {
-		return new ContinuousVector(-_vectorOut.x, -_vectorOut.y, -_vectorOut.z);
+	public ContinuousVector getNormalInside(ContinuousVector cc)
+	{
+		return new ContinuousVector(-_cVectorOut.x, -_cVectorOut.y, -_cVectorOut.z);
 	}
-
+	
 	/**
-	 * \brief Correct coordinates of a point that has gone outside this shape 
+	 * \brief Correct coordinates of a point that has gone outside this shape. 
 	 * 
-	 * Correct coordinates of a point that has gone outside this shape
-	 * 
-	 * @param ccIn	Coordinates to be corrected
-	 * @param ccOut	Corrected coordinates
-	 * 
+	 * @param ccIn	Coordinates to be corrected.
+	 * @param ccOut	Corrected coordinates.
 	 */
-	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut) {
-		double a, b, c, d, k;
-		a = _vectorOut.x;
-		b = _vectorOut.y;
-		c = _vectorOut.z;
-		d = -(_pointIn.x*a+_pointIn.y*b+_pointIn.z*c);
-
+	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
+	{
+		//Double a, b, c, d, k;
+		//a = _vectorOut.x;
+		//b = _vectorOut.y;
+		//c = _vectorOut.z;
+		//d = -(_pointIn.x*a + _pointIn.y*b + _pointIn.z*c);
+		
 		// this next line wasn't calculating the projection coefficient correctly
 		// and would case trouble when the plane was away from the substratum
 		//k = (d+_vectorOut.prodScalar(ccIn))/(a+b+c);
 		// this does it right
-		k = -(d+_vectorOut.prodScalar(ccIn))/_vectorOut.prodScalar(_vectorOut);
-		ccOut.x = ccIn.x+k*a;
-		ccOut.y = ccIn.y+k*b;
-		ccOut.z = ccIn.z+k*c;
+		//k = -(d+_vectorOut.prodScalar(ccIn))/_vectorOut.prodScalar(_vectorOut);
+		
+		// TODO most of these could be calculated just once for the shape
+		Double k = _cVectorOut.prodScalar(_cPointOnPlane);
+		k -= _cVectorOut.prodScalar(ccIn);
+		k /= _cVectorOut.prodScalar(_cVectorOut);
+		
+		ccOut.x = ccIn.x + k*_cVectorOut.x;
+		ccOut.y = ccIn.y + k*_cVectorOut.y;
+		ccOut.z = ccIn.z + k*_cVectorOut.z;
 	}
 
 	/**
-	 * \brief Correct coordinates of a point that has gone outside this shape, returning these coordinates
+	 * \brief Correct coordinates of a point that has gone outside this shape,
+	 * returning these coordinates.
 	 * 
-	 * Correct coordinates of a point that has gone outside this shape, returning these coordinates
-	 * 
-	 * @param ccIn	Coordinates to be corrected
-	 * @return Corrected coordinates
+	 * @param ccIn	Coordinates to be corrected.
+	 * @return Corrected coordinates.
 	 * 
 	 */
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn) {
+	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
+	{
 		ContinuousVector ccOut = new ContinuousVector();
 		orthoProj(ccIn, ccOut);
 		return ccOut;
 	}
 
 	/**
-	 * \brief Used in cyclic boundaries - gets the distance from the opposite side (aShape)
+	 * \brief Gets the distance from the opposite side (aShape).
 	 * 
-	 * Used in cyclic boundaries - gets the distance from the opposite side (aShape)
+	 * Used by cyclic boundaries.
 	 * 
-	 * @return Double stating distance to that shape
+	 * @return Double stating distance to that shape.
 	 */
-	public double getDistance(IsShape aShape) {		
-		ContinuousVector ccOut = aShape.intersection(_pointIn, _vectorOut);
-		return _pointIn.distance(ccOut);
+	public Double getDistance(IsShape aShape)
+	{
+		ContinuousVector ccOut = aShape.intersection(_cPointOnPlane, _cVectorOut);
+		return _cPointOnPlane.distance(ccOut);
 	}
 	
 	
 	/**
-	 * \brief Used in cyclic boundaries - gets the distance from a point on the other side (ContinuousVector)
+	 * \brief Gets the distance from a point on the other side (ContinuousVector)
 	 * 
-	 * Used in cyclic boundaries - gets the distance from a point on the other side (ContinuousVector)
+	 * Used in cyclic boundaries.
 	 * 
 	 * @return Double stating distance to that shape
 	 */
-	public double getDistance(ContinuousVector cc){
-		ContinuousVector ccOut = intersection(cc, _vectorOut);
+	public Double getDistance(ContinuousVector cc)
+	{
+		ContinuousVector ccOut = intersection(cc, _cVectorOut);
 		return ccOut.distance(cc);
 	}
-
+	
 	/**
-     * \brief Initialisation to create the features of and go along the boundary
+     * \brief Initialisation to create the features of and go along the
+     * boundary.
      * 
-     * Initialisation to create the features of and go along the boundary
-     * 
-     * @param aSG	The grid to which this boundary is a part
+     * @param aSG	The grid to which this boundary is a part.
      */
 	public void readyToFollowBoundary(SpatialGrid aSG) 
 	{
-		double res = aSG.getResolution();
+		Double res = aSG.getResolution();
 		
-		origin.i = ((int)Math.floor(_pointIn.x/res))-u.i;
-		origin.j = ((int)Math.floor(_pointIn.y/res))-u.j;
-		origin.k = ((int)Math.floor(_pointIn.z/res))-u.k;
+		// Change floor to ceiling?
+		origin.i = ((int)Math.floor(_cPointOnPlane.x/res))-u.i;
+		origin.j = ((int)Math.floor(_cPointOnPlane.y/res))-u.j;
+		origin.k = ((int)Math.floor(_cPointOnPlane.z/res))-u.k;
 				
-		if(_vectorDCOut.i>0) origin.i+=-1;
-		if(_vectorDCOut.j>0) origin.j+=-1;
-		if(_vectorDCOut.k>0) origin.k+=-1;
-
+		if( _dVectorOut.i > 0 )
+			origin.i--;
+		if( _dVectorOut.j > 0 )
+			origin.j--;
+		if( _dVectorOut.k > 0 )
+			origin.k--;
+		
 		indexU = 0;
 		indexV = 0;
 		
-		if (u.i!=0) uMax = aSG.getGridSizeI()/u.i;
-		else uMax = 0;
-		if (u.j!=0) uMax = Math.max(uMax, aSG.getGridSizeJ()/u.j);
-		if (u.k!=0) uMax = Math.max(uMax, aSG.getGridSizeK()/u.k);
+		if ( u.i == 0 )
+			uMax = 0;
+		else
+			uMax = aSG.getGridSizeI()/u.i;
+		if ( u.j != 0 ) 
+			uMax = Math.max(uMax, aSG.getGridSizeJ()/u.j);
+		if ( u.k != 0 )
+			uMax = Math.max(uMax, aSG.getGridSizeK()/u.k);
 
-		if (v.i!=0) vMax = aSG.getGridSizeI()/v.i;
-		else vMax = 0;
-		if (v.j!=0) vMax = Math.max(vMax, aSG.getGridSizeJ()/v.j);
-		if (v.k!=0) vMax = Math.max(vMax, aSG.getGridSizeK()/v.k);
+		if ( v.i == 0 )
+			vMax = 0;
+		else
+			vMax = aSG.getGridSizeI()/v.i;
+		if ( v.j != 0 )
+			vMax = Math.max(vMax, aSG.getGridSizeJ()/v.j);
+		if ( v.k != 0 )
+			vMax = Math.max(vMax, aSG.getGridSizeK()/v.k);
 	}
 
 	/**
-     * \brief Find the next valid point
+     * \brief Find the next valid point.
      * 
-     *  Find the next valid point 
-     *  
      *  @param dcIn	Discrete vector within the shape
      *  @param dcOut	Discrete vector outside the shape
      *  @param aSG	Spatial grid in which the boundary is associated
      *  @return Whether a valid point was found
      *  
      */
-	public boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut, SpatialGrid aSG) 
+	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
+															SpatialGrid aSG) 
 	{
 		// Find the next valid point
-		boolean vectorValid = false;
+		Boolean vectorValid = false;
 		do 
 		{
 			stepBoundary();
 			dcIn.sendSum(origin, move);
 			vectorValid = aSG.isValid(dcIn);
 			// If a valid point has been found, compute its closest neighbour outside
-			if (vectorValid) dcOut.sendSum(dcIn, _vectorDCOut);
+			if (vectorValid)
+				dcOut.sendSum(dcIn, _dVectorOut);
 		} while ( !(vectorValid) && indexV<vMax );
 		
 		return vectorValid; 
 	}
 
 	/**
-     * \brief Process next location in the boundary
-     * 
-     * Process next location in the boundary
+     * \brief Process next location on the boundary.
      */
-	public void stepBoundary() {
-		if (indexU<uMax) indexU++;
-		else {
+	public void stepBoundary()
+	{
+		if ( indexU < uMax )
+			indexU++;
+		else
+		{
 			indexU = 0;
 			indexV++;
 		}
-		move.i = indexU*u.i+indexV*v.i;
-		move.j = indexU*u.j+indexV*v.j;
-		move.k = indexU*u.k+indexV*v.k;
+		move.i = indexU*u.i + indexV*v.i;
+		move.j = indexU*u.j + indexV*v.j;
+		move.k = indexU*u.k + indexV*v.k;
 	}
 
 	/**
-     * \brief Test that the received point is coplanar with the definition point
+     * \brief Test that the received point is coplanar with the definition
+     * point.
      * 
-     * Test that the received point is coplanar with the definition point
-     * 
-     * @param cC	ContinuousVector of coordinates that should be tested
+     * @param point	ContinuousVector of coordinates that should be tested
      * @return	Boolean stating whether the point is cooplanar with the definition point
      */
-	public boolean isOnShape(ContinuousVector cC) {
-		boolean out = ((cC.x-_pointIn.x)/_vectorOut.x==(cC.y-_pointIn.y)/_vectorOut.y);
-		out &= ((cC.x-_pointIn.x)/_vectorOut.x==(cC.z-_pointIn.z)/_vectorOut.z);
+	public boolean isOnShape(ContinuousVector point)
+	{
+		Double xDiff = (point.x-_cPointOnPlane.x)/_cVectorOut.x; 
+		boolean out = (xDiff == (point.y-_cPointOnPlane.y)/_cVectorOut.y);
+		out &= (xDiff == (point.z-_cPointOnPlane.z)/_cVectorOut.z);
 		return out;
 	}
 
 	
 	/**
-	 * \brief Return vector normal to the plane
-	 * 
-	 * Return vector normal to the plane
+	 * \brief Return vector normal to the plane.
 	 * 
 	 * @return	Discrete vector normal to the plane
 	 */
-	public DiscreteVector getNormalDC() {
-		return _vectorDCOut;
+	public DiscreteVector getNormalDC()
+	{
+		return _dVectorOut;
 	}
 }

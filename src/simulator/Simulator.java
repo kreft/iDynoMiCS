@@ -334,45 +334,38 @@ public class Simulator
 	
 
 	/**
-	 * \brief Perform a full iteration of the simulation for the conditions stated in the protocol file
+	 * \brief Perform a full iteration of the simulation for the conditions
+	 * stated in the protocol file.
 	 * 
-	 * Perform a full iteration of the simulation initialised under the conditions in a given protocol file. Accessed via the simulators 
-	 * run method
+	 * Accessed via the simulator's run method.
 	 */
 	public void step() 
 	{
 		try
 		{
 			long startTime = System.currentTimeMillis();
-	
+			
 			// Increment system time
 			SimTimer.applyTimeStep();
-	
+			
 			// Check if new agents should be created
 			checkAgentBirth();
 			
+			LogFile.chronoMessageIn();
 			
 			// Perform diffusion-reaction relaxation
-			
-			LogFile.chronoMessageIn();
-	
+			LogFile.chronoMessageOut("Solving Diffusion-Reaction");
 			for (DiffusionSolver aSolver : solverList)
 				aSolver.initAndSolve();
-			LogFile.chronoMessageOut("Solving Diffusion-reaction");
-	
-	
+			
 			//sonia: 25-08-09
-			if(isFluctEnv){
+			if(isFluctEnv)
 				FluctEnv.setEnvCycle(FluctEnv.envNameList.indexOf(FluctEnv.envStatus));
-			}
-	
+			
 			// Perform agent stepping
-			agentGrid.step(this);
 			LogFile.chronoMessageOut("Simulating agents");
+			agentGrid.step(this);
 			
-			
-	
-	
 			// output result files
 			// this will output if we're close to the output period but haven't
 			// quite hit it (which happens sometimes due to floating point issues)
@@ -389,10 +382,6 @@ public class Simulator
 				agentGrid.removeAllDead();
 			}	
 			
-			
-	
-			
-	
 			// Rob 11/2/2012
 			// If this is an invComp simulation (default is false), stop if there are fewer than
 			// two species remaining

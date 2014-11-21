@@ -228,7 +228,8 @@ public class BoundaryGasMembrane extends AllBC
      * 
      * @see LocatedAgent.move();
      */
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	{
 		// Define coordinates of the corrected position
 		_myShape.orthoProj(target, target);
 

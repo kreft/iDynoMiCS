@@ -104,16 +104,18 @@ public class BoundaryZeroFlux  extends AllBC
 	}
 	
 	/**
-	 * \brief Applies the boundary condition by modifying the movement vector. New position is orthogonal projection of the outside point on the boundary surface
+	 * \brief Applies the boundary condition by modifying the movement vector.
 	 * 
-	 * Applies the boundary condition by modifying the movement vector. New position is orthogonal projection of the outside point on the boundary surface
+	 * New position is orthogonal projection of the outside point on the
+	 * boundary surface.
 	 * 
 	 * @param anAgent	The Located Agent which is attempting to cross the boundary
 	 * @param target	The target position that the agent is moving to
 	 */
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	{
 		// Define coordinates of the corrected position
-		_myShape.orthoProj(target,target);
+		_myShape.orthoProj(target, target);
 		
 		// Build a vector normal to the boundary and starting from the
         // orthogonal projection		

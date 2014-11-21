@@ -17,6 +17,7 @@ import simulator.agent.*;
 import simulator.agent.zoo.MultiEpiBac;
 import simulator.agent.zoo.MultiEpisome;
 import simulator.detachment.*;
+import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
@@ -449,71 +450,71 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Compute pressure field and apply resulting advection movement to affected agents
-	 * 
-	 * Compute pressure field and apply resulting advection movement to affected agents
+	 * \brief Compute pressure field and apply resulting advection movement to
+	 * affected agents.
 	 */
-	public double followPressure() 
+	public void followPressure() 
 	{
-		double moveMax;
-
+		DiffusionSolver solver = mySim.getSolver("pressure");
+		
 		// Find a solver for pressure field and use it
-		if (mySim.getSolver("pressure")==null) return 0;
-
 		// don't use the pressure if it's not active
-		if (!mySim.getSolver("pressure").isActive()) return 0;
-
+		if ( solver == null || ! solver.isActive() )
+			return;
+		
 		LogFile.writeLog("Doing pressure calculations.");
-
-
+		
 		// get local timestep (which was set in the step() routine calling this one)
-		double dt = SimTimer.getCurrentTimeStep();
-
-
+		Double dt = SimTimer.getCurrentTimeStep();
+		
 		// Solve for pressure field
-		mySim.getSolver("pressure").initAndSolve();
-		_pressure = ((Solver_pressure) mySim.getSolver("pressure")).getPressureGrid();
-
-
+		solver.initAndSolve();
+		_pressure = ((Solver_pressure) solver).getPressureGrid();
+		
 		// copy calculated pressure field to the solute list
 		// (allows easy output of pressure field)
 		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
 
 		// Determine local advection speed
-		moveMax = 0;
+		Double maxSpeed = 0.0;
 		for (LocatedGroup aGroup : _grid)
-			moveMax = Math.max(moveMax, aGroup.computeMove(_pressure,AGENTTIMESTEP));
-
+		{
+			maxSpeed = Math.max(maxSpeed,
+								aGroup.computeMove(_pressure, AGENTTIMESTEP));
+		}
+		
 		// bvm 04.03.09: new method to address any high velocities:
 		// use smaller local timesteps to keep the movement under control
-		double dtlocal = dt;
+		Double dtlocal = dt;
 		int itlocal = 1;
-		while (dtlocal > this._res/moveMax) {
+		
+		while ( maxSpeed > this._res/dtlocal )
+		{
 			// if the move takes an agent farther than one grid element,
 			// apply scaling factor until move is within limit
-			dtlocal /= 10.;
+			dtlocal /= 10.0;
 			itlocal *= 10;
 		}
-		if (itlocal > 1) {
+		
+		if (itlocal > 1)
+		{
 			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
 					+dtlocal+" ("+itlocal+" iterations)");
 		}
-
+		
 		// scale movement vectors based on new, smaller timestep and apply
 		// the movement to each agent in each group
-		double alpha = dtlocal/dt;
+		Double alpha = dtlocal/dt;
 		for (LocatedGroup aGroup : _grid)
 			aGroup.addMoveToAgents(alpha);
-
+		
 		// now apply the scaled agent movements to each agent
-		deltaMove = 0;
-		for (int i=0; i<itlocal; ++i) {
+		for (int i = 0; i < itlocal; ++i)
+		{
 			agentIter = agentList.listIterator();
-			while (agentIter.hasNext())
-				deltaMove += agentIter.next().move();
+			while ( agentIter.hasNext() )
+				agentIter.next().move();
 		}
-
-		return deltaMove;
 	}	
 
 

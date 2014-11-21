@@ -362,7 +362,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 * 
 	 * Used in the creation of the epithelium for eGUT.
 	 * 
-	 * @param other	ContinuousVector to compare this continuous vector object to.
+	 * @param other	ContinuousVector to compare this continuous vector to.
 	 */
 	public int compareTo(ContinuousVector other) 
     {

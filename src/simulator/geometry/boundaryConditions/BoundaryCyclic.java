@@ -192,7 +192,8 @@ public class BoundaryCyclic extends AllBC
 	{
 		// 2D simulations: activeForSolute is false for x0y/xNy and true for x0z/xNz
 		// 3D simulations: activeForSolute is always true for cyclic boundaries
-		if (!activeForSolute) {
+		if ( ! activeForSolute )
+		{
 			// Initialise the course along the shape of the boundary
 			_myShape.readyToFollowBoundary(aSoluteGrid);
 			
@@ -202,13 +203,13 @@ public class BoundaryCyclic extends AllBC
 			// outside the domain
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) 
 			{
-				
 				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
-				DiscreteVector dcOutTemp = dcOut.clone();
 				dcOut.add(translator);
 				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 			}
-		} else {
+		}
+		else
+		{
 			// Build translator between both boundaries
 			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/aSoluteGrid.getResolution());
 			translator.set(_myOppShape.getNormalDC());
@@ -219,7 +220,8 @@ public class BoundaryCyclic extends AllBC
 
 			// Send a point belonging to the boundary and the closest point
 			// outside the domain
-			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) {
+			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
+			{
 				dcIn.add(translator);
 				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 			}
@@ -227,20 +229,18 @@ public class BoundaryCyclic extends AllBC
 	}
 
 	/**
-	 * \brief Applies boundary conditions for all other BC types - but not used for cyclic boundaries.
-	 * 
-	 * Applies boundary conditions for all other BC types - but not used for cyclic boundaries.
+	 * \brief Applies boundary conditions for all other BC types - but not
+	 * used for cyclic boundaries.
 	 * 
 	 * @param aSpGrid	SoluteGrid	
 	 * @param dC	DiscreteVector
 	 */
-	public void applyBoundary(SoluteGrid aSpGrid, DiscreteVector dC) {
-	}
+	public void applyBoundary(SoluteGrid aSpGrid, DiscreteVector dC) 
+	{}
 
 	/**
-	 * \brief Returns the value within a boundary. Not used for cyclic boundaries
-	 * 
-	 * Returns the value within a boundary. Not used for cyclic boundaries
+	 * \brief Returns the value within a boundary. Not used for cyclic
+	 * boundaries.
 	 * 
 	 * @param aSpGrid	Solute grid which the boundary is being applied
 	 * @param i	I Coordinate of grid space to query
@@ -248,19 +248,21 @@ public class BoundaryCyclic extends AllBC
 	 * @param k	K Coordinate of grid space to query
 	 * @return	Double balue of the solute level stored in that boundary cell
 	 */
-	public double getValueFromBoundary(SoluteGrid aSpGrid, int i, int j, int k) {
+	public double getValueFromBoundary(SoluteGrid aSpGrid, int i, int j, int k)
+	{
 		System.out.println("CyclicBoundary:should not be used");
-		return 0;
+		return 0.0;
 	}
 
 	/**
-	 * \brief Creates the opposite side of the cyclic boundary such that agents can 'roll around' to the other side
+	 * \brief Creates the opposite side of the cyclic boundary such that
+	 * agents can 'roll around' to the other side.
 	 * 
-	 * Creates the opposite side of the cyclic boundary such that agents can 'roll around' to the other side
-	 * 
-	 * @return	BoundaryCyclic object that captures the opposite side of this boundary
+	 * @return	BoundaryCyclic object that captures the opposite side of this
+	 * boundary.
 	 */
-	public BoundaryCyclic createOtherSide() {
+	public BoundaryCyclic createOtherSide()
+	{
 		BoundaryCyclic out = new BoundaryCyclic();
 		out.activeForSolute = this.activeForSolute;
 		out._myShape = this._myOppShape;
@@ -268,29 +270,29 @@ public class BoundaryCyclic extends AllBC
 		out._mySide = this._mySide.replaceFirst("0", "N");
 		return out;
 	}
-
+	
 	/**
-	 * \brief Determines if a point is outside the boundary
-	 * 
-	 * Determines if a point is outside the boundary
+	 * \brief Determines if a point is outside the boundary.
 	 * 
 	 * @param cc	ContinuousVector to check
-	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
+	 * @return	Boolean value noting whether this coordinate is outside the
+	 * boundary (true) or not (false).
 	 */
-	public boolean isOutside(ContinuousVector cc) {
+	public boolean isOutside(ContinuousVector cc)
+	{
 		return _myShape.isOutside(cc);
 	}
-
+	
 	/**
-	 * \brief Determines if a point is on the boundary
-	 * 
-	 * Determines if a point is on the boundary
+	 * \brief Determines if a point is on the boundary.
 	 * 
 	 * @param cC	ContinuousVector to check
 	 * @param aSpatialGrid	Spatial grid to check
-	 * @return	Boolean value noting whether this coordinate is on the boundary (true) or not (false)
+	 * @return	Boolean value noting whether this coordinate is on the
+	 * boundary (true) or not (false).
 	 */
-	public boolean isOnBoundary(ContinuousVector cC, SpatialGrid aSpatialGrid) {
+	public boolean isOnBoundary(ContinuousVector cC, SpatialGrid aSpatialGrid)
+		{
 		return (_myShape.isOnBoundary(cC, aSpatialGrid.getResolution()));
 	}
 

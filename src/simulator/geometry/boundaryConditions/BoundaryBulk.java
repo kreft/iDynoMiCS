@@ -92,9 +92,8 @@ public class BoundaryBulk extends AllBC{
 		// Initialise the course along the shape of the boundary
 		_myShape.readyToFollowBoundary(aSoluteGrid);
 
-		while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) {
+		while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 			aSoluteGrid.setValueAt(bulkValue, dcOut);
-		}
 	}
 
 	/**
