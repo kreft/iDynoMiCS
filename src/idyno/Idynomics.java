@@ -290,6 +290,7 @@ public class Idynomics
 		ok = new JButton("Update");
 		ok.addActionListener( new ActionListener()
 		{
+			@Override
 			public void actionPerformed(ActionEvent e) 
 			{
 				// Run the updater.
@@ -318,6 +319,7 @@ public class Idynomics
 		cancel = new JButton("Run Without Update");
 		cancel.addActionListener( new ActionListener()
 		{
+			@Override
 			public void actionPerformed(ActionEvent e) 
 			{
 				updateFrame.dispose();

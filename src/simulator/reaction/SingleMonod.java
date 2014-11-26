@@ -37,6 +37,7 @@ public class SingleMonod extends Reaction {
 	public SingleMonod() {
 	}
 
+	@Override
 	public void init(Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
 		super.init(aSim, aReactionRoot);
@@ -55,6 +56,7 @@ public class SingleMonod extends Reaction {
 	/**
      * Used to initialise reaction parameters of the agent
      */
+	@Override
 	public void initFromAgent(ActiveAgent anAgent, Simulator aSim, XMLParser aReactionRoot) {
 		// Call the init of the parent class (populate yield arrays)
 		super.initFromAgent(anAgent, aSim, aReactionRoot);
@@ -75,6 +77,7 @@ public class SingleMonod extends Reaction {
      * @see ActiveAgent.grow()
      * @see Episome.computeRate(EpiBac)
      */
+	@Override
 	public void computeSpecificGrowthRate(ActiveAgent anAgent)
 	{
 		int localIndex = _mySoluteIndex[0];
@@ -90,7 +93,10 @@ public class SingleMonod extends Reaction {
      * @param anAgent	The agent
      * @deprecated
      */
-	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent) {
+	@Deprecated
+	@Override
+	public void computeSpecificGrowthRate(Double[] s, ActiveAgent anAgent)
+	{
 		int localIndex = _mySoluteIndex[0];		
 		_specRate = kineticValue(s[localIndex], anAgent.reactionKinetic[reactionIndex], 1);			
 	}
@@ -103,7 +109,10 @@ public class SingleMonod extends Reaction {
      * @param s	array of solute concentration
      * @deprecated
      */
-	public void computeSpecificGrowthRate(Double[] s) {
+	@Deprecated
+	@Override
+	public void computeSpecificGrowthRate(Double[] s)
+	{
 		int localIndex = _mySoluteIndex[0];
 		_specRate = _muMax*s[localIndex]/(_Ks+s[localIndex]);
 	}
@@ -115,7 +124,9 @@ public class SingleMonod extends Reaction {
      * @param anAgent
      * @return
      */
-	public Double computeMassGrowthRate(ActiveAgent anAgent) {
+	@Override
+	public Double computeMassGrowthRate(ActiveAgent anAgent)
+	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
@@ -128,7 +139,9 @@ public class SingleMonod extends Reaction {
 		return _specRate*anAgent.getParticleMass(_catalystIndex);
 	}
 
-	public Double computeSpecGrowthRate(ActiveAgent anAgent) {
+	@Override
+	public Double computeSpecGrowthRate(ActiveAgent anAgent)
+	{
 		computeSpecificGrowthRate(anAgent);
 		return _specRate;
 	}
@@ -160,9 +173,11 @@ public class SingleMonod extends Reaction {
 	 * @param mass	Concentration factor
 	 * @param tdel	Double
 	 * @deprecated
-	 * 
 	 */
-	public void computeUptakeRate(Double[] s, Double mass, Double tdel) {
+	@Deprecated
+	@Override
+	public void computeUptakeRate(Double[] s, Double mass, Double tdel)
+	{
 		int localIndex = _mySoluteIndex[0];
 		Double s1 = s[localIndex];
 

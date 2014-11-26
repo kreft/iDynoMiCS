@@ -90,6 +90,7 @@ public class Solver_multigrid extends DiffusionSolver
 	/**
 	 * 
 	 */
+	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot)
 	{
 		super.init(aSimulator, xmlRoot);
@@ -139,7 +140,8 @@ public class Solver_multigrid extends DiffusionSolver
 			_biomass[i].resetMultigridCopies(0.0);
 		}
 	}
-
+	
+	@Override
 	public void initializeConcentrationFields()
 	{
 		minimalTimeStep = SimTimer.getCurrentTimeStep()/10;
@@ -167,6 +169,7 @@ public class Solver_multigrid extends DiffusionSolver
 	/**
 	 * Solve by iterative relaxation.
 	 */
+	@Override
 	public void solveDiffusionReaction()
 	{
 		Double timeToSolve = SimTimer.getCurrentTimeStep();

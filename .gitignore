@@ -3,4 +3,9 @@
 bin
 random.state
 results
+<<<<<<< HEAD
 .project
+=======
+
+.settings
+>>>>>>> 9c40b5e822ee9199f9fa186877b445b71cdcc1ce

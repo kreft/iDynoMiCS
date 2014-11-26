@@ -23,7 +23,9 @@
 package simulator.geometry.boundaryConditions;
 
 import org.jdom.Element;
+
 import java.util.*;
+
 import utils.UnitConverter;
 import utils.XMLParser;
 import simulator.Simulator;
@@ -87,6 +89,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * @param aDomain	The domain which this boundary condition is associated with
 	 * @param aBCMarkUp	The XML tags that have declared this boundary in the protocol file
 	 */
+	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp) {
 
 		// this part is same as zero-flux boundary
@@ -130,6 +133,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * @param relDif	Supplied RelDiff grid
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshDiffBoundary(SoluteGrid relDif, SoluteGrid aSoluteGrid) {
 		double value;
 
@@ -155,6 +159,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * 
 	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
 	 */
+	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) {
 
 		// Initialise the course along the shape of the boundary
@@ -180,6 +185,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * 
 	 * @return Bulk object that is connected to this boundary
 	 */
+	@Override
 	public Bulk getBulk() {
 		return _connectedBulk;
 	}
@@ -192,6 +198,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * @param soluteIndex	Index of the solute in the simulation dictionary
 	 * @return	Value of solute in the connected bulk
 	 */
+	@Override
 	public double getBulkValue(int soluteIndex) {
 		return _connectedBulk.getValue(soluteIndex);
 	}
@@ -206,6 +213,7 @@ public class BoundaryGasMembrane extends AllBC
 	 * 
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
+	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) {
 		return cc;
 	}
@@ -217,6 +225,7 @@ public class BoundaryGasMembrane extends AllBC
      * 
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
+	@Override
 	public void setBoundary(LocatedGroup aGroup) {
 		aGroup.status = 0;
 		// status 0 -> carrier
@@ -228,6 +237,7 @@ public class BoundaryGasMembrane extends AllBC
      * 
      * @see LocatedAgent.move();
      */
+	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
 		// Define coordinates of the corrected position

@@ -89,6 +89,7 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * 
 	 * @return Clone of this discrete vector object.
 	 */
+	@Override
 	public DiscreteVector clone()
 	{
 		DiscreteVector out = new DiscreteVector(i, j, k);
@@ -301,6 +302,7 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * 
 	 * @return String containing the points in this vector.
 	 */
+	@Override
 	public String toString()
 	{
 		return "("+i+"-"+j+"-"+k+")";

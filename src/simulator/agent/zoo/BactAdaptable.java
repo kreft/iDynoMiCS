@@ -15,7 +15,6 @@ import java.io.IOException;
 
 import idyno.SimTimer;
 import simulator.Simulator;
-import simulator.agent.LocatedAgent;
 import simulator.geometry.Bulk;
 import simulator.geometry.boundaryConditions.AllBC;
 
@@ -79,6 +78,7 @@ public class BactAdaptable extends BactEPS
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) 
 	{
 		// Initialisation of the Bacterium
@@ -103,6 +103,7 @@ public class BactAdaptable extends BactEPS
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
 	 */
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
 		// find the position to start at by using length and number of values read
@@ -139,6 +140,7 @@ public class BactAdaptable extends BactEPS
 	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
 	 * monitors agent death. In this case also checks switch state
 	 */
+	@Override
 	protected void internalStep() 
 	{
 		// check whether we will need to change the switch state
@@ -189,7 +191,7 @@ public class BactAdaptable extends BactEPS
 			if (getSpeciesParam().switchType.equals("solute")) {
 				localValue = getSpeciesParam().
 						_soluteList[getSpeciesParam().switchControlIndex].
-							getValueAround((LocatedAgent) this);
+							getValueAround(this);
 			} else {
 				// biomass
 				localValue = getParticleMass(getSpeciesParam().switchControlIndex);
@@ -372,6 +374,7 @@ public class BactAdaptable extends BactEPS
 	 * 
 	 * @return Object of BacteriumParam that stores the parameters associated with this species
 	 */
+	@Override
 	public BactAdaptableParam getSpeciesParam() 
 	{
 		return (BactAdaptableParam) _speciesParam;
@@ -386,6 +389,7 @@ public class BactAdaptable extends BactEPS
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
+	@Override
 	public StringBuffer sendHeader() 
 	{
 		StringBuffer tempString = super.sendHeader();
@@ -427,6 +431,7 @@ public class BactAdaptable extends BactEPS
 	 * 
 	 * @return	String to be included in the POV-Ray output file, consisting of species name and state of reaction switch
 	 */
+	@Override
 	public String getName() {
 		if (switchIsOn())
 			return _species.speciesName+"_ON";
@@ -441,6 +446,7 @@ public class BactAdaptable extends BactEPS
 	 * 
 	 * @return Color object that this species of BactAdaptable has been assigned
 	 */
+	@Override
 	public Color getColor() {
 		if (switchIsOn())
 			return getSpeciesParam().onColor;
@@ -457,20 +463,21 @@ public class BactAdaptable extends BactEPS
 	 * @param fr	POV-Ray output stream where this definition should be written to
 	 * @throws IOException	Exception thrown if this stream is not open
 	 */
+	@Override
 	public void writePOVColorDefinition(FileWriter fr) throws IOException 
 	{
 		BactAdaptableParam param = getSpeciesParam();
 		
 		fr.write("#declare "+_species.speciesName+"_ON = color rgb < ");
-		fr.write(((float) param.onColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.onColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.onColor.getBlue()) / 255.0 + " >");
+		fr.write((param.onColor.getRed()) / 255.0 + " , ");
+		fr.write((param.onColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.onColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 		
 		fr.write("#declare "+_species.speciesName+"_OFF = color rgb < ");
-		fr.write(((float) param.offColor.getRed()) / 255.0 + " , ");
-		fr.write(((float) param.offColor.getGreen()) / 255.0 + " , ");
-		fr.write(((float) param.offColor.getBlue()) / 255.0 + " >");
+		fr.write((param.offColor.getRed()) / 255.0 + " , ");
+		fr.write((param.offColor.getGreen()) / 255.0 + " , ");
+		fr.write((param.offColor.getBlue()) / 255.0 + " >");
 		fr.write(";\n");
 	}
 }

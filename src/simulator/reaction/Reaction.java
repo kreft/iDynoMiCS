@@ -147,9 +147,9 @@ public abstract class Reaction implements Serializable
 	/**
 	 * \brief Initialises a reaction object, giving the object the properties stated in the protocol file
 	 * 
-	 * Reactions in which solutes or biomass are produced or consumed mediate the dynamics of iDynoMiCS. This constructor initialises 
-	 * a particular reaction that is stated in the protocol file. Kinetic parameters are managed by the subdefined method in the 
-	 * children class
+	 * Reactions in which solutes or biomass are produced or consumed mediate the dynamics of iDynoMiCS. 
+	 * This constructor initialises a particular reaction that is stated in the protocol file. 
+	 * Kinetic parameters are managed by the subdefined method in the children class
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aReactionRoot	The XML object containing the definition of one reaction in the protocol file

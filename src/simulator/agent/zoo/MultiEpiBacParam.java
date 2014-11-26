@@ -15,10 +15,6 @@ package simulator.agent.zoo;
 
 import simulator.Simulator;
 import java.awt.Color;
-import java.util.*;
-
-import org.jdom.Element;
-
 import utils.*;
 
 /** Parameters common to all instances of a same species */
@@ -48,6 +44,7 @@ public class MultiEpiBacParam extends BactEPSParam
 		super();
 	}
 	
+	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);

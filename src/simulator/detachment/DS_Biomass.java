@@ -46,6 +46,7 @@ public class DS_Biomass extends LevelSet
 	 * @param anAgentGrid	Associated grid of agents
 	 * @param root	XML tag containing information related to this detachment mechanism
 	 */
+	@Override
 	public void init(AgentContainer anAgentGrid, XMLParser root) 
 	{
 		super.init(anAgentGrid, root);
@@ -66,6 +67,7 @@ public class DS_Biomass extends LevelSet
 	 * @return Double stating local detachment speed for this group
 	 *
 	 */
+	@Override
 	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
 	 	if (aGroup.cc.x>maxTh) return Double.MAX_VALUE;
 		return kDet*ExtraMath.sq(aGroup.cc.x)/aGroup.totalConcentration;

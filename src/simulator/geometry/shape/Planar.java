@@ -104,6 +104,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @param aDomain The computation domain that this boundary is associated
 	 * with.
 	 */
+	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
@@ -139,6 +140,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @return	Boolean noting whether this coordinate is inside or outside
 	 * this shape.
 	 */
+	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
 		//tempVar.x = -_pointIn.x + point.x;
@@ -163,6 +165,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @return	Boolean noting whether this coordinate is on the boundary of
 	 * the domain.
 	 */
+	@Override
 	public Boolean isOnBoundary(ContinuousVector point, Double res)
 	{
 		return isOutside(point) && (point.distance(getOrthoProj(point))<=res);
@@ -179,6 +182,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
      * line.
      * @return Coordinates of the intersection between a line and the plane.
      */
+	@Override
 	public ContinuousVector intersection(ContinuousVector position, 
 											ContinuousVector vector)
 	{
@@ -209,6 +213,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * shape.
 	 * 
 	 */
+	@Override
 	public ContinuousVector getNormalInside(ContinuousVector cc)
 	{
 		return new ContinuousVector(-_cVectorOut.x, -_cVectorOut.y, -_cVectorOut.z);
@@ -220,6 +225,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @param ccIn	Coordinates to be corrected.
 	 * @param ccOut	Corrected coordinates.
 	 */
+	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		//Double a, b, c, d, k;
@@ -252,6 +258,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @return Corrected coordinates.
 	 * 
 	 */
+	@Override
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
 		ContinuousVector ccOut = new ContinuousVector();
@@ -266,6 +273,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * 
 	 * @return Double stating distance to that shape.
 	 */
+	@Override
 	public Double getDistance(IsShape aShape)
 	{
 		ContinuousVector ccOut = aShape.intersection(_cPointOnPlane, _cVectorOut);
@@ -280,6 +288,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * 
 	 * @return Double stating distance to that shape
 	 */
+	@Override
 	public Double getDistance(ContinuousVector cc)
 	{
 		ContinuousVector ccOut = intersection(cc, _cVectorOut);
@@ -292,6 +301,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
      * 
      * @param aSG	The grid to which this boundary is a part.
      */
+	@Override
 	public void readyToFollowBoundary(SpatialGrid aSG) 
 	{
 		Double res = aSG.getResolution();
@@ -339,6 +349,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
      *  @return Whether a valid point was found
      *  
      */
+	@Override
 	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
 															SpatialGrid aSG) 
 	{
@@ -395,6 +406,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * 
 	 * @return	Discrete vector normal to the plane
 	 */
+	@Override
 	public DiscreteVector getNormalDC()
 	{
 		return _dVectorOut;

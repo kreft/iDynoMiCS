@@ -58,6 +58,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * 
 	 * @param defMarkUp	XML tags that define this kinetic in the protocol file.
 	 */
+	@Override
 	public void init(Element defMarkUp)
 	{
 		_Ks = (new XMLParser(defMarkUp)).getParamDbl( "Ks");
@@ -72,6 +73,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * @param kineticParam	Array of parameters associated with this reaction.
 	 * @param paramIndex	An index to the parameter array.
 	 */
+	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
 		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ks");
@@ -88,6 +90,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * @param index	An index to the parameter array
 	 * @return Double value stating the value of the kinetic for this level of solute
 	 */
+	@Override
 	public Double kineticValue(Double solute, Double[] paramTable, int index)
 	{
 		return solute/(paramTable[index]+solute+solute*solute/paramTable[index+1]);
@@ -100,6 +103,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * @return Double giving kinetic rate for this solute concentration.
 	 * 
 	 */
+	@Override
 	public Double kineticValue(Double solute)
 	{
 		return solute/(_Ks+solute+solute*solute/_Ki);
@@ -113,6 +117,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute)
 	{
 		return (_Ks-ExtraMath.sq(solute)/_Ki)/ExtraMath.sq(_Ks+solute+solute*solute/_Ki);
@@ -128,6 +133,7 @@ public class HaldaneKinetic extends IsKineticFactor
 	 * @return Double value of the kinetic differential for this solute
 	 * concentration.
 	 */
+	@Override
 	public Double kineticDiff(Double solute, Double[] paramTable, int index)
 	{
 		Double numerator = paramTable[index];

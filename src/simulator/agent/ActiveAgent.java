@@ -119,6 +119,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param xmlMarkUp	A species mark-up within the specified protocol file
 	 */
+	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) 
 	{
 		// Initialisation common to all specialised agents
@@ -212,6 +213,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
 	 */
+	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
 		// this routine will read data from the end of the singleAgentData array
 		// and then pass the remaining values onto the super class
@@ -248,6 +250,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutatePop() {
 		// Mutate parameters inherited
 		super.mutatePop();
@@ -259,6 +262,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * Create a new agent with mutated parameters based on species default values. Agent is not located
 	 */
+	@Override
 	public void createNewAgent() {
 		try {
 			ActiveAgent baby = (ActiveAgent) sendNewAgent();
@@ -278,12 +282,14 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
 	 * species is registered into the agent grid
 	 */
+	@Override
 	public void registerBirth() {
 		super.registerBirth();
 		// register the agent in the metabolic containers
 		registerOnAllActiveReaction();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	/**
 	 * \brief Clones this agent object, creating a new progeny of this agent. Ensures new clone inherits same parameters as parents
@@ -327,6 +333,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
 	 */
+	@Override
 	public void mutateAgent() {
 		// Mutate parameters inherited
 		super.mutateAgent();
@@ -341,7 +348,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(boolean isStarving)
+	@Override
+	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
 		// If you are too small, you must die !
@@ -357,6 +365,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * Called at each time step of the simulation to compute cell growth, update size, and monitor cell death. Also determines whether 
 	 * the agent has reached the size at which it must divide
 	 */
+	@Override
 	protected void internalStep() {
 		grow();
 		updateSize();
@@ -455,7 +464,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param aReaction	The reaction to add to the list
 	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
 	 */
-	public void addReaction(Reaction aReaction, boolean useDefaultParam) {
+	@Override
+	public void addReaction(Reaction aReaction, Boolean useDefaultParam)
+	{
 		// Add the reaction to the list of known reaction
 		reactionKnown.add(aReaction.reactionIndex);
 
@@ -486,7 +497,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * @param useDefaultParam	Whether to use default reaction parameters or bespoke parameters have been specified in the protocol file
 	 * 
 	 */
-	public void addActiveReaction(Reaction aReaction, boolean useDefaultParam) {
+	@Override
+	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam)
+	{
 		addReaction(aReaction, useDefaultParam);
 		switchOnReaction(aReaction);
 	}
@@ -498,6 +511,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aPathway	The reaction to remove from the list
 	 */
+	@Override
 	public void removeReaction(Reaction aPathway) {
 		switchOffreaction(aPathway);
 		reactionKnown.remove(aPathway);
@@ -511,6 +525,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aPathway	The reaction to switch off
 	 */ 
+	@Override
 	public void switchOffreaction(Reaction aPathway) {
 		if (reactionActive.contains(aPathway.reactionIndex)) {
 			// need to remove using indexOf because the remove(object) version thinks
@@ -528,6 +543,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @param aReaction	The reaction to switch on
 	 */ 
+	@Override
 	public void switchOnReaction(Reaction aReaction) {
 		//		System.out.println("Turn it on? "+aReaction.reactionName);
 		if (!reactionActive.contains(aReaction.reactionIndex)) {
@@ -598,6 +614,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return	String specifying the header of each column of results associated with this agent
 	 */
+	@Override
 	public StringBuffer sendHeader()
 	{
 		StringBuffer tempString = super.sendHeader();
@@ -614,7 +631,9 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
-	public StringBuffer writeOutput() {
+	@Override
+	public StringBuffer writeOutput()
+	{
 		// write the data matching the header file
 		StringBuffer tempString = super.writeOutput();
 
@@ -719,6 +738,7 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	 * 
 	 * @return ActiveParam object containing the species associated with this agent
 	 */
+	@Override
 	public ActiveParam getSpeciesParam()
 	{
 		return (ActiveParam) _speciesParam;
