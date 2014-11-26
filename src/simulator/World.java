@@ -95,24 +95,20 @@ public class World
 	}
 
 	/**
-	 * \brief Returns a domain from the domain list that matches a specified name.
+	 * \brief Returns a domain from the domain list that matches a specified
+	 * name.
 	 * 
-	 * Returns a domain from the domain list that matches a specified name. One example - used to link solute grids to a particular 
-	 * domain
+	 * One example - used to link solute grids to a particular domain.
 	 *  
-	 * @param cDName	The name of the domain to return from domainList	
-	 * @return	The domain of the name specified by cDName, from domainList
+	 * @param cDName	The name of the domain to return from domainList.	
+	 * @return	The domain of the name specified by cDName, from domainList.
 	 */
 	public Domain getDomain(String cDName) 
 	{
-		for (int i = 0; i<domainList.size(); i++) 
-		{
-			if (domainList.get(i).getName().equals(cDName)) 
-			{
-				return (Domain) domainList.get(i); 
-			}
-		}
-		LogFile.writeLog("World.getDomain() found no domain"); 
+		for (int i = 0; i < domainList.size(); i++) 
+			if ( domainList.get(i).getName().equals(cDName) ) 
+				return domainList.get(i);
+		LogFile.writeLog("World.getDomain() found no domain called "+cDName);
 		return null;
 	}
 
@@ -126,78 +122,73 @@ public class World
 	 */
 	public Bulk getBulk(String bulkName) 
 	{
-		for (Bulk aBulk : bulkList) {
-			if (aBulk.getName().equals(bulkName)) { return aBulk; }
-		}
+		for (Bulk aBulk : bulkList)
+			if (aBulk.getName().equals(bulkName))
+				return aBulk;
 		return bulkList.getFirst();
 	}
 
 	/**
-	 * \brief Determines if a bulk object of a given string name exists
+	 * \brief Determines if a bulk object of a given string name exists.
 	 * 
-	 * Determines if a bulk object of a given string name exists
-	 * 
-	 * @param bulkName	The name of the bulk that is required
-	 * @return	Boolean stating whether or not this bulk exists
+	 * @param bulkName	The name of the bulk that is required.
+	 * @return	Boolean stating whether or not this bulk exists.
 	 */
-	public boolean containsBulk(String bulkName) {
-		for (Bulk aBulk : bulkList) {
-			if (aBulk.getName().equals(bulkName)) { return true; }
-		}
+	public Boolean containsBulk(String bulkName)
+	{
+		for (Bulk aBulk : bulkList)
+			if ( aBulk.getName().equals(bulkName) )
+				return true;
 		return false;
 	}
 
 	/**
-	 * \brief Calculates and returns the simulation time required to change 100% of a bulk concentration
+	 * \brief Calculates and returns the simulation time required to change
+	 * 100% of a bulk concentration.
 	 * 
-	 * Calculates and returns the simulation time required to change 100% of a bulk concentration
-	 * 
-	 * @return the time needed to change of 100% a bulk concentration
+	 * @return the time needed to change of 100% a bulk concentration.
 	 */
-	public double getBulkTimeConstraint() {
-		for(int i=1;i<bulkTime.length;i++)
-			bulkTime[i]=bulkTime[i-1];
-
+	public Double getBulkTimeConstraint()
+	{
+		for (int i = 1;  i < bulkTime.length; i++)
+			bulkTime[i] = bulkTime[i-1];
 		bulkTime[0] = bulkList.getFirst().getTimeConstraint();
 		for (Bulk aBulk : bulkList)
 			bulkTime[0] = Math.min(bulkTime[0], aBulk.getTimeConstraint());
-
 		return bulkTime[0];
 
 	}
 
 	/**
-	 * \brief Returns the Sbulk value for a given solute index from that specified in the protocol file, for all bulks specified.
+	 * \brief Returns the Sbulk value for a given solute index from that
+	 * specified in the protocol file, for all bulks specified.
 	 * 
-	 * Returns the Sbulk value for a given solute index from that specified in the protocol file, for all bulks specified.
-	 * 
-	 * @param soluteIndex	The integer reference of the solute in the solute dictionary
-	 * @return	An array of Sbulk values for this given solute - one for each bulk specified
+	 * @param soluteIndex	The integer reference of the solute in the solute
+	 * dictionary.
+	 * @return	An array of Sbulk values for this given solute - one for each
+	 * bulk specified.
 	 */
 	public Double[] getAllBulkValue(int soluteIndex) 
 	{
 		// Initialise value as a Double[] of zero's
 		Double[] value = ExtraMath.newDoubleArray(bulkList.size());
-		
 		for (int i = 0; i < bulkList.size(); i++) 
-			if (bulkList.get(i).contains(soluteIndex))
+			if ( bulkList.get(i).contains(soluteIndex) )
 				value[i] = bulkList.get(i).getValue(soluteIndex);
-		
 		return value;
 	}
 
 	/**
-	 * \brief Return the max value of a particular solute in the bulk
+	 * \brief Return the max value of a particular solute in the bulk.
 	 * 
-	 * Return the max value of a particular solute in the bulk
-	 * 
-	 * @param soluteIndex The simulation dictionary integer reference for the solute being queried
-	 * @return	Double value representing the max level of concentration in the bulk
+	 * @param soluteIndex The simulation dictionary integer reference for the
+	 * solute being queried.
+	 * @return	Double value representing the max level of concentration in
+	 * the bulk.
 	 */
-	public double getMaxBulkValue(int soluteIndex) {
-		// Rob 4/3/11: simplified
+	public Double getMaxBulkValue(int soluteIndex)
+	{
 		return ExtraMath.max(getAllBulkValue(soluteIndex));
-		
 	}
 
 }

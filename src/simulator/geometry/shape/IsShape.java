@@ -14,7 +14,6 @@ package simulator.geometry.shape;
 import simulator.geometry.Domain;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
-import simulator.SpatialGrid;
 import utils.XMLParser;
 
 /**

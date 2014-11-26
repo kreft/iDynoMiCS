@@ -14,12 +14,13 @@ import java.io.Serializable;
 import org.jdom.Element;
 
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
  * \brief Implements 3D vector of discrete spatial coordinates.
  * 
- * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public class DiscreteVector implements Cloneable, Serializable 
@@ -63,6 +64,24 @@ public class DiscreteVector implements Cloneable, Serializable
 		i = coordinatesRoot.getAttributeInt("i");
 		j = coordinatesRoot.getAttributeInt("j");
 		k = coordinatesRoot.getAttributeInt("k");
+		
+		try
+		{
+			i = coordinatesRoot.getAttributeInt("i");
+			j = coordinatesRoot.getAttributeInt("j");
+			k = coordinatesRoot.getAttributeInt("k");
+		}
+		catch (Exception e)
+		{
+			i = (int) (double) coordinatesRoot.getAttributeDbl("x");
+			j = (int) (double) coordinatesRoot.getAttributeDbl("y");
+			k = (int) (double) coordinatesRoot.getAttributeDbl("z");
+			LogFile.writeLogAlways("----------------------------------------");
+			LogFile.writeLogAlways("Please give discrete vectors as i, j, k!");
+			LogFile.writeLogAlways("x, y, z should be for continuous vectors");
+			LogFile.writeLogAlways("----------------------------------------");
+		}
+		
 	}
 	
 	/**

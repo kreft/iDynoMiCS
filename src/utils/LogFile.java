@@ -163,6 +163,7 @@ public class LogFile
 			for (StackTraceElement line : exception.getStackTrace())
 				message += "\t"+line.toString()+"\n";
 			writeLogAlways(message);
+			exception.printStackTrace();
 		}
 		catch (Exception e)
 		{

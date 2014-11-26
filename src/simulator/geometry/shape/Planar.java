@@ -107,8 +107,8 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
-		_dPointOnPlane = new DiscreteVector(shapeRoot.getChildParser("pointIn"));
-		_dVectorOut = new DiscreteVector(shapeRoot.getChildParser("vectorOut"));
+		_dPointOnPlane = new DiscreteVector(shapeRoot.getParamParser("pointIn"));
+		_dVectorOut = new DiscreteVector(shapeRoot.getParamParser("vectorOut"));
 		
 		// Translate them into continuous coordinates.
 		Double res = aDomain.getGrid().getResolution();

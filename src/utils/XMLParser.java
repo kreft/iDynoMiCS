@@ -183,6 +183,14 @@ public class XMLParser implements Serializable
 	}
 	
 	/**
+	 * @return	String value of the local root.
+	 */
+	public String getValue()
+	{
+		return _localRoot.getValue();
+	}
+	
+	/**
 	 * \brief Return the string value of an attribute of the current localRoot
 	 * of the XML file.
 	 * 
@@ -268,13 +276,15 @@ public class XMLParser implements Serializable
 		LinkedList<Element> out = new LinkedList<Element>();
 		for (Object child : childList)
 		{
+			out.add((Element) child);
+			/*
 			if (child.getClass().equals("Element"))
 				out.add((Element) child);
 			else
 			{
 				LogFile.writeLogAlways("Error reading in child elements! "
 																+childMarkup);
-			}
+			}*/
 		}
 		return out;
 	}
@@ -289,7 +299,7 @@ public class XMLParser implements Serializable
 	public LinkedList<String> getChildrenNames(String childMarkup)
 	{
 		LinkedList<String> out = new LinkedList<String>();
-		for (Element aChild : getChildrenElements(childMarkup))
+		for (XMLParser aChild : getChildrenParsers(childMarkup))
 			out.add(aChild.getName());
 		return out;
 	}
@@ -314,6 +324,26 @@ public class XMLParser implements Serializable
 	}
 	
 	/**
+	 * \brief Checks whether an XML element with the specified tag, attribute
+	 * and value exists among the children
+	 * 
+	 * @param childMarkup
+	 * @param attrName
+	 * @param attrValue
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Boolean isChildSuchGiven(String childMarkup, 
+									String attrName, String attrValue)
+	{
+		List<Element> childList = _localRoot.getChildren(childMarkup);
+		for (Element aChild : childList)
+			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
+				return true;
+		return false;
+	}
+	
+	/**
 	 * \brief Returns the XML element matching the specified tag name,
 	 * attribute name, and attribute value.
 	 * 
@@ -326,20 +356,32 @@ public class XMLParser implements Serializable
 	 */
 	@SuppressWarnings("unchecked")
 	public Element getChildSuchAttribute(String childMarkup, 
-											String attrName, String attrValue)
+							String attrName, String attrValue)
 	{
 		List<Element> childList = _localRoot.getChildren(childMarkup);
 		for (Element aChild : childList)
 			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
 				return (Element) aChild;
+		/*
 		LogFile.writeLogAlways("Could not find XML child element with name "+
-								childMarkup+"and "+attrName+" = "+attrValue);
+								childMarkup+" and "+attrName+" = "+attrValue);
+		*/
 		return null;
 	}
 	
 	/*************************************************************************
 	 * Reading parameters: generic methods
 	 */
+	
+	/**
+	 * TODO
+	 * @param paramName
+	 * @return
+	 */
+	public Boolean isParamGiven(String paramName)
+	{
+		return isChildSuchGiven("param", "name", paramName);
+	}
 	
 	/**
 	 * \brief Searches the child nodes of a given tag for a particular
@@ -352,9 +394,15 @@ public class XMLParser implements Serializable
 	 * @return	XML Element contains the tags relating to that parameter, if
 	 * present.
 	 */
-	public Element getParamMarkUp(String paramName) 
+	public Element getParamElement(String paramName) 
 	{
 		return getChildSuchAttribute("param", "name", paramName);
+	}
+	
+	
+	public XMLParser getParamParser(String paramName)
+	{
+		return new XMLParser(getParamElement(paramName));
 	}
 	
 	/**
@@ -369,7 +417,7 @@ public class XMLParser implements Serializable
 	 */
 	public String getParam(String paramName) 
 	{
-		Element aParam = getParamMarkUp(paramName);
+		Element aParam = getParamElement(paramName);
 		return ( aParam == null ) ? null : aParam.getText();
 	}
 	
@@ -388,7 +436,7 @@ public class XMLParser implements Serializable
 	 */
 	public String getParam(String paramName, StringBuffer unit)
 	{
-		Element aParam = getParamMarkUp(paramName);
+		Element aParam = getParamElement(paramName);
 		if ( aParam == null )
 			return null;
 		unit.append(aParam.getAttributeValue("unit"));
@@ -445,7 +493,7 @@ public class XMLParser implements Serializable
 	 */
 	private Integer stringToInteger(String in)
 	{
-		if ( in.equals("") || in.equals(null))
+		if ( in == null || in.equals("") )
 			return nullInt;
 		return Integer.parseInt(in);
 	}
@@ -464,7 +512,7 @@ public class XMLParser implements Serializable
 	public Integer getChildAttrInt(String childName, String attrName) 
 	{
 		Integer out = stringToInteger(getChildAttrStr(childName, attrName));
-		if ( out.equals(nullInt) )
+		if ( out == nullInt )
 		{
 			LogFile.writeLogAlways("No value given for "+attrName+
 														" of "+childName+"!");
@@ -483,7 +531,7 @@ public class XMLParser implements Serializable
 	public Integer getAttributeInt(String attributeName)
 	{
 		Integer out = stringToInteger(getAttribute(attributeName));
-		if ( out.equals(nullInt) )
+		if ( out == nullInt )
 			LogFile.writeLogAlways("No value given for "+attributeName+"!");
 		return out;
 	}
@@ -498,7 +546,7 @@ public class XMLParser implements Serializable
 	public Integer getParamInt(String paramName) 
 	{
 		Integer out = stringToInteger(getParam(paramName));
-		if ( out.equals(nullInt) )
+		if ( out == nullInt )
 			LogFile.writeLogAlways("No value given for "+paramName+"!");
 		return out;
 	}
@@ -516,7 +564,7 @@ public class XMLParser implements Serializable
 	 */
 	private Boolean stringToBoolean(String in)
 	{
-		if ( in.equals("") || in.equals(null))
+		if ( in == null || in.equals("") )
 			return nullBool;
 		return Boolean.parseBoolean(in);
 	}
@@ -530,7 +578,7 @@ public class XMLParser implements Serializable
 	public Boolean getParamBool(String paramName)
 	{
 		Boolean out = stringToBoolean(getParam(paramName));
-		if ( out.equals(nullBool) )
+		if ( out == nullBool )
 			LogFile.writeLogAlways("No value given for "+paramName+"!");
 		return out;
 	}
@@ -549,7 +597,7 @@ public class XMLParser implements Serializable
 	public Boolean getParamSuchBool(String paramName, String detailName)
 	{
 		Boolean out = stringToBoolean(getParamSuch(paramName, detailName));
-		if ( out.equals(nullBool) )
+		if ( out == nullBool )
 		{
 			LogFile.writeLogAlways("No value given for "+paramName+
 													" with "+detailName+"!");
@@ -570,7 +618,7 @@ public class XMLParser implements Serializable
 	 */
 	private Double stringToDouble(String in)
 	{
-		if ( in.equals("") || in.equals(null))
+		if ( in == null || in.equals("") )
 			return nullDbl;
 		return Double.parseDouble(in);
 	}
@@ -582,8 +630,8 @@ public class XMLParser implements Serializable
 	 */
 	public Double getValueDbl()
 	{
-		Double out = stringToDouble(_localRoot.getValue());
-		if ( out.equals(nullDbl) )
+		Double out = stringToDouble(getValue());
+		if ( out == nullDbl )
 			LogFile.writeLogAlways("No value given!");
 		return out;
 	}
@@ -599,7 +647,7 @@ public class XMLParser implements Serializable
 	public Double getAttributeDbl(String attributeName)
 	{
 		Double out = stringToDouble(getAttribute(attributeName));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 			LogFile.writeLogAlways("No value given for "+attributeName+"!");
 		return out;
 	}
@@ -618,7 +666,7 @@ public class XMLParser implements Serializable
 	public Double getChildAttrDbl(String childName, String attrName) 
 	{
 		Double out = stringToDouble(getChildAttrStr(childName, attrName));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 		{
 			LogFile.writeLogAlways("No value given for "+attrName+
 														" of "+childName+"!");
@@ -636,7 +684,7 @@ public class XMLParser implements Serializable
 	public Double getParamDbl(String paramName) 
 	{
 		Double out = stringToDouble(getParam(paramName));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 			LogFile.writeLogAlways("No value given for "+paramName+"!");
 		return out;
 	}
@@ -653,7 +701,7 @@ public class XMLParser implements Serializable
 	public Double getParamDbl(String paramName, StringBuffer unit) 
 	{
 		Double out = stringToDouble(getParam(paramName, unit));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 			LogFile.writeLogAlways("No value given for "+paramName+"!");
 		return out;
 	}
@@ -672,7 +720,7 @@ public class XMLParser implements Serializable
 	public Double getParamSuchDbl(String paramName, String detailName)
 	{
 		Double out = stringToDouble(getParamSuch(paramName, detailName));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 		{
 			LogFile.writeLogAlways("No value given for "+paramName+
 													" with "+detailName+"!");
@@ -696,7 +744,7 @@ public class XMLParser implements Serializable
 										String detailName, StringBuffer unit)
 	{
 		Double out = stringToDouble(getParamSuch(paramName, detailName, unit));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 		{
 			LogFile.writeLogAlways("No value given for "+paramName+
 													" with "+detailName+"!");
@@ -724,7 +772,7 @@ public class XMLParser implements Serializable
 	{
 		Double out = stringToDouble(getChildSuchAttribute(childName, 
 						attrName, attrValue).getAttributeValue(attr2Name));
-		if ( out.equals(nullDbl) )
+		if ( out == nullDbl )
 		{
 			LogFile.writeLogAlways("No value given for "+attr2Name+" of "+
 							childName+" with "+attrName+" = "+attrValue+"!");
@@ -820,6 +868,16 @@ public class XMLParser implements Serializable
 		return value;
 	}
 	
+	
+	public Double getParamDiffusivity(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.time(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		return value;
+	}
 	
 	/*************************************************************************
 	 * Creating instances

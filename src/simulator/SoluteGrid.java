@@ -9,10 +9,9 @@
 package simulator;
 
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
-
 import utils.UnitConverter;
-
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 
@@ -83,36 +82,29 @@ public class SoluteGrid extends SpatialGrid
 
 		// Now to set the resolution and create the grid
 		// First check whether a specific resolution has been set for this grid
-		value = xmlRoot.getParamLength("resolution");
-		
-		if (Double.isNaN(value)) 
-		{
-			// Use that from the domain itself if not
+		if ( xmlRoot.isParamGiven("resolution") )
+			specifyResolution(xmlRoot.getParamLength("resolution"));
+		else
 			useDomaingrid();
-		} 
-		else 
-		{
-			// Specify the resolution from that specified in the protocol file
-			specifyResolution(value);
-		}
 		
 		// Now initialise the grid - setting the grid to the required size
 		initGrids();
 		
 		// Set the diffusivity - if specified in the XML file
-		value = xmlRoot.getParamDbl("diffusivity", unit);
-		value *= UnitConverter.time(unit.toString());
-		value *= UnitConverter.length(unit.toString());
-		value *= UnitConverter.length(unit.toString());
-		diffusivity = value;
-
-		// Set the initial concentration
-		value = xmlRoot.getParamDbl("concentration");
-		// If no value specified, use the maximal concentration of the bulks
-		if (Double.isNaN(value)) value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
-		// Set the grid to this initial concentration
-		setAllValueAt(value);
+		if ( xmlRoot.isParamGiven("diffusivity") )
+			diffusivity = xmlRoot.getParamDiffusivity("diffusivity");
+		else
+		{
+			LogFile.writeLogAlways(
+				"Error! Solute diffusivity must be given: "+this.gridName);
+		}
 		
+		// Set the initial concentration.
+		if ( xmlRoot.isParamGiven("concentration"))
+			value = xmlRoot.getParamConcn("concentration");
+		else
+			value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
+		setAllValueAt(value);
 	}
 
 

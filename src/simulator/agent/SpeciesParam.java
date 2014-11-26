@@ -39,7 +39,7 @@ public class SpeciesParam
 	{
 		Double value = getSpeciesParameterDouble("initialMassCV",
 											aSpeciesRoot, speciesDefaults);
-		initialMassCV = value.isNaN() ? initialMassCV : value;
+		initialMassCV = (value == XMLParser.nullDbl) ? initialMassCV : value;
 	}
 	
 	public String getSpeciesParameterString(String paramName,
@@ -50,7 +50,7 @@ public class SpeciesParam
 	}
 	
 	/**
-	 * TODO check handling of null
+	 * 
 	 * 
 	 * @param paramName
 	 * @param aSpeciesRoot
@@ -60,58 +60,56 @@ public class SpeciesParam
 	public Integer getSpeciesParameterInteger(String paramName,
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		if ( ! Double.isNaN(aSpeciesRoot.getParamInt(paramName)) )
-			return aSpeciesRoot.getParamInt(paramName);
-		if ( ! Double.isNaN(speciesDefaults.getParamInt(paramName)) )
-			return speciesDefaults.getParamInt(paramName);
-		return 0;
+		Integer out = aSpeciesRoot.getParamInt(paramName);
+		return (out == XMLParser.nullInt) ?
+								speciesDefaults.getParamInt(paramName) : out;
 	}
 
 	public Double getSpeciesParameterDouble(String paramName,
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Double out = aSpeciesRoot.getParamDbl(paramName);
-		return Double.isNaN(out) ? 
-				speciesDefaults.getParamDbl(paramName) : out;
+		return (out == XMLParser.nullDbl) ? 
+								speciesDefaults.getParamDbl(paramName) : out;
 	}
 
 	public Double getSpeciesParameterLength(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Double out = aSpeciesRoot.getParamLength(paramName);
-		return Double.isNaN(out) ? 
-				speciesDefaults.getParamLength(paramName) : out;
+		return (out == XMLParser.nullDbl) ? 
+							speciesDefaults.getParamLength(paramName) : out;
 	}
 	
 	public Double getSpeciesParameterMass(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Double out = aSpeciesRoot.getParamMass(paramName);
-		return Double.isNaN(out) ? 
-				speciesDefaults.getParamMass(paramName) : out;
+		return (out == XMLParser.nullDbl) ? 
+								speciesDefaults.getParamMass(paramName) : out;
 	}
 	
 	public Double getSpeciesParameterTime(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Double out = aSpeciesRoot.getParamTime(paramName);
-		return Double.isNaN(out) ? 
-				speciesDefaults.getParamTime(paramName) : out;
+		return (out == XMLParser.nullDbl) ? 
+								speciesDefaults.getParamTime(paramName) : out;
 	}
 	
 	public Double getSpeciesParameterConcn(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Double out = aSpeciesRoot.getParamConcn(paramName);
-		return Double.isNaN(out) ? 
-				speciesDefaults.getParamConcn(paramName) : out;
+		return (out == XMLParser.nullDbl) ? 
+							speciesDefaults.getParamConcn(paramName) : out;
 	}
 	
 	public Boolean getSpeciesParameterBool(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
 		Boolean out = aSpeciesRoot.getParamBool(paramName);
-		return ( out == null ) ?
-				speciesDefaults.getParamBool(paramName) : out;
+		return ( out == XMLParser.nullBool ) ?
+								speciesDefaults.getParamBool(paramName) : out;
 	}
 }

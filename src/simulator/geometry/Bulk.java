@@ -200,35 +200,39 @@ public class Bulk
 			_isInBulk[soluteIndex]= true;
 
 			// Note in the array whether the concentration of this solute is set to vary over time (as determined earlier in this method
-			_isConstant[soluteIndex] = _bulkIsConstant;
-
 			// However each solute can have its own isConstant value - check whether this is the case, and if so determine if the 
 			// concentration of this solute is variable. Even if the bulk is set to isConstant, the solute can be set to be varied and 
 			// thus override the compartment
-			String isconst = parser.getParam("isConstant");
-			if (isconst != null)
-				_isConstant[soluteIndex] = Boolean.valueOf(isconst);
+			if ( parser.isParamGiven("isConstant"))
+				_isConstant[soluteIndex] = parser.getParamBool("isConstant");
+			else
+				_isConstant[soluteIndex] = _bulkIsConstant;
 			
 			// Get the concentration of each solute in the feed flow (for varying concentrations)
-			_sIn[soluteIndex] = parser.getParamDbl("Sin");
-			if (Double.isNaN(_sIn[soluteIndex]))
+			if ( parser.isParamGiven("Sin"))
+				_sIn[soluteIndex] = parser.getParamConcn("Sin");
+			else
 				_sIn[soluteIndex] = 0.0;
-
+			
 			// Now check for pulses. The pulseRate parameters can be used to periodically spike the concentration of a solute to that
 			// specified in Spulse parameter at a given time
 			
 			// for pulses, set pulse concentration and interval
-			_sPulse[soluteIndex] = parser.getParamDbl("Spulse");
-			if (Double.isNaN(_sPulse[soluteIndex]))
+			if ( parser.isParamGiven("Spulse"))
+			{
+				_sPulse[soluteIndex] = parser.getParamConcn("Spulse");
+				_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
+				// pulse interval will be infinite if the rate is zero
+				_pulseInterval[soluteIndex] = Double.MAX_VALUE;
+				_lastPulseTime[soluteIndex] = 0.0;
+				if ( ! _pulseRate[soluteIndex].isNaN() && 
+											! _pulseRate[soluteIndex].equals(0.0) )
+				{
+					_pulseInterval[soluteIndex] = 1.0/_pulseRate[soluteIndex];
+				}
+			}
+			else
 				_sPulse[soluteIndex] = 0.0;
-
-			// pulse interval will be infinite if the rate is zero
-			_pulseInterval[soluteIndex] = Double.MAX_VALUE;
-			_lastPulseTime[soluteIndex] = 0.0;
-			_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
-			if (!Double.isNaN(_pulseRate[soluteIndex]) && _pulseRate[soluteIndex]!=0.)
-				_pulseInterval[soluteIndex] = 1./_pulseRate[soluteIndex];
-			
 		}
 	}
                   

@@ -21,12 +21,12 @@ import utils.UnitConverter;
 import utils.XMLParser;
 
 /**
- * \brief Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factors (one factor by solute)
- * 
- * Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factors (one factor by solute)
+ * \brief Allows creation of a Reaction object whose the reaction rate can be
+ * decomposed in several kinetic factors (one factor by solute).
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃµnia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  *
  */
 public class ReactionFactor extends Reaction 

@@ -9,8 +9,8 @@
  */
 package simulator.geometry.boundaryConditions;
 
+import utils.LogFile;
 import utils.XMLParser;
-
 import simulator.*;
 import simulator.geometry.*;
 import simulator.agent.LocatedAgent;
@@ -28,7 +28,7 @@ import simulator.agent.LocatedGroup;
  *
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
  */
 public class BoundaryBulk extends AllBC{
 
@@ -63,18 +63,27 @@ public class BoundaryBulk extends AllBC{
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aDomain	The domain which this boundary condition is associated with
-	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
+	 * @param aBCParser	The XML tags that have declared this boundary in the protocol file
 	 */
-	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) 
+	public void init(Simulator aSim, Domain aDomain, XMLParser aBCParser) 
 	{
 		// Load the geometry of the boundary
-		readGeometry(aBoundCondMarkUp, aDomain);		
+		readGeometry(aBCParser, aDomain);		
 		
 		aDomain.addBoundary(this);
 		
 		// Load description of the connected bulk
-		String bulkName = aBoundCondMarkUp.getParam("bulk");
-		_connectedBulk = aSim.world.getBulk(bulkName);
+		if ( aBCParser.isParamGiven("bulk") )
+		{
+			String bulkName = aBCParser.getParam("bulk");
+			_connectedBulk = aSim.world.getBulk(bulkName);
+		}
+		else
+		{
+			LogFile.writeLogAlways(
+					"Error! No bulk name given for BoundaryBulk\nExiting...");
+			System.exit(-1);
+		}
 	}
 	
 	/**

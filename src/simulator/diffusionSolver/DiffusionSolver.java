@@ -132,7 +132,6 @@ public abstract class DiffusionSolver
 		 */
 		for (String aReacName : xmlRoot.getChildrenNames("reaction"))
 			addReactionWithSolutes(aSim.getReaction(aReacName));
-		
 	}
 	
 	/**

@@ -234,8 +234,8 @@
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
-					<param name="pointIn" x="-1" y="0" z="0"/>
-					<param name="vectorOut" x="-1" y="0" z="0"/>
+					<param name="pointIn" i="-1" j="0" k="0"/>
+					<param name="vectorOut" i="-1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
@@ -243,30 +243,30 @@
 				<param name="activeForSolute">yes</param>
 				<param name="bulk">MyTank</param>
 				<shape class="Planar">
-					<param name="pointIn" x="33" y="0" z="0"/>
-					<param name="vectorOut" x="1" y="0" z="0"/>
+					<param name="pointIn" i="33" j="0" k="0"/>
+					<param name="vectorOut" i="1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0z">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="-1" z="0"/>
-					<param name="vectorOut" x="0" y="-1" z="0"/>
+					<param name="pointIn" i="0" j="-1" k="0"/>
+					<param name="vectorOut" i="0" j="-1" k="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="33" z="0"/>
-					<param name="vectorOut" x="0" y="1" z="0"/>
+					<param name="pointIn" i="0" j="33" k="0"/>
+					<param name="vectorOut" i="0" j="1" k="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="-1"/>
-					<param name="vectorOut" x="0" y="0" z="-1"/>
+					<param name="pointIn" i="0" j="0" k="-1"/>
+					<param name="vectorOut" i="0" j="0" k="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="1"/>
-					<param name="vectorOut" x="0" y="0" z="1"/>
+					<param name="pointIn" i="0" j="0" k="1"/>
+					<param name="vectorOut" i="0" j="0" k="1"/>
 				</shape>
 			</boundaryCondition>
 		</computationDomain>

@@ -38,52 +38,61 @@ import simulator.agent.*;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class Simulator 
 {
-
 	/**
-	 * An XML parser of the protocol file that specifies the conditions under which this simulation is being run
+	 * An XML parser of the protocol file that specifies the conditions under
+	 * which this simulation is being run.
 	 */
-	public transient XMLParser    _protocolFile;
+	public transient XMLParser	_protocolFile;
 	
 	/**
-	 * Boolean that notes that a file defining the agent conditions at the start of the simulation has been specified. Such files are 
+	 * Boolean that notes that a file defining the agent conditions at the
+	 * start of the simulation has been specified. Such files are 
 	 * normally taken from an evolved state of a similar simulation
 	 */
-	private boolean               useAgentFile;
+	private Boolean	useAgentFile;
 	
 	/**
-	 * Where the parameter useAgentFile is set to true, this must be a parser of an XML file that describes the initial state in which the 
-	 * agents should start the simulation
+	 * Where the parameter useAgentFile is set to true, this must be a parser
+	 * of an XML file that describes the initial state in which the agents
+	 * should start the simulation.
 	 */
-	private XMLParser             agentFile;
+	private XMLParser	agentFile;
 	
 	/**
-	 * Boolean that notes that a file defining the bulk conditions at the start of the simulation has been specified. Such files are 
-	 * normally taken from an evolved state of a similar simulation
+	 * Boolean that notes that a file defining the bulk conditions at the
+	 * start of the simulation has been specified. Such files are normally
+	 * taken from an evolved state of a similar simulation.
 	 */
-	private boolean               useBulkFile;
+	private Boolean	useBulkFile;
 	
 	/**
-	 * Where the parameter useBulkFile is set to true, this must be a parser of an XML file that describes the initial state in which the 
-	 * bulk should start the simulation
+	 * Where the parameter useBulkFile is set to true, this must be a parser
+	 * of an XML file that describes the initial state in which the bulk
+	 * should start the simulation.
 	 */
 	private XMLParser             bulkFile;
 	
 	/**
-	 * Output period at which results are written to file. Specified in the XML protocol file
+	 * Output period at which results are written to file. Specified in the
+	 * XML protocol file.
 	 */
-	private double                _outputPeriod;
+	private Double	_outputPeriod;
 	
 	/**
-	 * Time counter used to generate a summary report of the previous iteration
+	 * Time counter used to generate a summary report of the previous
+	 * iteration.
 	 */
 	private double	_lastOutput;
 	
@@ -100,105 +109,118 @@ public class Simulator
 	/**
 	 * Path to where results files should be stored. Specified in the protocol file
 	 */
-	private String                _resultPath;
+	private String	_resultPath;
 
 	/**
-	 * Boolean that runs the simulation in chemostat conditions
+	 * Boolean that runs the simulation in chemostat conditions.
 	 */
-	public static boolean isChemostat =false;
+	public static Boolean isChemostat = false;
 	
 	/**
-	 * Boolean stating whether we are using a fluctuating environment. Defaults to false
+	 * Boolean stating whether we are using a fluctuating environment
+	 *  Defaults to false.
 	 */
-	public static boolean isFluctEnv=false;
+	public static Boolean isFluctEnv = false;
 	
 	/**
-	 * Flag that triggers the use of the MultiEpiBac and MultiEpisome classes. Added by Sonia Martins Jan 2011
+	 * Flag that triggers the use of the MultiEpiBac and MultiEpisome classes.
 	 */
-	public static boolean multiEpi=false;
+	public static Boolean multiEpi = false;
 	
 	/**
-	 * Flag that notes whether the simulation is 3D or 2D
+	 * Flag that notes whether the simulation is 3D or 2D.
 	 */
-	public boolean is3D = false;
+	public Boolean is3D = false;
 
 	/**
-	 * Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system
+	 * Invasion/Competition simulation. Set to true if the simulation should
+	 * stop once there is only one species left in the system.
 	 */
-	public static boolean invComp = false;
+	public static Boolean invComp = false;
 	
 	/**
-	 * Boolean controlling simulation stop point - set to false when a LocatedGroup is removed from above the threshold, thus ending 
-	 * the simulation. Added by Rob 5/3/11. To date only implemented in DS_SolGrad
+	 * Boolean controlling simulation stop point, should a criterion be
+	 * fulfilled (see e.g. DS_SolGrad and invComp).
 	 */
 	public boolean continueRunning = true;
+	
+	/** 
+	 * Timer of the simulation. 
+	 */
+	public static SimTimer	simTimer;
 
 	/** 
-	 * Timer of the simulation 
+	 * Allows user to define a smaller timestep for agent behaviors and
+	 * interactions. Should always be EQUAL or LOWER than the global time step.
 	 */
-	public static SimTimer        simTimer;
-
-	/** 
-	 * Allows user to define a smaller timestep for agent behaviors and interactions. Should always be EQUAL or LOWER than the 
-	 * global time step 
-	 */
-	public double  agentTimeStep;
+	public Double  agentTimeStep;
 	
 	/**
-	 * String that specifies the method of attachment used in the simulation. Can be 'onetime' - where the cells are placed randomly on the 
-	 * substratum, or self-attach, where the bacteria moves from the boundary layer to the substratum using a random walk. Defaults to onetime 
-	 * as this has been the method employed in previous versions of iDynomics. Added by Kieran, 170513.
+	 * String that specifies the method of attachment used in the simulation.
+	 * Can be 'onetime' - where the cells are placed randomly on the 
+	 * substratum, or self-attach, where the bacteria moves from the boundary
+	 * layer to the substratum using a random walk. Defaults to onetime as
+	 * this has been the method employed in previous versions of iDynomics.
 	 */
 	public String attachmentMechanism = "onetime";
 
 	/**
-	 * Specification of all the geometry, bulks, and computational domains in the system being modelled
+	 * Specification of all the geometry, bulks, and computational domains in
+	 * the system being modelled.
 	 */
-	public World                  world;
+	public World	world;
 	
 	/**
-	 * Dictionary of all the species objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the species objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
 	public ArrayList<String> 	speciesDic;
 	
 	/**
-	 * Dictionary of all the reaction objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the reaction objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
 	public ArrayList<String> 	reactionDic;
 	
 	/**
-	 * Dictionary of all the solver objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the solver objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
 	public ArrayList<String> 	solverDic;
 	
 	/**
-	 * Dictionary of all the particle objects in the specified protocol file. Allows to know the index of an object before its creation
+	 * Dictionary of all the particle objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
 	public ArrayList<String>	particleDic;
 	
 	/**
-	 * Dictionary of all the solute objects in the specified protocl file. Allows to know the index of an object before its creation
+	 * Dictionary of all the solute objects in the specified protocol file.
+	 * Allows to know the index of an object before its creation.
 	 */
 	public ArrayList<String>	soluteDic;
-
 	
 	/**
-	 * Array of solute grids - one for each solute specified in the simulation protocol file
+	 * Array of solute grids - one for each solute specified in the simulation
+	 * protocol file.
 	 */
 	public SoluteGrid[]           soluteList;
 	
 	/**
-	 * Array of Reaction objects - one for each specified in the simulation protocol file
+	 * Array of Reaction objects - one for each specified in the simulation
+	 * protocol file.
 	 */
 	public Reaction[]             reactionList;
 	
 	/**
-	 * Array of Solver objects - one for each solver specified in the simulation protocol file
+	 * Array of Solver objects - one for each solver specified in the
+	 * simulation protocol file.
 	 */
 	public DiffusionSolver[]      solverList;
 	
 	/**
-	 * Array of Species objects - one for each specifies in the simulation protocol file
+	 * Array of Species objects - one for each specifies in the simulation
+	 * protocol file.
 	 */
 	public ArrayList<Species>     speciesList = new ArrayList<Species>();
 	
@@ -422,18 +444,32 @@ public class Simulator
 		System.out.print("\t Simulator: ");
 		XMLParser localRoot = new XMLParser(_protocolFile.getChildElement("simulator"));
 
-		// Read the flag from protocol file to decide if this is a chemostat run (Added by Sonia)
-		isChemostat = localRoot.getParamBool("chemostat");
+		/* Read the flag from protocol file to decide if this is a chemostat
+		 * run (false by default)
+		 */
+		if ( localRoot.isParamGiven("chemostat") )
+			isChemostat = localRoot.getParamBool("chemostat");
 		
-		isFluctEnv = localRoot.getParamBool("isFluctEnv");
+		if ( localRoot.isParamGiven("isFluctEnv") )
+			isFluctEnv = localRoot.getParamBool("isFluctEnv");
 		
-		multiEpi = localRoot.getParamBool("ismultiEpi");
+		if ( localRoot.isParamGiven("ismultiEpi") )
+			multiEpi = localRoot.getParamBool("ismultiEpi");
 		
-		// invComp - Invasion/Competition simulation - true if the simulation should stop once there is only one species left
-		invComp = localRoot.getParamBool("invComp");
+		/* Invasion/Competition simulation - true if the simulation should
+		 * stop once there is only one species left (set to false by default)
+		 */
+		if ( localRoot.isParamGiven("invComp") )
+			invComp = localRoot.getParamBool("invComp");
 
 		// Read in the agentTimeStep
-		agentTimeStep = localRoot.getParamTime("agentTimeStep");
+		if ( localRoot.isParamGiven("invComp") )
+			agentTimeStep = localRoot.getParamTime("agentTimeStep");
+		else
+		{
+			LogFile.writeLogAlways("No agentTimeStep found! Exiting...");
+			System.exit(-1);
+		}
 		
 		// Read in the method of attachment of agents - whether substratum or boundary layer based.
 		// Put in an IF to check as if using protocol files for previous versions, this tag may not be present
@@ -581,7 +617,7 @@ public class Simulator
 		soluteList = new SoluteGrid[list.size()];
 		for (Element aChild : list)
 			soluteDic.add(aChild.getAttributeValue("name"));
-
+		
 		// Build the dictionary of "particles"
 		list = _protocolFile.getChildrenElements("particle");
 		particleDic = new ArrayList<String>(list.size());
@@ -616,56 +652,64 @@ public class Simulator
 	}
 
 	/**
-	 * \brief Processes the WORLD mark-up from the protocol file, initialising the bulk and computational domains
+	 * \brief Processes the WORLD mark-up from the protocol file, initialising
+	 * the bulk and computational domains.
 	 * 
-	 * The world mark-up in the protocol file collects the description of all bulks and computational domains defined in the 
-	 * simulation. The bulk mark-up defines a bulk solute compartment that is a source or sink for solutes involved in biofilm growth. 
-	 * The computationDomain mark-up defines the spatial region the biofilm will grow in. Only one world may be defined, but this world 
-	 * may contain several bulk compartments and computationDomain domains, each with a different name. Though when simulating a 
-	 * chemostat scenario, the name of the bulk MUST be chemostat, regardless of the corresponding computationalDomain name. This 
-	 * method creates the world properties (e.g. system size and boundary conditions). In terms of boundary conditions, the current 
-	 * release allows you to create zero-flow, cyclic, constant and dilution boundaries. To create your own, create a new class 
-	 * extending the abstract class "BoundaryCondition"
-	 * 
+	 * The world mark-up in the protocol file collects the description of all
+	 * bulks and computational domains defined in the simulation. The bulk
+	 * mark-up defines a bulk solute compartment that is a source or sink for
+	 * solutes involved in biofilm growth. The computationDomain mark-up
+	 * defines the spatial region the biofilm will grow in. Only one world may
+	 * be defined, but this world may contain several bulk compartments and
+	 * computationDomain domains, each with a different name. Though when
+	 * simulating a chemostat scenario, the name of the bulk MUST be
+	 * chemostat, regardless of the corresponding computationalDomain name.
+	 * This method creates the world properties (e.g. system size and boundary
+	 * conditions). In terms of boundary conditions, the current release
+	 * allows you to create zero-flow, cyclic, constant and dilution
+	 * boundaries. To create your own, create a new class extending the
+	 * abstract class "BoundaryCondition".
 	 */
 	public void createWorld() 
 	{
-		// Creation of the world
 		try 
 		{
 			System.out.print("\t World: \n");
-			
-			// Get the world markup from the protocol file
-			XMLParser parser = new XMLParser(_protocolFile.getChildElement("world"));
-			
-			// Initialise a simulation world with the setup specified in the protocol file
+			// Get the world markup from the protocol file.
+			XMLParser parser = new 
+							XMLParser(_protocolFile.getChildElement("world"));
+			/* Initialise a simulation world with the setup specified in the
+			 * protocol file.
+			 */
 			world = new World();
 			world.init(this, parser);
-
-			// If a initial bulk state is required and set using parameter useBulkFile, we need to recreate these conditions
-			if (useBulkFile) recreateBulkConditions();
-
+			/* If a initial bulk state is required and set using parameter 
+			 * useBulkFile, we need to recreate these conditions.
+			 */
+			if (useBulkFile)
+				recreateBulkConditions();
 			System.out.println("\t done");
 		} 
 		catch (Exception e) 
 		{
 			// Log the error creating the world
-			LogFile.writeLog("Simulator.createWorld() : "+e);
-			e.printStackTrace();
+			LogFile.writeError(e, "Simulator.createWorld()");
 			System.exit(-1);
 		}
 	}
 
 	/**
 	 * 
-	 * \brief Recreates bulk conditions if an initial state file was specified
+	 * \brief Recreates bulk conditions if an initial state file was specified.
 	 * 
-	 * Get the bulk concentrations from the input file and assign them to the current bulks
+	 * Get the bulk concentrations from the input file and assign them to the
+	 * current bulks.
 	 * 
 	 * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
 	 */
 	public void recreateBulkConditions() throws Exception 
 	{
+		LogFile.writeLogAlways("\tRecreating bulk conditions");
 		String bulkName;
 		int soluteIndex;
 		String soluteName;
@@ -717,28 +761,26 @@ public class Simulator
 	public void createSolutes() 
 	{
 		System.out.print("\t Solutes: \n");
-		try 
-		{
-			// Count of solutes and reference to solute list
+		//try 
+		//{
+			// Count of solutes and reference to solute list.
 			int iSolute = 0;
-			
-			// First get a linked list of all the Solute tags in the XML protocol file
-			for (Element aSoluteMarkUp : _protocolFile.getChildrenElements("solute")) 
+			/* First get a linked list of all the Solute tags in the XML 
+			 * protocol file.
+			 */
+			for ( XMLParser aSol : _protocolFile.getChildrenParsers("solute"))
 			{
-				// Now to parse each solute in turn
-				XMLParser aSoluteRoot = new XMLParser(aSoluteMarkUp);
-				soluteList[iSolute] = new SoluteGrid(this, aSoluteRoot);
-				LogFile.writeLog("\t\t"+soluteList[iSolute].getName()+" ("+soluteList[iSolute].soluteIndex+")");
+				soluteList[iSolute] = new SoluteGrid(this, aSol);
+				LogFile.writeLog("\t\t"+soluteList[iSolute].getName()+
+									" ("+soluteList[iSolute].soluteIndex+")");
 				iSolute++;
 			}
 			System.out.println("\t done");
-		} 
+		/*}
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Simulator.createSolutes() : error met " + e);
-
-			System.exit(-1);
-		}
+			LogFile.writeError(e, "Simulator.createSolutes()");
+		}*/
 	}
 
 	/**
@@ -827,10 +869,10 @@ public class Simulator
 	{
 		// THIS PROCESS IS CONDUCTED IN THREE DISTINCT STAGES
 		// STAGE 1: CREATE THE SPECIES (AND THE PROGENITOR) AND REGISTER IT
-		try 
-		{ 
+		//try 
+		//{ 
 			System.out.print("\t Species: \n");
-
+			
 			XMLParser speciesDefaults;
 			// Read in the 'Species Defaults' from the parameter file
 			if(_protocolFile.getChildElement("speciesDefaults") != null)
@@ -847,7 +889,7 @@ public class Simulator
 			for (Element aSpeciesMarkUp : _protocolFile.getChildrenElements("species")) 
 			{
 				// Create a new species object for this specification
-				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp),speciesDefaults); 
+				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp), speciesDefaults); 
 				// Add to the list of species in this simulation
 				speciesList.add(aSpecies);
 				
@@ -855,14 +897,14 @@ public class Simulator
 			}
 		
 			System.out.print("\t done\n");
-			
+			/*
 		} 
 		catch (Exception e) 
 		{
 			LogFile.writeLog("Error in Simulator.createSpecies() first stage");
             e.printStackTrace();
 		}
-		
+		*/
 		
 		// STAGE 2: CREATE THE AGENT GRID
 		try 
@@ -1423,11 +1465,13 @@ public class Simulator
 		return soluteDic.indexOf(aSoluteName);
 	}
 
-	public SoluteGrid getSolute(String aSoluteName) {
+	public SoluteGrid getSolute(String aSoluteName)
+	{
 		return soluteList[getSoluteIndex(aSoluteName)];
 	}
 
-	public int getReactionIndex(String aReactionName) {
+	public int getReactionIndex(String aReactionName)
+	{
 		return reactionDic.indexOf(aReactionName);
 	}
 

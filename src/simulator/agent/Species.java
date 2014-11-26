@@ -1,19 +1,19 @@
 /**
  * \package agent
- * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
+ * \brief Package of utilities that create and manage agents in the simulation
+ * and their participation in relevant reactions.
  * 
- * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info".
  */
 package simulator.agent;
+
 import java.util.List;
-import java.util.Random;
 import java.io.Serializable;
 import java.awt.Color;
-
-import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.geometry.*;
@@ -23,18 +23,22 @@ import utils.XMLParser;
 import utils.ExtraMath;
 
 /**
- * \brief Creates and manages the species that are to be included in an iDynoMiCS simulation
+ * \brief Creates and manages the species that are to be included in an
+ * iDynoMiCS simulation.
  * 
- * The Species class creates and manages the species that are to be included in an iDynoMiCS simulation. This includes the creation of 
- * the required number of agents, registering that this agent has been born, and reducing the count of active agents when the agent 
- * dies. The species each exist on their own grid, again initialised here. From version 1.2 of iDynoMiCS, this class also manages agent 
- * input for both one-time and self attachment scenarios.
+ * This includes the creation of the required number of agents, registering
+ * that this agent has been born, and reducing the count of active agents when
+ * the agent dies. The species each exist on their own grid, again initialised
+ * here. From version 1.2 of iDynoMiCS, this class also manages agent input
+ * for both one-time and self attachment scenarios.
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class Species implements Serializable 
 {
@@ -44,14 +48,16 @@ public class Species implements Serializable
 	private static final long  serialVersionUID = 1L;
 
 	/**
-	 * Local copy of the simulation object that is creating the state specified in the protocol file
+	 * Local copy of the simulation object that is creating the state specified
+	 * in the protocol file.
 	 */
-	public Simulator           currentSimulator;
+	public Simulator	currentSimulator;
 	
 	/**
-	 * Name of the species associated with this object. Specified in the protocol file
+	 * Name of the species associated with this object. Specified in the
+	 * protocol file.
 	 */
-	public String              speciesName;
+	public String	speciesName;
 	
 	/**
 	 * The number of species in the simulation
@@ -69,7 +75,8 @@ public class Species implements Serializable
 	public Domain domain;
 	
 	/**
-	 * Stores the position of agents that are swimming below the boundary until they meet the surface or the biofilm. Used in self-attach
+	 * Stores the position of agents that are swimming below the boundary
+	 * until they meet the surface or the biofilm. Used in self-attach
 	 * simulations
 	 */
 	public ContinuousVector swimmingAgentPosition = new ContinuousVector();
@@ -166,7 +173,7 @@ public class Species implements Serializable
 		injectionOnAttachmentFrequency = aSpRoot.getParamDbl("injectionOnAttachmentFrequency");
 		cellInjectionEndHour = aSpRoot.getParamDbl("cellInjectionEndHour");
 		injectionOffAttachmentFrequency = aSpRoot.getParamDbl("injectionOffAttachmentFrequency");
-
+		
 		// Create the progenitor and tune its speciesParam object
 		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present

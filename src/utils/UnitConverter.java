@@ -17,7 +17,7 @@ import java.awt.Color;
  *  - Length = micrometer (=1e-6 meter) 
  *  - Time = hour
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
@@ -30,7 +30,8 @@ public class UnitConverter
      * @param timeUnit	Unit of time for which a conversion is required
      * @return a factor to multiply to obtain the correct unit (hour)
      */
-	public static Double time(String timeUnit) {
+	public static Double time(String timeUnit)
+	{
 		Double out = 1.0;
 		String unit = "";
 
