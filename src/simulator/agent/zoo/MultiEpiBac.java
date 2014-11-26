@@ -92,9 +92,8 @@ public class MultiEpiBac extends BactEPS
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 
 		// Create hosted plasmids
-		for (Element aSpeciesMarkUp : aSpeciesRoot.buildSetMarkUp("plasmid")) {
-			addPlasmid(aSpeciesMarkUp.getAttributeValue("name"));		
-		}
+		for (String aSpeciesName : aSpeciesRoot.getChildrenNames("plasmid"))
+			addPlasmid(aSpeciesName);
 
 		// Genealogy and size management
 		init();

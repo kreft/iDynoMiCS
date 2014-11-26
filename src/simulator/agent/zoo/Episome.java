@@ -50,7 +50,8 @@ public class Episome extends InfoAgent
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException
+	{
 		Episome o = (Episome) super.clone();
 		o._host = this._host;
 		o._speciesParam = _speciesParam;
@@ -69,20 +70,23 @@ public class Episome extends InfoAgent
 	 * 
 	 * @param anHost
 	 */
-	public void setHost(EpiBac anHost) {
+	public void setHost(EpiBac anHost)
+	{
 		lastReception = SimTimer.getCurrentTime();
 		lastExchange = -1.0;
 		_host = anHost;
 		setDefaultCopyNumber();
 	}
 
-	public EpiBac getHost() {
+	public EpiBac getHost()
+	{
 		return _host;
 	}
 
 	/* ______________________ CREATION _____________________________ */
 
-	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) {
+	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp)
+	{
 		// Initilaisation of the Located agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
@@ -94,19 +98,20 @@ public class Episome extends InfoAgent
 		reactionKnown = new ArrayList<Integer>();
 		reactionActive = new ArrayList<Integer>();
 
-		for (Element aReactionMarkUp : xmlMarkUp.buildSetMarkUp("reaction")) {
-			reacIndex = aSim.getReactionIndex(aReactionMarkUp
-					.getAttributeValue("name"));
+		for (Element aReactionMarkUp : xmlMarkUp.getChildrenElements("reaction"))
+		{
+			reacIndex = aSim.getReactionIndex(
+								aReactionMarkUp.getAttributeValue("name"));
 
 			// Add the reaction to the list of known (and active) reactions
 			reactionKnown.add(reacIndex);
-			if (aReactionMarkUp.getAttributeValue("status").equals("active")) {
+			if (aReactionMarkUp.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
-			}
 		}
 	}
 
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
+	{
 		// this writes no unique values, so doesn't need unique reading-in
 		// (for a template on how to read in data, look in LocatedAgent.java)
 		super.initFromResultFile(aSim,singleAgentData);

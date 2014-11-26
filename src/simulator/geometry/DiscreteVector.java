@@ -14,6 +14,7 @@ import java.io.Serializable;
 import org.jdom.Element;
 
 import utils.ExtraMath;
+import utils.XMLParser;
 
 /**
  * \brief Implements 3D vector of discrete spatial coordinates.
@@ -52,20 +53,16 @@ public class DiscreteVector implements Cloneable, Serializable
 	}
 	
 	/**
-	 * \brief Constructs a discrete vector with points specified from XML tags.
+	 * \brief Constructs a discrete vector with points specified from an
+	 * XMLParser.
 	 * 
-	 * TODO Rob Clegg (20 Jan 14): This is potentially rather confusing! We
-	 * should keep i, j, k for discrete coordinates and x, y, z for continuous
-	 * coordinates. 
-	 * 
-	 * @param coordinatesRoot Set of XML tags containing an X, Y, and Z
-	 * coordinates.
+	 * @param coordinatesRoot	An XMLParser containing i, j and k coordinates.
 	 */
-	public DiscreteVector(Element coordinatesRoot)
+	public DiscreteVector(XMLParser coordinatesRoot)
 	{
-		i = Integer.parseInt(coordinatesRoot.getAttributeValue("x"));
-		j = Integer.parseInt(coordinatesRoot.getAttributeValue("y"));
-		k = Integer.parseInt(coordinatesRoot.getAttributeValue("z"));
+		i = coordinatesRoot.getAttributeInt("i");
+		j = coordinatesRoot.getAttributeInt("j");
+		k = coordinatesRoot.getAttributeInt("k");
 	}
 	
 	/**

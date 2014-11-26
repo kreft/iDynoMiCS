@@ -10,8 +10,11 @@
 package simulator.geometry;
 
 import java.io.Serializable;
+
 import org.jdom.*;
+
 import utils.ExtraMath;
+import utils.XMLParser;
 
 /**
  * \brief Implements 3D vector of continuous spatial coordinates.
@@ -65,17 +68,18 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	{
 		set(aCC);
 	}
-
+	
 	/**
-	 * \brief Constructs a continuous vector with points specified from XML tags
+	 * \brief Constructs a continuous vector with points specified from an
+	 * XMLParser.
 	 * 
-	 * @param xmlRoot Set of XML tags containing an X,Y,and Z coordinate
+	 * @param coordinatesRoot	An XMLParser containing x, y and z coordinates.
 	 */
-	public ContinuousVector(Element xmlRoot)
+	public ContinuousVector(XMLParser coordinatesRoot)
 	{
-		set( Double.parseDouble(xmlRoot.getAttributeValue("x")),
-			 Double.parseDouble(xmlRoot.getAttributeValue("y")),
-			 Double.parseDouble(xmlRoot.getAttributeValue("z")));
+		x = coordinatesRoot.getAttributeDbl("x");
+		y = coordinatesRoot.getAttributeDbl("y");
+		z = coordinatesRoot.getAttributeDbl("z");
 	}
 	
 	/**

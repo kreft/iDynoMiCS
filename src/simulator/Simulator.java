@@ -576,14 +576,14 @@ public class Simulator
 		LinkedList<Element> list;
 
 		// Build the list of "solutes" markup
-		list = _protocolFile.buildSetMarkUp("solute");
+		list = _protocolFile.getChildrenElements("solute");
 		soluteDic = new ArrayList<String>(list.size());
 		soluteList = new SoluteGrid[list.size()];
 		for (Element aChild : list)
 			soluteDic.add(aChild.getAttributeValue("name"));
 
 		// Build the dictionary of "particles"
-		list = _protocolFile.buildSetMarkUp("particle");
+		list = _protocolFile.getChildrenElements("particle");
 		particleDic = new ArrayList<String>(list.size());
 		for (Element aChild : list)
 			particleDic.add(aChild.getAttributeValue("name"));
@@ -594,20 +594,20 @@ public class Simulator
 		if (particleDic.remove("capsule")) particleDic.add("capsule");
 
 		// Build the dictionary of "reactions"
-		list = _protocolFile.buildSetMarkUp("reaction");
+		list = _protocolFile.getChildrenElements("reaction");
 		reactionDic = new ArrayList<String>(list.size());
 		reactionList = new Reaction[list.size()];
 		for (Element aChild : list)
 			reactionDic.add(aChild.getAttributeValue("name"));
 
 		// Build the dictionary of "species"
-		list = _protocolFile.buildSetMarkUp("species");
+		list = _protocolFile.getChildrenElements("species");
 		speciesDic = new ArrayList<String>(list.size());
 		for (Element aChild : list)
 			speciesDic.add(aChild.getAttributeValue("name"));
 
 		// Build the dictionary of "solvers"
-		list = _protocolFile.buildSetMarkUp("solver");
+		list = _protocolFile.getChildrenElements("solver");
 		solverDic = new ArrayList<String>(list.size());
 		solverList = new DiffusionSolver[list.size()];
 		for (Element aChild : list)
@@ -669,43 +669,41 @@ public class Simulator
 		String bulkName;
 		int soluteIndex;
 		String soluteName;
-		XMLParser simulationRoot = new XMLParser(bulkFile.getChildElement("simulation"));
-
-		for (Element aBulkMarkUp : simulationRoot.buildSetMarkUp("bulk")) 
+		Bulk thisBulk;
+		XMLParser simulationRoot = agentFile.getChildParser("simulation");
+		Double soluteConcn;
+		for ( XMLParser aBulkRoot : simulationRoot.getChildrenParsers("bulk"))
 		{
-
-			XMLParser aBulkRoot = new XMLParser(aBulkMarkUp);
-			bulkName = aBulkRoot.getAttribute("name");
-
-			// check to make sure the bulk exists
+			bulkName = aBulkRoot.getName();
+			// Check to make sure the bulk exists.
 			if ( ! world.containsBulk(bulkName) )
-				throw new Exception("Bulk "+bulkName+" is not specified in protocol file");
-
-			LogFile.writeLog("\t\tInitializing bulk '"+bulkName+"' from input file.");
-
-			Bulk thisBulk = world.getBulk(bulkName);
-
-			// now set the solutes within this bulk
-			for (Element aSoluteMarkUp : aBulkRoot.buildSetMarkUp("solute")) 
 			{
-				XMLParser aSoluteRoot = new XMLParser(aSoluteMarkUp);
-
+				throw new Exception("Bulk "+bulkName+
+										" is not specified in protocol file");
+			}
+			LogFile.writeLogAlways("\t\tInitializing bulk '"+bulkName+
+														"' from input file.");
+			thisBulk = world.getBulk(bulkName);
+			// Now set the solutes within this bulk.
+			for ( XMLParser aSoluteRoot : aBulkRoot.getChildrenParsers("solute"))
+			{
 				soluteName = aSoluteRoot.getAttribute("name");
 				soluteIndex = getSoluteIndex(soluteName);
-
-				// check consistency with protocol file declarations
-				if (!soluteDic.contains(soluteName))
-					throw new Exception("Solute "+soluteName+" is not in protocol file");
-
-				// finally set the value
-
-				thisBulk.setValue(soluteIndex, Double.parseDouble(aSoluteRoot.getElement().getValue()));
-				LogFile.writeLog("\t\tsolute "+soluteName+" is now: "+thisBulk.getValue(soluteIndex));
+				// Check consistency with protocol file declarations.
+				if ( ! soluteDic.contains(soluteName) )
+				{
+					throw new Exception("Solute "+soluteName+
+												" is not in protocol file");
+				}
+				// Finally set the value.
+				soluteConcn = aSoluteRoot.getValueDbl();
+				thisBulk.setValue(soluteIndex, soluteConcn);
+				LogFile.writeLog("\t\tsolute "+soluteName+" is now: "+
+																soluteConcn);
 			}
-
-			LogFile.writeLog("\t\tInitialized bulk '"+bulkName+"' from input file.");
+			LogFile.writeLog("\t\tInitialized bulk '"+bulkName+
+														"' from input file.");
 		}
-
 	}
 
 	/**
@@ -725,7 +723,7 @@ public class Simulator
 			int iSolute = 0;
 			
 			// First get a linked list of all the Solute tags in the XML protocol file
-			for (Element aSoluteMarkUp : _protocolFile.buildSetMarkUp("solute")) 
+			for (Element aSoluteMarkUp : _protocolFile.getChildrenElements("solute")) 
 			{
 				// Now to parse each solute in turn
 				XMLParser aSoluteRoot = new XMLParser(aSoluteMarkUp);
@@ -759,7 +757,7 @@ public class Simulator
 		int iReaction = 0;
 		
 		// Now to go through each reaction in the file
-		for (Element aReactionMarkUp : _protocolFile.buildSetMarkUp("reaction")) 
+		for (Element aReactionMarkUp : _protocolFile.getChildrenElements("reaction")) 
 		{
 			XMLParser aReactionRoot = new XMLParser(aReactionMarkUp);
 			// Create a reaction object
@@ -791,7 +789,7 @@ public class Simulator
 		try
 		{
 			// Now for each specified solver in the XML file
-			for (Element aSolverMarkUp : _protocolFile.buildSetMarkUp("solver")) 
+			for (Element aSolverMarkUp : _protocolFile.getChildrenElements("solver")) 
 			{
 				// Initialise the XML parser
 				XMLParser parser = new XMLParser(aSolverMarkUp);
@@ -846,7 +844,7 @@ public class Simulator
 			
 			
 			// Now iterate through all species specified in the protocol file
-			for (Element aSpeciesMarkUp : _protocolFile.buildSetMarkUp("species")) 
+			for (Element aSpeciesMarkUp : _protocolFile.getChildrenElements("species")) 
 			{
 				// Create a new species object for this specification
 				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp),speciesDefaults); 
@@ -882,13 +880,13 @@ public class Simulator
 			// Finalise the initialisation of the progenitor
 			System.out.print("\t Species progenitor: \n");
 			
-			for (Element aSpeciesMarkUp : _protocolFile.buildSetMarkUp("species")) 
+			for (Element aSpeciesMarkUp : _protocolFile.getChildrenElements("species")) 
 			{
 				parser = new XMLParser(aSpeciesMarkUp);
 				
 				// Create the progenitor
-				getSpecies(parser.getAttribute("name")).getProgenitor().initFromProtocolFile(this,
-						parser);
+				getSpecies(parser.getName()).getProgenitor().
+										initFromProtocolFile(this, parser);
 				
 				//sonia: creating a list with the plasmid names which will be used afterwards to write the agentSum report
 				// Whether MultiEpiBac and MultiEpisome agents are being used 
@@ -896,7 +894,7 @@ public class Simulator
 				{
 					if(parser.getAttribute("class").equals("MultiEpisome"))
 					{
-						String plName = parser.getAttribute("name");
+						String plName = parser.getName();
 						Double scanSpeed = parser.getParamDbl("scanSpeed");
 						plasmidList.add(plName);
 						scanSpeedList.add(scanSpeed);
@@ -952,23 +950,23 @@ public class Simulator
 	 */
 	public void recreateSpecies() throws Exception 
 	{
-		int spIndex, counterSpecies;
+		int spIndex;
 		SpecialisedAgent progenitor;
 		
 		// Initialise a parser of the XML agent file
-		XMLParser simulationRoot = new XMLParser(agentFile.getChildElement("simulation"));
-		counterSpecies = 0;
-		
-		for (Element aSpeciesMarkUp : simulationRoot.buildSetMarkUp("species")) 
+		XMLParser simulationRoot = agentFile.getChildParser("simulation");
+		int counterSpecies = 0;
+		String spName;
+		for (XMLParser aSpeciesRoot : simulationRoot.getChildrenParsers("species")) 
 		{
-			XMLParser aSpeciesRoot = new XMLParser(aSpeciesMarkUp);
-			spIndex = getSpeciesIndex(aSpeciesRoot.getAttribute("name"));
-			
-			// check consistency with protocol file declarations
-			boolean isConsistent = 
-					(speciesList.get(counterSpecies).speciesName.equals(aSpeciesRoot.getAttribute("name")));
-			
-			if (!isConsistent) throw new Exception("Agent input file is inconsistent with protocol file: ");
+			spName = aSpeciesRoot.getName();
+			spIndex = getSpeciesIndex(spName);
+			// Check consistency with protocol file declarations.
+			if ( ! speciesList.get(counterSpecies).speciesName.equals(spName) )
+			{
+				throw new Exception(
+					"Agent input file is inconsistent with protocol file: ");
+			}
 			
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getElement().getContent(0).toString();
@@ -989,12 +987,16 @@ public class Simulator
 			progenitor = speciesList.get(spIndex).getProgenitor();
 			
 			// don't use the last index because it is a string with only ']'
-			for (int i = 0; i < allAgentData.length-1; i++)
-				(progenitor.sendNewAgent()).initFromResultFile(this, allAgentData[i].split(","));
+			for (String data : allAgentData)
+			{
+				progenitor.sendNewAgent().
+									initFromResultFile(this, data.split(","));
+			}
 			
-			LogFile.writeLog(speciesList.get(counterSpecies).speciesName+" : "
+			LogFile.writeLog(spName+" : "
 					+speciesList.get(counterSpecies).getPopulation()
 					+" agents created from input file.");
+			
 			counterSpecies++;
 		}
 	}
@@ -1006,31 +1008,38 @@ public class Simulator
 	 */
 	public void checkAgentBirth() 
 	{	
-		XMLParser parser;
 		int spIndex;
-		boolean creatingAgents = false;
+		Boolean creatingAgents = false;
 
 		// Now go through each species
-		for (Element aSpeciesMarkUp : _protocolFile.buildSetMarkUp("species")) 
+		for (XMLParser aSpRoot : _protocolFile.getChildrenParsers("species"))
 		{
-			parser = new XMLParser(aSpeciesMarkUp);
-			spIndex = getSpeciesIndex(parser.getAttribute("name"));
+			spIndex = getSpeciesIndex(aSpRoot.getName());
 			
-			// KA May 2013: We are now adding additional methods of attachment. Thus the old code has been moved from here into its
-			// own method. A switch is used to determine which method of attachment is being employed.
-			// Although there are only 2 at the moment (in version 1.2), a switch is useful if further methods are added later
-			
-			if(this.attachmentMechanism.equals("onetime"))
+			/* KA May 2013: We are now adding additional methods of attachment.
+			 * Thus the old code has been moved from here into its own method.
+			 * A switch is used to determine which method of attachment is
+			 * being employed. Although there are only 2 at the moment (in
+			 * version 1.2), a switch is useful if further methods are added
+			 * later.
+			 * 
+			 * Rob Nov 2014: Added the && to each update of creatingAgents.
+			 * If the last species isn't creating agents but an earlier
+			 * species is, the old method wouldn't have relaxed the grid.
+			 */
+			if ( this.attachmentMechanism.equals("onetime") )
 			{
-				creatingAgents = this.oneTimeAttachmentAgentBirth(parser,spIndex);
+				creatingAgents = creatingAgents &&
+						this.oneTimeAttachmentAgentBirth(aSpRoot, spIndex);
 			}
-			else if(this.attachmentMechanism.equals("selfattach"))
+			else if ( this.attachmentMechanism.equals("selfattach") )
 			{
-				creatingAgents = this.selfAttachmentAgentBirth(parser,spIndex);
+				creatingAgents = creatingAgents &&
+							this.selfAttachmentAgentBirth(aSpRoot, spIndex);
 			}
-			
 		}
-		if (creatingAgents) agentGrid.relaxGrid();
+		if ( creatingAgents )
+			agentGrid.relaxGrid();
 	}
 
 	/**
@@ -1040,26 +1049,20 @@ public class Simulator
 	 * substratum. This method captures the case in the original version of the tool, where a number of cells are created at a random 
 	 * location within a set region of the domain.
 	 * 
-	 * @param parser	The XML tags contained within the "species" markup
+	 * @param aSpRoot	The XML tags contained within the "species" markup
 	 * @param spIndex	The index of this species in the simulation dictionary
 	 * @return	A boolean noting whether any agents have been created
 	 */
-	public boolean oneTimeAttachmentAgentBirth(XMLParser parser, int spIndex)
+	public Boolean oneTimeAttachmentAgentBirth(XMLParser aSpRoot, int spIndex)
 	{
-		boolean creatingAgents = false;
-		
-		for (Element aInitMarkUp : parser.buildSetMarkUp("initArea")) 
-		{
-			parser = new XMLParser(aInitMarkUp);
-			
-			if (SimTimer.isDuringNextStep(parser.getParamTime("birthday"))) 
+		Boolean creatingAgents = false;
+		for (XMLParser anArea : aSpRoot.getChildrenParsers("initArea"))
+			if (SimTimer.isDuringNextStep(anArea.getParamTime("birthday"))) 
 			{
 				this.agentGrid.agentIter = agentGrid.agentList.listIterator();
-				speciesList.get(spIndex).createPop(parser);
+				speciesList.get(spIndex).createPop(anArea);
 				creatingAgents = true;
 			}
-		}
-		
 		return creatingAgents;
 	}
 	

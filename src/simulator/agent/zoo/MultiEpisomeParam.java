@@ -5,35 +5,30 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import org.jdom.Element;
-
 import simulator.Simulator;
 import simulator.agent.ActiveParam;
 import simulator.reaction.Reaction;
 import utils.XMLParser;
 
-public class MultiEpisomeParam extends ActiveParam {
-
-	// Serial version used for the serialisation of the class
-	private static final long serialVersionUID    = 1L;
-
+public class MultiEpisomeParam extends ActiveParam
+{
 	LinkedList<Reaction>      pathwayKnown        = new LinkedList<Reaction>();
 
-	public boolean            isHighCopy = false;
-	public int                nCopy, nCopyMin, nCopyMax;
-	public double             pilusLength         = 0;
+	public Boolean	isHighCopy = false;
+	public int		nCopy, nCopyMin, nCopyMax;
+	public Double	pilusLength = 0.0;
 	
-	public double             exchangeLag         = 0;
-	public double             receptionLag        = 0;
+	public Double	exchangeLag = 0.0;
+	public Double	receptionLag = 0.0;
 
 	
-	public double             replicationSpeed    = .26;
+	public Double	replicationSpeed = 0.26;
 	
-	public double             lossProbability     = 0;
-	public double             hotLag              = 2;
+	public Double	lossProbability = 0.0;
+	public Double	hotLag = 2.0;
 	
 	//sonia: info used in output writing
-	public String             plasmidName;
+	public String	plasmidName;
 
 	// plasmid markers (used in host compatibility)
 	public ArrayList<String> hostCompatibilityMarkers = new ArrayList<String>();
@@ -44,27 +39,24 @@ public class MultiEpisomeParam extends ActiveParam {
 	//sonia: transferProb is the parameter related to the plasmid transfer rate observed
 	// for this plasmid.
 	
-	public double transferProb = 0;
+	public Double transferProb = 0.0;
 	//sonia 11.10.2010 - scanspeed should be a plasmid parameter 
-	public double             scanSpeed=0;
+	public Double	scanSpeed = 0.0;
 	
 	//sonia: 21-05-09
 	//fitness cost management
-	public double initialCost=0;
-	public double rateDec=0; 
-	public double basalCost=0;
+	public Double initialCost = 0.0;
+	public Double rateDec = 0.0; 
+	public Double basalCost = 0.0;
 
 	/**
      * Called during creation of the species
      */
-	public void init(Simulator aSim, XMLParser aSpeciesRoot) {
-		XMLParser parser;
-		
-		//double value;
-		
+	public void init(Simulator aSim, XMLParser aSpeciesRoot)
+	{
 		isHighCopy = aSpeciesRoot.getParamBool("isHighCopy");
 		//nCopy = (int) aSpeciesRoot.getParamDbl("nCopy");
-		nCopy=1;
+		nCopy = 1;
 		nCopyMin = aSpeciesRoot.getParamInt("nCopyMin");
 		nCopyMax = aSpeciesRoot.getParamInt("nCopyMax");
 
@@ -77,26 +69,21 @@ public class MultiEpisomeParam extends ActiveParam {
 		transferProb = aSpeciesRoot.getParamDbl("transferProb");
 	    scanSpeed = aSpeciesRoot.getParamDbl("scanSpeed");;
 		
-		plasmidName = aSpeciesRoot.getAttribute("name");	
+		plasmidName = aSpeciesRoot.getName();	
 		
 		// retrieving host markers names
-		for (Element aChild : aSpeciesRoot.getChildren("Marker")) {
-			// Initialize the xml parser
-			parser = new XMLParser(aChild);		
-		hostCompatibilityMarkers.add(parser.getAttribute("name"));
-		}
+		for (XMLParser aChild : aSpeciesRoot.getChildrenParsers("Marker"))
+			hostCompatibilityMarkers.add(aChild.getName());
 		
 		// retrieving plasmid markers names
-		for (Element aChild : aSpeciesRoot.getChildren("Compatibility")) {
-			parser = new XMLParser(aChild);		
-		plasmidCompatibilityMarkers.add(parser.getAttribute("name"));
-		}
+		for (XMLParser aChild : aSpeciesRoot.getChildrenParsers("Compatibility"))
+			plasmidCompatibilityMarkers.add(aChild.getName());
 		
-		for (Element aChild : aSpeciesRoot.getChildren("fitnessCost")){
-			parser = new XMLParser(aChild);
-		initialCost = parser.getParamDbl("initialCost");
-		rateDec = parser.getParamDbl("rateOfDecay");
-		basalCost = parser.getParamDbl("basalCost");
+		for (XMLParser aChild : aSpeciesRoot.getChildrenParsers("fitnessCost"))
+		{
+			initialCost = aChild.getParamDbl("initialCost");
+			rateDec = aChild.getParamDbl("rateOfDecay");
+			basalCost = aChild.getParamDbl("basalCost");
 		}
 		
 		System.out.println("rate of Decay is  " + rateDec);
@@ -104,20 +91,30 @@ public class MultiEpisomeParam extends ActiveParam {
 
 	}
 
-	public HashMap<String, double[]> getSoluteYield() {
+	public HashMap<String, double[]> getSoluteYield()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/* ______________ UNIVERSAL MUTATOR _________________________________ */
-	public void callParamMutator(String paramName, double value) {
-		try {
+	/**
+	 * Rob Nov 2014: I have no idea what's going on here
+	 * 
+	 * @param paramName
+	 * @param value
+	 */
+	public void callParamMutator(String paramName, Double value)
+	{
+		try
+		{
 			Class[] paramTypes = null;
 			paramTypes[0] = (new Double(value)).getClass();
-
 			Method m = this.getClass().getMethod("set"+paramName, paramTypes);
 			m.invoke(this, value);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			
 		}
 	}

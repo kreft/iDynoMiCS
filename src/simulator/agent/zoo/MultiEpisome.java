@@ -112,14 +112,13 @@ public class MultiEpisome extends InfoAgent {
 		reactionKnown = new ArrayList<Integer>();
 		reactionActive = new ArrayList<Integer>();
 		
-		for (Element aReactionMarkUp : xmlMarkUp.buildSetMarkUp("reaction")) {
+		for (Element aReactionMarkUp : xmlMarkUp.getChildrenElements("reaction"))
+		{
 			reacIndex = aSim.getReactionIndex(aReactionMarkUp.getAttributeValue("name"));
-
 			// Add the reaction to the list of known (and active) reactions
 			reactionKnown.add(reacIndex);
-			if (aReactionMarkUp.getAttributeValue("status").equals("active")) {
+			if (aReactionMarkUp.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
-			}
 		}
 		
 	}

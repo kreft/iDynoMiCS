@@ -73,7 +73,7 @@ public class SoluteGrid extends SpatialGrid
 		StringBuffer unit = new StringBuffer("");
 
 		// Name the grid
-		gridName = xmlRoot.getAttribute("name");
+		gridName = xmlRoot.getName();
 		
 		// All solute names are stored in a simulation dictionary. Get the position of this solute in this list
 		soluteIndex = aSim.getSoluteIndex(gridName);

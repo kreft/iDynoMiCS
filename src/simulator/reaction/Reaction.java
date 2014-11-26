@@ -158,7 +158,7 @@ public abstract class Reaction implements Serializable
 	public void init(Simulator aSim, XMLParser aReactionRoot) 
 	{
 		// Set the name of the reaction
-		reactionName = aReactionRoot.getAttribute("name");
+		reactionName = aReactionRoot.getName();
 
 		// Get the number of solutes that exist in this simulation run
 		nSolute = aSim.soluteList.length;

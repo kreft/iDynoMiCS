@@ -115,9 +115,10 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		int spIndex;
 		
 		// Check if it is a EPS-producing species
-		for (XMLParser parser : aSpeciesRoot.buildSetParser("particle"))
+		for (XMLParser parser : aSpeciesRoot.getChildrenParsers("particle"))
 		{
-			if (parser.getAttribute("name").equals("capsule")) {
+			if (parser.getName().equals("capsule"))
+			{
 				_hasEps = true;
 				spIndex = aSim.getSpeciesIndex(parser.getAttribute("class"));
 				_epsSpecies = aSim.speciesList.get(spIndex);

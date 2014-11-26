@@ -104,7 +104,7 @@ public class ReactionGrowthFitness extends Reaction{
 		// Create the kinetic factors __________________________________________
 
 		// Build the array of different multiplicative limiting expressions
-		_kineticFactor = new IsKineticFactor[xmlRoot.getChildren("kineticFactor").size()];
+		_kineticFactor = new IsKineticFactor[xmlRoot.getChildrenElements("kineticFactor").size()];
 		_soluteFactor = new int[_kineticFactor.length];
 		marginalMu = new double[_kineticFactor.length];
 		marginalDiffMu = ExtraMath.newDoubleArray(_kineticFactor.length);
@@ -118,7 +118,7 @@ public class ReactionGrowthFitness extends Reaction{
 		int iSolute;
 		try
 		{
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor")) {
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 
 				// Create and initialise the instance
@@ -134,7 +134,7 @@ public class ReactionGrowthFitness extends Reaction{
 
 			paramIndex = 1;
 			iFactor = 0;
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor")) {
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 
 				// Populate the table collecting all kinetic parameters of this
@@ -174,7 +174,7 @@ public class ReactionGrowthFitness extends Reaction{
 
 		// Set parameters for each kinetic factor
 		paramIndex = 1;
-		for (Element aChild : aReactionRoot.getChildren("kineticFactor")) {
+		for (Element aChild : aReactionRoot.getChildrenElements("kineticFactor")) {
 			int iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 			_kineticFactor[iSolute].initFromAgent(aChild, anAgent.reactionKinetic[reactionIndex],
 					paramIndex);

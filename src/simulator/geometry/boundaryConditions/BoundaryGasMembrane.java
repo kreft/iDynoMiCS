@@ -107,7 +107,7 @@ public class BoundaryGasMembrane extends AllBC
 		permeability = new double[aSim.soluteDic.size()];
 		Arrays.fill(isPermeableTo, false);
 
-		for (Element aChild : aBCMarkUp.getChildren("param")) {
+		for (Element aChild : aBCMarkUp.getChildrenElements("param")) {
 			if (!aChild.getAttributeValue("name").equals("isPermeableTo")) continue;
 			soluteName = aChild.getAttributeValue("detail");
 			isPermeableTo[aSim.getSoluteIndex(soluteName)] = true;

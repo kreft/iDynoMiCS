@@ -35,19 +35,16 @@ public class EpiBacEnvParam extends MultiEpiBacParam{
 	}
 	
 	
-	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) {
+	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
+	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
-
-	
-	//retrieving list of environments to which this species is sensitive to and the correspondent
-	//probability of dying if under the influence of that environment.
-	for (Element aSpeciesMarkUp : aSpeciesRoot.buildSetMarkUp("envSensitivity")) {
-		envSensitivity.add(aSpeciesMarkUp.getAttributeValue("name"));
-		String s = aSpeciesMarkUp.getAttributeValue("name");
-		envProbDie.put(s, aSpeciesRoot.getDblAttrOfChildSuchAttribute("envSensitivity","name", s, "probDie"));
-		
-	}
-
-
+		//retrieving list of environments to which this species is sensitive to and the correspondent
+		//probability of dying if under the influence of that environment.
+		for (Element aSpeciesMarkUp : aSpeciesRoot.getChildrenElements("envSensitivity"))
+		{
+			envSensitivity.add(aSpeciesMarkUp.getAttributeValue("name"));
+			String s = aSpeciesMarkUp.getAttributeValue("name");
+			envProbDie.put(s, aSpeciesRoot.getDblAttrOfChildSuchAttribute("envSensitivity","name", s, "probDie"));
+		}
 	}
 }

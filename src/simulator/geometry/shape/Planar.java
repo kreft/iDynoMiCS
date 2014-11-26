@@ -26,7 +26,7 @@ import utils.XMLParser;
  * outside the domain. These shape parameters must be given in index 
  * coordinates.
  */
-public class Planar implements IsShape, Serializable 
+public class Planar implements IsShape, CanBeBoundary, Serializable 
 {
 	/**
 	 * Serial version used for the serialisation of the class.
@@ -107,8 +107,8 @@ public class Planar implements IsShape, Serializable
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
-		_dPointOnPlane = shapeRoot.getParamIJK("pointIn");
-		_dVectorOut = shapeRoot.getParamIJK("vectorOut");
+		_dPointOnPlane = new DiscreteVector(shapeRoot.getChildParser("pointIn"));
+		_dVectorOut = new DiscreteVector(shapeRoot.getChildParser("vectorOut"));
 		
 		// Translate them into continuous coordinates.
 		Double res = aDomain.getGrid().getResolution();

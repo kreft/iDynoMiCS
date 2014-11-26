@@ -16,7 +16,7 @@ import simulator.SpatialGrid;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
-import simulator.geometry.shape.IsShape;
+import simulator.geometry.shape.*;
 
 /**
  * \brief Group all methods expected by the interface but common to most of the boundary classes
@@ -37,7 +37,7 @@ public abstract class AllBC{
 	/**
 	 * The shape of the boundary
 	 */
-	protected IsShape               _myShape;
+	protected CanBeBoundary        _myShape;
 	
 	/**
 	 * Quick test to know if the boundary is cyclic
@@ -117,20 +117,24 @@ public abstract class AllBC{
      * @param geometryRoot	Usually an XML set of elements that describe the boundary to be created
      * @param aDomain	The computational domain which this boundary is associated with
      */
-	public void readGeometry(XMLParser geometryRoot, Domain aDomain) {
+	public void readGeometry(XMLParser geometryRoot, Domain aDomain)
+	{
 		// Set the name of the boundary
-		_mySide = geometryRoot.getAttribute("name");
+		_mySide = geometryRoot.getName();
 
 		// Set the class to use to define the shape
 		String className = "simulator.geometry.shape.";
-		className += geometryRoot.getChild("shape").getAttribute("class");
+		className += geometryRoot.getChildParser("shape").getAttribute("class");
 
 		// Build the instance used to describe the shape
-		try {
-			_myShape = (IsShape) Class.forName(className).newInstance();
+		try
+		{
+			_myShape = (CanBeBoundary) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(geometryRoot.getChildElement("shape")), aDomain);
-
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
+			
 		}
 	}
 	

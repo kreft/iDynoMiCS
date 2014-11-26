@@ -139,11 +139,11 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		XMLParser parser;
 		int particleIndex;
 		
-		for (Element aChild : xmlMarkUp.getChildren("particle"))
+		for (Element aChild : xmlMarkUp.getChildrenElements("particle"))
 		{
 			// Initialize the xml parser
 			parser = new XMLParser(aChild);
-			particleIndex = aSim.getParticleIndex(parser.getAttribute("name"));
+			particleIndex = aSim.getParticleIndex(parser.getName());
 			
 			// Set the average mass of the particle within the initial
 			// population
@@ -156,41 +156,45 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		
 		/* Create description of reactions _________________________________ */
 
-		// Initialize the arrays
+		// Initialise the arrays.
 		allReactions = aSim.reactionList;
 		reactionKnown = new ArrayList<Integer>();
 		reactionActive = new ArrayList<Integer>();
 		growthRate = ExtraMath.newDoubleArray(nReaction);
 
 		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
-		// Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
-		// as the number of j-elements in each i-array varies. Each i-array is
-		// cloned from the reaction mark up, so no need to fill with zeros now.
+		/* Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
+		 * as the number of j-elements in each i-array varies. Each i-array is
+		 * cloned from the reaction mark up, so no need to fill with zeros now.
+		 */
 		reactionKinetic = new Double[nReaction][];
 		
 		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
-
-		// Read the XML file
-
-		for (Element aReactionMarkUp : xmlMarkUp.buildSetMarkUp("reaction")) {
-			reacIndex = aSim.getReactionIndex(aReactionMarkUp.getAttributeValue("name"));
-			Reaction aReaction = allReactions[reacIndex];
-
-			// Add the reaction to the list of known (and active) reactions
+		
+		Reaction aReaction;
+		// Read the XML file.
+		for (Element aReacElement : xmlMarkUp.getChildrenElements("reaction"))
+		{
+			reacIndex = aSim.getReactionIndex(
+									aReacElement.getAttributeValue("name"));
+			aReaction = allReactions[reacIndex];
+			
+			// Add the reaction to the list of known (and active) reactions.
 			reactionKnown.add(reacIndex);
-			if (aReactionMarkUp.getAttributeValue("status").equals("active")) {
+			if (aReacElement.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
-			}
 
-			// If reaction parameters have been redefined, load them ; else load
-			// the parameters defined for the reaction
-			if (aReactionMarkUp.getContentSize()==0) {
+			/* If reaction parameters have been redefined, load them; 
+			 * else load the parameters defined for the reaction.
+			 */
+			if ( aReacElement.getContentSize() == 0 )
+			{
 				soluteYield[reacIndex] = aReaction.getSoluteYield();
 				particleYield[reacIndex] = aReaction.getParticulateYield();
 				reactionKinetic[reacIndex] = aReaction.getKinetic();
-			} else {
-				aReaction.initFromAgent(this, aSim, new XMLParser(aReactionMarkUp));
 			}
+			else
+				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElement));
 		}
 
 		// Now copy these value in the speciesParam strucure

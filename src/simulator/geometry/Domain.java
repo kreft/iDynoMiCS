@@ -182,7 +182,7 @@ public class Domain implements IsComputationDomain
 	 */
 	public Domain(Simulator aSim, XMLParser cdRoot) 
 	{
-		domainName = cdRoot.getAttribute("name");
+		domainName = cdRoot.getName();
 		currentSim = aSim;
 		
 		// Now determine if this computation domain is 2D or 3D
@@ -241,7 +241,7 @@ public class Domain implements IsComputationDomain
 		// includes a <shape> mark-up to define the shape of the boundary.
 		// The below call combines all boundary conditions in the XML file,
 		// then processes each.
-		for (XMLParser aBCMarkUp : cdRoot.buildSetParser("boundaryCondition"))
+		for (XMLParser aBCMarkUp : cdRoot.getChildrenParsers("boundaryCondition"))
 			AllBC.staticBuilder(aBCMarkUp, aSim, this);
 		
 		

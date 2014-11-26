@@ -142,7 +142,7 @@ public class Species implements Serializable
 	public Species(Simulator aSimulator, XMLParser aSpRoot, XMLParser speciesDefaults) 
 	{
 		// Name of the species as specified in the protocol file
-		speciesName = aSpRoot.getAttribute("name");
+		speciesName = aSpRoot.getName();
 		
 		// colour is used to distinguish agents in POV-Ray output images - read this from the protocol file
 		String colorName = aSpRoot.getParam("color");
@@ -202,13 +202,12 @@ public class Species implements Serializable
 	 * @param aSimulator	The simulator object being used to create the conditions specified in the protocol file
 	 * @param aSpRoot	XML markup for the species being created. Taken from the protocol file
 	 */
-	public void register(Simulator aSimulator, XMLParser aSpRoot) {
+	public void register(Simulator aSimulator, XMLParser aSpRoot)
+	{
 		currentSimulator = aSimulator;
-		speciesName = aSpRoot.getAttribute("name");
-
+		speciesName = aSpRoot.getName();
 		speciesIndex = aSimulator.speciesList.size();
 		aSimulator.speciesList.add(this);
-
 		domain = aSimulator.world.getDomain(aSpRoot.getAttribute("computationDomain"));
 	}
 
@@ -919,7 +918,7 @@ public class Species implements Serializable
 	 */
 	public ContinuousVector[] defineSquareArea(XMLParser spRoot) 
 	{
-		List<Element> area = spRoot.getChildren("coordinates");
+		List<XMLParser> area = spRoot.getChildrenParsers("coordinates");
 		
 		ContinuousVector[] initArea = new ContinuousVector[2];
 		initArea[0] = new ContinuousVector();
@@ -930,9 +929,9 @@ public class Species implements Serializable
 		if( area.size() > 0 )
 		{
 			// First Coordinate Tag
-			ContinuousVector cc1 = new ContinuousVector((Element) area.get(0));
+			ContinuousVector cc1 = new ContinuousVector(area.get(0));
 			// Second Coordinate Tag
-			ContinuousVector cc2 = new ContinuousVector((Element) area.get(1));
+			ContinuousVector cc2 = new ContinuousVector(area.get(1));
 	
 			// Set each point
 			initArea[0].x = Math.min(cc1.x, cc2.x);

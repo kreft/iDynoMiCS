@@ -73,7 +73,7 @@ public class World
 		try 
 		{
 			// Create & register the defined bulks
-			for (XMLParser aBulkRoot : worldRoot.buildSetParser("bulk"))
+			for (XMLParser aBulkRoot : worldRoot.getChildrenParsers("bulk"))
 				bulkList.add(new Bulk(aSim, aBulkRoot));
 		} 
 		catch(Exception e) 
@@ -84,7 +84,7 @@ public class World
 		try 
 		{
 			// Create & register the defined domains
-			for (XMLParser aDomainRoot : worldRoot.buildSetParser("computationDomain"))
+			for (XMLParser aDomainRoot : worldRoot.getChildrenParsers("computationDomain"))
 				domainList.add(new Domain(aSim, aDomainRoot));
 		} 
 		catch(Exception e)

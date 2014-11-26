@@ -279,7 +279,7 @@ public class AgentContainer
 				_pressure = ((Solver_pressure) aSimulator.getSolver("pressure")).getPressureGrid();
 
 			// Initialise the levelset solver used for detachment
-			_levelset = LevelSet.staticBuilder(root.getChild("detachment"), this);
+			_levelset = LevelSet.staticBuilder(root.getChildParser("detachment"), this);
 
 			LogFile.writeLog(" " + _nTotal + " grid elements, resolution: " + _res
 					+ " micrometers");

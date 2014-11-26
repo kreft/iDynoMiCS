@@ -21,7 +21,7 @@ import utils.XMLParser;
  * 
  * Extends SpeciesParam, adding parameters used to simulate an agents involvement in a reaction
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  *
@@ -67,12 +67,13 @@ public class ActiveParam extends SpeciesParam
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
 	 */
-	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
+	public void init(Simulator aSim,
+							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		// Initialize simple parameter
+		// Initialise simple parameter
 		super.init(aSim, aSpeciesRoot,speciesDefaults);
 
-		// Initialize particulateDensity table
+		// Initialise particulateDensity table
 		int nParticle = aSim.particleDic.size();
 		int nReaction = aSim.reactionList.length;
 		int nSolute = aSim.soluteList.length;
@@ -86,26 +87,24 @@ public class ActiveParam extends SpeciesParam
 		reactionKinetic = new Double[nReaction][];
 		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);		
 		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);			
-
-		XMLParser parser;
+		
 		int particleIndex;
-
-		for (Element aChild : aSpeciesRoot.getChildren("particle")) 
+		Double density;
+		String name;
+		for (XMLParser aParticle : aSpeciesRoot.getChildrenParsers("particle"))
 		{
-			// Initialize the xml parser
-			parser = new XMLParser(aChild);
-
-			// Set the density of the particular compound
-			particleIndex = aSim.getParticleIndex(parser.getAttribute("name"));
-			particleDensity[particleIndex] = parser.getParamConc("density");
-			if( particleDensity[particleIndex].isNaN() )
+			name = aParticle.getName();
+			particleIndex = aSim.getParticleIndex(name);
+			density = aParticle.getParamConcn("density");
+			if ( density.isNaN() )
 			{
-				// The density is specified elsewhere
-				parser = new XMLParser(aSpeciesRoot.getElement().getParentElement());
-				parser = new XMLParser(parser.getChildSuchAttribute("particle", "name", aSim.particleDic.get(particleIndex)));
-				particleDensity[particleIndex] = parser.getParamConc("density");				
+				aParticle = new 
+					XMLParser(aSpeciesRoot.getElement().getParentElement());
+				aParticle = new XMLParser(aParticle.
+							getChildSuchAttribute("particle", "name", name));
+				density = aParticle.getParamConcn("density");
 			}
-
+			particleDensity[particleIndex] = density;
 		}
 	}
 

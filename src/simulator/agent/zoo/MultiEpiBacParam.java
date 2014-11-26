@@ -81,7 +81,7 @@ public class MultiEpiBacParam extends BactEPSParam
 		KSat = (Double.isNaN(value) ? KSat : value);
 		
 		//retrieving bacteria names
-		epiBacName = aSpeciesRoot.getAttribute("name");
+		epiBacName = aSpeciesRoot.getName();
 	}
 
 }

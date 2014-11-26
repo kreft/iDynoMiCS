@@ -23,8 +23,8 @@ import utils.XMLParser;
  * @author SoniaMartins
  *
  */
-public class FluctEnv extends Bulk {
-
+public class FluctEnv extends Bulk
+{
 	/***--------------------------------------------------------------***/
 	//Variables used in the STOCHASTIC version
 	
@@ -72,24 +72,21 @@ public class FluctEnv extends Bulk {
 	
 	}*/
 	
-	public FluctEnv (Simulator aSim, XMLParser aBulkRoot) throws FileNotFoundException {
+	public FluctEnv (Simulator aSim, XMLParser aBulkRoot) throws FileNotFoundException
+	{
 		super (aSim, aBulkRoot);
-
-		LinkedList<Element> envList = aBulkRoot.buildSetMarkUp("envTime");
-		XMLParser parser;
 		
-		for (Element aEnvMarkUp : envList) {
-		parser = new XMLParser(aEnvMarkUp);
-			envNameList.add(parser.getAttribute("name"));
-			String s = parser.getAttribute("name");
-			envListTime.put(s, parser.getAttributeDbl("time"));
-	}
-		for (int i=0; i<envNameList.size(); i++){
-			Double val = envListTime.get(envNameList.get(i))/SimTimer.getCurrentTimeStep();
-			int iter = val.intValue();
-			envIter.put(envNameList.get(i), iter);
+		String name;
+		Double value;
+		for (XMLParser anEnv : aBulkRoot.getChildrenParsers("envTime"))
+		{
+			name = anEnv.getName();
+			value = anEnv.getAttributeDbl("time");
+			envNameList.add(name);
+			envListTime.put(name, value);
+			value /= SimTimer.getCurrentTimeStep();
+			envIter.put(name, value.intValue());
 		}
-		
 	}
 
 	

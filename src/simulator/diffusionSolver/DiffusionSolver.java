@@ -113,12 +113,10 @@ public abstract class DiffusionSolver
 	 */
 	public void init(Simulator aSim, XMLParser xmlRoot) 
 	{
-		String reacName;
-		
 		mySim = aSim;
 		
 		// Get the name of this solver from the XML tag.
-		solverName = xmlRoot.getAttribute("name");
+		solverName = xmlRoot.getName();
 		
 		// Get the computational domain that this solver is associated with.
 		myDomain = aSim.world.getDomain(xmlRoot.getAttribute("domain"));
@@ -128,24 +126,13 @@ public abstract class DiffusionSolver
 		
 		// Reference all the solutes declared in this system.
 		_soluteList = aSim.soluteList;
-
+		
 		/* Now for each solver, reactions are specified. Add these reactions
 		 * and list the solutes that these modify.
-		 * Get the reaction tags for this solver.
 		 */
-		LinkedList<Element> ReactionList = xmlRoot.buildSetMarkUp("reaction");
+		for (String aReacName : xmlRoot.getChildrenNames("reaction"))
+			addReactionWithSolutes(aSim.getReaction(aReacName));
 		
-		// Now iterate through these.
-		for (Element aReactionMarkUp : ReactionList) 
-		{
-			// Get the name of the reaction that is modified.
-			reacName = aReactionMarkUp.getAttributeValue("name");
-			
-			/* Now set the reference to a biochemical pathway this solver has
-			 * to deal with.
-			 */
-			addReactionWithSolutes(aSim.getReaction(reacName));
-		}
 	}
 	
 	/**

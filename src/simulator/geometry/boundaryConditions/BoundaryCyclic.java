@@ -19,7 +19,7 @@ import simulator.SpatialGrid;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
-import simulator.geometry.shape.IsShape;
+import simulator.geometry.shape.*;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -47,7 +47,7 @@ public class BoundaryCyclic extends AllBC
 	/**
 	 * Shape object containing a construction of the boundary opposite this one
 	 */
-	private IsShape                 _myOppShape;
+	private CanBeBoundary            _myOppShape;
 	
 	/**
 	 * Vector that stores the intersection with the crossed boundary
@@ -79,7 +79,7 @@ public class BoundaryCyclic extends AllBC
 	 */
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCParser) 
 	{
-		_mySide = aBCParser.getAttribute("name");
+		_mySide = aBCParser.getName();
 		
 		// in 3D, all cyclic boundaries are active
 		if(aDomain.is3D) activeForSolute=true;
@@ -104,20 +104,20 @@ public class BoundaryCyclic extends AllBC
 	 */
 	public void readGeometry(XMLParser geometryRoot, Domain aDomain)
 	{
-		List<Element> shapeList = geometryRoot.getChildren("shape");
+		List<Element> shapeList = geometryRoot.getChildrenElements("shape");
 		String className;
 		try 
 		{
 			// Build first shape;
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(0).getAttributeValue("class");
-			_myShape = (IsShape) Class.forName(className).newInstance();
+			_myShape = (CanBeBoundary) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(shapeList.get(0)), aDomain);
-			_mySide = geometryRoot.getAttribute("name");
+			_mySide = geometryRoot.getName();
 			// Build opposite side shape
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(1).getAttributeValue("class");
-			_myOppShape = (IsShape) Class.forName(className).newInstance();
+			_myOppShape = (CanBeBoundary) Class.forName(className).newInstance();
 			_myOppShape.readShape(new XMLParser(shapeList.get(1)), aDomain);
 
 		}

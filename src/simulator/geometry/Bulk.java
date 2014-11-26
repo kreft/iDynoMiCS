@@ -34,10 +34,10 @@ import utils.XMLParser;
  * 
  * @since August 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
  */
 public class Bulk 
 {
@@ -56,12 +56,12 @@ public class Bulk
 	 * Array containing the initial bulk concentration of each solute in the bulk. RJC 22/8/11 - Made public so that Solver_chemostat
 	 * can use it to initialise solute concentrations
 	 */
-	public double[] _bulkValue;
+	public Double[] _bulkValue;
 	
 	/**
 	 * Array of reaction rates for each solute specified in this bulk
 	 */
-	private double[] _reacRate;
+	private Double[] _reacRate;
 	
 	/**
 	 * Timestep value assigned to each solute in specified in this bulk
@@ -76,12 +76,12 @@ public class Bulk
 	/**
 	 * Reactor Dilusion rate of the bulk. Used if isConstant is set to false
 	 */
-	public  double   _D;
+	public  Double   _D;
 	
 	/**
 	 * Array of doubles that specify the feed flow concentration of each solute in this simulation (if applicable)
 	 */
-	public  double[] _sIn;
+	public  Double[] _sIn;
 
 	/**
 	 * Array of booleans that note whether each solute specified in the simulation is present in this bulk
@@ -96,22 +96,22 @@ public class Bulk
 	/**
 	 * Array of sPulse values assigned to each solute, if applicable. Used in pulsing to spike the concentration of a solute at a given rate
 	 */
-	private double[] _sPulse;
+	private Double[] _sPulse;
 	
 	/**
 	 * Array of pulseRate values assigned to each solute, if applicable. Sets the rate that the concentration of a solute is spiked if pulsing is employed
 	 */
-	private double[] _pulseRate;
+	private Double[] _pulseRate;
 	
 	/**
 	 * Array of interval values assigned to each solute, if applicable. Sets the interval at which concentration spiking occurs, if employed
 	 */
-	private double[] _pulseInterval;
+	private Double[] _pulseInterval;
 	
 	/**
 	 * Array that stores the last time in the simulation that particular solute was spiked, if applicable. Used with pulsed concentrations
 	 */
-	private double[] _lastPulseTime;
+	private Double[] _lastPulseTime;
 
 	
 	/*************************************************************************************************************************
@@ -139,7 +139,7 @@ public class Bulk
 		mySim = aSim;
 		
 		// Get the name of this Bulk compartment object
-		_name = aBulkRoot.getAttribute("name");
+		_name = aBulkRoot.getName();
 		
 		// Check the XML to determine is the concentration of the bulk is assumed to be constant or affected by mass balance
 		_bulkIsConstant = aBulkRoot.getParamBool("isConstant");
@@ -162,21 +162,21 @@ public class Bulk
 		
 		// Array initialisation - store the attributes of each solute in an array
 		// Build the list of concentrations for each solute in this bulk
-		LinkedList<Element> soluteList = aBulkRoot.buildSetMarkUp("solute");
-		_bulkValue = new double[aSim.soluteDic.size()];
-		_reacRate = new double[aSim.soluteDic.size()];
+		LinkedList<Element> soluteList = aBulkRoot.getChildrenElements("solute");
+		_bulkValue = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_reacRate = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		_dT = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 
 		_isConstant = new Boolean[aSim.soluteDic.size()];
 		_isInBulk = new Boolean[aSim.soluteDic.size()];
 		Arrays.fill(_isInBulk, false);
 
-		_pulseRate = new double[aSim.soluteDic.size()];
-		_pulseInterval = new double[aSim.soluteDic.size()];
-		_lastPulseTime = new double[aSim.soluteDic.size()];
-
-		_sIn = new double[aSim.soluteDic.size()];
-		_sPulse = new double[aSim.soluteDic.size()];
+		_pulseRate = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_pulseInterval = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_lastPulseTime = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		
+		_sIn = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_sPulse = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		
 		// Parameter D is the Reactor Dilusion rate, used if isConstand is set to false
 		_D = aBulkRoot.getParamDbl("D");
@@ -188,14 +188,15 @@ public class Bulk
 			parser = new XMLParser(asoluteMarkUp);
 			// Earlier (in createSimulation method in Simulator) we built a dictionary of solutes in this simulation. Get the index 
 			// assigned in that dictionary for this solute name. This is then used as the reference for each of the above arrays
-			soluteIndex = aSim.getSoluteIndex(parser.getAttribute("name"));
+			soluteIndex = aSim.getSoluteIndex(parser.getName());
 			
 			// Get the Sbulk value for this solute - the initial bulk concentration of this solute
-			_bulkValue[soluteIndex] = parser.getParamConc("Sbulk");
+			_bulkValue[soluteIndex] = parser.getParamConcn("Sbulk");
 			LogFile.writeLog("Setting initial "+_bulkValue[soluteIndex]);
 			
 			// Note in the boolean array that this solute is present in the bulk if concentration value is over zero
-			if (Double.isNaN(_bulkValue[soluteIndex])) _bulkValue[soluteIndex] = 0;
+			if ( Double.isNaN(_bulkValue[soluteIndex]) )
+				_bulkValue[soluteIndex] = 0.0;
 			_isInBulk[soluteIndex]= true;
 
 			// Note in the array whether the concentration of this solute is set to vary over time (as determined earlier in this method
@@ -210,18 +211,20 @@ public class Bulk
 			
 			// Get the concentration of each solute in the feed flow (for varying concentrations)
 			_sIn[soluteIndex] = parser.getParamDbl("Sin");
-			if (Double.isNaN(_sIn[soluteIndex])) _sIn[soluteIndex] = 0;
+			if (Double.isNaN(_sIn[soluteIndex]))
+				_sIn[soluteIndex] = 0.0;
 
 			// Now check for pulses. The pulseRate parameters can be used to periodically spike the concentration of a solute to that
 			// specified in Spulse parameter at a given time
 			
 			// for pulses, set pulse concentration and interval
 			_sPulse[soluteIndex] = parser.getParamDbl("Spulse");
-			if (Double.isNaN(_sPulse[soluteIndex])) _sPulse[soluteIndex] = 0;
+			if (Double.isNaN(_sPulse[soluteIndex]))
+				_sPulse[soluteIndex] = 0.0;
 
 			// pulse interval will be infinite if the rate is zero
 			_pulseInterval[soluteIndex] = Double.MAX_VALUE;
-			_lastPulseTime[soluteIndex] = 0.;
+			_lastPulseTime[soluteIndex] = 0.0;
 			_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
 			if (!Double.isNaN(_pulseRate[soluteIndex]) && _pulseRate[soluteIndex]!=0.)
 				_pulseInterval[soluteIndex] = 1./_pulseRate[soluteIndex];
@@ -240,9 +243,11 @@ public class Bulk
 	 * @param reacGrid	Grid of all reactions in the simulated system
 	 * @param timeStep	Internal timestep used to update the simulation environment
 	 */
-	public void updateBulk(SoluteGrid[] soluteGrid, SoluteGrid[] reacGrid, double timeStep) {
-
-		if (_bulkIsConstant) return;
+	public void updateBulk(SoluteGrid[] soluteGrid,
+									SoluteGrid[] reacGrid, Double timeStep)
+	{
+		if (_bulkIsConstant)
+			return;
 
 		// THE GRADIENT METHOD SHOULD ONLY BE USED AS A TEST FOR updateBulkByReaction
 		// AND THEN ONLY FOR FLAT BIOFILMS. DO NOT USE FOR GENERAL SIMULATIONS.
@@ -285,11 +290,11 @@ public class Bulk
 	 * @param allSol	Grid of all solutes in the simulated system
 	 * @param reacGrid	Grid of all reactions in the simulated system
 	 */
-	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid){
+	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid)
+	{
 		String message = "Bulk dynamics \n";	
-
-		for (int iGrid = 0; iGrid<allSol.length; iGrid++) {
-
+		for (int iGrid = 0; iGrid<allSol.length; iGrid++)
+		{
 			//_reacRate[iGrid] = reacGrid[iGrid].getAverageChemo();
 			//_bulkValue[iGrid]=allSol[iGrid].getAverageChemo() ;
 			_reacRate[iGrid] = reacGrid[iGrid].grid[0][0][0];
