@@ -173,6 +173,8 @@ public final class ExtraMath
 	 * 
 	 * Formula: sqrt( a*a + b*b )
 	 * 
+	 * TODO replace references to this with Math.hypot
+	 * 
 	 * @param a Double value of the first side of the triangle.
 	 * @param b Double value of the second side of the triangle.
 	 * @return Double value of the hypotenuse of the triangle.
