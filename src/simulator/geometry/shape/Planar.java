@@ -111,7 +111,11 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 		_dPointOnPlane = new DiscreteVector(shapeRoot.getParamParser("pointIn"));
 		_dVectorOut = new DiscreteVector(shapeRoot.getParamParser("vectorOut"));
 		
-		// Translate them into continuous coordinates.
+		/* 
+		 * Translate them into continuous coordinates.
+		 * TODO investigate why the native 
+		 * ContinuousVector(DiscreteVector, res) is not used here 
+		 */
 		Double res = aDomain.getGrid().getResolution();
 		_cPointOnPlane = new ContinuousVector();
 		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*res;

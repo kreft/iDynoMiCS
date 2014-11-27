@@ -19,30 +19,59 @@ public class Cylindrical implements IsShape, Serializable
 	/**
 	 * A point on the cylinder axis
 	 */
-	private DiscreteVector _dPointOnAxis;
+	private DiscreteVector _dPointCenterBase;
 	
+	/**
+	 * 
+	 */
+	private DiscreteVector _dVectorAlongAxis;
+	
+	
+	private ContinuousVector _cPointCenterBase;
+	
+	
+	private ContinuousVector _cVectorAlongAxis;
 	
 	/**
 	 * The radius of this cylinder.
 	 */
 	private Double _radius;
 	
-	private Double length;
+	/**
+	 * The length of this cylinder. Equivalent to _cVectorAlongAxis.norm().
+	 */
+	private Double _length;
+	
+	/**
+	 * Whether the inside of the cyclinder is the inside (true) or the outside
+	 * (false) of the domain. 
+	 */
+	private Boolean _interiorMatchesDomain;
 	
 	/**
 	 * 
 	 */
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
+		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
+		_dVectorAlongAxis = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
+		_radius = shapeRoot.getParamLength("radius");
 		
+		Double res = aDomain.getResolution();
+		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
+		_cVectorAlongAxis = new ContinuousVector(_dVectorAlongAxis, res);
+		_length = _cVectorAlongAxis.norm();
 		
+		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 	}
 	
 	/**
 	 * 
 	 */
-	public Boolean isOutside(ContinuousVector cV)
+	public Boolean isOutside(ContinuousVector point)
 	{
+		ContinuousVector temp = new ContinuousVector(point);
+		
 		
 		return null;
 	}
