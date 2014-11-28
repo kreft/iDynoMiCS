@@ -220,7 +220,9 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	@Override
 	public ContinuousVector getNormalInside(ContinuousVector cc)
 	{
-		return new ContinuousVector(-_cVectorOut.x, -_cVectorOut.y, -_cVectorOut.z);
+		ContinuousVector out = new ContinuousVector(_cVectorOut);
+		out.turnAround();
+		return out;
 	}
 	
 	/**
@@ -278,9 +280,9 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	 * @return Double stating distance to that shape.
 	 */
 	@Override
-	public Double getDistance(IsShape aShape)
+	public Double getDistance(CanBeBoundary aBoundary)
 	{
-		ContinuousVector ccOut = aShape.intersection(_cPointOnPlane, _cVectorOut);
+		ContinuousVector ccOut = aBoundary.intersection(_cPointOnPlane, _cVectorOut);
 		return _cPointOnPlane.distance(ccOut);
 	}
 	

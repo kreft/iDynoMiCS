@@ -38,4 +38,32 @@ public interface CanBeBoundary extends IsShape
      */
 	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
 															SpatialGrid aSG);
+	
+	/**
+	 * \brief Takes a vector and returns that vector pointing towards the
+	 * inside of the shape.
+	 * 
+	 * @param cc	Vector outside the shape.
+	 * @return ContinuousVector that is pointing towards the inside of the
+	 * shape.
+	 */
+	public ContinuousVector getNormalInside(ContinuousVector cc);
+	
+	/**
+	 * \brief Gets the distance from the opposite side (aShape).
+	 * 
+	 * Used in cyclic boundaries.
+	 * 
+	 * @return Double stating distance to that shape.
+	 */
+	public Double getDistance(CanBeBoundary aBoundary);
+	
+
+	
+	/**
+	 * \brief Return vector normal to the plane.
+	 * 
+	 * @return	Discrete vector normal to the plane.
+	 */
+	public DiscreteVector getNormalDC();
 }

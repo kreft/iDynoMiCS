@@ -339,17 +339,42 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	{
 		return ExtraMath.hypotenuse(x, y, z);
 	}
-
+	
 	/**
-	 * \brief Calculate cosine of the angle to vector cc.
+	 * \brief Return the square of the absolute length of this vector.
 	 * 
-	 * @param cc ContinuousVector for which cosine of the angle to this one
-	 * should be calculated.
-	 * @return	Cosine of the angle to vector cc.
+	 * Equivalent to ExtraMath.sq(this.norm()) but computationally faster when
+	 * the returned value would be squared anyway.
+	 * 
+	 * @return Double value of the square of the absolute length of this
+	 * vector.
 	 */
-	public double cosAngle(ContinuousVector cc)
+	public Double normSq()
 	{
-		return prodScalar(cc)/(this.norm() * cc.norm());
+		return ExtraMath.sq(x)+ExtraMath.sq(y)+ExtraMath.sq(z);
+	}
+	
+	/**
+	 * \brief Calculate cosine of the angle to a given vector.
+	 * 
+	 * @param v ContinuousVector for which cosine of the angle to this one
+	 * should be calculated.
+	 * @return	Cosine of the angle to vector given.
+	 */
+	public Double cosAngle(ContinuousVector v)
+	{
+		return prodScalar(v)/(this.norm() * v.norm());
+	}
+	
+	/**
+	 * \brief Calculate the angle to another vector.
+	 * 
+	 * @param v	Another vector
+	 * @return Angle between this vector and that given.
+	 */
+	public Double angle(ContinuousVector v)
+	{
+		return Math.acos(cosAngle(v));
 	}
 	
 	/**

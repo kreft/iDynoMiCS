@@ -2,21 +2,14 @@ package simulator.geometry.shape;
 
 import java.io.Serializable;
 
-import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import utils.ExtraMath;
 import utils.XMLParser;
 
-public class Cylindrical implements IsShape, Serializable
+public class Hemispherical implements IsShape, Serializable
 {
-	/**
-	 * Serial version used for the serialisation of the class.
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	
 	/**
 	 * A point on the cylinder axis
 	 */
@@ -25,7 +18,7 @@ public class Cylindrical implements IsShape, Serializable
 	/**
 	 * 
 	 */
-	private DiscreteVector _dVectorAlongAxis;
+	private DiscreteVector _dVectorToApex;
 	
 	/**
 	 * A vector, orthogonal to the vector along the axis, used as a reference
@@ -39,10 +32,11 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	private DiscreteVector _dVectorRadiusW;
 	
+	
 	private ContinuousVector _cPointCenterBase;
 	
 	
-	private ContinuousVector _cVectorAlongAxis;
+	private ContinuousVector _cVectorToApex;
 	
 	/**
 	 * A vector, orthogonal to the vector along the axis, used as a reference
@@ -62,17 +56,10 @@ public class Cylindrical implements IsShape, Serializable
 	private Double _radius;
 	
 	/**
-	 * The length of this cylinder. Equivalent to _cVectorAlongAxis.norm().
-	 */
-	private Double _length;
-	
-	/**
-	 * Whether the inside of the cylinder is the inside (true) or the outside
+	 * Whether the inside of the hemisphere is the inside (true) or the outside
 	 * (false) of the domain. 
 	 */
 	private Boolean _interiorMatchesDomain;
-	
-	
 	
 	/**
 	 * 
@@ -80,17 +67,16 @@ public class Cylindrical implements IsShape, Serializable
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
 		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
-		_dVectorAlongAxis = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
-		_radius = shapeRoot.getParamLength("radius");
+		_dVectorToApex = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
 		
 		_dVectorRadiusV = new DiscreteVector();
 		_dVectorRadiusW = new DiscreteVector();
-		_dVectorAlongAxis.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
+		_dVectorToApex.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
 		
 		Double res = aDomain.getResolution();
 		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
-		_cVectorAlongAxis = new ContinuousVector(_dVectorAlongAxis, res);
-		_length = _cVectorAlongAxis.norm();
+		_cVectorToApex = new ContinuousVector(_dVectorToApex, res);
+		_radius = _cVectorToApex.norm();
 		_cVectorRadiusV = new ContinuousVector(_dVectorRadiusV, res);
 		_cVectorRadiusV.normalizeVector(_radius);
 		_cVectorRadiusW = new ContinuousVector(_dVectorRadiusW, res);
@@ -98,35 +84,17 @@ public class Cylindrical implements IsShape, Serializable
 		
 		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 	}
-	
+
 	/**
 	 * 
 	 */
 	public Boolean isOutside(ContinuousVector point)
 	{
 		ContinuousVector baseToPoint = baseToPoint(point);
-		Double cosAngle = _cVectorAlongAxis.cosAngle(baseToPoint);
-		
-		if ( cosAngle < 0 )
-			return _interiorMatchesDomain;
-		
-		Double dist = baseToPoint.norm();
-		Double height = dist/cosAngle;
-		Double radius = ExtraMath.triangleSide(dist, height);
-		
-		if ( (radius > _radius) || (height > _length) )
-			return _interiorMatchesDomain;
-		else
-			return ! _interiorMatchesDomain;
-	}
-	
-	/**
-	 * 
-	 */
-	public Boolean isOnBoundary(ContinuousVector cV, Double res)
-	{
-		
-		return null;
+		// Work out if the point is inside the hemisphere.
+		Boolean insideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 ) 
+									&& ( baseToPoint.norm() <= _radius);
+		return ( _interiorMatchesDomain )? insideHS : !insideHS;
 	}
 	
 	/**
@@ -160,57 +128,70 @@ public class Cylindrical implements IsShape, Serializable
 	/**
 	 * 
 	 */
-	public Double getDistance(ContinuousVector cc)
+	public Double getDistance(ContinuousVector point)
 	{
-		
-		return null;
+		ContinuousVector baseToPoint = baseToPoint(point);
+		Double cosAngle = _cVectorToApex.cosAngle(baseToPoint);
+		if ( cosAngle >= 0 )
+			return baseToPoint.norm() - _radius;
+		/* If the point is below  the hemisphere, use the cosine rule to find
+		 * the distance from the circle at the base. Note that, since we want
+		 * cos(cosAngle - pi/2) we need to convert it first. 
+		 */
+		Double angle = Math.abs(Math.acos(cosAngle));
+		angle -= Math.PI/2;
+		cosAngle = Math.cos(angle);
+		Double distSq = baseToPoint.normSq();
+		Double out = distSq + ExtraMath.sq(_radius);
+		out  += 2 * Math.sqrt(distSq) * cosAngle;
+		return Math.sqrt(out);
 	}
 	
 	/**
 	 * 
-	 * @param point Must be on (round) surface of cylinder!
-	 * @return 2 Doubles: (0) height, (1) angle
+	 * @param point Must be on (round) surface of hemisphere!
+	 * @return 2 Doubles: (0) angle on the circular base, (1) angle with the
+	 * vector to the apex.
 	 */
-	private Double[] convertToCylindrical(ContinuousVector point)
+	private Double[] convertToPolar(ContinuousVector point)
 	{
 		Double[] out = new Double[2];
 		
-		ContinuousVector baseToPoint = baseToPoint(point);
 		
-		Double cosAngle = _cVectorAlongAxis.cosAngle(baseToPoint);
-		Double dist = baseToPoint.norm();
-		Double height = dist/cosAngle;
-		Double radius = ExtraMath.triangleSide(dist, height);
+		out[1] = _cVectorToApex.cosAngle(point);
 		
-		/* Use Pythagoros to find the height of this point, i.e. the length
-		 * along the axis that is closest to the point.
-		 */
-		out[0] = ExtraMath.triangleSide(baseToPoint.norm(), _radius); 
+		ContinuousVector pointOnPlane = new ContinuousVector(_cVectorToApex);
+		pointOnPlane.times(-out[1]);
+		pointOnPlane.add(point);
 		
-		// Now find the position on the axis that is closest to the point.
-		ContinuousVector nearestOnAxis = new ContinuousVector(_cVectorAlongAxis);
-		nearestOnAxis.times(out[0]/_length);
-		baseToPoint.subtract(nearestOnAxis);
+		out[0] = _cVectorRadiusV.angle(pointOnPlane);
 		
-		out[1] = _cVectorRadiusV.angle(baseToPoint);
+		out[1] = Math.acos(out[1]);
 		
 		return out;
 	}
 	
-	private void convertToCartesian(Double[] heightTheta, ContinuousVector out)
+	/**
+	 * 
+	 * @param thetaPhi
+	 * @param out
+	 */
+	private void convertToCartesian(Double[] thetaPhi, ContinuousVector out)
 	{
 		out.set(_cPointCenterBase);
-		ContinuousVector temp = new ContinuousVector(_cVectorAlongAxis);
-		temp.times(heightTheta[0]/_length);
+		ContinuousVector temp = new ContinuousVector(_cVectorRadiusV);
+		temp.times(Math.cos(thetaPhi[0]));
 		out.add(temp);
-		temp.set(_cVectorRadiusV);
-		temp.times(Math.cos(heightTheta[1]));
-		out.add(temp);
-		temp.set(_cVectorRadiusW);
-		temp.times(Math.sin(heightTheta[1]));
+		temp.set(_cVectorToApex);
+		temp.times(Math.cos(thetaPhi[1]));
 		out.add(temp);
 	}
 	
+	/**
+	 * 
+	 * @param heightTheta
+	 * @return
+	 */
 	private ContinuousVector convertToCartesian(Double[] heightTheta)
 	{
 		ContinuousVector out = new ContinuousVector();
@@ -220,20 +201,24 @@ public class Cylindrical implements IsShape, Serializable
 	
 	/**
 	 * 
-	 * 
 	 * @param point1
 	 * @param point2
 	 * @return
 	 */
 	public Double distance(ContinuousVector point1, ContinuousVector point2)
 	{
-		Double[] p1 = convertToCylindrical(point1);
-		Double[] p2 = convertToCylindrical(point2);
-		
-		Double angle = Math.abs(p1[1] - p2[1]);
-		angle = Math.min(angle, 2*Math.PI);
-		
-		return Math.hypot(p1[0] - p2[0], _radius*(angle));
+		Double[] p1 = convertToPolar(point1);
+		Double[] p2 = convertToPolar(point2);
+		// First check that the angle around the circular base is correct.
+		Double out = Math.abs(p1[0] - p2[0]);
+		out = Math.min(out, 2*Math.PI - out);
+		/* Then calculate the Great-Circle Distance using the  
+		 * Spherical Law of Cosines.
+		 */
+		out = Math.sin(out);
+		out *= Math.cos(p1[1]) * Math.cos(p2[1]);
+		out += Math.sin(p1[1]) * Math.sin(p2[1]);
+		return _radius * Math.acos(out);
 	}
 	
 	/**
