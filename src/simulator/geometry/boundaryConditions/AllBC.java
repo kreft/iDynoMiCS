@@ -301,8 +301,10 @@ public abstract class AllBC{
 	 * @param aSpatialGrid	The grid to check whether a point is outside
 	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
 	 */
-	public boolean isOutside(DiscreteVector dc, SpatialGrid aSpatialGrid) {
-		return _myShape.isOutside(new ContinuousVector(dc, aSpatialGrid.getResolution()));
+	public boolean isOutside(DiscreteVector dc, SpatialGrid aSpatialGrid)
+	{
+		return _myShape.isOutside(new
+						ContinuousVector(dc, aSpatialGrid.getResolution()));
 	}
 
 	/* ____________________ TOOLBOX ______________________________ */
@@ -316,7 +318,8 @@ public abstract class AllBC{
      * @param vector	A continuous vector stating the line to be used in the calculation	
      * @return ContinuousVector stating the point of intersection between the boundary and a line
      */
-	public ContinuousVector getIntersection(ContinuousVector position, ContinuousVector vector) {
+	public ContinuousVector getIntersection(ContinuousVector position, ContinuousVector vector)
+	{
 		return _myShape.intersection(position, vector);
 	}
 
@@ -328,7 +331,8 @@ public abstract class AllBC{
      * @param cc	A continuous vector stating the point to be used in the calculation
      * @return ContinuousVector stating the point on the boundary after the orthogonal projection 
      */
-	public ContinuousVector getOrthoProj(ContinuousVector cc) {
+	public ContinuousVector getOrthoProj(ContinuousVector cc)
+	{
 		return _myShape.getOrthoProj(cc);
 	}
 

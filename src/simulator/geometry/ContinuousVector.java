@@ -169,12 +169,23 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 * @param x	X coordinate.
 	 * @param y Y coordinate.
 	 * @param z	Z coordinate.
-	 * @return Booloean stating whether the vector position and coordinate
+	 * @return Boolean stating whether the vector position and coordinate
 	 * (x,y,z) is identical.
 	 */
 	public Boolean equals(Double x, Double y, Double z)
 	{
 		return (this.x.equals(x) && this.y.equals(y) && this.z.equals(z));
+	}
+	
+	/**
+	 * \brief Check if this vector is the same as another.
+	 *  
+	 * @param other
+	 * @return
+	 */
+	public Boolean equals(ContinuousVector other)
+	{
+		return equals(other.x, other.y, other.z);
 	}
 	
 	/**
@@ -405,4 +416,34 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
     		valueComparison = this.z.compareTo(other.z);
     	return valueComparison;
     }
+	
+	
+	public Boolean isOrthogonal(ContinuousVector other)
+	{
+		return ( prodScalar(other) == 0.0 );
+	}
+	
+	public Boolean isParallel(ContinuousVector other)
+	{
+		return ( Math.abs(cosAngle(other)) == 1.0 );
+	}
+	
+	
+	/**
+	 * \brief Returns the cross product of this vector with another.
+	 * 
+	 * Note that the resulting vector is orthogonal to both this vector and
+	 * the one given.
+	 * 
+	 * @param other
+	 * @return
+	 */
+	public ContinuousVector crossProduct(ContinuousVector other)
+	{
+		ContinuousVector out = new ContinuousVector();
+		out.x = this.y*other.z - this.z*other.y;
+		out.y = this.z*other.x - this.x*other.z;
+		out.z = this.x*other.y - this.x*other.y;
+		return out;
+	}
 }

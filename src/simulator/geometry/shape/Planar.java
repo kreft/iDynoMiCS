@@ -14,6 +14,8 @@ package simulator.geometry.shape;
 import java.io.Serializable;
 
 import simulator.geometry.*;
+import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.Site;
 import simulator.SpatialGrid;
 import utils.XMLParser;
 
@@ -26,7 +28,7 @@ import utils.XMLParser;
  * outside the domain. These shape parameters must be given in index 
  * coordinates.
  */
-public class Planar implements IsShape, CanBeBoundary, Serializable 
+public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializable 
 {
 	/**
 	 * Serial version used for the serialisation of the class.
@@ -54,16 +56,26 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	private ContinuousVector _cVectorOut;
 	
 	/**
-	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
-	 * _vectorDCOut.
+	 * Dot product of the vector out with the point on the plane. Used by
+	 * intersection() but only needs to be calculated once. 
 	 */
-	private DiscreteVector u;
+	private Double _vOutDotPPlane;
 	
 	/**
 	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
 	 * _vectorDCOut.
 	 */
-	private DiscreteVector v;
+	private DiscreteVector _dOrthogU;
+	
+	private ContinuousVector _cOrthogU;
+	
+	/**
+	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
+	 * _vectorDCOut.
+	 */
+	private DiscreteVector _dOrthogV;
+	
+	private ContinuousVector _cOrthogV;
 	
 	/**
 	 * Range of discrete coordinates met on this shape
@@ -123,17 +135,24 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*res;
 		
 		// TODO investigate why the resolution is irrelevant here.
-		_cVectorOut = new ContinuousVector();
+		// Try _cVectorOut = new ContinuousVector(_dVectorOut, res); ?
+		_cVectorOut = new ContinuousVector(_dVectorOut, res);
 		_cVectorOut.x = (double) _dVectorOut.i;
 		_cVectorOut.y = (double) _dVectorOut.j;
 		_cVectorOut.z = (double) _dVectorOut.k;
 		
+		_vOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
+		
 		/* Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
 		 * plane.
 		 */
-		u = new DiscreteVector();
-		v = new DiscreteVector();
-		_dVectorOut.orthoVector(u, v);
+		_dOrthogU = new DiscreteVector();
+		_dOrthogV = new DiscreteVector();
+		_dVectorOut.orthoVector(_dOrthogU, _dOrthogV);
+		_cOrthogU = new ContinuousVector(_dOrthogU, res);
+		_cOrthogU.normalizeVector();
+		_cOrthogV = new ContinuousVector(_dOrthogV, res);
+		_cOrthogV.normalizeVector();
 	}
 	
 	/**
@@ -147,13 +166,8 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
-		//tempVar.x = -_pointIn.x + point.x;
-		//tempVar.y = -_pointIn.y + point.y;
-		//tempVar.z = -_pointIn.z + point.z;
-		
 		ContinuousVector temp = new ContinuousVector(point);
 		temp.subtract(_cPointOnPlane);
-		
 		return ( _cVectorOut.cosAngle(temp) > 0 );
 	}
 	
@@ -177,7 +191,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	
 	/**
      * \brief Calculates the coordinates of the interaction between a line 
-     * (point a vector) and the plane.
+     * (point and vector) and the plane.
      * 
      * Returns null if none exists.
      * 
@@ -191,20 +205,15 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 											ContinuousVector vector)
 	{
 		// If the line is parallel to his plane, return null.
-		if ( _cVectorOut.prodScalar(vector).equals(0.0) )
+		Double c = _cVectorOut.prodScalar(vector);
+		if ( c.equals(0.0) )
 			return null;
-		
-		// Determine the constant term for the equation of the plane
-		Double d = -_cVectorOut.prodScalar(_cPointOnPlane);
-				
-		
-		Double k = - (d + _cVectorOut.prodScalar(position))/
-										_cVectorOut.prodScalar(vector);
-		
-		ContinuousVector out = new ContinuousVector();
-		out.x = position.x + k*vector.x;
-		out.y = position.y + k*vector.y;
-		out.z = position.z + k*vector.z;
+		ContinuousVector out = new ContinuousVector(vector);
+		/* Find the (relative) length along vector we must travel to hit the
+		 * plane.
+		 */
+		out.times((_vOutDotPPlane - _cVectorOut.prodScalar(position))/c);
+		out.add(position);
 		return out;
 	}
 	
@@ -234,26 +243,7 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		//Double a, b, c, d, k;
-		//a = _vectorOut.x;
-		//b = _vectorOut.y;
-		//c = _vectorOut.z;
-		//d = -(_pointIn.x*a + _pointIn.y*b + _pointIn.z*c);
-		
-		// this next line wasn't calculating the projection coefficient correctly
-		// and would case trouble when the plane was away from the substratum
-		//k = (d+_vectorOut.prodScalar(ccIn))/(a+b+c);
-		// this does it right
-		//k = -(d+_vectorOut.prodScalar(ccIn))/_vectorOut.prodScalar(_vectorOut);
-		
-		// TODO most of these could be calculated just once for the shape
-		Double k = _cVectorOut.prodScalar(_cPointOnPlane);
-		k -= _cVectorOut.prodScalar(ccIn);
-		k /= _cVectorOut.prodScalar(_cVectorOut);
-		
-		ccOut.x = ccIn.x + k*_cVectorOut.x;
-		ccOut.y = ccIn.y + k*_cVectorOut.y;
-		ccOut.z = ccIn.z + k*_cVectorOut.z;
+		ccOut = intersection(ccIn, _cVectorOut);
 	}
 
 	/**
@@ -267,15 +257,16 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	@Override
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
-		ContinuousVector ccOut = new ContinuousVector();
-		orthoProj(ccIn, ccOut);
-		return ccOut;
+		return intersection(ccIn, _cVectorOut);
 	}
 
 	/**
 	 * \brief Gets the distance from the opposite side (aShape).
 	 * 
 	 * Used by cyclic boundaries.
+	 * 
+	 * TODO Rob Dec2014: This is only guaranteed to be correct if planes are
+	 * parallel.
 	 * 
 	 * @return Double stating distance to that shape.
 	 */
@@ -313,9 +304,9 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 		Double res = aSG.getResolution();
 		
 		// Change floor to ceiling?
-		origin.i = ((int)Math.floor(_cPointOnPlane.x/res))-u.i;
-		origin.j = ((int)Math.floor(_cPointOnPlane.y/res))-u.j;
-		origin.k = ((int)Math.floor(_cPointOnPlane.z/res))-u.k;
+		origin.i = ((int)Math.floor(_cPointOnPlane.x/res))-_dOrthogU.i;
+		origin.j = ((int)Math.floor(_cPointOnPlane.y/res))-_dOrthogU.j;
+		origin.k = ((int)Math.floor(_cPointOnPlane.z/res))-_dOrthogU.k;
 				
 		if( _dVectorOut.i > 0 )
 			origin.i--;
@@ -327,23 +318,23 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 		indexU = 0;
 		indexV = 0;
 		
-		if ( u.i == 0 )
+		if ( _dOrthogU.i == 0 )
 			uMax = 0;
 		else
-			uMax = aSG.getGridSizeI()/u.i;
-		if ( u.j != 0 ) 
-			uMax = Math.max(uMax, aSG.getGridSizeJ()/u.j);
-		if ( u.k != 0 )
-			uMax = Math.max(uMax, aSG.getGridSizeK()/u.k);
+			uMax = aSG.getGridSizeI()/_dOrthogU.i;
+		if ( _dOrthogU.j != 0 ) 
+			uMax = Math.max(uMax, aSG.getGridSizeJ()/_dOrthogU.j);
+		if ( _dOrthogU.k != 0 )
+			uMax = Math.max(uMax, aSG.getGridSizeK()/_dOrthogU.k);
 
-		if ( v.i == 0 )
+		if ( _dOrthogV.i == 0 )
 			vMax = 0;
 		else
-			vMax = aSG.getGridSizeI()/v.i;
-		if ( v.j != 0 )
-			vMax = Math.max(vMax, aSG.getGridSizeJ()/v.j);
-		if ( v.k != 0 )
-			vMax = Math.max(vMax, aSG.getGridSizeK()/v.k);
+			vMax = aSG.getGridSizeI()/_dOrthogV.i;
+		if ( _dOrthogV.j != 0 )
+			vMax = Math.max(vMax, aSG.getGridSizeJ()/_dOrthogV.j);
+		if ( _dOrthogV.k != 0 )
+			vMax = Math.max(vMax, aSG.getGridSizeK()/_dOrthogV.k);
 	}
 
 	/**
@@ -386,9 +377,9 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 			indexU = 0;
 			indexV++;
 		}
-		move.i = indexU*u.i + indexV*v.i;
-		move.j = indexU*u.j + indexV*v.j;
-		move.k = indexU*u.k + indexV*v.k;
+		move.i = indexU*_dOrthogU.i + indexV*_dOrthogV.i;
+		move.j = indexU*_dOrthogU.j + indexV*_dOrthogV.j;
+		move.k = indexU*_dOrthogU.k + indexV*_dOrthogV.k;
 	}
 
 	/**
@@ -416,5 +407,73 @@ public class Planar implements IsShape, CanBeBoundary, Serializable
 	public DiscreteVector getNormalDC()
 	{
 		return _dVectorOut;
+	}
+	
+	/**
+	 * Currently assumes both points on the plane.
+	 */
+	@Override
+	public Double distance(ContinuousVector point1, ContinuousVector point2)
+	{
+		return point1.distance(point2);
+	}
+	
+	/**
+	 * TODO check
+	 */
+	@Override
+	public Edge bisect(Site site1, Site site2)
+	{
+		if ( site1.equals(site2) )
+			return null;
+		
+		Edge out = new Edge();
+		
+		out.region[0] = site1;
+		out.region[1] = site2;
+		
+		// Already implicitly the case, but stated explicitly for clarity.
+		out.endPoint[0] = null;
+		out.endPoint[1] = null;
+		
+		ContinuousVector difference = new ContinuousVector(site2);
+		difference.subtract(site1);
+		
+		// TODO change multiplier to account for site weighting
+		Double weight = 0.5;
+		
+		ContinuousVector midPoint = new ContinuousVector(difference);
+		midPoint.times(weight);
+		midPoint.add(site1);
+		
+		/* Find the difference and the midPoint in U, V coordinates. Since
+		 * _cOrthogU and _cOrthogV have been normailsed, this is equivalent to
+		 * dU = difference.norm() * _cOrthogU.cosAngle(difference);
+		 * etc
+		 */
+		Double dU = _cOrthogU.prodScalar(difference);
+		Double dUmid = _cOrthogU.prodScalar(midPoint);
+		Double dV = _cOrthogV.prodScalar(difference);
+		Double dVmid = _cOrthogV.prodScalar(midPoint);
+		
+		// c0*U + c1*V = c2 
+		if ( Math.abs(dU) > Math.abs(dV) )
+		{
+			// u + slope*v = midU + slope*midV
+			out.coefficient[0] = 1.0;
+			out.coefficient[1] = dV/dU;
+			// Don't need to worry about dU = 0, as |dU| > |dV|
+			out.coefficient[2] = dUmid + (dVmid*dV/dU);
+		}
+		else
+		{
+			// u/slope + v = midU/slope + midV
+			out.coefficient[0] = dU/dV;
+			out.coefficient[1] = 1.0;
+			// Don't need to worry about dV = 0, as |dU| < |dV|
+			out.coefficient[2] = (dUmid*dU/dV) + dVmid;
+		}
+		
+		return out;
 	}
 }

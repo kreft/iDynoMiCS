@@ -5,11 +5,18 @@ import java.io.Serializable;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
+import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.Site;
 import utils.ExtraMath;
 import utils.XMLParser;
 
-public class Hemispherical implements IsShape, Serializable
+public class Hemispherical implements IsShape, CanPointProcess, Serializable
 {
+	/**
+	 * Serial version used for the serialisation of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * A point on the cylinder axis
 	 */
@@ -63,6 +70,20 @@ public class Hemispherical implements IsShape, Serializable
 	
 	/**
 	 * 
+	 * @param dPointCenterBase
+	 * @param dVectorToApex
+	 * @param interiorMatchesDomain
+	 */
+	public Hemispherical(DiscreteVector dPointCenterBase,
+				DiscreteVector dVectorToApex, Boolean interiorMatchesDomain)
+	{
+		_dPointCenterBase = new DiscreteVector(dPointCenterBase);
+		_dVectorToApex = new DiscreteVector(dVectorToApex);
+		_interiorMatchesDomain = interiorMatchesDomain;
+	}
+	
+	/**
+	 * 
 	 */
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
@@ -92,19 +113,9 @@ public class Hemispherical implements IsShape, Serializable
 	{
 		ContinuousVector baseToPoint = baseToPoint(point);
 		// Work out if the point is inside the hemisphere.
-		Boolean insideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 ) 
-									&& ( baseToPoint.norm() <= _radius);
-		return ( _interiorMatchesDomain )? insideHS : !insideHS;
-	}
-	
-	/**
-	 * 
-	 */
-	public ContinuousVector intersection(ContinuousVector position,
-													ContinuousVector vector)
-	{
-		
-		return null;
+		Boolean isInsideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 )
+										&& ( baseToPoint.norm() <= _radius);
+		return Boolean.logicalXor(isInsideHS, _interiorMatchesDomain);
 	}
 	
 	/**
@@ -149,57 +160,51 @@ public class Hemispherical implements IsShape, Serializable
 	
 	/**
 	 * 
-	 * @param point Must be on (round) surface of hemisphere!
-	 * @return 2 Doubles: (0) angle on the circular base, (1) angle with the
-	 * vector to the apex.
+	 * 
+	 * 
+	 * @param point 
+	 * @return 3 Doubles: (0) angle on the circular base, (1) angle with the
+	 * vector to the apex, (2) distance from the centre.
 	 */
 	private Double[] convertToPolar(ContinuousVector point)
 	{
-		Double[] out = new Double[2];
+		Double[] out = new Double[3];
+		ContinuousVector baseToPoint = baseToPoint(point);
 		
+		out[1] = _cVectorToApex.cosAngle(baseToPoint);
+		out[2] = baseToPoint.norm();
 		
-		out[1] = _cVectorToApex.cosAngle(point);
-		
+		// Should be equivalent to Planar.orthoProj() for the base of the HS
 		ContinuousVector pointOnPlane = new ContinuousVector(_cVectorToApex);
-		pointOnPlane.times(-out[1]);
-		pointOnPlane.add(point);
+		pointOnPlane.times(-out[1]*out[2]);
+		pointOnPlane.add(baseToPoint);
 		
 		out[0] = _cVectorRadiusV.angle(pointOnPlane);
-		
 		out[1] = Math.acos(out[1]);
-		
 		return out;
 	}
 	
 	/**
 	 * 
-	 * @param thetaPhi
+	 * @param coords
 	 * @param out
 	 */
-	private void convertToCartesian(Double[] thetaPhi, ContinuousVector out)
+	private void convertToCartesian(Double[] coords, ContinuousVector out)
 	{
 		out.set(_cPointCenterBase);
+		
 		ContinuousVector temp = new ContinuousVector(_cVectorRadiusV);
-		temp.times(Math.cos(thetaPhi[0]));
+		temp.times(coords[2] * Math.cos(coords[0]));
 		out.add(temp);
+		
 		temp.set(_cVectorToApex);
-		temp.times(Math.cos(thetaPhi[1]));
+		temp.times(coords[2] * Math.cos(coords[1]));
 		out.add(temp);
 	}
 	
 	/**
 	 * 
-	 * @param heightTheta
-	 * @return
-	 */
-	private ContinuousVector convertToCartesian(Double[] heightTheta)
-	{
-		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(heightTheta, out);
-		return out;
-	}
-	
-	/**
+	 * Assumes both points on the surface!
 	 * 
 	 * @param point1
 	 * @param point2
@@ -230,6 +235,30 @@ public class Hemispherical implements IsShape, Serializable
 	{
 		ContinuousVector out = new ContinuousVector(point);
 		out.subtract(_cPointCenterBase);
+		return out;
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public Edge bisect(Site site1, Site site2)
+	{
+		// If the sites are co-localised, there's no unique bisector.
+		if ( site1.equals(site2) )
+			return null;
+		Edge out = new Edge();
+		// Set the regions on either side of the Edge.
+		out.region[0] = site1;
+		out.region[1] = site2;
+		// Already implicitly the case, but stated explicitly for clarity.
+		out.endPoint[0] = null;
+		out.endPoint[1] = null;
+		// Find the angle each of these makes on the circular base
+		Double[] s1 = convertToPolar(site1);
+		Double[] s2 = convertToPolar(site2);
+		//out.coefficient[0] = ((s2[0] + s1[0])/2) % (2 * Math.PI);
+		
 		return out;
 	}
 }

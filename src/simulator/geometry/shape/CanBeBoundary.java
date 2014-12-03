@@ -20,6 +20,21 @@ public interface CanBeBoundary extends IsShape
 	 */
 	public Boolean isOnBoundary(ContinuousVector cV, Double res);
 	
+
+	/**
+     * \brief Calculates the coordinates of the interaction between a line
+     * (point a vector) and the plane.
+     * 
+     * Returns null if none exists.
+     * 
+     * @param position	Position used to calculate the line.
+     * @param vector	Vector of coordinate positions used to calculate the
+     * line.
+     * @return Coordinates of the intersection between a line and the plane.
+     */
+	public ContinuousVector intersection(ContinuousVector position,
+													ContinuousVector vector);
+	
 	/**
      * \brief Initialisation to create the features of and go along the
      * boundary.

@@ -44,13 +44,22 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * K Location on a grid.
 	 */
 	public int k;
-
+	
 	/**
      * \brief Creates a discrete vector initialised at the origin.
      */
 	public DiscreteVector()
 	{
 		reset();
+	}
+	
+	/**
+	 * 
+	 * @param dV
+	 */
+	public DiscreteVector(DiscreteVector dV)
+	{
+		set(dV);
 	}
 	
 	/**

@@ -2,14 +2,15 @@ package simulator.geometry.shape;
 
 import java.io.Serializable;
 
-import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
+import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.Site;
 import utils.ExtraMath;
 import utils.XMLParser;
 
-public class Cylindrical implements IsShape, Serializable
+public class Cylindrical implements IsShape, CanPointProcess, Serializable
 {
 	/**
 	 * Serial version used for the serialisation of the class.
@@ -72,7 +73,25 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	private Boolean _interiorMatchesDomain;
 	
-	
+	/**
+	 * 
+	 * @param dPointCenterBase
+	 * @param dVectorAlongAxis
+	 * @param radius
+	 * @param interiorMatchesDomain
+	 * @param res	Grid resolution of the domain.
+	 */
+	public Cylindrical(DiscreteVector dPointCenterBase, 
+			  				DiscreteVector dVectorAlongAxis, Double radius,
+			  				Boolean interiorMatchesDomain, Double res)
+	{
+		_dPointCenterBase = new DiscreteVector(dPointCenterBase);
+		_dVectorAlongAxis = new DiscreteVector(dVectorAlongAxis);
+		_radius = radius;
+		_interiorMatchesDomain = interiorMatchesDomain;
+		
+		init(res);
+	}
 	
 	/**
 	 * 
@@ -82,12 +101,17 @@ public class Cylindrical implements IsShape, Serializable
 		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
 		_dVectorAlongAxis = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
 		_radius = shapeRoot.getParamLength("radius");
+		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 		
+		Double res = aDomain.getResolution();
+		init(res);
+	}
+	
+	private void init(Double res)
+	{
 		_dVectorRadiusV = new DiscreteVector();
 		_dVectorRadiusW = new DiscreteVector();
 		_dVectorAlongAxis.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
-		
-		Double res = aDomain.getResolution();
 		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
 		_cVectorAlongAxis = new ContinuousVector(_dVectorAlongAxis, res);
 		_length = _cVectorAlongAxis.norm();
@@ -95,8 +119,6 @@ public class Cylindrical implements IsShape, Serializable
 		_cVectorRadiusV.normalizeVector(_radius);
 		_cVectorRadiusW = new ContinuousVector(_dVectorRadiusW, res);
 		_cVectorRadiusV.normalizeVector(_radius);
-		
-		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 	}
 	
 	/**
@@ -104,39 +126,24 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	public Boolean isOutside(ContinuousVector point)
 	{
-		ContinuousVector baseToPoint = baseToPoint(point);
-		Double cosAngle = _cVectorAlongAxis.cosAngle(baseToPoint);
-		
-		if ( cosAngle < 0 )
-			return _interiorMatchesDomain;
-		
-		Double dist = baseToPoint.norm();
-		Double height = dist/cosAngle;
-		Double radius = ExtraMath.triangleSide(dist, height);
-		
-		if ( (radius > _radius) || (height > _length) )
-			return _interiorMatchesDomain;
-		else
-			return ! _interiorMatchesDomain;
+		Double[] position = convertToCylindrical(point);
+		Boolean isInsideCylinder = (position[0] >= 0.0) &&
+					(position[0] <= _length) && (position[1] <= _radius);
+		return Boolean.logicalXor(isInsideCylinder, _interiorMatchesDomain);
 	}
 	
 	/**
 	 * 
 	 */
-	public Boolean isOnBoundary(ContinuousVector cV, Double res)
+	public Boolean isOnBoundary(ContinuousVector point, Double res)
 	{
-		
-		return null;
-	}
-	
-	/**
-	 * 
-	 */
-	public ContinuousVector intersection(ContinuousVector position,
-													ContinuousVector vector)
-	{
-		
-		return null;
+		Double[] position = convertToCylindrical(point);
+		if ((position[0] < 0.0) || (position[0] > _length))
+			return false;
+		if ( _interiorMatchesDomain )
+			return ( position[1] >= _radius && position[1] <= _radius + res);
+		else 
+			return ( position[1] <= _radius && position[1] >= _radius - res);
 	}
 	
 	/**
@@ -144,8 +151,10 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		
-		
+		Double[] coords = convertToCylindrical(ccIn);
+		coords[0] = Math.max(Math.min(coords[0], _length), 0.0);
+		coords[1] = _radius;
+		convertToCartesian(coords, ccOut);
 	}
 	
 	/**
@@ -153,8 +162,9 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
-		
-		return null;
+		ContinuousVector out = new ContinuousVector();
+		orthoProj(ccIn, out);
+		return out;
 	}
 	
 	/**
@@ -162,59 +172,73 @@ public class Cylindrical implements IsShape, Serializable
 	 */
 	public Double getDistance(ContinuousVector cc)
 	{
-		
-		return null;
+		Double[] coords = convertToCylindrical(cc);
+		Double d = Math.max(coords[0] - _length, - coords[0]);
+		Double r = Math.abs(coords[1] - _radius);
+		if ( d < 0.0)
+			return Math.hypot(d, r);
+		else
+			return r;
 	}
 	
 	/**
 	 * 
-	 * @param point Must be on (round) surface of cylinder!
-	 * @return 2 Doubles: (0) height, (1) angle
+	 * @param point 
+	 * @return 3 Doubles: (0) height, (1) radius, (2) angle
 	 */
 	private Double[] convertToCylindrical(ContinuousVector point)
 	{
-		Double[] out = new Double[2];
-		
+		Double[] out = new Double[3];
 		ContinuousVector baseToPoint = baseToPoint(point);
-		
 		Double cosAngle = _cVectorAlongAxis.cosAngle(baseToPoint);
 		Double dist = baseToPoint.norm();
-		Double height = dist/cosAngle;
-		Double radius = ExtraMath.triangleSide(dist, height);
-		
-		/* Use Pythagoros to find the height of this point, i.e. the length
-		 * along the axis that is closest to the point.
-		 */
-		out[0] = ExtraMath.triangleSide(baseToPoint.norm(), _radius); 
-		
+		if ( cosAngle.equals(0.0) )
+			return null; //TODO
+		// cosAngle = dist/height
+		out[0] = dist/cosAngle;
+		out[1] = ExtraMath.triangleSide(dist, out[0]);
 		// Now find the position on the axis that is closest to the point.
 		ContinuousVector nearestOnAxis = new ContinuousVector(_cVectorAlongAxis);
 		nearestOnAxis.times(out[0]/_length);
+		/* By subtracting this from the baseToPoint vector, we flatten it onto
+		 *  the base circle and find the angle with the reference vector.
+		 */
 		baseToPoint.subtract(nearestOnAxis);
-		
-		out[1] = _cVectorRadiusV.angle(baseToPoint);
-		
+		out[2] = _cVectorRadiusV.angle(baseToPoint);
 		return out;
 	}
 	
-	private void convertToCartesian(Double[] heightTheta, ContinuousVector out)
+	/**
+	 * 
+	 * @param coords
+	 * @param out
+	 */
+	private void convertToCartesian(Double[] coords, ContinuousVector out)
 	{
 		out.set(_cPointCenterBase);
+		
 		ContinuousVector temp = new ContinuousVector(_cVectorAlongAxis);
-		temp.times(heightTheta[0]/_length);
+		temp.times(coords[0]/_length);
 		out.add(temp);
+		
 		temp.set(_cVectorRadiusV);
-		temp.times(Math.cos(heightTheta[1]));
+		temp.times(coords[1]*Math.cos(coords[2]));
 		out.add(temp);
+		
 		temp.set(_cVectorRadiusW);
-		temp.times(Math.sin(heightTheta[1]));
+		temp.times(coords[1]*Math.sin(coords[2]));
 		out.add(temp);
 	}
 	
-	private ContinuousVector convertToCartesian(Double[] heightTheta)
+	/**
+	 * 
+	 * @param coords
+	 * @return
+	 */
+	private ContinuousVector convertToCartesian(Double[] coords)
 	{
 		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(heightTheta, out);
+		convertToCartesian(coords, out);
 		return out;
 	}
 	
@@ -225,7 +249,8 @@ public class Cylindrical implements IsShape, Serializable
 	 * @param point2
 	 * @return
 	 */
-	public Double distance(ContinuousVector point1, ContinuousVector point2)
+	public Double distanceAlongSurface(ContinuousVector point1,
+													ContinuousVector point2)
 	{
 		Double[] p1 = convertToCylindrical(point1);
 		Double[] p2 = convertToCylindrical(point2);
@@ -246,5 +271,21 @@ public class Cylindrical implements IsShape, Serializable
 		ContinuousVector out = new ContinuousVector(point);
 		out.subtract(_cPointCenterBase);
 		return out;
+	}
+	
+	
+	@Override
+	public Double distance(ContinuousVector point1, ContinuousVector point2)
+	{
+		
+		return null;
+	}
+	
+	
+	@Override
+	public Edge bisect(Site site1, Site site2)
+	{
+		
+		return null;
 	}
 }
