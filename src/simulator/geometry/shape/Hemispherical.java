@@ -160,7 +160,7 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	
 	/**
 	 * 
-	 * 
+	 * TODO use convertToPolar(point, _cVectorRadiusV, _cVectorToApex)
 	 * 
 	 * @param point 
 	 * @return 3 Doubles: (0) angle on the circular base, (1) angle with the
@@ -184,6 +184,25 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
+	private Double[] convertToPolar(ContinuousVector point,
+					ContinuousVector radialVector, ContinuousVector apexVector)
+	{
+		Double[] out = new Double[3];
+		ContinuousVector baseToPoint = baseToPoint(point);
+		
+		out[1] = apexVector.cosAngle(baseToPoint);
+		out[2] = baseToPoint.norm();
+		
+		// Should be equivalent to Planar.orthoProj() for the base of the HS
+		ContinuousVector pointOnPlane = new ContinuousVector(apexVector);
+		pointOnPlane.times(-out[1]*out[2]);
+		pointOnPlane.add(baseToPoint);
+		
+		out[0] = radialVector.angle(pointOnPlane);
+		out[1] = Math.acos(out[1]);
+		return out;
+	}
+	
 	/**
 	 * 
 	 * @param coords
@@ -200,6 +219,13 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		temp.set(_cVectorToApex);
 		temp.times(coords[2] * Math.cos(coords[1]));
 		out.add(temp);
+	}
+	
+	private ContinuousVector convertToCartesian(Double[] coords)
+	{
+		ContinuousVector out = new ContinuousVector();
+		convertToCartesian(coords, out);
+		return out;
 	}
 	
 	/**
@@ -236,6 +262,17 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		ContinuousVector out = new ContinuousVector(point);
 		out.subtract(_cPointCenterBase);
 		return out;
+	}
+	
+	private ContinuousVector midpoint(Site site1, Site site2)
+	{
+		ContinuousVector baseToS1 = baseToPoint(site1);
+		ContinuousVector baseToS2 = baseToPoint(site2);
+		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
+		Double[] s2 = convertToPolar(site2, baseToS1, orthog);
+		// TODO change multiplier for weighting
+		s2[0] *= 0.5;
+		return convertToCartesian(s2);
 	}
 	
 	/**
