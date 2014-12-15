@@ -115,7 +115,8 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		// Work out if the point is inside the hemisphere.
 		Boolean isInsideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 )
 										&& ( baseToPoint.norm() <= _radius);
-		return Boolean.logicalXor(isInsideHS, _interiorMatchesDomain);
+		// Use the exclusive or (Xor).
+		return isInsideHS ^ _interiorMatchesDomain;
 	}
 	
 	/**
@@ -152,7 +153,7 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		Double angle = Math.abs(Math.acos(cosAngle));
 		angle -= Math.PI/2;
 		cosAngle = Math.cos(angle);
-		Double distSq = baseToPoint.normSq();
+		Double distSq = baseToPoint.prodScalar(baseToPoint);
 		Double out = distSq + ExtraMath.sq(_radius);
 		out  += 2 * Math.sqrt(distSq) * cosAngle;
 		return Math.sqrt(out);
@@ -203,20 +204,21 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
-	/**
-	 * 
-	 * @param coords
-	 * @param out
-	 */
-	private void convertToCartesian(Double[] coords, ContinuousVector out)
+	private void convertToCartesian(Double[] coords, ContinuousVector out,
+							ContinuousVector center, ContinuousVector apexU,
+							ContinuousVector radialV, ContinuousVector radialW)
 	{
-		out.set(_cPointCenterBase);
+		out.set(center);
 		
-		ContinuousVector temp = new ContinuousVector(_cVectorRadiusV);
-		temp.times(coords[2] * Math.cos(coords[0]));
+		ContinuousVector temp = new ContinuousVector(radialV);
+		temp.times(coords[2] * Math.cos(coords[0]) * Math.sin(coords[1]));
 		out.add(temp);
 		
-		temp.set(_cVectorToApex);
+		temp.set(radialW);
+		temp.times(coords[2] * Math.sin(coords[0]) * Math.sin(coords[1]));
+		out.add(temp);
+		
+		temp.set(apexU);
 		temp.times(coords[2] * Math.cos(coords[1]));
 		out.add(temp);
 	}
@@ -224,7 +226,8 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	private ContinuousVector convertToCartesian(Double[] coords)
 	{
 		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(coords, out);
+		convertToCartesian(coords, out, _cPointCenterBase, _cVectorToApex,
+											_cVectorRadiusV, _cVectorRadiusW);
 		return out;
 	}
 	
@@ -238,18 +241,7 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	 */
 	public Double distance(ContinuousVector point1, ContinuousVector point2)
 	{
-		Double[] p1 = convertToPolar(point1);
-		Double[] p2 = convertToPolar(point2);
-		// First check that the angle around the circular base is correct.
-		Double out = Math.abs(p1[0] - p2[0]);
-		out = Math.min(out, 2*Math.PI - out);
-		/* Then calculate the Great-Circle Distance using the  
-		 * Spherical Law of Cosines.
-		 */
-		out = Math.sin(out);
-		out *= Math.cos(p1[1]) * Math.cos(p2[1]);
-		out += Math.sin(p1[1]) * Math.sin(p2[1]);
-		return _radius * Math.acos(out);
+		return _radius * baseToPoint(point1).angle(baseToPoint(point2));
 	}
 	
 	/**
@@ -272,7 +264,14 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		Double[] s2 = convertToPolar(site2, baseToS1, orthog);
 		// TODO change multiplier for weighting
 		s2[0] *= 0.5;
-		return convertToCartesian(s2);
+		
+		ContinuousVector newW = baseToS1.crossProduct(orthog);
+		newW.turnAround();
+		newW.normalizeVector(_radius);
+		
+		ContinuousVector out = new ContinuousVector();
+		convertToCartesian(s2, out, _cPointCenterBase, orthog, baseToS1, newW);
+		return out;
 	}
 	
 	/**

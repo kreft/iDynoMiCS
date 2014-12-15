@@ -21,10 +21,10 @@ import utils.XMLParser;
  * 
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Joï¿½o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  *
  */
@@ -160,7 +160,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 */
 	public void turnAround()
 	{
-		set(-x, -y, -z);
+		times(-1.0);
 	}
 
 	/**
@@ -352,20 +352,6 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	}
 	
 	/**
-	 * \brief Return the square of the absolute length of this vector.
-	 * 
-	 * Equivalent to ExtraMath.sq(this.norm()) but computationally faster when
-	 * the returned value would be squared anyway.
-	 * 
-	 * @return Double value of the square of the absolute length of this
-	 * vector.
-	 */
-	public Double normSq()
-	{
-		return ExtraMath.sq(x)+ExtraMath.sq(y)+ExtraMath.sq(z);
-	}
-	
-	/**
 	 * \brief Calculate cosine of the angle to a given vector.
 	 * 
 	 * @param v ContinuousVector for which cosine of the angle to this one
@@ -443,7 +429,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 		ContinuousVector out = new ContinuousVector();
 		out.x = this.y*other.z - this.z*other.y;
 		out.y = this.z*other.x - this.x*other.z;
-		out.z = this.x*other.y - this.x*other.y;
+		out.z = this.x*other.y - this.y*other.x;
 		return out;
 	}
 }
