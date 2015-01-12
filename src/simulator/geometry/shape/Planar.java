@@ -12,6 +12,10 @@
 package simulator.geometry.shape;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import simulator.geometry.*;
 import simulator.geometry.pointProcess.Edge;
@@ -475,5 +479,20 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 		}
 		
 		return out;
+	}
+	
+	/**
+	 * 
+	 * 
+	 *
+	 */
+	public final int compare(ContinuousVector point1,
+												ContinuousVector point2)
+	{		
+		int out = (int) Math.signum(point1.y - point2.y);
+		if ( out == 0 )
+			out = (int) Math.signum(point1.x - point2.x);
+		return out;
+
 	}
 }

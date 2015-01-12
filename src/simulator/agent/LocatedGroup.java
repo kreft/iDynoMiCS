@@ -611,19 +611,12 @@ public class LocatedGroup {
 	 */
 	public static class TValueComparator implements java.util.Comparator<Object> 
 	{
-
 		@Override
 		public int compare(Object b1, Object b2) 
 		{
-			double f1=((LocatedGroup) b1).erosionTime;
-			double f2=((LocatedGroup) b2).erosionTime;
-			
-			if(f1==f2)
-				return 0;
-			else if(f1 > f2)
-				return 1;
-			else
-				return -1;
+			Double f1 = ((LocatedGroup) b1).erosionTime;
+			Double f2 = ((LocatedGroup) b2).erosionTime;
+			return (int) Math.signum(f1 - f2);
 		}
 	}
 

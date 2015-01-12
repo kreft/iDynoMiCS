@@ -1,6 +1,10 @@
 package simulator.geometry.shape;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
@@ -287,5 +291,48 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	{
 		
 		return null;
+	}
+	
+	/**
+	 * TODO Check!
+	 */
+	public void orderLexicographically(ContinuousVector[] list)
+	{
+		List<ContinuousVector> events = 
+				new ArrayList<ContinuousVector>(list.length);
+		
+		Collections.sort(events, new Comparator<Object>() {
+			@Override
+			public int compare(Object point1, Object point2)
+			{
+				Double[] p1 = convertToCylindrical((ContinuousVector) point1);
+				Double[] p2 = convertToCylindrical((ContinuousVector) point2);
+				int out = (int) Math.signum(p1[1] - p2[1]);
+				if ( out == 0 )
+					out = (int) Math.signum(p1[0] - p2[0]);
+				return out;
+			}
+		});
+
+		int i = 0;
+		for ( ContinuousVector e : events )
+		{
+			list[i] = e;
+			i++;
+		}
+	}
+	
+	/**
+	 * TODO Check!
+	 */
+	public final int compare(ContinuousVector point1,
+											ContinuousVector point2)
+	{		
+		Double[] p1 = convertToCylindrical(point1);
+		Double[] p2 = convertToCylindrical(point2);
+		int out = (int) Math.signum(p1[1] - p2[1]);
+		if ( out == 0 )
+			out = (int) Math.signum(p1[0] - p2[0]);
+		return out;
 	}
 }

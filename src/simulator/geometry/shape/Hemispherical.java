@@ -1,6 +1,10 @@
 package simulator.geometry.shape;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
@@ -137,14 +141,15 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	}
 	
 	/**
-	 * 
+	 * \brief Gets the (Euclidean) distance from given point to the nearest
+	 * position on this shape. 
 	 */
 	public Double getDistance(ContinuousVector point)
 	{
 		ContinuousVector baseToPoint = baseToPoint(point);
 		Double cosAngle = _cVectorToApex.cosAngle(baseToPoint);
 		if ( cosAngle >= 0 )
-			return baseToPoint.norm() - _radius;
+			return Math.abs(baseToPoint.norm() - _radius);
 		/* If the point is below  the hemisphere, use the cosine rule to find
 		 * the distance from the circle at the base. Note that, since we want
 		 * cos(cosAngle - pi/2) we need to convert it first. 
@@ -184,6 +189,13 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
+	/**
+	 * 
+	 * @param point
+	 * @param radialVector
+	 * @param apexVector
+	 * @return
+	 */
 	private Double[] convertToPolar(ContinuousVector point,
 					ContinuousVector radialVector, ContinuousVector apexVector)
 	{
@@ -203,28 +215,29 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
-	/**
-	 * 
-	 * @param coords
-	 * @param out
-	 */
-	private void convertToCartesian(Double[] coords, ContinuousVector out)
+	
+	private void convertToCartesian(Double[] coords, ContinuousVector out,
+					ContinuousVector apexVector, ContinuousVector radialV)
 	{
 		out.set(_cPointCenterBase);
 		
-		ContinuousVector temp = new ContinuousVector(_cVectorRadiusV);
+		ContinuousVector temp = new ContinuousVector(radialV);
 		temp.times(coords[2] * Math.cos(coords[0]));
 		out.add(temp);
 		
-		temp.set(_cVectorToApex);
+		temp.set(apexVector);
 		temp.times(coords[2] * Math.cos(coords[1]));
 		out.add(temp);
 	}
 	
+	/**
+	 * 
+	 * @param coords
+	 */
 	private ContinuousVector convertToCartesian(Double[] coords)
 	{
 		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(coords, out);
+		convertToCartesian(coords, out, _cVectorToApex, _cVectorRadiusV);
 		return out;
 	}
 	
@@ -269,16 +282,20 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		ContinuousVector baseToS1 = baseToPoint(site1);
 		ContinuousVector baseToS2 = baseToPoint(site2);
 		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
-		Double[] s2 = convertToPolar(site2, baseToS1, orthog);
-		// TODO change multiplier for weighting
-		s2[0] *= 0.5;
-		return convertToCartesian(s2);
+		orthog.normalizeVector(_radius);
+		
+		Double[] s = convertToPolar(site2, baseToS1, orthog);
+		s[0] *= 0.5;
+		
+		ContinuousVector midpoint = new ContinuousVector(); 
+		convertToCartesian(s, midpoint, orthog, baseToS1);
+		
+		return midpoint;
 	}
 	
 	/**
 	 * 
 	 */
-	@Override
 	public Edge bisect(Site site1, Site site2)
 	{
 		// If the sites are co-localised, there's no unique bisector.
@@ -291,11 +308,34 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 		// Already implicitly the case, but stated explicitly for clarity.
 		out.endPoint[0] = null;
 		out.endPoint[1] = null;
-		// Find the angle each of these makes on the circular base
-		Double[] s1 = convertToPolar(site1);
-		Double[] s2 = convertToPolar(site2);
-		//out.coefficient[0] = ((s2[0] + s1[0])/2) % (2 * Math.PI);
 		
+		ContinuousVector baseToS1 = baseToPoint(site1);
+		ContinuousVector baseToS2 = baseToPoint(site2);
+		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
+		orthog.normalizeVector(_radius);
+		
+		Double[] s = convertToPolar(site2, baseToS1, orthog);
+		s[0] *= 0.5;
+		
+		ContinuousVector midpoint = new ContinuousVector(); 
+		convertToCartesian(s, midpoint, orthog, baseToS1);
+		
+		
+		
+		return out;
+	}
+	
+	/**
+	 * TODO Check!
+	 */
+	public final int compare(ContinuousVector point1,
+			ContinuousVector point2)
+	{		
+		Double[] p1 = convertToPolar(point1);
+		Double[] p2 = convertToPolar(point2);
+		int out = (int) Math.signum(p1[1] - p2[1]);
+		if ( out == 0 )
+			out = (int) Math.signum(p1[0] - p2[0]);
 		return out;
 	}
 }
