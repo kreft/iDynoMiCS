@@ -175,10 +175,10 @@ public class SweepTable
 	{
 		int temp = space.compare(point, halfEdge.edge.region[1]);
 		
-		if ( temp > 0 && halfEdge.plusMinus == 0)
+		if ( temp > 0 && halfEdge.leftRight == 0)
 			return true;
 		
-		if ( temp < 0 && halfEdge.plusMinus == 1)
+		if ( temp < 0 && halfEdge.leftRight == 1)
 			return false;
 		
 		return true;

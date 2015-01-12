@@ -331,6 +331,14 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	}
 	
 	/**
+	 * TODO
+	 */
+	public void clipEdge(Edge edge)
+	{
+		
+	}
+	
+	/**
 	 * TODO Check!
 	 */
 	public final int compare(ContinuousVector point1,

@@ -5,7 +5,7 @@ import simulator.geometry.ContinuousVector;
 public class Edge
 {
 	
-	public ContinuousVector[] endPoint;
+	public Vertex[] endPoint;
 	
 	
 	public Site[] region;

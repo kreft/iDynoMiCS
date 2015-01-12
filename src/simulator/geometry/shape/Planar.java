@@ -223,6 +223,92 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 		return out;
 	}
 	
+	private Double[] decomposeToUV(ContinuousVector point)
+	{
+		Double[] out = new Double[2];
+		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
+		pointOnPlaneToPoint.sendDiff(_cPointOnPlane, point);
+		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
+		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
+		return out;
+	}
+	
+	/**
+	 * TODO
+	 * 
+	 * Might need to change to a boolean
+	 */
+	public void clipEdge(Edge edge)
+	{
+		Double a, b, c;
+		a = edge.coefficient[0];
+		b = edge.coefficient[1];
+		c = edge.coefficient[2];
+		
+		Double[] topVertex, bottomVertex;
+		// TODO deal with null vertices
+		if ( a.equals(1.0) && b >= 0.0 )
+		{
+			topVertex = decomposeToUV(edge.endPoint[0]);
+			bottomVertex = decomposeToUV(edge.endPoint[1]);
+		}
+		else
+		{
+			topVertex = decomposeToUV(edge.endPoint[1]);
+			bottomVertex = decomposeToUV(edge.endPoint[0]);
+		}
+		
+		Double u1 = 0.0, u2 = 0.0, v1 = 0.0, v2 = 0.0;
+		// TODO
+		Double uMax = 10.0, vMax = 10.0;
+		
+		if ( a.equals(1.0) )
+		{
+			// TODO ensure that _cPointOnPlane if the origin, i.e. min values
+			v1 = Math.max(Math.min(bottomVertex[1], vMax), 0.0);
+			v2 = Math.max(Math.min(topVertex[1], vMax), 0.0);
+			
+			u1 = c - b*v1;
+			u2 = c - b*v2;
+			
+			// If both u1 and u2 lie outside of the domain, return.
+			if ( Math.min(u1, u2) > uMax || Math.max(u1, u2) < 0.0)
+				return;
+			// If u1 is outside the domain, clip the vertex at the boundary.
+			u1 = Math.max(0.0, Math.min(u1, uMax));
+			v1 = (c - u1)/b;
+			// Ditto for u2.
+			u2 = Math.max(0.0, Math.min(u2, uMax));
+			v2 = (c - u2)/b;
+		}
+		else
+		{
+			u1 = Math.max(Math.min(bottomVertex[0], uMax), 0.0);
+			u2 = Math.max(Math.min(topVertex[0], uMax), 0.0);
+			
+			v1 = c - a*u1;
+			v2 = c - a*u2;
+			
+			// If both v1 and v2 lie outside of the domain, return.
+			if ( Math.min(v1, v2) > vMax || Math.max(v1, v2) < 0.0)
+				return;
+			// If v1 is outside the domain, clip the vertex at the boundary.
+			v1 = Math.max(0.0, Math.min(v1, vMax));
+			u1 = (c - v1)/a;
+			// Ditto for v2.
+			v2 = Math.max(0.0, Math.min(v2, vMax));
+			u2 = (c - v2)/b;
+		}
+		
+		// TODO This should be set in Voronoi
+		Double minDistanceBetweenSites = 1E-3;
+		// TODO Should be returning this Edge as a success.. maybe use a boolean?
+		if ( Math.hypot(u2 - u1, v2 - v1) >  minDistanceBetweenSites )
+		{
+			return;
+		}
+	}
+	
 	/**
 	 * \brief Takes a vector and returns that vector pointing towards the
 	 * inside of the shape.
@@ -391,6 +477,8 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	/**
      * \brief Test that the received point is coplanar with the definition
      * point.
+     * 
+     * TODO Check this never divides by 0!
      * 
      * @param point	ContinuousVector of coordinates that should be tested
      * @return	Boolean stating whether the point is cooplanar with the definition point

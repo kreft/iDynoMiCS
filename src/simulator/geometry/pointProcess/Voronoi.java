@@ -55,7 +55,7 @@ public class Voronoi
 				nextSite = (Site) nextEvent;
 				// Find the first HalfEdge to the left of this site
 				leftBoundary = sweepTable.leftBoundary(nextSite);
-				
+				// TODO check if this is necessary
 				rightBoundary = leftBoundary.rightNeighbor;
 				// 
 				bottom = regionOnRight(leftBoundary);
@@ -64,7 +64,7 @@ public class Voronoi
 				// Create
 				bisector = new HalfEdge();
 				bisector.edge = newEdge;
-				bisector.plusMinus = 0;
+				bisector.leftRight = 0;
 				// 
 				sweepTable.insert(leftBoundary, bisector);
 				// 
@@ -78,9 +78,9 @@ public class Voronoi
 				
 				bisector = new HalfEdge();
 				bisector.edge = newEdge;
-				bisector.plusMinus = 1;
+				bisector.leftRight = 1;
 				
-				intersection = space.intersect(bisector, leftBoundary.rightNeighbor);
+				intersection = space.intersect(bisector, rightBoundary);
 				if ( intersection != null )
 					priorityQueueInsert(intersection, 
 							space.distance(intersection,  nextSite));
@@ -138,4 +138,11 @@ public class Voronoi
 				return he.edge.region[0];
 	}
 	
+	public void setEndPoint(Edge edge, int leftRight, Vertex vertex)
+	{
+		edge.endPoint[leftRight] = vertex;
+		if ( edge.endPoint[1-leftRight] == null )
+			return;
+		space.clipEdge(edge);
+	}
 }

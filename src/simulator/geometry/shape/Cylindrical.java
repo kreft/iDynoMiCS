@@ -303,6 +303,14 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	}
 	
 	/**
+	 * TODO
+	 */
+	public void clipEdge(Edge edge)
+	{
+		
+	}
+	
+	/**
 	 * TODO Check!
 	 */
 	public void orderLexicographically(ContinuousVector[] list)

@@ -51,6 +51,14 @@ public class Spherical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
+	/**
+	 * TODO
+	 */
+	public void clipEdge(Edge edge)
+	{
+		
+	}
+	
 	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain) {
 		// TODO Auto-generated method stub

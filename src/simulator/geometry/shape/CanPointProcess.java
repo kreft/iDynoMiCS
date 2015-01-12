@@ -14,7 +14,8 @@ public interface CanPointProcess extends IsShape
 	
 	public Vertex intersect(HalfEdge he1, HalfEdge he2);
 	
+	public void clipEdge(Edge edge);
+	
 	public int compare(ContinuousVector point1,
 										ContinuousVector point2);
-	
 }
