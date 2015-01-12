@@ -89,6 +89,8 @@ public class Voronoi
 			else if ( nextEvent instanceof Vertex)
 			{
 				nextVertex = (Vertex) nextEvent;
+				
+				
 			}
 		}
 	}

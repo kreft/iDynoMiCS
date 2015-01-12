@@ -19,7 +19,9 @@ import java.util.List;
 
 import simulator.geometry.*;
 import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
+import simulator.geometry.pointProcess.Vertex;
 import simulator.SpatialGrid;
 import utils.XMLParser;
 
@@ -478,6 +480,13 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 			out.coefficient[2] = (dUmid*dU/dV) + dVmid;
 		}
 		
+		return out;
+	}
+	
+	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	{
+		Vertex out = new Vertex();
+		// TODO
 		return out;
 	}
 	

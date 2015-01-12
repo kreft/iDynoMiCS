@@ -10,7 +10,9 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
+import simulator.geometry.pointProcess.Vertex;
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -291,6 +293,13 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	{
 		
 		return null;
+	}
+	
+	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	{
+		Vertex out = new Vertex();
+		// TODO
+		return out;
 	}
 	
 	/**

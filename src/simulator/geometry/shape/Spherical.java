@@ -10,7 +10,9 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
+import simulator.geometry.pointProcess.Vertex;
 import utils.XMLParser;
 
 public class Spherical implements IsShape, CanPointProcess, Serializable
@@ -40,6 +42,13 @@ public class Spherical implements IsShape, CanPointProcess, Serializable
 	public Edge bisect(Site site1, Site site2) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	{
+		Vertex out = new Vertex();
+		// TODO
+		return out;
 	}
 	
 	@Override
