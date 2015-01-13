@@ -47,7 +47,7 @@ public class BoundaryCyclic extends AllBC
 	/**
 	 * Shape object containing a construction of the boundary opposite this one
 	 */
-	private CanBeBoundary            _myOppShape;
+	private IsShape            _myOppShape;
 	
 	/**
 	 * Vector that stores the intersection with the crossed boundary
@@ -113,13 +113,13 @@ public class BoundaryCyclic extends AllBC
 			// Build first shape;
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(0).getAttributeValue("class");
-			_myShape = (CanBeBoundary) Class.forName(className).newInstance();
+			_myShape = (IsShape) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(shapeList.get(0)), aDomain);
 			_mySide = geometryRoot.getName();
 			// Build opposite side shape
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(1).getAttributeValue("class");
-			_myOppShape = (CanBeBoundary) Class.forName(className).newInstance();
+			_myOppShape = (IsShape) Class.forName(className).newInstance();
 			_myOppShape.readShape(new XMLParser(shapeList.get(1)), aDomain);
 
 		}
@@ -142,7 +142,8 @@ public class BoundaryCyclic extends AllBC
 	@Override
 	public ContinuousVector lookAt(ContinuousVector cc) 
 	{
-		ContinuousVector nCC = _myShape.intersection(cc, _myShape.getNormalInside(cc));
+		// TODO Using first intersection is a quick fix
+		ContinuousVector nCC = _myShape.intersections(cc, _myShape.getNormalInside(cc))[0];
 		ContinuousVector bCC = getSymmetric(nCC);
 		bCC.subtract(nCC);
 		nCC.sendSum(bCC, cc);
@@ -171,9 +172,11 @@ public class BoundaryCyclic extends AllBC
 	 * @param target	The target position that the agent is moving to
 	 */
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) {
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	{
 		// Determine the intersection with the crossed boundary
-		vectorIn = _myShape.intersection(anAgent.getLocation(), anAgent.getMovement());
+		// TODO Using first intersection is a quick fix
+		vectorIn = _myShape.intersections(anAgent.getLocation(), anAgent.getMovement())[0];
 
 		// Determine the remaining movement when we touch the boundary
 		target.sendDiff(target, vectorIn);
@@ -324,9 +327,11 @@ public class BoundaryCyclic extends AllBC
 	 * @param cc	A position on a boundary
 	 * @return	ContinuousVector containing the intersection between the opposite shape and provided point
 	 */
-	public ContinuousVector getSymmetric(ContinuousVector cc) {
+	public ContinuousVector getSymmetric(ContinuousVector cc)
+	{
 		// Determine on which shape you have to compute your future coordinates
-		return _myOppShape.intersection(cc, _myShape.getNormalInside(cc));
+		// TODO Using first intersection is a quick fix
+		return _myOppShape.intersections(cc, _myShape.getNormalInside(cc))[0];
 	}
 
 	

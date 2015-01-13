@@ -37,7 +37,7 @@ public abstract class AllBC{
 	/**
 	 * The shape of the boundary
 	 */
-	protected CanBeBoundary        _myShape;
+	protected IsShape        _myShape;
 	
 	/**
 	 * Quick test to know if the boundary is cyclic
@@ -129,7 +129,7 @@ public abstract class AllBC{
 		// Build the instance used to describe the shape
 		try
 		{
-			_myShape = (CanBeBoundary) Class.forName(className).newInstance();
+			_myShape = (IsShape) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(geometryRoot.getChildElement("shape")), aDomain);
 		}
 		catch (Exception e)
@@ -318,9 +318,9 @@ public abstract class AllBC{
      * @param vector	A continuous vector stating the line to be used in the calculation	
      * @return ContinuousVector stating the point of intersection between the boundary and a line
      */
-	public ContinuousVector getIntersection(ContinuousVector position, ContinuousVector vector)
+	public ContinuousVector[] getIntersections(ContinuousVector position, ContinuousVector vector)
 	{
-		return _myShape.intersection(position, vector);
+		return _myShape.intersections(position, vector);
 	}
 
 	/**

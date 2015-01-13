@@ -1,11 +1,6 @@
 package simulator.geometry.shape;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
@@ -16,13 +11,27 @@ import simulator.geometry.pointProcess.Vertex;
 import utils.ExtraMath;
 import utils.XMLParser;
 
-public class Cylindrical implements IsShape, CanPointProcess, Serializable
+public class Cylindrical extends IsShape
 {
 	/**
 	 * Serial version used for the serialisation of the class.
 	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * (0) height, (1) radius, (2) angle
+	 */
+	public final static int azimuthCoord = 2;
 	
+	/**
+	 * 
+	 */
+	public final static int heightCoord = 0;
+	
+	/**
+	 * 
+	 */
+	public final static int radialCoord = 1;
 	
 	/**
 	 * A point on the cylinder axis
@@ -132,9 +141,10 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	 */
 	public Boolean isOutside(ContinuousVector point)
 	{
-		Double[] position = convertToCylindrical(point);
-		Boolean isInsideCylinder = (position[0] >= 0.0) &&
-					(position[0] <= _length) && (position[1] <= _radius);
+		Double[] position = convertToLocal(point);
+		Boolean isInsideCylinder = (position[heightCoord] >= 0.0) &&
+									(position[heightCoord] <= _length) && 
+									(position[radialCoord] <= _radius);
 		return Boolean.logicalXor(isInsideCylinder, _interiorMatchesDomain);
 	}
 	
@@ -143,29 +153,26 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	 */
 	public Boolean isOnBoundary(ContinuousVector point, Double res)
 	{
-		Double[] position = convertToCylindrical(point);
-		if ((position[0] < 0.0) || (position[0] > _length))
+		Double[] position = convertToLocal(point);
+		if ((position[heightCoord] < 0.0) || (position[heightCoord] > _length))
 			return false;
 		if ( _interiorMatchesDomain )
-			return ( position[1] >= _radius && position[1] <= _radius + res);
+			return ( position[radialCoord] >= _radius && 
+						position[radialCoord] <= _radius + res);
 		else 
-			return ( position[1] <= _radius && position[1] >= _radius - res);
+			return ( position[radialCoord] <= _radius &&
+						position[radialCoord] >= _radius - res);
 	}
 	
-	/**
-	 * 
-	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		Double[] coords = convertToCylindrical(ccIn);
-		coords[0] = Math.max(Math.min(coords[0], _length), 0.0);
-		coords[1] = _radius;
-		convertToCartesian(coords, ccOut);
+		Double[] p = convertToLocal(ccIn);
+		p[heightCoord] = Math.max(Math.min(p[heightCoord], _length), 0.0);
+		p[radialCoord] = _radius;
+		// The angle, p[azimuthCoord], doesn't change.
+		convertToCartesian(p, ccOut);
 	}
 	
-	/**
-	 * 
-	 */
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
 		ContinuousVector out = new ContinuousVector();
@@ -173,18 +180,19 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 		return out;
 	}
 	
-	/**
-	 * 
-	 */
-	public Double getDistance(ContinuousVector cc)
+	public Double getDistance(ContinuousVector point)
 	{
-		Double[] coords = convertToCylindrical(cc);
-		Double d = Math.max(coords[0] - _length, - coords[0]);
-		Double r = Math.abs(coords[1] - _radius);
+		ContinuousVector diff = getOrthoProj(point);
+		diff.subtract(point);
+		return diff.norm();
+		
+		/*Double[] p = convertToLocal(point);
+		Double d = Math.max(p[heightCoord] - _length, - p[heightCoord]);
+		Double r = Math.abs(p[radialCoord] - _radius);
 		if ( d < 0.0)
 			return Math.hypot(d, r);
 		else
-			return r;
+			return r;*/
 	}
 	
 	/**
@@ -192,7 +200,7 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	 * @param point 
 	 * @return 3 Doubles: (0) height, (1) radius, (2) angle
 	 */
-	private Double[] convertToCylindrical(ContinuousVector point)
+	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
 		ContinuousVector baseToPoint = baseToPoint(point);
@@ -258,8 +266,8 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	public Double distanceAlongSurface(ContinuousVector point1,
 													ContinuousVector point2)
 	{
-		Double[] p1 = convertToCylindrical(point1);
-		Double[] p2 = convertToCylindrical(point2);
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
 		
 		Double angle = Math.abs(p1[1] - p2[1]);
 		angle = Math.min(angle, 2*Math.PI);
@@ -303,53 +311,61 @@ public class Cylindrical implements IsShape, CanPointProcess, Serializable
 	}
 	
 	/**
-	 * TODO
-	 */
-	public void clipEdge(Edge edge)
-	{
-		
-	}
-	
-	/**
-	 * TODO Check!
-	 */
-	public void orderLexicographically(ContinuousVector[] list)
-	{
-		List<ContinuousVector> events = 
-				new ArrayList<ContinuousVector>(list.length);
-		
-		Collections.sort(events, new Comparator<Object>() {
-			@Override
-			public int compare(Object point1, Object point2)
-			{
-				Double[] p1 = convertToCylindrical((ContinuousVector) point1);
-				Double[] p2 = convertToCylindrical((ContinuousVector) point2);
-				int out = (int) Math.signum(p1[1] - p2[1]);
-				if ( out == 0 )
-					out = (int) Math.signum(p1[0] - p2[0]);
-				return out;
-			}
-		});
-
-		int i = 0;
-		for ( ContinuousVector e : events )
-		{
-			list[i] = e;
-			i++;
-		}
-	}
-	
-	/**
 	 * TODO Check!
 	 */
 	public final int compare(ContinuousVector point1,
 											ContinuousVector point2)
 	{		
-		Double[] p1 = convertToCylindrical(point1);
-		Double[] p2 = convertToCylindrical(point2);
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
 		int out = (int) Math.signum(p1[1] - p2[1]);
 		if ( out == 0 )
 			out = (int) Math.signum(p1[0] - p2[0]);
 		return out;
+	}
+	
+	public ContinuousVector[] intersections(ContinuousVector position,
+													ContinuousVector vector)
+	{
+		ContinuousVector[] out = new ContinuousVector[2];
+		return out;
+	}
+	
+	public void readyToFollowBoundary(SpatialGrid aSG)
+	{
+		
+	}
+	
+	/**
+	 * 
+	 */
+	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
+															SpatialGrid aSG)
+	{
+		return null;
+	}
+	
+	/**
+	 * 
+	 */
+	public ContinuousVector getNormalInside(ContinuousVector cc)
+	{
+		return null;
+	}
+	
+	/**
+	 * 
+	 */
+	public Double getDistance(IsShape aBoundary)
+	{
+		return null;
+	}
+	
+	/**
+	 * 
+	 */
+	public DiscreteVector getNormalDC()
+	{
+		return null;
 	}
 }

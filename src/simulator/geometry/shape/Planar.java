@@ -34,7 +34,7 @@ import utils.XMLParser;
  * outside the domain. These shape parameters must be given in index 
  * coordinates.
  */
-public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializable 
+public class Planar extends IsShape 
 {
 	/**
 	 * Serial version used for the serialisation of the class.
@@ -113,16 +113,6 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 */
 	private static DiscreteVector origin = new DiscreteVector();
 	
-	/**
-	 * \brief Reads the coordinates that specify a boundary from the protocol
-	 * file, creating a shape.
-	 * 
-	 * @param shapeRoot	XML elements from the protocol file that contain
-	 * coordinates specifying the edge of a boundary.
-	 * @param aDomain The computation domain that this boundary is associated
-	 * with.
-	 */
-	@Override
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
@@ -161,38 +151,11 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 		_cOrthogV.normalizeVector();
 	}
 	
-	/**
-	 * \brief Test if a given set of coordinates is outside this shape.
-	 * 
-	 * @param point	ContinuousVector containing the coordinates of a point to
-	 * test.
-	 * @return	Boolean noting whether this coordinate is inside or outside
-	 * this shape.
-	 */
-	@Override
 	public Boolean isOutside(ContinuousVector point)
 	{
 		ContinuousVector temp = new ContinuousVector(point);
 		temp.subtract(_cPointOnPlane);
 		return ( _cVectorOut.cosAngle(temp) > 0 );
-	}
-	
-	/**
-     * Computes orthogonal distance and if this distance is lower than the
-     * resolution and if the point is outside, then the point tested is
-     * declared to be on the boundary of the domain.
-     * 
-	 * @param point	ContinuousVector containing the coordinates of a point to
-	 * test.
-	 * @param res	Resolution of the domain that this shape is associated
-	 * with.
-	 * @return	Boolean noting whether this coordinate is on the boundary of
-	 * the domain.
-	 */
-	@Override
-	public Boolean isOnBoundary(ContinuousVector point, Double res)
-	{
-		return isOutside(point) && (point.distance(getOrthoProj(point))<=res);
 	}
 	
 	/**
@@ -206,107 +169,35 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
      * line.
      * @return Coordinates of the intersection between a line and the plane.
      */
-	@Override
-	public ContinuousVector intersection(ContinuousVector position, 
+	public ContinuousVector[] getIntersections(ContinuousVector position, 
 											ContinuousVector vector)
 	{
 		// If the line is parallel to his plane, return null.
 		Double c = _cVectorOut.prodScalar(vector);
 		if ( c.equals(0.0) )
 			return null;
-		ContinuousVector out = new ContinuousVector(vector);
+		ContinuousVector[] out = new ContinuousVector[1];
+		ContinuousVector intersection = new ContinuousVector(vector);
 		/* Find the (relative) length along vector we must travel to hit the
 		 * plane.
 		 */
-		out.times((_vOutDotPPlane - _cVectorOut.prodScalar(position))/c);
-		out.add(position);
-		return out;
-	}
-	
-	private Double[] decomposeToUV(ContinuousVector point)
-	{
-		Double[] out = new Double[2];
-		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
-		pointOnPlaneToPoint.sendDiff(_cPointOnPlane, point);
-		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
-		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
+		intersection.times((_vOutDotPPlane - _cVectorOut.prodScalar(position))/c);
+		intersection.add(position);
 		return out;
 	}
 	
 	/**
-	 * TODO
 	 * 
-	 * Might need to change to a boolean
 	 */
-	public void clipEdge(Edge edge)
+	public Double[] convertToLocal(ContinuousVector point)
 	{
-		Double a, b, c;
-		a = edge.coefficient[0];
-		b = edge.coefficient[1];
-		c = edge.coefficient[2];
-		
-		Double[] topVertex, bottomVertex;
-		// TODO deal with null vertices
-		if ( a.equals(1.0) && b >= 0.0 )
-		{
-			topVertex = decomposeToUV(edge.endPoint[0]);
-			bottomVertex = decomposeToUV(edge.endPoint[1]);
-		}
-		else
-		{
-			topVertex = decomposeToUV(edge.endPoint[1]);
-			bottomVertex = decomposeToUV(edge.endPoint[0]);
-		}
-		
-		Double u1 = 0.0, u2 = 0.0, v1 = 0.0, v2 = 0.0;
-		// TODO
-		Double uMax = 10.0, vMax = 10.0;
-		
-		if ( a.equals(1.0) )
-		{
-			// TODO ensure that _cPointOnPlane if the origin, i.e. min values
-			v1 = Math.max(Math.min(bottomVertex[1], vMax), 0.0);
-			v2 = Math.max(Math.min(topVertex[1], vMax), 0.0);
-			
-			u1 = c - b*v1;
-			u2 = c - b*v2;
-			
-			// If both u1 and u2 lie outside of the domain, return.
-			if ( Math.min(u1, u2) > uMax || Math.max(u1, u2) < 0.0)
-				return;
-			// If u1 is outside the domain, clip the vertex at the boundary.
-			u1 = Math.max(0.0, Math.min(u1, uMax));
-			v1 = (c - u1)/b;
-			// Ditto for u2.
-			u2 = Math.max(0.0, Math.min(u2, uMax));
-			v2 = (c - u2)/b;
-		}
-		else
-		{
-			u1 = Math.max(Math.min(bottomVertex[0], uMax), 0.0);
-			u2 = Math.max(Math.min(topVertex[0], uMax), 0.0);
-			
-			v1 = c - a*u1;
-			v2 = c - a*u2;
-			
-			// If both v1 and v2 lie outside of the domain, return.
-			if ( Math.min(v1, v2) > vMax || Math.max(v1, v2) < 0.0)
-				return;
-			// If v1 is outside the domain, clip the vertex at the boundary.
-			v1 = Math.max(0.0, Math.min(v1, vMax));
-			u1 = (c - v1)/a;
-			// Ditto for v2.
-			v2 = Math.max(0.0, Math.min(v2, vMax));
-			u2 = (c - v2)/b;
-		}
-		
-		// TODO This should be set in Voronoi
-		Double minDistanceBetweenSites = 1E-3;
-		// TODO Should be returning this Edge as a success.. maybe use a boolean?
-		if ( Math.hypot(u2 - u1, v2 - v1) >  minDistanceBetweenSites )
-		{
-			return;
-		}
+		Double[] out = new Double[3];
+		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
+		pointOnPlaneToPoint.sendDiff(_cPointOnPlane, point);
+		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
+		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
+		out[2] = _cVectorOut.cosAngle(pointOnPlaneToPoint);
+		return out;
 	}
 	
 	/**
@@ -318,7 +209,6 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 * shape.
 	 * 
 	 */
-	@Override
 	public ContinuousVector getNormalInside(ContinuousVector cc)
 	{
 		ContinuousVector out = new ContinuousVector(_cVectorOut);
@@ -332,10 +222,9 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 * @param ccIn	Coordinates to be corrected.
 	 * @param ccOut	Corrected coordinates.
 	 */
-	@Override
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		ccOut = intersection(ccIn, _cVectorOut);
+		ccOut = getIntersections(ccIn, _cVectorOut)[0];
 	}
 
 	/**
@@ -346,10 +235,9 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 * @return Corrected coordinates.
 	 * 
 	 */
-	@Override
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
-		return intersection(ccIn, _cVectorOut);
+		return getIntersections(ccIn, _cVectorOut)[0];
 	}
 
 	/**
@@ -362,10 +250,10 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 * 
 	 * @return Double stating distance to that shape.
 	 */
-	@Override
-	public Double getDistance(CanBeBoundary aBoundary)
+	public Double getDistance(IsShape aBoundary)
 	{
-		ContinuousVector ccOut = aBoundary.intersection(_cPointOnPlane, _cVectorOut);
+		ContinuousVector ccOut = 
+					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut)[0];
 		return _cPointOnPlane.distance(ccOut);
 	}
 	
@@ -377,10 +265,9 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 	 * 
 	 * @return Double stating distance to that shape
 	 */
-	@Override
 	public Double getDistance(ContinuousVector cc)
 	{
-		ContinuousVector ccOut = intersection(cc, _cVectorOut);
+		ContinuousVector ccOut = getIntersections(cc, _cVectorOut)[0];
 		return ccOut.distance(cc);
 	}
 	
@@ -590,6 +477,5 @@ public class Planar implements IsShape, CanBeBoundary, CanPointProcess, Serializ
 		if ( out == 0 )
 			out = (int) Math.signum(point1.x - point2.x);
 		return out;
-
 	}
 }

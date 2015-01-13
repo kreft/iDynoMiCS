@@ -1,11 +1,13 @@
 /**
  * \package simulator.geometry
- * \brief Package of boundary utilities that aid the creation of the environment being simulated
+ * \brief Package of boundary utilities that aid the creation of the
+ * environment being simulated.
  * 
- * Package of boundary utilities that aid the creation of the environment being simulated. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.geometry;
 
@@ -19,16 +21,17 @@ import utils.XMLParser;
 /**
  * \brief Implements 3D vector of continuous spatial coordinates.
  * 
+ * Cartesian (x, y, z) coordinates obligatory.
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
- * @author Andreas Dï¿½tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author Joï¿½o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  *
  */
-public class ContinuousVector implements Cloneable, Serializable, Comparable<ContinuousVector>
+public class ContinuousVector implements Cloneable
 {
 	/**
 	 * Serial version used for the serialisation of the class
@@ -164,7 +167,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	}
 
 	/**
-	 * \brief Determine if this vector is in the location giving by the points X,Y,Z
+	 * \brief Determine if this vector is in the given location.
 	 * 
 	 * @param x	X coordinate.
 	 * @param y Y coordinate.
@@ -206,8 +209,9 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	@Override
 	public String toString()
 	{
-		return ExtraMath.toString(x, false)+",\t"+ExtraMath.toString(y, false)+
-											",\t"+ExtraMath.toString(z, false);
+		return ExtraMath.toString(x, false)
+				+",\t"+ExtraMath.toString(y, false)
+				+",\t"+ExtraMath.toString(z, false);
 	}
 	
 	/**
@@ -257,17 +261,18 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	}
 
 	/**
-	 * \brief Store in this vector the subtraction of two other continuous vectors
+	 * \brief Store in this vector the difference of two other continuous
+	 * vectors.
 	 * 
-	 * @param a	First continuous vector
-	 * @param b	Continuous vector to subtract from the first
+	 * @param a	First continuous vector.
+	 * @param b	Continuous vector to subtract from the first.
 	 */
 	public void sendDiff(ContinuousVector a, ContinuousVector b)
 	{
 		set(a);
 		subtract(b);
 	}
-
+	
 	/**
 	 * \brief Calculate scalar product (dot product) of this vector with vector
 	 * cc supplied.
@@ -311,10 +316,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 */
 	public void normalizeVector()
 	{
-		Double norm = this.norm();
-		if ( ! norm.equals(0.0) )
-			this.times(1/norm);
-
+		normalizeVector(1.0);
 	}
 
 	/**
@@ -325,7 +327,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	public void normalizeVector(Double newLength)
 	{
 		Double norm = this.norm();
-		if (!norm.equals(0.0))
+		if ( ! norm.equals(0.0) )
 			this.times(newLength/norm);
 	}
 
@@ -384,25 +386,6 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	{
 		return super.clone();
 	}
-	
-	/**
-	 * \brief Compares the values of two continuous vectors.
-	 * 
-	 * Used in the creation of the epithelium for eGUT.
-	 * 
-	 * @param other	ContinuousVector to compare this continuous vector to.
-	 */
-	@Override
-	public int compareTo(ContinuousVector other) 
-    {
-		int valueComparison = this.x.compareTo(other.x);
-    	if (valueComparison == 0)
-    		valueComparison = this.y.compareTo(other.y);
-    	if (valueComparison == 0)
-    		valueComparison = this.z.compareTo(other.z);
-    	return valueComparison;
-    }
-	
 	
 	public Boolean isOrthogonal(ContinuousVector other)
 	{

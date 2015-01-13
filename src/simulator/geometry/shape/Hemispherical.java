@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
@@ -16,7 +17,7 @@ import simulator.geometry.pointProcess.Vertex;
 import utils.ExtraMath;
 import utils.XMLParser;
 
-public class Hemispherical implements IsShape, CanPointProcess, Serializable
+public class Hemispherical extends IsShape
 {
 	/**
 	 * Serial version used for the serialisation of the class.
@@ -174,7 +175,7 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	 * @return 3 Doubles: (0) angle on the circular base, (1) angle with the
 	 * vector to the apex, (2) distance from the centre.
 	 */
-	private Double[] convertToPolar(ContinuousVector point)
+	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
 		ContinuousVector baseToPoint = baseToPoint(point);
@@ -331,24 +332,64 @@ public class Hemispherical implements IsShape, CanPointProcess, Serializable
 	}
 	
 	/**
-	 * TODO
-	 */
-	public void clipEdge(Edge edge)
-	{
-		
-	}
-	
-	/**
 	 * TODO Check!
 	 */
 	public final int compare(ContinuousVector point1,
 			ContinuousVector point2)
 	{		
-		Double[] p1 = convertToPolar(point1);
-		Double[] p2 = convertToPolar(point2);
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
 		int out = (int) Math.signum(p1[1] - p2[1]);
 		if ( out == 0 )
 			out = (int) Math.signum(p1[0] - p2[0]);
 		return out;
+	}
+	
+	/**
+	 * 
+	 */
+	public Boolean isOnBoundary(ContinuousVector cV, Double res)
+	{
+		return null;
+	}
+
+	/**
+	 * 
+	 */
+	public ContinuousVector[] intersections(ContinuousVector position,
+													ContinuousVector vector) 
+	{
+		ContinuousVector baseToP = baseToPoint(position);
+		
+		ContinuousVector[] out = new ContinuousVector[2];
+		return out;
+	}
+	
+	public void readyToFollowBoundary(SpatialGrid aSG)
+	{
+		// TODO Auto-generated method stub
+	}
+	
+	public Boolean followBoundary(DiscreteVector dcIn, DiscreteVector dcOut,
+															SpatialGrid aSG) 
+	{
+		return false;
+	}
+	
+	
+	public ContinuousVector getNormalInside(ContinuousVector cc)
+	{
+		return null;
+	}
+	
+	public Double getDistance(IsShape aBoundary)
+	{
+		
+		return null;
+	}
+	
+	public DiscreteVector getNormalDC()
+	{
+		return null;
 	}
 }

@@ -1,7 +1,7 @@
 package simulator.geometry.pointProcess;
 
 import simulator.geometry.ContinuousVector;
-import simulator.geometry.shape.CanPointProcess;
+import simulator.geometry.shape.IsShape;
 
 /**
  * 
@@ -13,7 +13,7 @@ public class SweepTable
 	/**
 	 * 
 	 */
-	CanPointProcess space;
+	IsShape space;
 	
 	/**
 	 * 
@@ -37,7 +37,7 @@ public class SweepTable
 	 */
 	Double deltaValue;
 	
-	public SweepTable(CanPointProcess space, int numberOfSites,
+	public SweepTable(IsShape space, int numberOfSites,
 										Double minValue, Double maxValue)
 	{
 		this.space = space;

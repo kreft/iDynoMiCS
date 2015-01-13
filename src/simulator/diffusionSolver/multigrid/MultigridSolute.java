@@ -660,7 +660,7 @@ public class MultigridSolute
 	{
 		for (int order = maxOrder - 1; order > 0; order--)
 		{
-			_conc[order-1].setAllValueAt(0);
+			_conc[order-1].resetToZero();
 			MultigridUtils.restrict(_conc[order], _conc[order-1]);
 		}
 	}

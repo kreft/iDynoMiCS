@@ -8,7 +8,7 @@ import java.util.ListIterator;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.HalfEdge;
-import simulator.geometry.shape.CanPointProcess;
+import simulator.geometry.shape.IsShape;
 import utils.LogFile;
 
 public class Voronoi
@@ -19,7 +19,11 @@ public class Voronoi
 	
 	private SweepTable sweepTable;
 	
-	private CanPointProcess space;
+	private IsShape space;
+	
+	private IsShape[] boundaries;
+	
+	private LinkedList<Edge> edges;
 	
 	private ContinuousVector nextEvent;
 	
@@ -61,6 +65,7 @@ public class Voronoi
 				bottom = regionOnRight(leftBoundary);
 				//
 				newEdge = space.bisect(bottom, nextSite);
+				edges.add(newEdge);
 				// Create
 				bisector = new HalfEdge();
 				bisector.edge = newEdge;
@@ -91,8 +96,15 @@ public class Voronoi
 				nextVertex = (Vertex) nextEvent;
 				
 				
+				
 			}
-		}
+			
+			
+		} // End of while ( pqIterator.hasNext() )
+		
+		// Deal with any Edges that cross boundaries
+		// TODO just those in sweepTable?
+		
 	}
 	
 	/**
@@ -138,11 +150,25 @@ public class Voronoi
 				return he.edge.region[0];
 	}
 	
-	public void setEndPoint(Edge edge, int leftRight, Vertex vertex)
+	private void setEndPoint(Edge edge, int leftRight, Vertex vertex)
 	{
 		edge.endPoint[leftRight] = vertex;
 		if ( edge.endPoint[1-leftRight] == null )
 			return;
-		space.clipEdge(edge);
+		clip(edge);
+	}
+	
+	private void clip(Edge edge)
+	{
+		ContinuousVector diff = new ContinuousVector();
+		ContinuousVector[] intersections;
+		diff.sendDiff(edge.endPoint[1], edge.endPoint[0]);
+		for ( IsShape boundary : boundaries )
+		{
+			intersections = boundary.intersections(edge.endPoint[0], diff);
+			if ( intersections == null )
+				continue;
+			// TODO
+		}
 	}
 }

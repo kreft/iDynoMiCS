@@ -11,9 +11,16 @@
  */
 package simulator.geometry.shape;
 
+import java.io.Serializable;
+
+import simulator.SpatialGrid;
 import simulator.geometry.Domain;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
+import simulator.geometry.pointProcess.Edge;
+import simulator.geometry.pointProcess.HalfEdge;
+import simulator.geometry.pointProcess.Site;
+import simulator.geometry.pointProcess.Vertex;
 import utils.XMLParser;
 
 /**
@@ -22,8 +29,13 @@ import utils.XMLParser;
  * Defines the methods used to monitor the boundaries of the computation
  * domain.
  */
-public interface IsShape
+public abstract class IsShape implements Serializable
 {
+	/**
+	 * Serial version used for the serialisation of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
 	 * file, creating a shape.
@@ -33,7 +45,7 @@ public interface IsShape
 	 * @param aDomain	The computation domain that this boundary is
 	 * associated with.
 	 */
-	public void readShape(XMLParser shapeRoot, Domain aDomain);
+	public abstract void readShape(XMLParser shapeRoot, Domain aDomain);
 	
 	/**
 	 * \brief Test if a given set of coordinates is outside this shape.
@@ -43,7 +55,7 @@ public interface IsShape
 	 * @return	Boolean noting whether this coordinate is inside or outside
 	 * this shape.
 	 */
-	public Boolean isOutside(ContinuousVector cV);
+	public abstract Boolean isOutside(ContinuousVector cV);
 	
 	/**
 	 * \brief Correct coordinates of a point that has gone outside this shape.
@@ -51,7 +63,7 @@ public interface IsShape
 	 * @param ccIn	Coordinates to be corrected
 	 * @param ccOut	Corrected coordinates
 	 */
-	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut);
+	public abstract void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut);
 	
 	/**
 	 * \brief Correct coordinates of a point that has gone outside this shape,
@@ -60,7 +72,7 @@ public interface IsShape
 	 * @param ccIn	Coordinates to be corrected
 	 * @return Corrected coordinates
 	 */
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn);
+	public abstract ContinuousVector getOrthoProj(ContinuousVector ccIn);
 	
 	/**
 	 * \brief Gets the distance from a point on the other side
@@ -70,7 +82,123 @@ public interface IsShape
 	 * 
 	 * @return Double stating distance to that shape.
 	 */
-	public Double getDistance(ContinuousVector cc);
+	public Double getDistance(ContinuousVector point)
+	{
+		ContinuousVector diff = getOrthoProj(point);
+		diff.subtract(point);
+		return diff.norm();
+	}
+	
+	
+	/**
+     * Computes orthogonal distance and if this distance is lower than the
+     * resolution and if the point is outside, then the point tested is
+     * declared to be on the boundary of the domain.
+     * 
+	 * @param cC	ContinuousVector containing the coordinates of a point to
+	 * test.
+	 * @param res	Resolution of the domain that this shape is associated
+	 * with.
+	 * @return	Boolean noting whether this coordinate is on the boundary of
+	 * the domain.
+	 */
+	public Boolean isOnBoundary(ContinuousVector point, Double res)
+	{
+		return isOutside(point) && 
+				point.distance(getOrthoProj(point)) <= res;
+	}
 	
 
+	/**
+     * \brief Calculates the coordinates of the intersection(s) between a line
+     * (point and vector) and the shape.
+     * 
+     * Returns null if none exists.
+     * 
+     * Examples:
+     * - Planar may have 0 or 1 intersection
+     * - Cylindrical or Hemispherical may have 0, 1, or 2 intersections
+     * 
+     * @param position	Position used to calculate the line.
+     * @param vector	Vector of coordinate positions used to calculate the
+     * line.
+     * @return Coordinates of the intersection(s) between a line and the shape.
+     */
+	public abstract ContinuousVector[] getIntersections(
+						ContinuousVector position, ContinuousVector vector);
+	
+	
+	/**
+	 * \brief Takes a vector and returns that vector pointing towards the
+	 * inside of the shape.
+	 * 
+	 * @param cc	Vector outside the shape.
+	 * @return ContinuousVector that is pointing towards the inside of the
+	 * shape.
+	 */
+	public abstract ContinuousVector getNormalInside(ContinuousVector cc);
+		
+	/**
+	 * \brief Return vector normal to the plane.
+	 * 
+	 * @return	Discrete vector normal to the plane.
+	 */
+	public abstract DiscreteVector getNormalDC();
+	
+	/**
+	 * \brief Return the (shortest) distance, over this shape, between two 
+	 * points on this shape.
+	 * 
+	 * @param point1
+	 * @param point2
+	 * @return
+	 */
+	public abstract Double distance(ContinuousVector point1, ContinuousVector point2);
+	
+	/**
+	 * 
+	 * @param site1
+	 * @param site2
+	 * @return
+	 */
+	public abstract Edge bisect(Site site1, Site site2);
+	
+	public abstract Vertex intersect(HalfEdge he1, HalfEdge he2);
+	
+	/* ------------------------- Voronoi diagram -------------------------- */
+	
+	public abstract int compare(ContinuousVector point1,
+										ContinuousVector point2);
+	
+	public abstract Double[] convertToLocal(ContinuousVector point);
+	
+	/* ---------------------- SpatialGrid boundaries ---------------------- */
+	
+	/**
+	 * \brief Gets the distance from the opposite side (aShape).
+	 * 
+	 * Used in cyclic boundaries.
+	 * 
+	 * @return Double stating distance to that shape.
+	 */
+	public abstract Double getDistance(IsShape aBoundary);
+	
+	/**
+     * \brief Initialisation to create the features of and go along the
+     * boundary.
+     * 
+     * @param aSG	The grid to which this boundary is a part.
+     */
+	public abstract void readyToFollowBoundary(SpatialGrid aSG);
+	
+	/**
+     * \brief Find the next valid point.
+     *  
+     *  @param dcIn	Discrete vector within the shape.
+     *  @param dcOut	Discrete vector outside the shape.
+     *  @param aSG	Spatial grid in which the boundary is associated.
+     *  @return Whether a valid point was found.
+     */
+	public abstract Boolean followBoundary(DiscreteVector dcIn,
+									DiscreteVector dcOut, SpatialGrid aSG);
 }

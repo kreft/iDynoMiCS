@@ -167,7 +167,7 @@ public class Solver_chemostat extends DiffusionSolver
 		try{
 			for (int i = 0; i<nReaction; i++) {
 				_reactiveBiomass[i] = new MultigridSolute(_soluteList[0], _reactions.get(i).reactionName);
-				_reactiveBiomass[i]._conc[0].setAllValueAt(0);
+				_reactiveBiomass[i]._conc[0].resetToZero();
 				if (!Idynomics.quietMode)
 					System.out.println("biomass conc is ----->>>   " + _reactiveBiomass[i]._conc[0].grid[0][0][0]);
 			}
@@ -180,28 +180,37 @@ public class Solver_chemostat extends DiffusionSolver
 	 * Set the dilution rate and the initial substrate concentration to those specified in the bulk compartment 
 	 * [Rob: one assumption here is that the dilution rate is constant].
 	 */
-	public void setDilutionAndY0() {
-		try {
-			for (AllBC aBC : _domain.getAllBoundaries()){
-				if (aBC.hasBulk()){
+	public void setDilutionAndY0()
+	{
+		try
+		{
+			for (AllBC aBC : _domain.getAllBoundaries())
+			{
+				if ( aBC.hasBulk() )
+				{
 					Bulk aBulk = aBC.getBulk();
-					if(aBulk.getName().equals("chemostat")){
+					if ( aBulk.getName().equals("chemostat") )
+					{
 						Dilution = aBulk._D;
-						for (int i = 0; i < nSolute; i++) {
+						for (int i = 0; i < nSolute; i++) 
+						{
 							allSolute[i] = mySim.soluteList[i];
 							allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
 							//LogFile.writeLog(" allSolute["+i+"] = "+allSolute[i].grid[0][0][0]);
 							allReac[i] = new SoluteGrid (1,1,1, _domain._resolution,
 									mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
-							allReac[i].setAllValueAt(0);
+							allReac[i].resetToZero();
 						}
 					}
 					isConstSol = aBulk._isConstant;
 				}
 				//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
 			}
-		} catch (Exception e) {
-			LogFile.writeLogAlways("Error in Solver_chemostat.updateReacRateAndDiffRate() : " + e);}
+		} 
+		catch (Exception e) 
+		{
+			LogFile.writeLogAlways("Error in Solver_chemostat.updateReacRateAndDiffRate() : " + e);
+		}
 	}
 
 	/**
@@ -213,10 +222,9 @@ public class Solver_chemostat extends DiffusionSolver
 	public void initializeConcentrationFields() {
 		try {
 			//reset biomass concentration in the grid
-			for (int i = 0; i<nReaction; i++) {
-				_reactiveBiomass[i]._conc[0].setAllValueAt(0);
-			}
-
+			for (int i = 0; i<nReaction; i++)
+				_reactiveBiomass[i]._conc[0].resetToZero();
+			
 			// Get the catalyst (biomass and other particulates) CONCENTRATION
 			for (int i = 0; i<nReaction; i++) {
 				_reactions.get(i).fitAgentMassOnGrid(_reactiveBiomass[i].getGrid());

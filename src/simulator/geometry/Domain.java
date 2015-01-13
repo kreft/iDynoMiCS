@@ -318,13 +318,13 @@ public class Domain implements IsComputationDomain
 						// Test if this grid cell is seen outside
 						if ( aBC.isOutside(dC, _domainGrid) )
 						{
-							_domainGrid.setValueAt(-1, i, j, k);
+							_domainGrid.setValueAt(-1.0, i, j, k);
 							continue loop;
 						}
 						// label carrier part of the domain
 						if ( aBC.isSupport() &&
 											aBC.getDistance(cC) < _resolution )
-							_domainGrid.setValueAt(0, i, j, k);
+							_domainGrid.setValueAt(0.0, i, j, k);
 					}
 				}
 	}
