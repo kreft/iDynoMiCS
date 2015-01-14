@@ -1,5 +1,7 @@
 package simulator.geometry.shape;
 
+import java.util.LinkedList;
+
 import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
@@ -324,10 +326,10 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
-	public ContinuousVector[] intersections(ContinuousVector position,
+	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
 													ContinuousVector vector)
 	{
-		ContinuousVector[] out = new ContinuousVector[2];
+		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		return out;
 	}
 	

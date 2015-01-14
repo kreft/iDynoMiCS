@@ -11,11 +11,11 @@ package simulator.agent;
 
 import java.util.*;
 
-
 import simulator.Simulator;
 import simulator.AgentContainer;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
 
@@ -467,10 +467,11 @@ public class LocatedGroup {
 		Double valueCarrier = Double.MAX_VALUE;
 		Double valueBulk = Double.MAX_VALUE;
 		
-		for (AllBC aBoundary : allBoundary) {
-			if (aBoundary.isSupport())
+		for (AllBC aBoundary : allBoundary)
+		{
+			if ( aBoundary.isSupport() )
 				valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
-			if (aBoundary.hasBulk())
+			if ( aBoundary instanceof ConnectedBoundary )
 				valueBulk = Math.min(valueBulk, aBoundary.getDistance(cc));
 		}
 		distanceFromCarrier = valueCarrier;

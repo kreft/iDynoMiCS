@@ -151,7 +151,7 @@ public class SimTimer
 		
 		tOpt = aWorld.getBulkTimeConstraint();
 		
-		if ( Double.isInfinite(tOpt) || Double.isNaN(tOpt) )
+		if ( ! Double.isFinite(tOpt) )
 			return;
 		
 		// Constrain value between min and max limits.

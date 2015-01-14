@@ -18,29 +18,31 @@ import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 
 /**
- * \brief BoundaryConstant : the concentration on the boundary is fixed by a constant bulk, the agents crossing this line die
+ * \brief BoundaryConstant : the concentration on the boundary is fixed by a
+ * constant bulk, the agents crossing this line die.
  * 
- * BoundaryConstant : the concentration on the boundary is fixed by a constant bulk, the agents crossing this line die. The boundary 
- * represents, for example, the connection to a larger system where the concentration can be considered constant. The solute 
- * concentrations at this boundary are fixed, and agents crossing this boundary are considered to have entered the planktonic bulk 
- * domain. 
+ * The boundary represents, for example, the connection to a larger system
+ * where the concentration can be considered constant. The solute 
+ * concentrations at this boundary are fixed, and agents crossing this
+ * boundary are considered to have entered the planktonic bulk domain. 
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  *
  */
-public class BoundaryConstant extends AllBC{
-
+public class BoundaryConstant extends AllBC
+{
 	/**
 	 * Serial version used for the serialisation of the class
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	/**
 	 * The reference to the bulk which maintains the concentration
 	 */
 	private Bulk              _connectedBulk;
-
+	
 	/**
 	 * \brief Initialises the boundary from information contained in the simulation protocol file, and loads the description of the connected bulk
 	 * 
@@ -51,7 +53,8 @@ public class BoundaryConstant extends AllBC{
 	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
 	 */
 	@Override
-	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) {
+	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp)
+	{
 		// Load the geometry of the boundary
 		readGeometry(aBoundCondMarkUp, aDomain);
 		aDomain.addBoundary(this);

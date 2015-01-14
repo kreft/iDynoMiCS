@@ -18,6 +18,7 @@ import java.awt.Color;
 import simulator.Simulator;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.BoundaryCyclic;
 import utils.LogFile;
 import utils.XMLParser;
 import utils.ExtraMath;
@@ -620,7 +621,7 @@ public class Species implements Serializable
 	{
 		// Cell has passed through the boundary on the left or right hand side
 		// If is cyclic, the point is deemed to reappear at the opposite side
-		if(boundaryCrossed.isCyclic())
+		if ( boundaryCrossed instanceof BoundaryCyclic )
 		{
 			// This will be inside the grid at the amount that the move would
 			// have taken the point outside of the grid.
@@ -651,7 +652,7 @@ public class Species implements Serializable
 	{
 		// Cell has passed through the boundary on the front or back of the grid
 		// If is cyclic, the point is deemed to reappear at the opposite side
-		if(boundaryCrossed.isCyclic())
+		if ( boundaryCrossed instanceof BoundaryCyclic )
 		{
 			// This will be inside the grid at the amount that the move would
 			// have taken the point outside of the grid.

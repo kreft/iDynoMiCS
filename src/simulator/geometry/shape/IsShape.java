@@ -12,6 +12,7 @@
 package simulator.geometry.shape;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 
 import simulator.SpatialGrid;
 import simulator.geometry.Domain;
@@ -113,7 +114,9 @@ public abstract class IsShape implements Serializable
      * \brief Calculates the coordinates of the intersection(s) between a line
      * (point and vector) and the shape.
      * 
-     * Returns null if none exists.
+     * Intersections must follow the order in which they are encountered,
+     * travelling from position along vector.
+     * Returns null if none exists. TODO return empty list?
      * 
      * Examples:
      * - Planar may have 0 or 1 intersection
@@ -124,7 +127,7 @@ public abstract class IsShape implements Serializable
      * line.
      * @return Coordinates of the intersection(s) between a line and the shape.
      */
-	public abstract ContinuousVector[] getIntersections(
+	public abstract LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector);
 	
 	
@@ -145,6 +148,34 @@ public abstract class IsShape implements Serializable
 	 */
 	public abstract DiscreteVector getNormalDC();
 	
+	
+	
+	/* ------------------------- Voronoi diagram -------------------------- */
+	
+	/**
+	 * 
+	 * @param site1
+	 * @param site2
+	 * @return
+	 */
+	public abstract Edge bisect(Site site1, Site site2);
+	
+	/**
+	 * 
+	 * @param point1
+	 * @param point2
+	 * @return
+	 */
+	public abstract int compare(ContinuousVector point1,
+										ContinuousVector point2);
+	
+	/**
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public abstract Double[] convertToLocal(ContinuousVector point);
+	
 	/**
 	 * \brief Return the (shortest) distance, over this shape, between two 
 	 * points on this shape.
@@ -157,20 +188,12 @@ public abstract class IsShape implements Serializable
 	
 	/**
 	 * 
-	 * @param site1
-	 * @param site2
+	 * @param he1
+	 * @param he2
 	 * @return
 	 */
-	public abstract Edge bisect(Site site1, Site site2);
-	
 	public abstract Vertex intersect(HalfEdge he1, HalfEdge he2);
 	
-	/* ------------------------- Voronoi diagram -------------------------- */
-	
-	public abstract int compare(ContinuousVector point1,
-										ContinuousVector point2);
-	
-	public abstract Double[] convertToLocal(ContinuousVector point);
 	
 	/* ---------------------- SpatialGrid boundaries ---------------------- */
 	

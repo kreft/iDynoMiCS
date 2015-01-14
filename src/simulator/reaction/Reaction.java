@@ -1,20 +1,24 @@
 /**
  * \package reaction
- * \brief Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS
+ * \brief Package of classes used to model stoichiometric and kinetic
+ * reactions in iDynoMiCS.
  * 
- * Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.reaction;
 
 import java.io.Serializable;
 import java.util.*;
-import Jama.Matrix;
 
+import Jama.Matrix;
 import simulator.*;
 import simulator.agent.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -193,17 +197,13 @@ public abstract class Reaction implements Serializable
 		
 		// Set the boundary conditions if this is a chemostat condition
 		for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-		{
-			if (aBC.hasBulk())
+			if ( aBC instanceof ConnectedBoundary )
 			{
-				Bulk aBulk = aBC.getBulk();
-				if(aBulk.getName().equals("chemostat"))
-				{
+				Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+				if ( aBulk.nameEquals("chemostat") )
 					Dil = aBulk._D;
-				}
-			}	
-		}
-
+			}
+		
 		// Extract the yields for solutes and particulates from the XML file
 		fillParameters(aSim, aReactionRoot);
 	}
@@ -530,19 +530,17 @@ public abstract class Reaction implements Serializable
 		//the concentration read by the agents is the one stored in the bulk (which has been previously updated)
 		if (Simulator.isChemostat)
 		{
-			for (int index =0; index<_soluteList.length; index++)
+			int soluteIndex;
+			for ( int index = 0; index < _soluteList.length; index++ )
 			{
+				soluteIndex = _soluteList[index].soluteIndex;
 				for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-				{
-					if (aBC.hasBulk())
+					if ( aBC instanceof ConnectedBoundary )
 					{
-						Bulk aBulk = aBC.getBulk();
-						if(aBulk.getName().equals("chemostat"))
-						{
-							out[index] = aBulk.getValue(_soluteList[index].soluteIndex);
-						}
-					}	
-				}
+						Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+						if ( aBulk.nameEquals("chemostat") )
+							out[index] = aBulk.getValue(soluteIndex);
+					}
 			}
 		}
 		else

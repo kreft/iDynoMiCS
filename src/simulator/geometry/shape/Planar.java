@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 import simulator.geometry.*;
@@ -158,25 +159,14 @@ public class Planar extends IsShape
 		return ( _cVectorOut.cosAngle(temp) > 0 );
 	}
 	
-	/**
-     * \brief Calculates the coordinates of the interaction between a line 
-     * (point and vector) and the plane.
-     * 
-     * Returns null if none exists.
-     * 
-     * @param position	Position used to calculate the line.
-     * @param vector	Vector of coordinate positions used to calculate the
-     * line.
-     * @return Coordinates of the intersection between a line and the plane.
-     */
-	public ContinuousVector[] getIntersections(ContinuousVector position, 
+	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position, 
 											ContinuousVector vector)
 	{
 		// If the line is parallel to his plane, return null.
 		Double c = _cVectorOut.prodScalar(vector);
 		if ( c.equals(0.0) )
 			return null;
-		ContinuousVector[] out = new ContinuousVector[1];
+		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		ContinuousVector intersection = new ContinuousVector(vector);
 		/* Find the (relative) length along vector we must travel to hit the
 		 * plane.
@@ -224,7 +214,7 @@ public class Planar extends IsShape
 	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		ccOut = getIntersections(ccIn, _cVectorOut)[0];
+		ccOut = getIntersections(ccIn, _cVectorOut).getFirst();
 	}
 
 	/**
@@ -237,7 +227,7 @@ public class Planar extends IsShape
 	 */
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
-		return getIntersections(ccIn, _cVectorOut)[0];
+		return getIntersections(ccIn, _cVectorOut).getFirst();
 	}
 
 	/**
@@ -253,7 +243,7 @@ public class Planar extends IsShape
 	public Double getDistance(IsShape aBoundary)
 	{
 		ContinuousVector ccOut = 
-					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut)[0];
+					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut).getFirst();
 		return _cPointOnPlane.distance(ccOut);
 	}
 	
@@ -267,7 +257,7 @@ public class Planar extends IsShape
 	 */
 	public Double getDistance(ContinuousVector cc)
 	{
-		ContinuousVector ccOut = getIntersections(cc, _cVectorOut)[0];
+		ContinuousVector ccOut = getIntersections(cc, _cVectorOut).getFirst();
 		return ccOut.distance(cc);
 	}
 	

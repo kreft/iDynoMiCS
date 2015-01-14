@@ -1,10 +1,13 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator;
 
@@ -123,7 +126,7 @@ public class World
 	public Bulk getBulk(String bulkName) 
 	{
 		for (Bulk aBulk : bulkList)
-			if (aBulk.getName().equals(bulkName))
+			if ( aBulk.nameEquals(bulkName) )
 				return aBulk;
 		return bulkList.getFirst();
 	}
@@ -137,7 +140,7 @@ public class World
 	public Boolean containsBulk(String bulkName)
 	{
 		for (Bulk aBulk : bulkList)
-			if ( aBulk.getName().equals(bulkName) )
+			if ( aBulk.nameEquals(bulkName) )
 				return true;
 		return false;
 	}

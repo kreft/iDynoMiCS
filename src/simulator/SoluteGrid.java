@@ -103,7 +103,7 @@ public class SoluteGrid extends SpatialGrid
 		if ( xmlRoot.isParamGiven("concentration"))
 			value = xmlRoot.getParamConcn("concentration");
 		else
-			value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
+			value = aSim.world.getMaxBulkValue(soluteIndex);
 		setAllValueAt(value);
 	}
 

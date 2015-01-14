@@ -1,11 +1,13 @@
 /**
  * \package simulator.agent.zoo
- * \brief Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types
+ * \brief Package of agents that can be included in iDynoMiCS and classes to
+ * store parameters for these agent types.
  * 
- * Package of agents that can be included in iDynoMiCS and classes to store parameters for these agent types. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.agent.zoo;
 
@@ -18,6 +20,7 @@ import simulator.Simulator;
 import simulator.geometry.Bulk;
 import simulator.geometry.boundaryConditions.AllBC;
 
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 //import utils.LogFile;
 import utils.XMLParser;
 
@@ -161,27 +164,31 @@ public class BactAdaptable extends BactEPS
 	 * While we are in the waiting-to-switch state, we treat the switch as if it has already switched for purposes of testing local 
 	 * conditions (i.e. the planned switch will be cancelled if the conditions go back to a state not requiring a switch to occur).
 	 * 
-	 * The four states are: A. ON and staying ON; B. ON and waiting to switch to OFF; C. OFF and staying OFF; D. OFF and waiting to 
-	 * switch to ON
+	 * The four states are:
+	 * A. ON and staying ON;
+	 * B. ON and waiting to switch to OFF;
+	 * C. OFF and staying OFF;
+	 * D. OFF and waiting to switch to ON
 	 */
-	public void respondToConditions() {
+	public void respondToConditions()
+	{
+		Double localValue = 0.0;
 
-		double localValue=0;
-
-		if(Simulator.isChemostat){
-			if (getSpeciesParam().switchType.equals("solute")) {
-			
-				for (AllBC aBC : _agentGrid.domain.getAllBoundaries()){
-					if (aBC.hasBulk()){
-						Bulk aBulk = aBC.getBulk();
-							if(aBulk.getName().equals("chemostat")){
-								localValue = aBulk.getValue(getSpeciesParam()._soluteList[getSpeciesParam().switchControlIndex].soluteIndex);
-							}
+		if ( Simulator.isChemostat)
+		{
+			if ( getSpeciesParam().switchType.equals("solute"))
+				for (AllBC aBC : _agentGrid.domain.getAllBoundaries())
+					if ( aBC instanceof ConnectedBoundary )
+					{
+						Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+						if( aBulk.nameEquals("chemostat") )
+						{
+							localValue = aBulk.getValue(
+									getSpeciesParam()._soluteList[getSpeciesParam().switchControlIndex].soluteIndex);
+						}
 					}	
-				}
-				
-				
-			} else {
+			else
+			{
 				// biomass
 				localValue = getParticleMass(getSpeciesParam().switchControlIndex);
 			}

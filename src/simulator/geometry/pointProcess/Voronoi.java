@@ -161,13 +161,19 @@ public class Voronoi
 	private void clip(Edge edge)
 	{
 		ContinuousVector diff = new ContinuousVector();
-		ContinuousVector[] intersections;
+		LinkedList<ContinuousVector> intersections;
 		diff.sendDiff(edge.endPoint[1], edge.endPoint[0]);
 		for ( IsShape boundary : boundaries )
 		{
-			intersections = boundary.intersections(edge.endPoint[0], diff);
+			intersections = boundary.getIntersections(edge.endPoint[0], diff);
 			if ( intersections == null )
 				continue;
+			
+			Boolean outside = boundary.isOutside(edge.endPoint[0]);
+			for ( ContinuousVector intersection : intersections )
+			{
+				
+			}
 			// TODO
 		}
 	}

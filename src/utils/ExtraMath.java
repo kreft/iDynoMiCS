@@ -407,7 +407,7 @@ public final class ExtraMath
 	 * \brief Return the minimum entry in a Double array.
 	 * 
 	 * @param array Array of Doubles.
-	 * @return Least Double in a.
+	 * @return Least Double in array.
 	 */
 	public static Double min(Double[] array)
 	{
@@ -420,7 +420,7 @@ public final class ExtraMath
 	/**
 	 * \brief Determine the sum of an array of doubles.
 	 * 
-	 * Takes care to exclude any infinites or NaN's.
+	 * Takes care to exclude any infinities or NaN's.
 	 * 
 	 * @param array Array of doubles
 	 * @return
@@ -429,7 +429,7 @@ public final class ExtraMath
 	{
 		Double sum = 0.0;
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if ( Double.isFinite(value) )
 				sum += value;
 		return sum;
 	}
@@ -447,7 +447,7 @@ public final class ExtraMath
 		Double out = 0.0;
 		Double n = 0.0;
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if( Double.isFinite(value) )
 			{
 					out += value;
 					n++;
@@ -477,7 +477,7 @@ public final class ExtraMath
 		Double n = 0.0;
 		
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if( Double.isFinite(value) )
 			{
 				sum += sq(value - mean);
 				n++;

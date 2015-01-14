@@ -29,12 +29,12 @@ import utils.XMLParser;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
@@ -401,12 +401,6 @@ public class Domain implements IsComputationDomain
 		_boundaryList.add(aBC);
 	}
 	
-	/**
-	 * \brief Return all the boundary conditions applicable to this domain.
-	 * 
-	 * @return LinkedList of boundary conditions for this domain.
-	 */
-	@Override
 	public LinkedList<AllBC> getAllBoundaries() 
 	{
 		return _boundaryList;

@@ -872,7 +872,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			return;
 
 		Double value = particleMass[catalystIndex]/aSpG.getVoxelVolume();
-		if ( Double.isNaN(value) || Double.isInfinite(value) )
+		if ( ! Double.isFinite(value) )
 			value = 0.0;
 		aSpG.addValueAt(value, _location);
 	}
@@ -891,7 +891,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			return;
 
 		Double value = _totalMass/aSpG.getVoxelVolume();
-		if ( Double.isNaN(value) || Double.isInfinite(value) )
+		if ( ! Double.isFinite(value) )
 			value = 0.0;
 		aSpG.addValueAt(value, _location);
 	}
@@ -906,7 +906,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public void fitVolRateOnGrid(SpatialGrid aSpG)
 	{
 		Double value = _netVolumeRate/aSpG.getVoxelVolume();
-		if ( Double.isNaN(value) || Double.isInfinite(value) )
+		if ( ! Double.isFinite(value) )
 			value = 0.0;
 		aSpG.addValueAt(value, _location);
 	}
@@ -929,7 +929,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		// [fgX.um-3.hr-1 = gX.L-1.hr-1]
 		Double value = growthRate[reactionIndex]/aRateGrid.getVoxelVolume();
 
-		if (Double.isNaN(value) | Double.isInfinite(value))
+		if ( ! Double.isFinite(value) )
 			value = 0.0;
 
 		aRateGrid.addValueAt(value, _location);
@@ -1022,7 +1022,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		// Search a boundary which will be crossed
 		double distance;
 		for (AllBC aBoundary : getDomain().getAllBoundaries()) {
-			if (aBoundary.isSupport()) {
+			if ( aBoundary.isSupport() )
+			{
 				distance = aBoundary.getDistance(this._location);
 				_isAttached = distance<=(3*this._totalRadius);
 				return aBoundary;

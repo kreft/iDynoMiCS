@@ -17,13 +17,13 @@ import simulator.geometry.*;
 import utils.XMLParser;
 
 /**
- * \brief Defines an impermeable boundary to solutes and agents
+ * \brief Defines an impermeable boundary to solutes and agents.
  * 
- * Defines an impermeable boundary to solutes and agents. As a consequence the normal components of solute concentration gradients 
- * will be zero at this boundary. Agents attempting to cross the boundary are prevented from doing so
+ * As a consequence the normal components of solute concentration gradients 
+ * will be zero at this boundary. Agents attempting to cross the boundary are
+ * prevented from doing so.
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- *
  */
 public class BoundaryZeroFlux  extends AllBC
 {
@@ -33,14 +33,14 @@ public class BoundaryZeroFlux  extends AllBC
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Stores a vector normal to the boundary and starting from the orthogonal projection
+	 * Stores a vector normal to the boundary and starting from the orthogonal
+	 * projection.
 	 */
 	private static ContinuousVector vectorIn;
-
+	
 	/**
-	 * \brief Initialises the boundary from information contained in the simulation protocol file
-	 * 
-	 * Initialises the boundary from information contained in the simulation protocol file
+	 * \brief Initialises the boundary from information contained in the
+	 * simulation protocol file.
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aDomain	The domain which this boundary condition is associated with

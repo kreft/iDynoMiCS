@@ -1,13 +1,17 @@
 /**
  * \package simulator.geometry.boundaryConditions
- * \brief Package of boundary conditions that can be used to capture agent behaviour at the boundary of the computation domain
+ * \brief Package of boundary conditions that can be used to capture agent
+ * behaviour at the boundary of the computation domain.
  * 
- * Package of boundary conditions that can be used to capture agent behaviour at the boundary of the computation domain. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.geometry.boundaryConditions;
+
+import java.util.LinkedList;
 
 import utils.XMLParser;
 import simulator.Simulator;
@@ -19,72 +23,61 @@ import simulator.geometry.*;
 import simulator.geometry.shape.*;
 
 /**
- * \brief Group all methods expected by the interface but common to most of the boundary classes
- * 
- * Group all methods expected by the interface but common to most of the boundary classes
+ * \brief Group all methods expected by the interface but common to most of
+ * the boundary classes.
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- *
  */
-public abstract class AllBC{
-
+public abstract class AllBC
+{
 	/* _______________________________ FIELDS _________________________________ */
 	/**
-	 * The name of the boundary describing its side (xOy,...)
+	 * The name of the boundary describing its side (xOy,...).
 	 */
-	protected String                _mySide;
+	protected String	_mySide;
 	
 	/**
-	 * The shape of the boundary
+	 * The shape of the boundary.
 	 */
-	protected IsShape        _myShape;
+	protected IsShape	_myShape;
 	
 	/**
-	 * Quick test to know if the boundary is cyclic
+	 * Boolean noting whether this boundary is the supporting structure (substratum).
 	 */
-	protected boolean               isCyclic        = false;
+	protected boolean	_isSupport	= false;
 	
 	/**
-	 * Boolean noting whether this boundary is the supporting structure (substratum)
+	 * Boolean noting whether this boundary can contain active solute.
 	 */
-	protected boolean               _isSupport      = false;
+	protected boolean	activeForSolute	= true;
 	
 	/**
-	 * Boolean noting whether this boundary has an attached bulk
+	 * Boolean noting whether this boundary is modelling agar.
 	 */
-	protected boolean               hasBulk         = false;
-	
-	/**
-	 * Boolean noting whether this boundary can contain active solute
-	 */
-	protected boolean               activeForSolute = true;
-	
-	/**
-	 * Boolean noting whether this boundary is modelling agar
-	 */
-	protected boolean               hasAgar         = false;
+	protected boolean	hasAgar	= false;
 	
 	/* ____________________ INTERNAL TEMPRARY VARIABLES ________________________ */
 	/**
 	 * Discrete coordinates of a voxel inside the computation domain but along the boundary
 	 */ 
-	protected static DiscreteVector dcIn            = new DiscreteVector();
+	protected static DiscreteVector dcIn	= new DiscreteVector();
 	
 	/**
 	 * Discrete coordinates of the voxel in front of the one outside the boundary
 	 */
-	protected static DiscreteVector dcOut           = new DiscreteVector();
+	protected static DiscreteVector dcOut	= new DiscreteVector();
 
 	/* ________________________ CONSTRUCTION METHODS ________________________ */
 
 	/**
-	 * \brief Generic constructor called to dynamically instantiate a child class object
-	 * 
-	 * Generic constructor called to dynamically instantiate a child class object
+	 * \brief Generic constructor called to dynamically instantiate a child
+	 * class object.
 	 * 
 	 * @param root	Set of XML tags relating to one boundary condition
-	 * @param aSim	The current simulation object used to simulate the conditions specified in this protocol file
-	 * @param aDomain	The computation domain to which this boundary condition is assigned
+	 * @param aSim	The current simulation object used to simulate the
+	 * conditions specified in this protocol file.
+	 * @param aDomain	The computation domain to which this boundary
+	 * condition is assigned.
 	 */
 	public static AllBC staticBuilder(XMLParser root, Simulator aSim,Domain aDomain) 
 	{
@@ -106,7 +99,7 @@ public abstract class AllBC{
 	 * @param aDomain	The computation domain to which this boundary condition is assigned
 	 * @param root	Set of XML tags relating to one boundary condition
 	 */
-	public abstract void init(Simulator aSim,Domain aDomain,XMLParser root);
+	public abstract void init(Simulator aSim, Domain aDomain, XMLParser root);
 
 	
 	/**
@@ -217,24 +210,14 @@ public abstract class AllBC{
 	/* ___________________ INTERACTION WITH THE DOMAIN _________________________ */
 
 	/**
-	 * \brief Determine if this boundary is cyclic
-	 * 
-	 * Determine if this boundary is cyclic
-	 * 
-	 * @return	Boolean noting whether this boundary is cyclic (true) or not (false)
-	 */
-	public boolean isCyclic() {
-		return isCyclic;
-	}
-
-	/**
 	 * \brief Determine whether this boundary is the supporting structure (substratum)
 	 * 
 	 * Determine whether this boundary is the supporting structure (substratum)
 	 * 
 	 * @return Boolean noting whether this boundary is the supporting structure (true) or not (false)
 	 */
-	public boolean isSupport() {
+	public boolean isSupport()
+	{
 		return _isSupport;
 	}
 
@@ -245,21 +228,11 @@ public abstract class AllBC{
 	 * 
 	 * @return	Boolean noting whether this boundary is active for solute (true) or not (false)
 	 */
-	public boolean isActive(){
+	public boolean isActive()
+	{
 		return activeForSolute;
 	}
 	
-	/**
-	 * \brief Determine if this boundary is attached to a bulk
-	 * 
-	 * Determine if this boundary  is attached to a bulk
-	 * 
-	 * @return	Boolean noting whether this boundary  is attached to a bulk (true) or not (false)
-	 */
-	public boolean hasBulk() {
-		return hasBulk;
-	}
-
 	/**
 	 * \brief Updates the levels in the bulk. Allows reaction or flux-based bulk treatment
 	 * 
@@ -279,7 +252,8 @@ public abstract class AllBC{
 	 * 
 	 * @return	Boolean noting whether this condition is modelling agar (true) or not (false)
 	 */
-	public boolean hasAgar() {
+	public boolean hasAgar()
+	{
 		return hasAgar;
 	}
 
@@ -318,9 +292,10 @@ public abstract class AllBC{
      * @param vector	A continuous vector stating the line to be used in the calculation	
      * @return ContinuousVector stating the point of intersection between the boundary and a line
      */
-	public ContinuousVector[] getIntersections(ContinuousVector position, ContinuousVector vector)
+	public LinkedList<ContinuousVector> getIntersections(
+						ContinuousVector position, ContinuousVector vector)
 	{
-		return _myShape.intersections(position, vector);
+		return _myShape.getIntersections(position, vector);
 	}
 
 	/**
@@ -337,24 +312,14 @@ public abstract class AllBC{
 	}
 
 	/**
-	 * \brief Return the bulk that is connected to this boundary
-	 * 
-	 * Return the bulk that is connected to this boundary
-	 * 
-	 * @return Bulk object that is connected to this boundary
-	 */
-	public Bulk getBulk() {
-		return null;
-	}
-
-	/**
 	 * \brief Returns the Shape object that represents this boundary
 	 * 
 	 * Returns the Shape object that represents this boundary
 	 * 
 	 * @return	Shape object that has been constructed to represent this boundary
 	 */
-	public IsShape getShape() {
+	public IsShape getShape()
+	{
 		return _myShape;
 	}
 	
@@ -365,33 +330,21 @@ public abstract class AllBC{
 	 * 
 	 * @return	String containing the name of the side of the domain (e.g. x0z, xNz, etc)
 	 */
-	public String getSide() {
+	public String getSide()
+	{
 		return _mySide;
 	}
 	
 	/**
-	 * \brief Returns the distance from a point to the boundary
+	 * \brief Returns the distance from a point to the boundary.
 	 * 
-	 * Returns the distance from a point to the boundary
-	 * 
-	 * @param cc	The continuous vector of points to calculate how far the point is from the boundary
-	 * @return	Double value stating the distance fromt the point to the boundary
+	 * @param cc	The continuous vector of points to calculate how far the
+	 * point is from the boundary.
+	 * @return	Double value stating the distance from the point to the
+	 * boundary.
 	 */
-	public double getDistance(ContinuousVector cc) {
+	public double getDistance(ContinuousVector cc)
+	{
 		return _myShape.getDistance(cc);
 	}
-
-	/**
-	 * \brief For a specified solute, returns the level of that solute in the bulk
-	 * 
-	 * For a specified solute, returns the level of that solute in the bulk
-	 * 
-	 * @param soluteIndex	Index of the solute in the simulation dictionary
-	 * @return	Value of solute in the connected bulk
-	 */
-	public double getBulkValue(int soluteIndex) {
-		return 0;
-	}
-	
-
 }

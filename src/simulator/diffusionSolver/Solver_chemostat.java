@@ -10,6 +10,7 @@
 package simulator.diffusionSolver;
 
 import Jama.Matrix;
+
 import java.util.ArrayList;
 
 import idyno.Idynomics;
@@ -18,6 +19,7 @@ import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import simulator.geometry.Domain;
 import utils.ExtraMath;
@@ -186,10 +188,10 @@ public class Solver_chemostat extends DiffusionSolver
 		{
 			for (AllBC aBC : _domain.getAllBoundaries())
 			{
-				if ( aBC.hasBulk() )
+				if ( aBC instanceof ConnectedBoundary )
 				{
-					Bulk aBulk = aBC.getBulk();
-					if ( aBulk.getName().equals("chemostat") )
+					Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+					if ( aBulk.nameEquals("chemostat") )
 					{
 						Dilution = aBulk._D;
 						for (int i = 0; i < nSolute; i++) 
@@ -571,7 +573,7 @@ public class Solver_chemostat extends DiffusionSolver
 		try
 		{
 			for (AllBC aBC : myDomain.getAllBoundaries())
-				if (aBC.hasBulk())
+				if ( aBC instanceof ConnectedBoundary )
 					aBC.updateBulk(allSolute, allReac, 0.0);
 		}
 		catch (Exception e)
@@ -591,10 +593,10 @@ public class Solver_chemostat extends DiffusionSolver
 		try
 		{
 			for (AllBC aBC : _domain.getAllBoundaries())
-				if ( aBC.hasBulk() )
+				if ( aBC instanceof ConnectedBoundary )
 				{
-					Bulk aBulk = aBC.getBulk();
-					if ( aBulk.getName().equals("chemostat") )
+					Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+					if ( aBulk.nameEquals("chemostat") )
 						for (int i = 0; i < nSolute; i++)
 							sInflow.set(i, 0, aBulk._sIn[i]);
 				}

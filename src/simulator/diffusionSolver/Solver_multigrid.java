@@ -16,9 +16,9 @@ import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.geometry.Domain;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.Simulator;
 import simulator.SoluteGrid;
-
 import utils.XMLParser;
 
 /**
@@ -283,7 +283,7 @@ public class Solver_multigrid extends DiffusionSolver
 		// Find the connected bulks and agars and update their concentration.
 		for (AllBC aBC : myDomain.getAllBoundaries())
 		{
-			if (aBC.hasBulk())
+			if ( aBC instanceof ConnectedBoundary )
 				aBC.updateBulk(allSolute, allReac, internTimeStep);
 			if (aBC.hasAgar())
 				aBC.updateAgar(allSolute, allReac, internTimeStep);

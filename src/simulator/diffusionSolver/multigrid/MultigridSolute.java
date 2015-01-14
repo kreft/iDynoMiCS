@@ -10,6 +10,7 @@
 package simulator.diffusionSolver.multigrid;
 
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Domain;
 import simulator.Simulator;
 import simulator.SoluteGrid;
@@ -720,7 +721,7 @@ public class MultigridSolute
 	public void readBulk()
 	{
 		for (AllBC aBC : _domain.getAllBoundaries())
-			if (aBC.hasBulk())
-				sBulk = aBC.getBulk().getValue(realGrid.soluteIndex);
+			if ( aBC instanceof ConnectedBoundary )
+				sBulk = ((ConnectedBoundary) aBC).getBulkValue(realGrid.soluteIndex);
 	}
 }

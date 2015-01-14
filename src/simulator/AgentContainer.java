@@ -1,10 +1,13 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator;
 
@@ -21,6 +24,8 @@ import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.CanConnect;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SpatialGrid;
 import utils.ResultFile;
 import utils.XMLParser;
@@ -28,18 +33,17 @@ import utils.LogFile;
 import utils.ExtraMath;
 
 /**
- * \brief Class to store all the agents, call them, and manage shoving/erosion of located agents
+ * \brief Class to store all the agents, call them, and manage shoving/erosion
+ * of located agents.
  * 
- * Class to store all the agents, call them, and manage shoving/erosion of located agents
- * 
- * @author Andreas Doetsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sonia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class AgentContainer 
 {
-
 	/**
 	 * Computational domain to which this grid is assigned
 	 */ 
@@ -758,12 +762,13 @@ public class AgentContainer
 
 		//double randNum;
 
-		for (AllBC aBC : domain.getAllBoundaries()){
-			if (aBC.hasBulk()){
-				Bulk aBulk = aBC.getBulk();
-				if(aBulk.getName().equals("chemostat")){
+		for (AllBC aBC : domain.getAllBoundaries())
+		{
+			if ( aBC instanceof ConnectedBoundary )
+			{
+				Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
+				if ( aBulk.nameEquals("chemostat") )
 					Dfactor = aBulk._D;
-				}
 			}
 		}
 		

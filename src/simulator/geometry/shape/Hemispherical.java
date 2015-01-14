@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 import simulator.SpatialGrid;
@@ -356,12 +357,12 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
-	public ContinuousVector[] intersections(ContinuousVector position,
+	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
 													ContinuousVector vector) 
 	{
 		ContinuousVector baseToP = baseToPoint(position);
 		
-		ContinuousVector[] out = new ContinuousVector[2];
+		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		return out;
 	}
 	

@@ -44,7 +44,7 @@ import simulator.geometry.*;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class BoundaryGasMembrane extends AllBC
+public class BoundaryGasMembrane extends ConnectedBoundary
 {
 	/**
 	 *  Serial version used for the serialisation of the class
@@ -60,26 +60,12 @@ public class BoundaryGasMembrane extends AllBC
 	 * Level of permeability for each solute that can diffuse through the membrane
 	 */
 	protected double[]                permeability;
-
-	/**
-	 * The defined bulk in the simulation to which the liquid phase is connected
-	 */
-	protected Bulk                    _connectedBulk;
-
+	
 	/**
 	 * A vector normal to the boundary and starting from the orthogonal projection
 	 */
 	protected static ContinuousVector vectorIn;
-
-	/**
-	 * \brief Declare a gas membrane boundary and set hasBulk to true to note this is the case
-	 * 
-	 * Declare a gas membrane boundary and set hasBulk to true to note this is the case
-	 */
-	public BoundaryGasMembrane() {
-		hasBulk = true;
-	}
-
+	
 	/**
 	 * \brief Initialises the boundary from information contained in the simulation protocol file, and builds the list of solutes to let diffuse through the membrane
 	 * 
@@ -177,31 +163,19 @@ public class BoundaryGasMembrane extends AllBC
 			}
 		}
 	}
-
-	/**
-	 * \brief Return the bulk that is connected to this boundary
-	 * 
-	 * Return the bulk that is connected to this boundary
-	 * 
-	 * @return Bulk object that is connected to this boundary
-	 */
-	@Override
-	public Bulk getBulk() {
+	
+	public Bulk getBulk()
+	{
 		return _connectedBulk;
 	}
-
-	/**
-	 * \brief For a specified solute, returns the level of that solute in the bulk
-	 * 
-	 * For a specified solute, returns the level of that solute in the bulk
-	 * 
-	 * @param soluteIndex	Index of the solute in the simulation dictionary
-	 * @return	Value of solute in the connected bulk
-	 */
-	@Override
-	public double getBulkValue(int soluteIndex) {
-		return _connectedBulk.getValue(soluteIndex);
+	
+	public void updateBulk(SoluteGrid[] allSG, SoluteGrid[] allRG, Double timeStep)
+	{
+		_connectedBulk.updateBulk(allSG, allRG, timeStep);
 	}
+	
+	
+	
 
 
 	/**
@@ -214,7 +188,8 @@ public class BoundaryGasMembrane extends AllBC
 	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
 	 */
 	@Override
-	public ContinuousVector lookAt(ContinuousVector cc) {
+	public ContinuousVector lookAt(ContinuousVector cc)
+	{
 		return cc;
 	}
 
@@ -226,7 +201,8 @@ public class BoundaryGasMembrane extends AllBC
      * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
      */
 	@Override
-	public void setBoundary(LocatedGroup aGroup) {
+	public void setBoundary(LocatedGroup aGroup)
+	{
 		aGroup.status = 0;
 		// status 0 -> carrier
 	}

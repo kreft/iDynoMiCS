@@ -24,13 +24,16 @@ import utils.LogFile;
 import utils.XMLParser;
 
 /**
- * \brief BoundaryCyclic : close the system along a dimension
+ * \brief BoundaryCyclic : close the system along a dimension.
  * 
- * BoundaryCyclic : close the system along a dimension. It is computationally unfeasible to simulate a micro-scale world on a 
- * macro-scale level, so oftentimes a small spatial sub-region is assumed to represent the system as a whole; in this case, 
- * periodic boundaries are used to remove artificial edge effects by assuming the simulated region adjoins other, similar, regions. 
- * As a consequence, boundaries in some chosen directions (generally for movements parallel to the substratum) are periodic, which 
- * means that the solute concentrations and solute gradients are constant across the boundary, and that agents travelling through one 
+ * It is computationally infeasible to simulate a micro-scale world on a 
+ * macro-scale level, so oftentimes a small spatial sub-region is assumed to
+ * represent the system as a whole; in this case, periodic boundaries are used
+ * to remove artificial edge effects by assuming the simulated region adjoins
+ * other, similar, regions. As a consequence, boundaries in some chosen
+ * directions (generally for movements parallel to the substratum) are
+ * periodic, which means that the solute concentrations and solute gradients
+ * are constant across the boundary, and that agents travelling through one 
  * boundary will be translated to the other side of the domain
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
@@ -38,12 +41,11 @@ import utils.XMLParser;
  */
 public class BoundaryCyclic extends AllBC
 {
-
 	/**
 	 *  Serial version used for the serialisation of the class
 	 */
 	private static final long       serialVersionUID = 1L;
-
+	
 	/**
 	 * Shape object containing a construction of the boundary opposite this one
 	 */
@@ -58,16 +60,7 @@ public class BoundaryCyclic extends AllBC
 	 * Used to translate a set of points to their respective points on the opposite side of the boundary
 	 */
 	private static DiscreteVector   translator       = new DiscreteVector();
-
-	/**
-	 * \brief Declare a cyclic boundary and set isCyclic to true to note this is the case
-	 * 
-	 * Declare a cyclic boundary and set isCyclic to true to note this is the case
-	 */
-	public BoundaryCyclic() {
-		isCyclic = true;
-	}
-
+	
 	/**
 	 * \brief Initialises the boundary from information contained in the simulation protocol file
 	 * 
@@ -143,7 +136,8 @@ public class BoundaryCyclic extends AllBC
 	public ContinuousVector lookAt(ContinuousVector cc) 
 	{
 		// TODO Using first intersection is a quick fix
-		ContinuousVector nCC = _myShape.intersections(cc, _myShape.getNormalInside(cc))[0];
+		ContinuousVector nCC = 
+				_myShape.getIntersections(cc, _myShape.getNormalInside(cc)).getFirst();
 		ContinuousVector bCC = getSymmetric(nCC);
 		bCC.subtract(nCC);
 		nCC.sendSum(bCC, cc);
@@ -176,7 +170,7 @@ public class BoundaryCyclic extends AllBC
 	{
 		// Determine the intersection with the crossed boundary
 		// TODO Using first intersection is a quick fix
-		vectorIn = _myShape.intersections(anAgent.getLocation(), anAgent.getMovement())[0];
+		vectorIn = _myShape.getIntersections(anAgent.getLocation(), anAgent.getMovement()).getFirst();
 
 		// Determine the remaining movement when we touch the boundary
 		target.sendDiff(target, vectorIn);
@@ -201,23 +195,7 @@ public class BoundaryCyclic extends AllBC
 	{
 		// 2D simulations: activeForSolute is false for x0y/xNy and true for x0z/xNz
 		// 3D simulations: activeForSolute is always true for cyclic boundaries
-		if ( ! activeForSolute )
-		{
-			// Initialise the course along the shape of the boundary
-			_myShape.readyToFollowBoundary(aSoluteGrid);
-			
-			translator.set(_myOppShape.getNormalDC());
-			translator.times(2);
-			// Send a point belonging to the boundary and the closest point
-			// outside the domain
-			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) 
-			{
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
-				dcOut.add(translator);
-				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
-			}
-		}
-		else
+		if ( activeForSolute )
 		{
 			// Build translator between both boundaries
 			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/aSoluteGrid.getResolution());
@@ -232,6 +210,22 @@ public class BoundaryCyclic extends AllBC
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 			{
 				dcIn.add(translator);
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
+			}
+		}
+		else
+		{
+			// Initialise the course along the shape of the boundary.
+			_myShape.readyToFollowBoundary(aSoluteGrid);
+			translator.set( _myOppShape.getNormalDC() );
+			translator.times(2);
+			/* Send a point belonging to the boundary and the closest point
+			 * outside the domain.
+			 */
+			while ( _myShape.followBoundary(dcIn, dcOut, aSoluteGrid) )
+			{
+				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
+				dcOut.add(translator);
 				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
 			}
 		}
@@ -331,7 +325,7 @@ public class BoundaryCyclic extends AllBC
 	{
 		// Determine on which shape you have to compute your future coordinates
 		// TODO Using first intersection is a quick fix
-		return _myOppShape.intersections(cc, _myShape.getNormalInside(cc))[0];
+		return _myOppShape.getIntersections(cc, _myShape.getNormalInside(cc)).getFirst();
 	}
 
 	

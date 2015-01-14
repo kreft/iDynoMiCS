@@ -555,7 +555,8 @@ public class Bulk
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @return	Level of this particular solute in the bulk
 	 */
-	public double getValue(int soluteIndex) {
+	public Double getValue(int soluteIndex)
+	{
 		return _bulkValue[soluteIndex];
 	}
 
@@ -567,49 +568,60 @@ public class Bulk
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @param value	Level at which to set the solute level
 	 */
-	public void setValue(int soluteIndex, double value) {
+	public void setValue(int soluteIndex, Double value)
+	{
 		_bulkValue[soluteIndex] = value;
 	}
 
 	/**
-	 * \brief Get the name of this bulk
+	 * \brief Get the name of this bulk.
 	 * 
-	 * Get the name of this bulk
-	 * 
-	 * @return	String containing the name of this bulk
+	 * @return	String containing the name of this bulk.
 	 */
-	public String getName() {
+	public String getName()
+	{
 		return _name;
 	}
-
+	
 	/**
-	 * \brief Return the time constraint of the bulk
+	 * \brief Check whether the given String is equal to this Bulk's name.
 	 * 
-	 * Return the time constraint of the bulk
-	 * 
-	 * @return	Double containing the time constraint of this bulk
+	 * @param name String to be checked.
+	 * @return	boolean stating whether on not this Bulk's name matches the
+	 * String given.
 	 */
-	public double getTimeConstraint() {
-		double out = ExtraMath.max(_dT);
-		for (int iGrid = 0; iGrid<_dT.length; iGrid++) {
-			if (_dT[iGrid].equals(0.0))
-				continue;
-			out = Math.min(out, Math.abs(_dT[iGrid]));
-		}
-		if (out==0) out = Double.POSITIVE_INFINITY;
-
-		return out;
+	public boolean nameEquals(String name)
+	{
+		return _name.equals(name);
 	}
 
 	/**
-	 * \brief Writes a description of the bulk in the result file
+	 * \brief Return the time constraint of the bulk.
 	 * 
-	 * Writes a description of the bulk in the result file
+	 * Finds the value of _dT that is closest to zero (exclusive). 
+	 * 
+	 * @return	Double containing the time constraint of this bulk.
+	 */
+	public Double getTimeConstraint()
+	{
+		Double out = Double.POSITIVE_INFINITY;
+		for ( Double dt : _dT )
+		{
+			if ( dt.equals(0.0) )
+				continue;
+			out = Math.min(out, Math.abs(dt));
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Writes a description of the bulk in the result file.
 	 * 
 	 * @param buffer	Buffer to which simulation results are being written
 	 * @throws Exception	Exception thrown if this buffer cannot be written to
 	 */
-	public void writeReport(ResultFile buffer) throws Exception {
+	public void writeReport(ResultFile buffer) throws Exception
+	{
 		StringBuffer text = new StringBuffer();
 		String soluteName;
 
