@@ -375,7 +375,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	Boolean stating whether cell death should be triggered (true) or not (false)
 	 */
-	public boolean willDie() {
+	public boolean willDie()
+	{
 		if (_totalMass < 0.0)
 			return true;
 		return getRadius(false) <= this._myDeathRadius;
