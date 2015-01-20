@@ -24,7 +24,6 @@ import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
-import simulator.geometry.boundaryConditions.CanConnect;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SpatialGrid;
 import utils.ResultFile;
@@ -50,7 +49,8 @@ public class AgentContainer
 	public Domain domain;
 	
 	/**
-	 * Local copy of the simulation object used to create the conditions specified in the protocol file
+	 * Local copy of the simulation object used to create the conditions
+	 * specified in the protocol file.
 	 */
 	public Simulator mySim;
 
@@ -65,9 +65,12 @@ public class AgentContainer
 	public ListIterator<SpecialisedAgent> agentIter;
 
 	/**
-	 * Temporary containers used to store agents who will be added or removed.  Visibility public so that it can be accessed from LocatedGroup in killAll()
+	 * Temporary containers used to store agents who will be added or removed.
+	 * Visibility public so that it can be accessed from LocatedGroup in
+	 * killAll().
 	 */
-	public LinkedList<SpecialisedAgent> _agentToKill = new LinkedList<SpecialisedAgent>();
+	public LinkedList<SpecialisedAgent> _agentToKill = 
+										new LinkedList<SpecialisedAgent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -95,20 +98,21 @@ public class AgentContainer
 	private int _nTotal;
 	
 	/**
-	 * Resolution of the grid. Specified in the XML protocol file
+	 * Resolution of the grid. Specified in the XML protocol file.
 	 */
-	private double _res;
+	private Double _res;
 	
 	
 	/**
-	 *	Grid to hold the agents in this container. This grid holds groups of agents, within a LocatedGroup object 
+	 *	Grid to hold the agents in this container. This grid holds groups of
+	 *agents, within a LocatedGroup object. 
 	 */
 	private LocatedGroup[] _grid;
 	
 	/**
 	 * 3D array that captures erosion in the agent grid
 	 */
-	protected double[][][] _erosionGrid;
+	protected Double[][][] _erosionGrid;
 	
 	/**
 	 * Boolean noting whether the grid is 3D or 2D
@@ -1387,21 +1391,23 @@ public class AgentContainer
 		_grid = new LocatedGroup[_nTotal];	
 		for (int index = 0; index < _nTotal; index++)
 			_grid[index] = new LocatedGroup(index, this, aSimulator);
-
-		for (int index = 0; index < _nTotal; index++){
-			_grid[index].init();}
+		
+		for ( LocatedGroup lg : _grid )
+			lg.init();
 	}
 
 	/**
-	 * \brief Creates the output species and erosion grids
+	 * \brief Creates the output species and erosion grids.
 	 * 
-	 * Creates the output species and erosion grids. There is one erosion grid, but one grid for each species in the simulation
+	 * There is one erosion grid, but one grid for each species in the
+	 * simulation.
 	 * 
-	 * @param aSim	The current simulation object that is recreating the conditions specified in the protocol file
+	 * @param aSim	The current simulation object that is recreating the
+	 * conditions specified in the protocol file.
 	 */
 	public void createOutputGrid(Simulator aSim) 
 	{
-		_erosionGrid = new double[_nI + 2][_nJ + 2][_nK + 2];
+		_erosionGrid = ExtraMath.newDoubleArray(_nI + 2, _nJ + 2, _nK + 2);
 		_speciesGrid = new SpatialGrid[aSim.speciesList.size()];
 		
 		// Create a grid for each species in the simulation
@@ -1498,7 +1504,8 @@ public class AgentContainer
 	 * @param location
 	 * @return
 	 */
-	private double detFunction(double i, double location) {
+	private Double detFunction(double i, double location)
+	{
 		if (i < 1.0)
 			return ExtraMath.sq(_res - (location % _res));
 		else
@@ -1506,63 +1513,75 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Performs the discrete removal of agents over the whole _close group together, instead of considering each Located Group seperately. 
+	 * \brief Performs the discrete removal of agents over the whole _close
+	 * group together, instead of considering each Located Group separately. 
 	 * 
-	 * Performs the discrete removal of agents over the whole _close group together, instead of considering each Located Group 
-	 * seperately. Note also that here tallyVariable is cumulative: whatever remains rolls over to the next time-step. This eliminates 
-	 * any timestep issues.
+	 * Note also that here tallyVariable is cumulative: whatever remains rolls
+	 * over to the next time-step. This eliminates time-step issues.
 	 * 
-	 * @param agentGrid	The agent grid
+	 * @param agentGrid	The agent grid.
 	 */
 	public void removeOnBorder(AgentContainer agentGrid) 
 	{
-		// Find the border points (erosion and sloughing have changed the
-		// configuration)
+		/*
+		 * Find the border points (erosion and sloughing may have changed the
+		 * configuration).
+		 */
 		_levelset.refreshBorder(true, mySim);
-
-		double mass = 0; // counter of mass so far removed
-		int nDetach = 0; // counter of agents removed
-		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>(); // List of agents to consider for removal
-		LocatedAgent detLoc; // the member of detGroup with the highest detPriority
-
-		// For groups on _close list
-		for (LocatedGroup aBorderElement : _levelset.getBorder()) {
-
-			// tally up tallyVariable, the approximate amount of mass to remove, by the ratio variable of each border element
-			aBorderElement.ratio = SimTimer.getCurrentTimeStep() / _grid[aBorderElement.gridIndex].erosionTime;
-			// i.e. ratio = (currentTimeStep * detachmentSpeed * numberFreeNeighbours)/(resolution)
-			aBorderElement.ratio = Math.min(aBorderElement.ratio, 1);
-			tallyVariable += aBorderElement.totalMass*aBorderElement.ratio;
-
-			// and add them to detGroup
-			for (LocatedAgent aLoc:aBorderElement.group) detGroup.add(aLoc);
-
+		// List of agents to consider for removal.
+		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>();
+		// For groups on _close list:
+		for (LocatedGroup borderElem : _levelset.getBorder())
+		{
+			/*
+			 * Tally up tallyVariable, the approximate amount of mass to
+			 * remove, by the ratio variable of each border element.
+			 */
+			borderElem.ratio = SimTimer.getCurrentTimeStep() /
+								_grid[borderElem.gridIndex].erosionTime;
+			/*
+			 *  i.e. ratio =
+			 *  (currentTimeStep * detachmentSpeed * numberFreeNeighbours)/
+			 *  	(resolution)
+			 */
+			borderElem.ratio = Math.min(borderElem.ratio, 1.0);
+			tallyVariable += borderElem.totalMass * borderElem.ratio;
+			// Add them to detGroup.
+			for ( LocatedAgent aLoc : borderElem.group )
+				detGroup.add(aLoc);
 		} // end of: for (LocatedGroup aBorderElement : _levelset.getBorder())
-
-		if (tallyVariable>Collections.min(detGroup, new LocatedAgent.totalMassComparator()).getTotalMass())  {
-
-			// For groups on _close list
-			for (LocatedGroup aBorderElement : _levelset.getBorder()) {
-				// calculate detPriority for all agents in the _close list
-				calcDetPriority(agentGrid, aBorderElement, aBorderElement.ratio);
-			}
-			
-			detLoc = Collections.max(detGroup, new LocatedAgent.detPriorityComparator());
-			while (detLoc.getTotalMass()<tallyVariable && detGroup.size()>0) {
-				// Remove agents one by one, in order of decreasing detPriority
-
-				detLoc = Collections.max(detGroup, new LocatedAgent.detPriorityComparator());
-				mass += detLoc.getTotalMass();
-				tallyVariable -= detLoc.getTotalMass();
-				detLoc.die(false);
-				detLoc.death = "detachment";
-				nDetach++;
-				detGroup.remove(detLoc);
-
-
-			} // end of if (2*tallyVariable>Collections.min(aBorderElement.group, new LocatedAgent....)
+		
+		/*
+		 * If the tally is smaller than the smallest agent, no point
+		 * calculating detachment priorities.
+		 */
+		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
+		LocatedAgent aLoc = Collections.min(detGroup, comp);
+		if ( tallyVariable < aLoc.getTotalMass() )
+			return;
+		
+		// Counter of mass so far removed.
+		Double mass = 0.0;
+		// Counter of agents removed.
+		int nDetach = 0;
+		// Calculate detPriority for all agents in the _close list.
+		comp = new LocatedAgent.detPriorityComparator();
+		for (LocatedGroup borderElem : _levelset.getBorder() )
+			calcDetPriority(agentGrid, borderElem, borderElem.ratio);
+		// aLoc is the most exposed cell.
+		aLoc = Collections.max(detGroup, comp);
+		while ( aLoc.getTotalMass() < tallyVariable && 
+				! detGroup.isEmpty())
+		{
+			// Remove agents 1 by 1, in order of decreasing detPriority.
+			aLoc = Collections.max(detGroup, comp);
+			mass += aLoc.getTotalMass();
+			tallyVariable -= aLoc.getTotalMass();
+			aLoc.die(false);
+			aLoc.death = "detachment";
+			nDetach++;
+			detGroup.remove(aLoc);
 		}
-
 		System.out.println("******************************REMOVE ON BORDER**************************************");
 		LogFile.writeLog("Eroding " + nDetach + " ("
 				+ ExtraMath.toString(mass, true) + "/"
@@ -1572,26 +1591,27 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Calculate detachment priorties
+	 * \brief Calculate detachment priorities.
 	 * 
-	 * Calculate detachment priorties
-	 * 
-	 * @param agentGrid	This agent grid of located agents
-	 * @param aBorderElement	Group of located agents that are on the border
-	 * @param ratio	Ratio value set for that LocatedGroup
+	 * @param agentGrid	This agent grid of located agents.
+	 * @param aBorderElement	Group of located agents that are on the border.
+	 * @param ratio	Ratio value set for that LocatedGroup.
 	 */
-	public void calcDetPriority(AgentContainer agentGrid, LocatedGroup aBorderElement, double ratio)
+	public void calcDetPriority(AgentContainer agentGrid,
+									LocatedGroup aBorderElement, Double ratio)
 	{
 		int i = 0;
-
 		// Reset all detPriority values to zero
 		for (LocatedAgent aLoc:aBorderElement.group)
 			aLoc.detPriority = 0.0;
-
-		// For each free neighbour run through the agents in our border element, 
-		// adding the square of the agent's proximity to that neighbour
-		// (i.e. distance from opposite neighbour) to its detPriority variable
-		for (i=0;i<3;i+=2){
+		/*
+		 * For each free neighbour run through the agents in our border
+		 * element, adding the square of the agent's proximity to that
+		 * neighbour (i.e. distance from opposite neighbour) to its
+		 * detPriority variable.
+		 */
+		for ( i=0; i < 3; i += 2)
+		{
 			// x-side
 			if (aBorderElement.nbhGroup[i][1][1].status==2) {
 				// LogFile.writeLog(aBorderElement.nbhGroup[i][1][1].dc+"is free");
@@ -1736,14 +1756,16 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Takes an voxel integer index and returns a DiscreteVector containing the X,Y, and Z coordinates of that voxel
-	 * 
-	 * Takes an voxel integer index and returns a DiscreteVector containing the X,Y, and Z coordinates of that voxel
+	 * \brief Takes an voxel integer index and returns a DiscreteVector
+	 * containing the X,Y, and Z coordinates of that voxel.
 	 *  
-	 * @param index	Integer index specifying a voxel grid space on the agent grid
-	 * @return	A discrete vector of the coordinates of this grid
+	 * @param index	Integer index specifying a voxel grid space on the agent
+	 * grid.
+	 * @return	A discrete vector of the coordinates of this grid.
 	 */
-	public DiscreteVector getGridPosition(int index) {
+	public DiscreteVector getGridPosition(int index)
+	{
+		// Remember here that "/" means modulo, not division
 		int k = (int) Math.floor(index / (_nI + 2) / (_nJ + 2));
 		int j = (int) Math.floor((index - k * ((_nI + 2) * (_nJ + 2)))
 				/ (_nI + 2));
@@ -1781,7 +1803,8 @@ public class AgentContainer
 	 * 
 	 * @return	Double value stating the agent time step
 	 */
-	public double getAgentTimeStep() {
+	public Double getAgentTimeStep()
+	{
 		return AGENTTIMESTEP;
 	}
 
@@ -1792,28 +1815,26 @@ public class AgentContainer
 	 * 
 	 * @return	Resolution of the agent grid
 	 */
-	public double getResolution() {
+	public Double getResolution()
+	{
 		return _res;
 	}
 
 	/**
-	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array
+	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array.
 	 * 
-	 * Return the dimensions of the grid (nI,nJ,nK) as an array
-	 * 
-	 * @return	An array containing the dimensions of the grid
+	 * @return	An array containing the dimensions of the grid.
 	 */
-	public int[] getGridDescription() {
+	public int[] getGridDescription()
+	{
 		int[] out = { _nI, _nJ, _nK };
 		return out;
 	}
 	
 	/**
-	 * \brief Return the number of grid cells in the J direction
+	 * \brief Return the number of grid cells in the J direction.
 	 * 
-	 * Return the number of grid cells in the J direction
-	 * 
-	 * @return	Number of grid cells in the J direction
+	 * @return	Number of grid cells in the J direction.
 	 */
 	public int get_nJ()
 	{
@@ -1821,47 +1842,42 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Return the number of grid cells in the K direction
+	 * \brief Return the number of grid cells in the K direction.
 	 * 
-	 * Return the number of grid cells in the K direction
-	 * 
-	 * @return	Number of grid cells in the K direction
+	 * @return	Number of grid cells in the K direction.
 	 */
 	public int get_nK()
 	{
 		return _nK;
 	}
-
+	
 	/**
-	 * \brief Return the shoving grid
+	 * \brief Return the shoving grid.
 	 * 
-	 * Return the shoving grid
-	 * 
-	 * @return	LocatedGroup containing the calculated shoving information
+	 * @return	LocatedGroup containing the calculated shoving information.
 	 */
 	
-	public LocatedGroup[] getShovingGrid() {
+	public LocatedGroup[] getShovingGrid()
+	{
 		return _grid;
 	}
-
+	
 	/**
-	 * \brief Return the levelset used for modelling detachment
+	 * \brief Return the levelset used for modelling detachment.
 	 * 
-	 * Return the levelset used for modelling detachment
-	 * 
-	 * @return	Levelset used for modelling detachment
+	 * @return	Levelset used for modelling detachment.
 	 */
-	public LevelSet getLevelSet() {
+	public LevelSet getLevelSet()
+	{
 		return _levelset;
 	}
 	
 	/**
-	 * \brief Return the status of a given grid voxel, to determine if the voxel is within a biofilm or not
+	 * \brief Return the status of a given grid voxel, to determine if the
+	 * voxel is within a biofilm or not.
 	 * 
-	 * Return the status of a given grid voxel, to determine if the voxel is within a biofilm or not
-	 * 
-	 * @param gridVoxel	Integer of the grid voxel whos status is being queried
-	 * @return	Integer showing the status of that grid voxel
+	 * @param gridVoxel	Index of the grid voxel whose status is being queried.
+	 * @return	Integer showing the status of that grid voxel.
 	 */
 	public int getVoxelStatus(int gridVoxel)
 	{
@@ -1869,14 +1885,14 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Return the located group of agents in an agent grid voxel
+	 * \brief Return the located group of agents in an agent grid voxel.
 	 * 
-	 * @param gridVoxel	Integer of the grid voxel for which the located group is to be returned
-	 * @return	LocatedGroup containing the agents within that grid voxel
+	 * @param gridVoxel	Integer of the grid voxel for which the located group
+	 * is to be returned.
+	 * @return	LocatedGroup containing the agents within that grid voxel.
 	 */
 	public LocatedGroup returnGroupInVoxel(int gridVoxel)
 	{
 		return _grid[gridVoxel];
 	}
-
 }

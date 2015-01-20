@@ -22,7 +22,8 @@ import utils.XMLParser;
  * detachment speed and the timestep, with the detachment speed calculated via one of the given forms. This class captures the Proportional 
  * detachment method.
  * 
- * @author Robert Clegg (rjc096@bham.ac.uk), Centre for Systems Biology, University of Birmingham, UK 
+ * @author Robert Clegg (r.j.clegg@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham, UK. 
  *
  */
 public class DS_SolGrad extends LevelSet 
@@ -30,16 +31,16 @@ public class DS_SolGrad extends LevelSet
 	/**
 	 * Constant parameter used to determine the strength of detachment.
 	 */
-	private double kDet;
+	private Double kDet;
 	
 	/**
 	 * Maximum thickness that the biofilm may reach
 	 */
-	private double maxTh;
+	private Double maxTh;
 	
-	private double answer = 0;
+	private Double answer = 0.0;
 	
-	private double bulkValue;
+	private Double bulkValue;
 
 	/**
 	 * \brief Initialise the object by reading attributes from associated agent grid and XML protocol file
@@ -70,7 +71,7 @@ public class DS_SolGrad extends LevelSet
 	 *
 	 */
 	@Override
-	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) 
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) 
 	{
 		// If group is above threshold, definitely remove
 		if (aGroup.cc.x>maxTh) {

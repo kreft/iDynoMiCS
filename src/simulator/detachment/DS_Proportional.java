@@ -29,12 +29,12 @@ public class DS_Proportional extends LevelSet
 	/**
 	 * Constant parameter used to determine the strength of detachment.
 	 */
-	private double kDet;
+	private Double kDet;
 	
 	/**
 	 * Maximum thickness that the biofilm may reach
 	 */
-	private double maxTh;
+	private Double maxTh;
 
 	/**
 	 * \brief Initialise the object by reading attributes from associated agent grid and XML protocol file
@@ -45,19 +45,19 @@ public class DS_Proportional extends LevelSet
 	 * @param root	XML tag containing information related to this detachment mechanism
 	 */
 	@Override
-	public void init(AgentContainer anAgentGrid, XMLParser root) {
+	public void init(AgentContainer anAgentGrid, XMLParser root)
+	{
 		super.init(anAgentGrid, root);
 		// kDet has units of: fg.um-4.hr-1
 		// this gives speed in um.hr-1
 		kDet = root.getParamDbl("kDet");
-		double value=root.getParamDbl("maxTh");
+		Double value = root.getParamDbl("maxTh");
 		maxTh=(Double.isNaN(value)? Double.POSITIVE_INFINITY:value);
 	}
 
 	/**
-	 *\brief Calculate and return the local detachment speed using this detachment method
-	 *
-	 * Calculate and return the local detachment speed using this detachment method
+	 *\brief Calculate and return the local detachment speed using this
+	 *detachment method.
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
 	 * @param aGroup	Located group for which the local detachment speed is being determined
@@ -65,8 +65,10 @@ public class DS_Proportional extends LevelSet
 	 *
 	 */
 	@Override
-	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
-		if (aGroup.cc.x>maxTh) return Double.MAX_VALUE;
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim)
+	{
+		if ( aGroup.cc.x > maxTh )
+			return Double.MAX_VALUE;
 		return kDet*aGroup.cc.x;
 	}
 

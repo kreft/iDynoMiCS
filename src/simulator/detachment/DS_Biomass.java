@@ -31,12 +31,12 @@ public class DS_Biomass extends LevelSet
 	/**
 	 * Constant parameter used to determine the strength of detachment.
 	 */
-	private double kDet;
+	private Double kDet;
 	
 	/**
-	 * Maximum thickness that the biofilm may reach
+	 * Maximum thickness that the biofilm may reach.
 	 */
-	private double maxTh;
+	private Double maxTh;
 
 	/**
 	 * \brief Initialise the object by reading attributes from associated agent grid and XML protocol file
@@ -53,24 +53,26 @@ public class DS_Biomass extends LevelSet
 		// kDet has units of: fg.um-4.hr-1
 		// this gives speed in um.hr-1
 		kDet = root.getParamDbl("kDet");
-		double value=root.getParamDbl("maxTh");
-		maxTh=(Double.isNaN(value)? Double.POSITIVE_INFINITY:value);
+		Double value = root.getParamDbl("maxTh");
+		maxTh = Double.isNaN(value) ? Double.POSITIVE_INFINITY : value;
 	}
 
 	/**
-	 *\brief Calculate and return the local detachment speed using this detachment method
-	 *
-	 * Calculate and return the local detachment speed using this detachment method
+	 *\brief Calculate and return the local detachment speed using this
+	 * detachment method.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aGroup	Located group for which the local detachment speed is being determined
-	 * @return Double stating local detachment speed for this group
-	 *
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aGroup	Located group for which the local detachment speed is
+	 * being determined.
+	 * @return Double stating local detachment speed for this group.
 	 */
 	@Override
-	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
-	 	if (aGroup.cc.x>maxTh) return Double.MAX_VALUE;
-		return kDet*ExtraMath.sq(aGroup.cc.x)/aGroup.totalConcentration;
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim)
+	{
+	 	if ( aGroup.cc.x > maxTh )
+	 		return Double.MAX_VALUE;
+		return kDet * ExtraMath.sq(aGroup.cc.x) / aGroup.totalConcentration;
 	}
 
 }

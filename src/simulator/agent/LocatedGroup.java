@@ -100,7 +100,7 @@ public class LocatedGroup {
 	/**
 	 * Neighbouring groups around this group
 	 */
-	public LocatedGroup[][][]       nbhGroup           = new LocatedGroup[3][3][3];
+	public LocatedGroup[][][]	nbhGroup = new LocatedGroup[3][3][3];
 
 	/**
 	 * Space occupation (-1->outside, 0->carrier, 1->biofilm, 2->liquid, 3->bulk)
@@ -172,89 +172,86 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * \brief Builds neighbourhood reference map
-	 * 
-	 * Builds neighbourhood reference map
+	 * \brief Builds neighbourhood reference map.
 	 */
-	public void init() {
-		if (isOutside) return;
-
-		if (agentGrid.is3D) testNbh_3D(agentGrid.getShovingGrid());
-		else testNbh_2D(agentGrid.getShovingGrid());
-
+	public void init()
+	{
+		if ( isOutside )
+			return;
+		if ( agentGrid.is3D )
+			testNbh_3D(agentGrid.getShovingGrid());
+		else
+			testNbh_2D(agentGrid.getShovingGrid());
 		distanceFromBorders();
-		if (distanceFromCarrier<agentGrid.getResolution()) isCarrier = true;
-		if (distanceFromBulk<agentGrid.getResolution()) isBulk = true;
+		if ( distanceFromCarrier<agentGrid.getResolution() )
+			isCarrier = true;
+		if ( distanceFromBulk<agentGrid.getResolution() )
+			isBulk = true;
 	}
-
+	
 	/**
-	 * \brief Refresh status and concentration of the group
-	 * 
-	 * Refresh status and concentration of the group
-	 * 
+	 * \brief Refresh status and concentration of the group.
 	 */
 	public void refreshElement()
 	{
-		Double volume, value;
-		volume = ExtraMath.cube(agentGrid.getResolution());
-		//sonia:chemostat
-		if(Simulator.isChemostat){
-			//do not refresh groups
-		}else{
+		Double volume = ExtraMath.cube(agentGrid.getResolution());
+		if ( ! Simulator.isChemostat)
+		{
 			// Refresh group status (carrier, biofilm, free)
-			if (status>0) status = (group.size()>0 ? 1 : 2);
-			if (isCarrier) status = 0;
+			if ( status > 0 )
+				status = ( group.size() > 0 ) ? 1 : 2;
+			if ( isCarrier )
+				status = 0;
 		}
+		
 		// Refresh biomass density
+		Double value = 0.0;
 		totalConcentration = 0.0;
 		totalMass = 0.0;
 		Arrays.fill(speciesConcentration, 0.0);
-
-		for (LocatedAgent aLoc : group) {
+		for (LocatedAgent aLoc : group)
+		{
 			totalMass += aLoc.getTotalMass();
 			value = aLoc.getTotalMass()/volume;
-
-			// we treat agents as cylinders in 2D, and so the element volume is
-			// the same cube as in 3D; no concentration correction is necessary
-
+			/* We treat agents as cylinders in 2D, and so the element volume
+			 * is the same cube as in 3D; no concentration correction is 
+			 * necessary
+			 */
 			totalConcentration += value;
 			speciesConcentration[aLoc.speciesIndex] += value;
 		}
 	}
 
 	/**
-	 * \brief Refresh the volume statistics of this group
+	 * \brief Refresh the volume statistics of this group.
 	 * 
-	 * Refresh the volume statistics of this group
-	 * 
-	 * @return	Double noting the total volume of agents in this group
+	 * @return	Double noting the total volume of agents in this group.
 	 */
-	public double refreshVolume()
+	public Double refreshVolume()
 	{
 		totalVolume = 0.0;
 		for (LocatedAgent aLoc : group)
 			totalVolume += aLoc.getVolume(true);
-		
 		return totalVolume;
 	}
 
 	/**
-	 * \brief Compute the gradient due to pressure and use it to set the advective affect
+	 * \brief Compute the gradient due to pressure and use it to set the
+	 * advective affect.
 	 * 
-	 * Compute the gradient due to pressure and use it to set the advective affect
-	 * 
-	 * @param pressure	Pressure grid
-	 * @param deltaT	DeltaT
-	 * @return	Norm of the movement vector under the affect of the pressure gradient
+	 * @param pressure	Pressure grid.
+	 * @param deltaT	DeltaT.
+	 * @return	Norm of the movement vector under the affect of the pressure
+	 * gradient.
 	 */
 	public Double computeMove(SoluteGrid pressure, Double deltaT) 
 	{
-		if (this.isOutside)
+		if ( this.isOutside )
 			resetMove();
 		else
 		{
 			move = pressure.getGradient(this.cc);
-			if (move.isValid())
+			if ( move.isValid() )
 				move.times(-deltaT);
 			else
 				resetMove();
@@ -268,30 +265,29 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * \brief Scale the movement vector for the grid element and apply to each agent
+	 * \brief Scale the movement vector for the grid element and apply to each
+	 * agent.
 	 * 
-	 * Scale the movement vector for the grid element and apply to each agent
-	 * 
-	 * @param alpha	Scaling factor to be applied to a move
+	 * @param alpha	Scaling factor to be applied to a move.
 	 */
-	public void addMoveToAgents(double alpha) {
-		for (LocatedAgent aLoc : group) {
-			//if (aLoc.isAttached()) move.x = 0;
+	public void addMoveToAgents(Double alpha)
+	{
+		for (LocatedAgent aLoc : group)
+		{
 			move.times(alpha);
 			aLoc.addMovement(move);
 		}
 	}
 
 	/**
-	 * \brief Safely remove located agent from agentList & agentGrid
-	 * 
-	 * Safely remove located agent from agentList & agentGrid
-	 * 
+	 * \brief Safely remove located agent from agentList & agentGrid.
 	 */
-	public void killAll() {
+	public void killAll()
+	{
 		ListIterator<LocatedAgent> iter = group.listIterator();
 		LocatedAgent aLoc;
-		while (iter.hasNext()) {
+		while ( iter.hasNext() )
+		{
 			aLoc = iter.next();
 			//sonia 27.04.2010
 			//added add aLoc to agentToKill list and reason of death;
@@ -527,86 +523,90 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * \brief Use the boundary conditions to build 3D neighbourhood reference map
+	 * \brief Use the boundary conditions to build 3D neighbourhood reference
+	 * map.
 	 * 
-	 * Use the boundary conditions to build 3D neighbourhood reference map
-	 * 
-	 * @param shovGrid	The shoving grid used to build reference map
+	 * @param shovGrid	The shoving grid used to build reference map.
 	 */
-	protected void testNbh_2D(LocatedGroup[] shovGrid) 
+	protected void testNbh_2D(LocatedGroup[] shovGrid)
 	{
 		AllBC aBC;
-		int index;
+		int index, oldIndex;
 		DiscreteVector nbhDC = new DiscreteVector();
-
+		ContinuousVector cc;
 		// Build neighbourhood reference map
-		for (int i = 0; i<3; i++) {
-			for (int j = 0; j<3; j++) {
-				try {
-					// Get your supposed neighbour
-					nbhDC.set(dc.i+i-1, dc.j+j-1, dc.k);
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
+			{
+				try
+				{
+					// Get your supposed neighbour.
+					nbhDC.set(dc.i + i - 1, dc.j + j - 1, dc.k);
 					index = agentGrid.getIndexedPosition(nbhDC);
-
 					// If the neighbor is outside the domain, apply appropriate boundary
 					// conditions until no more boundaries are crossed; the neighbor will
 					// then be within the domain if appropriate (periodic boundary) or will
 					// be the outside-domain neighbor that was picked originally
-					if (shovGrid[index].isOutside) {
-						int oldindex;
+					if ( shovGrid[index].isOutside )
 						do {
-							oldindex = index;
-							aBC = agentGrid.domain.testCrossedBoundary(shovGrid[index].cc);
-							if (aBC == null) break; // no boundary was crossed
-							index = agentGrid.getIndexedPosition(aBC.lookAt(shovGrid[index].cc));
-						} while (oldindex != index);
-					}
-
+							oldIndex = index;
+							cc = shovGrid[index].cc;
+							aBC = agentGrid.domain.testCrossedBoundary(cc);
+							if ( aBC == null )
+								break; // no boundary was crossed
+							index = agentGrid.getIndexedPosition(aBC.lookAt(cc));
+						} while ( oldIndex != index );
 					// Store the reference to your neighbour
 					nbhIndex[i][j][1] = index;
 					nbhGroup[i][j][1] = shovGrid[index];
-				} catch (Exception e) {
-					// nothing done here
-
+				}
+				catch (Exception e)
+				{
+					// Nothing done here.
 				}
 			}
-		}
 	}
 
 	/**
-	 * \brief Calculate the number of neighbours that contains no biomass
+	 * \brief Calculate the number of neighbours that contains no biomass.
 	 * 
-	 * Calculate the number of neighbours that contains no biomass
+	 * In 2D, we count y-side neighbours twice to be consistent with 3D.
 	 * 
-	 * @return the number of empty neighbours
+	 * @return the number of empty neighbours.
 	 */
-	public int freeNbh() {
+	public int freeNbh()
+	{
 		nFreeNbh = 0;
-		// Rob Feb 2011: add y-side neighbours twice in 2D
-		// (to be consistent with 3D)
-
-		// x neighbours
-		if (nbhGroup[0][1][1].status==2) nFreeNbh++;
-		if (nbhGroup[2][1][1].status==2) nFreeNbh++;
-
+		// x-side neighbours
+		if ( nbhGroup[0][1][1].status == 2 )
+			nFreeNbh++;
+		if ( nbhGroup[2][1][1].status == 2 )
+			nFreeNbh++;
 		// y-side neighbours:
-		if (nbhGroup[1][0][1].status==2) nFreeNbh++;
-		if (nbhGroup[1][2][1].status==2) nFreeNbh++;
-
+		if ( nbhGroup[1][0][1].status == 2 )
+			nFreeNbh++;
+		if ( nbhGroup[1][2][1].status == 2 )
+			nFreeNbh++;
 		// z-side neighbours:
-		if (agentGrid.is3D) {
-			if (nbhGroup[1][1][0].status==2) nFreeNbh++;
-			if (nbhGroup[1][1][2].status==2) nFreeNbh++;
-		} else {
-			if (nbhGroup[1][0][1].status==2) nFreeNbh++;
-			if (nbhGroup[1][2][1].status==2) nFreeNbh++;
+		if ( agentGrid.is3D )
+		{
+			if ( nbhGroup[1][1][0].status == 2 )
+				nFreeNbh++;
+			if ( nbhGroup[1][1][2].status == 2 )
+				nFreeNbh++;
+		}
+		else
+		{
+			if ( nbhGroup[1][0][1].status == 2 )
+				nFreeNbh++;
+			if ( nbhGroup[1][2][1].status == 2 )
+				nFreeNbh++;
 		}
 		return nFreeNbh;
 	}
 
 	/**
 	 * \brief Comparator used by the detachment levelset algorithm
-	 * 
-	 * Comparator used by the detachment levelset algorithm
 	 * 
 	 * @author Chaodong Zhang
 	 */
@@ -624,11 +624,10 @@ public class LocatedGroup {
 	/**
 	 * \brief Comparator used by the shrinking levelset algorithm
 	 * 
-	 * Comparator used by the shrinking levelset algorithm
-	 * 
 	 * @author lal
 	 */
-	public static class DistanceValueComparator implements java.util.Comparator<LocatedGroup> {
+	public static class DistanceValueComparator implements java.util.Comparator<LocatedGroup>
+	{
 
 		@Override
 		public int compare(LocatedGroup b1, LocatedGroup b2) {

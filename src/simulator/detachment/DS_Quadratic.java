@@ -65,7 +65,7 @@ public class DS_Quadratic extends LevelSet {
 	 *
 	 */
 	@Override
-	protected double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim) {
 		if (aGroup.cc.x>maxTh) return Double.MAX_VALUE;
 		return kDet*aGroup.cc.x*aGroup.cc.x;
 	}	
