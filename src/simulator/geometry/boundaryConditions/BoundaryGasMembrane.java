@@ -28,6 +28,7 @@ import org.jdom.Element;
 
 import java.util.*;
 
+import utils.ExtraMath;
 import utils.UnitConverter;
 import utils.XMLParser;
 import simulator.Simulator;
@@ -37,31 +38,32 @@ import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
 
 /**
- * \brief BoundaryMembrane : defines a boundary impermeable to everything except to gas
+ * \brief BoundaryMembrane : defines a boundary impermeable to everything
+ * except to gas.
  * 
- * BoundaryMembrane : defines a boundary impermeable to everything except to gas. A membrane boundary has a selective permeability,
- * meaning it behaves like a zero-flux boundary for agents and most of the solutes, but for selected solutes includes specification of 
- * the diffusivity in the membrane and the opposing-side solute concentration
+ * A membrane boundary has a selective permeability, meaning it behaves like a
+ * zero-flux boundary for agents and most of the solutes, but for selected
+ * solutes includes specification of the diffusivity in the membrane and the
+ * opposing-side solute concentration.
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- *
  */
 public class BoundaryGasMembrane extends ConnectedBoundary
 {
 	/**
 	 *  Serial version used for the serialisation of the class
 	 */
-	private static final long         serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The list of solutes to let diffuse through the membrane
 	 */
-	protected boolean[]               isPermeableTo;
+	protected boolean[] isPermeableTo;
 
 	/**
 	 * Level of permeability for each solute that can diffuse through the membrane
 	 */
-	protected double[]                permeability;
+	protected Double[] permeability;
 	
 	/**
 	 * A vector normal to the boundary and starting from the orthogonal projection
@@ -69,13 +71,16 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 	protected static ContinuousVector vectorIn;
 	
 	/**
-	 * \brief Initialises the boundary from information contained in the simulation protocol file, and builds the list of solutes to let diffuse through the membrane
+	 * \brief Initialises the boundary from information contained in the
+	 * simulation protocol file, and builds the list of solutes to let diffuse
+	 * through the membrane.
 	 * 
-	 * Initialises the boundary from information contained in the simulation protocol file, and builds the list of solutes to let diffuse through the membrane
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aDomain	The domain which this boundary condition is associated with
-	 * @param aBCMarkUp	The XML tags that have declared this boundary in the protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aDomain	The domain which this boundary condition is associated
+	 * with.
+	 * @param aBCMarkUp	The XML tags that have declared this boundary in the
+	 * protocol file.
 	 */
 	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp) {
@@ -84,27 +89,24 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		readGeometry(aBCMarkUp, aDomain);
 		aDomain.addBoundary(this);
 		_isSupport = true;
-
-		// now need to set up the solute permeability
-		
+		// Now need to set up the solute permeability.
 		String bulkName, soluteName;
-
-		// Load description of the bulk connected to the membrane
+		// Load description of the bulk connected to the membrane.
 		bulkName = aBCMarkUp.getParam("bulk");
 		_connectedBulk = aSim.world.getBulk(bulkName);
-
-		// Build the list of solutes to let diffuse through the membrane
+		// Build the list of solutes to let diffuse through the membrane.
 		isPermeableTo = new boolean[aSim.soluteDic.size()];
-		permeability = new double[aSim.soluteDic.size()];
+		permeability = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		Arrays.fill(isPermeableTo, false);
 
-		for (Element aChild : aBCMarkUp.getChildrenElements("param")) {
-			if (!aChild.getAttributeValue("name").equals("isPermeableTo")) continue;
+		for (Element aChild : aBCMarkUp.getChildrenElements("param"))
+		{
+			if ( ! aChild.getAttributeValue("name").equals("isPermeableTo") )
+				continue;
 			soluteName = aChild.getAttributeValue("detail");
-			isPermeableTo[aSim.getSoluteIndex(soluteName)] = true;
-			
-			StringBuffer unit=new StringBuffer("");
-			double paramValue = aBCMarkUp.getParamDbl("isPermeableTo", unit);
+			isPermeableTo[aSim.getSoluteIndex(soluteName)] = true;			
+			StringBuffer unit = new StringBuffer("");
+			Double paramValue = aBCMarkUp.getParamDbl("isPermeableTo", unit);
 			paramValue *= UnitConverter.time(unit.toString());
 			paramValue *= UnitConverter.length(unit.toString());
 			paramValue *= UnitConverter.length(unit.toString());			
@@ -114,93 +116,62 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 
 	
 	/**
-	 * \brief Computes and applies gas diffusivity across the gas membrane boundary
-	 * 
-	 * Computes and applies gas diffusivity across the gas membrane boundary
+	 * \brief Computes and applies gas diffusivity across the gas membrane
+	 * boundary.
 	 * 
 	 * @param relDif	Supplied RelDiff grid
-	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 * @param aSoluteGrid	Grid of solute information which is to be
+	 * refreshed by the solver.
 	 */
 	@Override
-	public void refreshDiffBoundary(SoluteGrid relDif, SoluteGrid aSoluteGrid) {
-		double value;
-
+	public void refreshDiffBoundary(SoluteGrid relDif, SoluteGrid aSoluteGrid)
+	{
+		Double value = 1.0;
 		//Compute pseudo local diffusivity
-		if (isPermeableTo[aSoluteGrid.soluteIndex]) {
-			value = permeability[aSoluteGrid.soluteIndex]/aSoluteGrid.diffusivity;
-		} else {
-			value = 1;
+		if (isPermeableTo[aSoluteGrid.soluteIndex])
+		{
+			value = permeability[aSoluteGrid.soluteIndex]/
+													aSoluteGrid.diffusivity;
 		}
-		
 		// Apply or restore standard relative diffusivity
 		_myShape.readyToFollowBoundary(relDif);
-		while (_myShape.followBoundary(dcIn, dcOut, relDif)) {
+		while (_myShape.followBoundary(dcIn, dcOut, relDif))
 			relDif.setValueAt(value, dcOut);
-		}
-
 	}
 
 	/**
-	 * \brief Solver for the gas membrane boundary condition. Initialises the course along the shape of the boundary. 
+	 * \brief Solver for the gas membrane boundary condition.
 	 * 
-	 * Solver for the gas membrane boundary condition. Initialises the course along the shape of the boundary
+	 * Initialises the course along the shape of the boundary. 
 	 * 
-	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 * @param aSoluteGrid	Grid of solute information which is to be
+	 * refreshed by the solver.
 	 */
 	@Override
-	public void refreshBoundary(SoluteGrid aSoluteGrid) {
-
+	public void refreshBoundary(SoluteGrid aSoluteGrid)
+	{
 		// Initialise the course along the shape of the boundary
 		_myShape.readyToFollowBoundary(aSoluteGrid);
-
-		if (isPermeableTo[aSoluteGrid.soluteIndex]) {
-			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) {
-				aSoluteGrid.setValueAt(_connectedBulk.getValue(aSoluteGrid.soluteIndex), dcOut);
+		if ( isPermeableTo[aSoluteGrid.soluteIndex] )
+			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
+			{
+				aSoluteGrid.setValueAt(_connectedBulk.getValue(
+											aSoluteGrid.soluteIndex), dcOut);
 			}
-
-		} else {
+		else
+		{
 			// The membrane has the same behaviour than a zero-flux boundary
-			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) {
+			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 				aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
-			}
 		}
 	}
 	
-	public Bulk getBulk()
-	{
-		return _connectedBulk;
-	}
-	
-	public void updateBulk(SoluteGrid[] allSG, SoluteGrid[] allRG, Double timeStep)
-	{
-		_connectedBulk.updateBulk(allSG, allRG, timeStep);
-	}
-	
-	
-	
-
-
 	/**
-	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
-	 * 
-	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
-	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
-	 * just return the input looks a bit daft - but we'll leave it here for the moment
-	 * 
-	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
-	 */
-	@Override
-	public ContinuousVector lookAt(ContinuousVector cc)
-	{
-		return cc;
-	}
-
-	/**
-     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * \brief Change the status of a specified LocatedGroup to note that it
+     * has been identified as being outside this boundary.
      * 
-     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
-     * 
-     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
+     * @param aGroup	LocatedGroup object which has been detected to be
+     * outside the boundary.
      */
 	@Override
 	public void setBoundary(LocatedGroup aGroup)
@@ -210,8 +181,8 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 	}
 
 	/**
-     * Modify the movement vector : the new position is the orthognal projection
-     * of the outside point on the boundary surface
+     * Modify the movement vector : the new position is the orthognal
+     * projection of the outside point on the boundary surface
      * 
      * @see LocatedAgent.move();
      */
@@ -220,20 +191,19 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 	{
 		// Define coordinates of the corrected position
 		_myShape.orthoProj(target, target);
-
-		// Build a vector normal to the boundary and starting from the
-		// orthogonal projection
+		/*
+		 * Build a vector normal to the boundary and starting from the
+		 * orthogonal projection.
+		 */
 		vectorIn = new ContinuousVector(_myShape.getNormalInside(target));
-
-		// The whole cell has to be inside, so make a translation equal to the
-		// total radius
+		/*
+		 * The whole cell has to be inside, so make a translation equal to the
+		 * total radius.
+		 */
 		vectorIn.times(anAgent.getRadius(true));
-
-		// Compute the new position
+		// Compute the new position.
 		target.add(vectorIn);
-
-		// Compute and update the movement vector leading to this new position
+		// Compute and update the movement vector leading to this new position.
 		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
 	}
-
 }

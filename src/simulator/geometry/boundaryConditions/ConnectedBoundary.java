@@ -60,21 +60,17 @@ public class ConnectedBoundary extends AllBC
 	 *  @param timeStep	The internal timestep currently being applied in this 
 	 *  simulation.
 	 */
-	public void updateBulk(SoluteGrid[] soluteGrid, SoluteGrid[] reacGrid, Double timeStep)
+	public void updateBulk(SoluteGrid[] soluteGrid,
+									SoluteGrid[] reacGrid, Double timeStep)
 	{
 		_connectedBulk.updateBulk(soluteGrid, reacGrid, timeStep);
 	}
 	
 	@Override
-	public void refreshBoundary(SoluteGrid aSoluteGrid) {
+	public void refreshBoundary(SoluteGrid aSoluteGrid)
+	{
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public ContinuousVector lookAt(ContinuousVector cc) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -84,8 +80,9 @@ public class ConnectedBoundary extends AllBC
 	}
 
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc) {
-		// TODO Auto-generated method stub
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc)
+	{
+		
 		
 	}
 }

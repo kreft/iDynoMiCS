@@ -16,6 +16,7 @@ import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.geometry.Domain;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.BoundaryAgar;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.Simulator;
 import simulator.SoluteGrid;
@@ -23,7 +24,7 @@ import utils.XMLParser;
 
 /**
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
@@ -284,9 +285,15 @@ public class Solver_multigrid extends DiffusionSolver
 		for (AllBC aBC : myDomain.getAllBoundaries())
 		{
 			if ( aBC instanceof ConnectedBoundary )
-				aBC.updateBulk(allSolute, allReac, internTimeStep);
-			if (aBC.hasAgar())
-				aBC.updateAgar(allSolute, allReac, internTimeStep);
+			{
+				((ConnectedBoundary) aBC).
+							updateBulk(allSolute, allReac, internTimeStep);
+			}
+			if ( aBC instanceof BoundaryAgar )
+			{
+				((BoundaryAgar) aBC).
+							updateAgar(allSolute, allReac, internTimeStep);
+			}
 		}
 		
 		// Refresh the bulk concentration of the multigrids.

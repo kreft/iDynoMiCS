@@ -150,22 +150,6 @@ public class Cylindrical extends IsShape
 		return Boolean.logicalXor(isInsideCylinder, _interiorMatchesDomain);
 	}
 	
-	/**
-	 * 
-	 */
-	public Boolean isOnBoundary(ContinuousVector point, Double res)
-	{
-		Double[] position = convertToLocal(point);
-		if ((position[heightCoord] < 0.0) || (position[heightCoord] > _length))
-			return false;
-		if ( _interiorMatchesDomain )
-			return ( position[radialCoord] >= _radius && 
-						position[radialCoord] <= _radius + res);
-		else 
-			return ( position[radialCoord] <= _radius &&
-						position[radialCoord] >= _radius - res);
-	}
-	
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		Double[] p = convertToLocal(ccIn);

@@ -574,7 +574,10 @@ public class Solver_chemostat extends DiffusionSolver
 		{
 			for (AllBC aBC : myDomain.getAllBoundaries())
 				if ( aBC instanceof ConnectedBoundary )
-					aBC.updateBulk(allSolute, allReac, 0.0);
+				{
+					((ConnectedBoundary) aBC).
+								updateBulk(allSolute, allReac, internTimeStep);
+				}
 		}
 		catch (Exception e)
 		{

@@ -35,42 +35,45 @@ import utils.XMLParser;
  * other, similar, regions. As a consequence, boundaries in some chosen
  * directions (generally for movements parallel to the substratum) are
  * periodic, which means that the solute concentrations and solute gradients
- * are constant across the boundary, and that agents travelling through one 
+ * are constant across the boundary, and that agents traveling through one 
  * boundary will be translated to the other side of the domain
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
-public class BoundaryCyclic extends AllBC
+public class BoundaryCyclic extends ExternalBoundary
 {
 	/**
-	 *  Serial version used for the serialisation of the class
+	 *  Serial version used for the serialisation of the class.
 	 */
 	private static final long       serialVersionUID = 1L;
 	
 	/**
-	 * Shape object containing a construction of the boundary opposite this one
+	 * Shape object containing a construction of the boundary opposite this one.
 	 */
-	private IsShape            _myOppShape;
+	private IsShape _myOppShape;
 	
 	/**
-	 * Vector that stores the intersection with the crossed boundary
+	 * Vector that stores the intersection with the crossed boundary.
 	 */
 	private static ContinuousVector vectorIn;
 	
 	/**
-	 * Used to translate a set of points to their respective points on the opposite side of the boundary
+	 * Used to translate a set of points to their respective points on the
+	 * opposite side of the boundary.
 	 */
-	private static DiscreteVector   translator       = new DiscreteVector();
+	private static DiscreteVector translator = new DiscreteVector();
 	
 	/**
-	 * \brief Initialises the boundary from information contained in the simulation protocol file
+	 * \brief Initialises the boundary from information contained in the
+	 * simulation protocol file.
 	 * 
-	 * Initialises the boundary from information contained in the simulation protocol file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aDomain	The domain which this boundary condition is associated with
-	 * @param aBCParser	The XML tags that have declared this boundary in the protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aDomain	The domain which this boundary condition is
+	 * associated with.
+	 * @param aBCParser	The XML tags that have declared this boundary in the
+	 * protocol file.
 	 */
 	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBCParser) 
@@ -78,45 +81,45 @@ public class BoundaryCyclic extends AllBC
 		_mySide = aBCParser.getName();
 		
 		// in 3D, all cyclic boundaries are active
-		if(aDomain.is3D) activeForSolute=true;
+		if ( aDomain.is3D )
+			activeForSolute = true;
 		
 		// in 2D, the x0y/xNy boundary is not active
-		if(!aDomain.is3D & _mySide.contains("x0y")) activeForSolute=false;
+		if( ! aDomain.is3D && _mySide.contains("x0y") )
+			activeForSolute=false;
 		
-		//activeForSolute = aBCParser.getParamBool("activeForSolute");
 		readGeometry(aBCParser, aDomain);
 		aDomain.addBoundary(this);
 		aDomain.addBoundary(this.createOtherSide());		
 	}
-
+	
 	/**
-	 * \brief Read the geometry of this boundary from the protocol file and construct both this boundary and the opposite side (as this is cyclic)
+	 * \brief Read the geometry of this boundary from the protocol file and
+	 * construct both this boundary and the opposite side (as this is cyclic).
 	 * 
-	 * Read the geometry of this boundary from the protocol file and construct both this boundary and the opposite side (as this is cyclic)
-	 * 
-	 * @see Domain constructor
-	 * @param geometryRoot	XML tags in the protocol file that describe this boundary
-	 * @param aDomain	The domain which this boundary is associated with
+	 * @see Domain constructor.
+	 * @param geometryRoot	XML tags in the protocol file that describe this
+	 * boundary.
+	 * @param aDomain	The domain which this boundary is associated with.
 	 */
 	@Override
 	public void readGeometry(XMLParser geometryRoot, Domain aDomain)
 	{
 		List<Element> shapeList = geometryRoot.getChildrenElements("shape");
 		String className;
-		try 
+		try
 		{
-			// Build first shape;
+			// Build first shape.
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(0).getAttributeValue("class");
 			_myShape = (IsShape) Class.forName(className).newInstance();
 			_myShape.readShape(new XMLParser(shapeList.get(0)), aDomain);
 			_mySide = geometryRoot.getName();
-			// Build opposite side shape
+			// Build opposite side shape.
 			className = "simulator.geometry.shape.";
 			className += shapeList.get(1).getAttributeValue("class");
 			_myOppShape = (IsShape) Class.forName(className).newInstance();
 			_myOppShape.readShape(new XMLParser(shapeList.get(1)), aDomain);
-
 		}
 		catch (Exception e)
 		{
@@ -126,89 +129,99 @@ public class BoundaryCyclic extends AllBC
 	}
 	
 	/**
-	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
+	 * \brief Method used by another which gets the indexed grid position of a
+	 * continuous vector.
 	 * 
-	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
-	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
-	 * just return the input looks a bit daft - but we'll leave it here for the moment
+	 * Some boundary conditions (e.g. BoundaryCyclic) need the input corrected
+	 * due to the condition, some don't and just return the input. Maybe we'll
+	 * change this at some point as to just return the input looks a bit daft
+	 * - but we'll leave it here for the moment.
 	 * 
-	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
+	 * @param position ContinuousVector that gives the current location of an
+	 * agent to check on the grid.
 	 */
 	@Override
-	public ContinuousVector lookAt(ContinuousVector cc) 
+	public ContinuousVector lookAt(ContinuousVector position)
 	{
-		// TODO Using first intersection is a quick fix
-		ContinuousVector nCC = 
-				_myShape.getIntersections(cc, _myShape.getNormalInside(cc)).getFirst();
+		// TODO Using first intersection is a quick fix.
+		ContinuousVector nCC = _myShape.getIntersections(position,
+							_myShape.getNormalInside(position)).getFirst();
 		ContinuousVector bCC = getSymmetric(nCC);
 		bCC.subtract(nCC);
-		nCC.sendSum(bCC, cc);
+		nCC.sendSum(bCC, position);
 		return nCC;
 	}
-
+	
 	/**
-     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * \brief Change the status of a specified LocatedGroup to note that it
+     * has been identified as being outside this boundary.
      * 
-     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
-     * 
-     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
+     * @param aGroup LocatedGroup object which has been detected to be outside
+     * the boundary.
      */
 	@Override
-	public void setBoundary(LocatedGroup aGroup) {
+	public void setBoundary(LocatedGroup aGroup)
+	{
 		aGroup.status = -1;
 		// status -1 -> outside
 	}
-
+	
 	/**
-	 * \brief Applies the boundary condition by modifying the movement vector. New position is orthogonal projection of the outside point on the boundary surface
+	 * \brief Applies the boundary condition by modifying the movement vector.
 	 * 
-	 * Applies the boundary condition by modifying the movement vector. New position is orthogonal projection of the outside point on the boundary surface
+	 * New position is orthogonal projection of the outside point on the
+	 * boundary surface.
 	 * 
-	 * @param anAgent	The Located Agent which is attempting to cross the boundary
-	 * @param target	The target position that the agent is moving to
+	 * @param anAgent	The Located Agent which is attempting to cross the
+	 * boundary.
+	 * @param target	The target position that the agent is moving to.
 	 */
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
-		// Determine the intersection with the crossed boundary
-		// TODO Using first intersection is a quick fix
-		vectorIn = _myShape.getIntersections(anAgent.getLocation(), anAgent.getMovement()).getFirst();
-
-		// Determine the remaining movement when we touch the boundary
+		// Determine the intersection with the crossed boundary.
+		// TODO Using first intersection is a quick fix.
+		vectorIn = _myShape.getIntersections(anAgent.getLocation(),
+											anAgent.getMovement()).getFirst();
+		// Determine the remaining movement when we touch the boundary.
 		target.sendDiff(target, vectorIn);
-
-		// Apply the residual movement on the symmetric point
+		// Apply the residual movement on the symmetric point.
 		vectorIn = getSymmetric(vectorIn);
 		target.add(vectorIn);
-
-		// Compute and update the movement vector leading to this new position
+		// Compute and update the movement vector leading to this new position.
 		anAgent.getMovement().sendDiff(target, anAgent.getLocation());
 	}
 
 	/**
-	 * \brief Solver for the cyclic boundary condition. Initialises the course along the shape of the boundary, setting the values of solute near the boundary as required 
+	 * \brief Solver for the cyclic boundary condition. 
 	 * 
-	 * Solver for the cyclic boundary condition. Initialises the course along the shape of the boundary, , setting the values of solute near the boundary as required
+	 * Initialises the course along the shape of the boundary, setting the
+	 * values of solute near the boundary as required.
 	 * 
-	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 * @param aSoluteGrid Grid of solute information which is to be refreshed
+	 * by the solver.
 	 */
 	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
 	{
-		// 2D simulations: activeForSolute is false for x0y/xNy and true for x0z/xNz
-		// 3D simulations: activeForSolute is always true for cyclic boundaries
+		/*
+		 * For simulations in
+		 * 2D: activeForSolute is false for x0y/xNy and true for x0z/xNz.
+		 * 3D: activeForSolute is always true for cyclic boundaries.
+		 */
 		if ( activeForSolute )
 		{
 			// Build translator between both boundaries
-			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/aSoluteGrid.getResolution());
+			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/
+												aSoluteGrid.getResolution());
 			translator.set(_myOppShape.getNormalDC());
 			translator.times(k - 1);
-
 			// Initialise the course along the shape of the boundary
 			_myShape.readyToFollowBoundary(aSoluteGrid);
-
-			// Send a point belonging to the boundary and the closest point
-			// outside the domain
+			/*
+			 * Send a point belonging to the boundary and the closest point
+			 * outside the domain.
+			 */
 			while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid))
 			{
 				dcIn.add(translator);
@@ -221,7 +234,8 @@ public class BoundaryCyclic extends AllBC
 			_myShape.readyToFollowBoundary(aSoluteGrid);
 			translator.set( _myOppShape.getNormalDC() );
 			translator.times(2);
-			/* Send a point belonging to the boundary and the closest point
+			/* 
+			 * Send a point belonging to the boundary and the closest point
 			 * outside the domain.
 			 */
 			while ( _myShape.followBoundary(dcIn, dcOut, aSoluteGrid) )
@@ -232,7 +246,7 @@ public class BoundaryCyclic extends AllBC
 			}
 		}
 	}
-
+	
 	/**
 	 * \brief Applies boundary conditions for all other BC types - but not
 	 * used for cyclic boundaries.
@@ -247,18 +261,19 @@ public class BoundaryCyclic extends AllBC
 	 * \brief Returns the value within a boundary. Not used for cyclic
 	 * boundaries.
 	 * 
-	 * @param aSpGrid	Solute grid which the boundary is being applied
-	 * @param i	I Coordinate of grid space to query
-	 * @param j	J Coordinate of grid space to query
-	 * @param k	K Coordinate of grid space to query
-	 * @return	Double balue of the solute level stored in that boundary cell
+	 * @param aSpGrid	Solute grid which the boundary is being applied.
+	 * @param i	I Coordinate of grid space to query.
+	 * @param j	J Coordinate of grid space to query.
+	 * @param k	K Coordinate of grid space to query.
+	 * @return	Double value of the solute level stored in that boundary cell.
 	 */
 	public double getValueFromBoundary(SoluteGrid aSpGrid, int i, int j, int k)
 	{
-		System.out.println("CyclicBoundary:should not be used");
+		System.out.println(
+					"CyclicBoundary.getValueFromBoundary:should not be used");
 		return 0.0;
 	}
-
+	
 	/**
 	 * \brief Creates the opposite side of the cyclic boundary such that
 	 * agents can 'roll around' to the other side.
@@ -276,45 +291,6 @@ public class BoundaryCyclic extends AllBC
 		return out;
 	}
 	
-	/**
-	 * \brief Determines if a point is outside the boundary.
-	 * 
-	 * @param cc	ContinuousVector to check
-	 * @return	Boolean value noting whether this coordinate is outside the
-	 * boundary (true) or not (false).
-	 */
-	@Override
-	public boolean isOutside(ContinuousVector cc)
-	{
-		return _myShape.isOutside(cc);
-	}
-	
-	/**
-	 * \brief Determines if a point is on the boundary.
-	 * 
-	 * @param cC	ContinuousVector to check
-	 * @param aSpatialGrid	Spatial grid to check
-	 * @return	Boolean value noting whether this coordinate is on the
-	 * boundary (true) or not (false).
-	 */
-	public boolean isOnBoundary(ContinuousVector cC, SpatialGrid aSpatialGrid)
-		{
-		return (_myShape.isOnBoundary(cC, aSpatialGrid.getResolution()));
-	}
-
-	/**
-	 * \brief Returns the distance from a point to the boundary
-	 * 
-	 * Returns the distance from a point to the boundary
-	 * 
-	 * @param cc	The continuous vector of points to calculate how far the point is from the boundary
-	 * @return	Double value stating the distance fromt the point to the boundary
-	 */
-	@Override
-	public double getDistance(ContinuousVector cc) {
-		return _myShape.getDistance(cc);
-	}
-
 	/**
 	 * \brief Return the intersection between the opposite shape and a provided point
 	 * 

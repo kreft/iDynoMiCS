@@ -349,14 +349,6 @@ public class Hemispherical extends IsShape
 	/**
 	 * 
 	 */
-	public Boolean isOnBoundary(ContinuousVector cV, Double res)
-	{
-		return null;
-	}
-
-	/**
-	 * 
-	 */
 	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
 													ContinuousVector vector) 
 	{

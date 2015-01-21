@@ -35,7 +35,7 @@ import simulator.agent.LocatedGroup;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  */
 public class BoundaryBulk extends ConnectedBoundary
@@ -113,26 +113,11 @@ public class BoundaryBulk extends ConnectedBoundary
 	}
 	
 	/**
-	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
-	 * 
-	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
-	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
-	 * just return the input looks a bit daft - but we'll leave it here for the moment
-	 * 
-	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
-	 */
-	@Override
-	public ContinuousVector lookAt(ContinuousVector cc) 
-	{
-		return cc;
-	}
-
-	/**
-     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * \brief Change the status of a specified LocatedGroup to note that it
+     * has been identified as being outside this boundary.
      * 
-     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
-     * 
-     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
+     * @param aGroup	LocatedGroup object which has been detected to be
+     * outside the boundary.
      */
 	@Override
 	public void setBoundary(LocatedGroup aGroup)
@@ -142,27 +127,24 @@ public class BoundaryBulk extends ConnectedBoundary
 	}
 
 	/**
-	 * \brief Kills any agents that are crossing this boundary as they are leaving the simulated system
+	 * \brief Kills any agents that are crossing this boundary as they are
+	 * leaving the simulated system.
 	 * 
-	 * Kills any agents that are crossing this boundary as they are leaving the simulated system
-	 * 
-	 * @param anAgent	The LocatedAgent that has crossed the boundary
-	 * @param target	Vector of where this agent was going to be placed
+	 * @param anAgent	The LocatedAgent that has crossed the boundary.
+	 * @param target	Vector of where this agent was going to be placed.
 	 */
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) 
 	{
-		//sonia 27.04.2010
-		//recording reason of death (agent will be moved to agentToKill list when die() calls registerDeath()
+		/*
+		 * Recording reason of death: agent will be moved to agentToKill list
+		 * when die() calls registerDeath().
+		 */
 		anAgent.death = "overBoard";
-		
 		anAgent.die(false);
-		//LogFile.writeLog("agent killed by Bulk Boundary");
-		
-		// to label this agent as "shoving solved", set to zero its movement.
+		// To label this agent as "shoving solved", set to zero its movement.
 		anAgent.getMovement().reset();
 		target.set(anAgent.getLocation());
-		
 	}
 
 

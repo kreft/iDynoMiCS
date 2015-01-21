@@ -160,15 +160,15 @@ public class LocatedGroup {
 
 		// Check if the group is inside the domain
 		isOutside = false;
-		for (AllBC aBC : anAgentGrid.domain.getAllBoundaries()) {
-			if (aBC.isOutside(cc)) {
+		for (AllBC aBC : anAgentGrid.domain.getAllBoundaries())
+			if (aBC.isOutside(cc))
+			{
 				isOutside = true;
 				status = -1;
 				// setBoundary sets the status to 3!
 				aBC.setBoundary(this);
 				break;
 			}
-		}
 	}
 
 	/**

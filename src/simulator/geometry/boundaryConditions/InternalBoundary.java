@@ -21,12 +21,6 @@ public class InternalBoundary extends AllBC
 		
 	}
 	
-	public ContinuousVector lookAt(ContinuousVector cc)
-	{
-		
-		return null;
-	}
-	
 	public void setBoundary(LocatedGroup aGroup)
 	{
 		

@@ -90,26 +90,6 @@ public abstract class IsShape implements Serializable
 		return diff.norm();
 	}
 	
-	
-	/**
-     * Computes orthogonal distance and if this distance is lower than the
-     * resolution and if the point is outside, then the point tested is
-     * declared to be on the boundary of the domain.
-     * 
-	 * @param cC	ContinuousVector containing the coordinates of a point to
-	 * test.
-	 * @param res	Resolution of the domain that this shape is associated
-	 * with.
-	 * @return	Boolean noting whether this coordinate is on the boundary of
-	 * the domain.
-	 */
-	public Boolean isOnBoundary(ContinuousVector point, Double res)
-	{
-		return isOutside(point) && 
-				point.distance(getOrthoProj(point)) <= res;
-	}
-	
-
 	/**
      * \brief Calculates the coordinates of the intersection(s) between a line
      * (point and vector) and the shape.

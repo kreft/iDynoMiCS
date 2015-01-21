@@ -27,7 +27,7 @@ import utils.XMLParser;
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
-public class BoundaryZeroFlux  extends AllBC
+public class BoundaryZeroFlux  extends ExternalBoundary
 {
 	/**
 	 *  Serial version used for the serialisation of the class
@@ -80,21 +80,6 @@ public class BoundaryZeroFlux  extends AllBC
 		}
 	}
 	
-
-	/**
-	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
-	 * 
-	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
-	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
-	 * just return the input looks a bit daft - but we'll leave it here for the moment
-	 * 
-	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
-	 */
-	@Override
-	public ContinuousVector lookAt(ContinuousVector cc) {
-		return cc;
-	}
-
 	/**
      * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
      * 

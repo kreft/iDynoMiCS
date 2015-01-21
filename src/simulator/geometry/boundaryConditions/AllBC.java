@@ -51,11 +51,6 @@ public abstract class AllBC
 	 */
 	protected boolean	activeForSolute	= true;
 	
-	/**
-	 * Boolean noting whether this boundary is modelling agar.
-	 */
-	protected boolean	hasAgar	= false;
-	
 	/* ____________________ INTERNAL TEMPRARY VARIABLES ________________________ */
 	/**
 	 * Discrete coordinates of a voxel inside the computation domain but along the boundary
@@ -139,7 +134,8 @@ public abstract class AllBC
 	 * @param cc	ContinuousVector to check
 	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
 	 */
-	public boolean isOutside(ContinuousVector cc) {
+	public boolean isOutside(ContinuousVector cc)
+	{
 		return _myShape.isOutside(cc);
 	}
 	
@@ -167,28 +163,36 @@ public abstract class AllBC
 	public abstract void refreshBoundary(SoluteGrid aSoluteGrid);
 	
 	/**
-     * \brief Method used if a boundary modifies the local diffusivity constant. Most of boundaries do not modify it
-     * 
-     * Method used if a boundary modifies the local diffusivity constant. Most of boundaries do not modify it
+     * \brief Method used if a boundary modifies the local diffusivity
+     * constant. Most of boundaries do not modify it.
      * 
      * @param relDiff	Relative difference grid
      * @param aSolutegrid	Grid of solute information which is to be refreshed by the solver
      * 
      */
-	public void refreshDiffBoundary(SoluteGrid relDiff,SoluteGrid aSolutegrid){};
+	public void refreshDiffBoundary(SoluteGrid relDiff, SoluteGrid aSolutegrid)
+	{
+		
+	};
 
 	/* ______________INTERACTION WITH THE PARTICLES _____________________ */
 
 	/**
-	 * \brief Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions need the input corrected, some don't and just return the input
+	 * \brief Method used by another which gets the indexed grid position of a
+	 * continuous vector.
 	 * 
-	 * Method used by another which gets the indexed grid position of a continuous vector. Some boundary conditions (e.g. BoundaryCyclic_ 
-	 * need the input corrected due to the condition, some don't and just return the input. Maybe we'll change this at some point as to 
-	 * just return the input looks a bit daft - but we'll leave it here for the moment
+	 * Some boundary conditions (e.g. BoundaryCyclic) need the input corrected
+	 * due to the condition, some don't and just return the input. Maybe we'll
+	 * change this at some point as to just return the input looks a bit daft
+	 * - but we'll leave it here for the moment.
 	 * 
-	 * @param cc	ContinuousVector that gives the current location of an agent to check on the grid
+	 * @param position ContinuousVector that gives the current location of an
+	 * agent to check on the grid.
 	 */
-	public abstract ContinuousVector lookAt(ContinuousVector cc);
+	public ContinuousVector lookAt(ContinuousVector position)
+	{
+		return position;
+	}
 	
 	/**
      * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
@@ -210,11 +214,11 @@ public abstract class AllBC
 	/* ___________________ INTERACTION WITH THE DOMAIN _________________________ */
 
 	/**
-	 * \brief Determine whether this boundary is the supporting structure (substratum)
+	 * \brief Determine whether this boundary is the supporting structure
+	 * (substratum).
 	 * 
-	 * Determine whether this boundary is the supporting structure (substratum)
-	 * 
-	 * @return Boolean noting whether this boundary is the supporting structure (true) or not (false)
+	 * @return Boolean noting whether this boundary is the supporting
+	 * structure (true) or not (false).
 	 */
 	public boolean isSupport()
 	{
@@ -234,46 +238,12 @@ public abstract class AllBC
 	}
 	
 	/**
-	 * \brief Updates the levels in the bulk. Allows reaction or flux-based bulk treatment
+	 * \brief Determines if a discrete vector location is outside the boundary.
 	 * 
-	 *  Updates the levels in the bulk. Allows reaction or flux-based bulk treatment (BVM 151208)
-	 * 
-	 *  @param soluteGrid	Array of all solute grids
-	 *  @param reacGrid	Array of all reaction grids	
-	 *  @param timeStep	The internal timestep currently being applied in this simulation
-	 *  
-	 */
-	public void updateBulk(SoluteGrid[] soluteGrid, SoluteGrid[] reacGrid, double timeStep) {};
-
-	/**
-	 * \brief Determine if the boundary condition is modelling agar
-	 * 
-	 * Determine if the boundary condition is modelling agar
-	 * 
-	 * @return	Boolean noting whether this condition is modelling agar (true) or not (false)
-	 */
-	public boolean hasAgar()
-	{
-		return hasAgar;
-	}
-
-	/**
-	 * \brief If modelling an agar plate boundary, this method updates the boundary
-	 * 
-	 * @param soluteGrid	Grid of all solutes
-	 * @param reactionGrid	Grid of all reactions
-	 * @param timeStep	Current internal timestep of the simulation
-	 */
-	public void updateAgar(SoluteGrid[] soluteGrid,SoluteGrid[] reactionGrid, double timeStep) {};
-
-	/**
-	 * \brief Determines if a discrete vector location is outside the boundary
-	 * 
-	 * Determines if a discrete vector location is outside the boundary
-	 * 
-	 * @param dc	DiscreteVector to check
-	 * @param aSpatialGrid	The grid to check whether a point is outside
-	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
+	 * @param dc	DiscreteVector to check.
+	 * @param aSpatialGrid	The grid to check whether a point is outside.
+	 * @return	Boolean value noting whether this coordinate is outside the
+	 * boundary (true) or not (false).
 	 */
 	public boolean isOutside(DiscreteVector dc, SpatialGrid aSpatialGrid)
 	{
@@ -284,39 +254,41 @@ public abstract class AllBC
 	/* ____________________ TOOLBOX ______________________________ */
 
 	/**
-     * \brief Calculate the intersection between the boundary and a line (defined by a position and a vector)
+     * \brief Calculate the intersection(s) between the boundary and a line
+     * (defined by a position and a vector).
      * 
-     * Calculate the intersection between the boundary and a line (defined by a position and a vector)
-     * 
-     * @param position	A continuous vector stating the point to be used in the calculation
-     * @param vector	A continuous vector stating the line to be used in the calculation	
-     * @return ContinuousVector stating the point of intersection between the boundary and a line
+     * @param position	A continuous vector stating the point to be used in
+     * the calculation.
+     * @param vector	A continuous vector stating the line to be used in the
+     * calculation.	
+     * @return List of ContinuousVectors stating the point(s) of intersection
+     * between the boundary and a line.
      */
 	public LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector)
 	{
 		return _myShape.getIntersections(position, vector);
 	}
-
+	
 	/**
-     * \brief Calculate the orthogonal projection of a location on the boundary
+     * \brief Calculate the orthogonal projection of a location on the
+     * boundary.
      * 
-     * Calculate the orthogonal projection of a location on the boundary
-     * 
-     * @param cc	A continuous vector stating the point to be used in the calculation
-     * @return ContinuousVector stating the point on the boundary after the orthogonal projection 
+     * @param position	A continuous vector stating the point to be used in
+     * the calculation.
+     * @return ContinuousVector stating the point on the boundary after the
+     * orthogonal projection. 
      */
-	public ContinuousVector getOrthoProj(ContinuousVector cc)
+	public ContinuousVector getOrthoProj(ContinuousVector position)
 	{
-		return _myShape.getOrthoProj(cc);
+		return _myShape.getOrthoProj(position);
 	}
 
 	/**
-	 * \brief Returns the Shape object that represents this boundary
+	 * \brief Returns the Shape object that represents this boundary.
 	 * 
-	 * Returns the Shape object that represents this boundary
-	 * 
-	 * @return	Shape object that has been constructed to represent this boundary
+	 * @return	Shape object that has been constructed to represent this
+	 * boundary.
 	 */
 	public IsShape getShape()
 	{
@@ -324,11 +296,11 @@ public abstract class AllBC
 	}
 	
 	/**
-	 * \brief Return the name of the side of the domain which this boundary is on
+	 * \brief Return the name of the side of the domain which this boundary is
+	 * on.
 	 * 
-	 * Return the name of the side of the domain which this boundary is on
-	 * 
-	 * @return	String containing the name of the side of the domain (e.g. x0z, xNz, etc)
+	 * @return	String containing the name of the side of the domain (e.g.
+	 * x0z, xNz, etc).
 	 */
 	public String getSide()
 	{
@@ -338,13 +310,13 @@ public abstract class AllBC
 	/**
 	 * \brief Returns the distance from a point to the boundary.
 	 * 
-	 * @param cc	The continuous vector of points to calculate how far the
-	 * point is from the boundary.
+	 * @param position	The continuous vector of points to calculate how far 
+	 * the point is from the boundary.
 	 * @return	Double value stating the distance from the point to the
 	 * boundary.
 	 */
-	public double getDistance(ContinuousVector cc)
+	public Double getDistance(ContinuousVector position)
 	{
-		return _myShape.getDistance(cc);
+		return _myShape.getDistance(position);
 	}
 }
