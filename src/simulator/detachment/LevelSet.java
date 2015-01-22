@@ -1,7 +1,8 @@
 /**
  * \package simulator.detachment
  * 
- * \brief Package of classes that capture detachment of agents from the biomass.
+ * \brief Package of classes that capture detachment of agents from the
+ * biofilm.
  * 
  * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
  * under French law and abides by the rules of distribution of free software.  
@@ -21,12 +22,13 @@ import simulator.AgentContainer;
 import simulator.Simulator;
 import simulator.agent.LocatedGroup;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
- * \brief Solver used for modelling detachment
+ * \brief Solver used for modelling detachment.
  * 
-// * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public abstract class LevelSet
@@ -34,7 +36,13 @@ public abstract class LevelSet
 	/**
 	 * Whether the agent grid is 3D (true) or 2D (false).
 	 */
-	private boolean	_is3D;
+	private Boolean	_is3D;
+	
+	/**
+	 * If this is set to true and the maximum threshold (MaxTh) is crossed,
+	 * the simulation will be terminated at the end of the timestep.
+	 */
+	private Boolean _endSimWhenMaxThCrossed = false;
 	
 	/**
 	 * Resolution of the associated agent grid.
@@ -57,10 +65,20 @@ public abstract class LevelSet
 	private LinkedList<LocatedGroup> _alive;
 	
 	/**
+	 * Constant parameter used to determine the strength of detachment.
+	 */
+	protected Double kDet;
+	
+	/**
+	 * Maximum thickness that the biofilm may reach.
+	 */
+	protected Double maxTh;
+	
+	/**
 	 * 
 	 */
-	private Double                   timeStep;
-
+	private Double timeStep;
+	
 	/**
 	 * \brief Generic constructor called to dynamically instantiate a child
 	 * class object.
@@ -75,7 +93,7 @@ public abstract class LevelSet
 		out.init(anAgentGrid, root);
 		return out;
 	}
-
+	
 	/**
 	 * \brief Initialise this LevelSet object by taking information from the
 	 * associated grid and protocol file.
@@ -90,6 +108,14 @@ public abstract class LevelSet
 		_shovingGrid = anAgentGrid.getShovingGrid();
 		_close = new LinkedList<LocatedGroup>();
 		_alive = new LinkedList<LocatedGroup>();
+		
+		kDet = root.getParamDbl("kDet");
+		Double value = root.getParamDbl("maxTh");
+		maxTh = (Double.isNaN(value)? Double.POSITIVE_INFINITY:value);
+		
+		Boolean bool = root.getParamBool("endSimWhenMaxThCrossed");
+		if ( bool != XMLParser.nullBool )
+			_endSimWhenMaxThCrossed = bool;
 	}
 	
 	/**
@@ -239,8 +265,21 @@ public abstract class LevelSet
 	 * specified in the protocol file.
 	 * @return An erosion speed (micrometer per hour).
 	 */
-	protected abstract Double getLocalDetachmentSpeed(LocatedGroup aGroup,
-															Simulator aSim);
+	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup,
+															Simulator aSim)
+	{
+		if ( aGroup.cc.x > maxTh )
+		{
+			if ( _endSimWhenMaxThCrossed )
+			{
+				aSim.continueRunning = false;
+				LogFile.writeLog("Maximum threshold "+maxTh);
+				LogFile.writeLog("Simulation halted as threshold crossed at"+aGroup.cc);
+			}
+			return Double.MAX_VALUE;
+		}
+		return 0.0;
+	}
 	
 	/**
 	 * \brief Get the new T value for level set as based on the values of the

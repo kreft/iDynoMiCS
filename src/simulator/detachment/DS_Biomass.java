@@ -1,62 +1,36 @@
 /**
  * \package simulator.detachment
  * 
- * \brief Package of classes that capture detachment of agents from the biomass
+ * \brief Package of classes that capture detachment of agents from the
+ * biofilm.
  * 
- * Package of classes that capture detachment of agents from the biomass. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.detachment;
 
-import simulator.AgentContainer;
 import simulator.Simulator;
 import simulator.agent.LocatedGroup;
-import utils.XMLParser;
 import utils.ExtraMath;
 
 /**
- * \brief Biomass detachment method. Function: kDet*L^2/X, where L is the local biomass thickness and X the local biomass concentration
+ * \brief Biomass detachment method. Function: kDet*L^2/X, where L is the
+ * local biomass thickness and X the local biomass concentration.
  * 
  * 
- * The mark-up defines the erosion forces that act on the biofilm surface. Detachment works by removing a layer of biomass based on the 
- * detachment speed and the timestep, with the detachment speed calculated via one of the given forms. This class captures the Biomass 
- * detachment method.
+ * The mark-up defines the erosion forces that act on the biofilm surface.
+ * Detachment works by removing a layer of biomass based on the detachment
+ * speed and the timestep, with the detachment speed calculated via one of the
+ * given forms. This class captures the Biomass detachment method.
  * 
- * @author JoÃ£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer Center (NY, USA)
- *
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * Center (NY, USA).
  */
 public class DS_Biomass extends LevelSet 
 {
-	/**
-	 * Constant parameter used to determine the strength of detachment.
-	 */
-	private Double kDet;
-	
-	/**
-	 * Maximum thickness that the biofilm may reach.
-	 */
-	private Double maxTh;
-
-	/**
-	 * \brief Initialise the object by reading attributes from associated agent grid and XML protocol file
-	 * 
-	 * Initialise the object by reading attributes from associated agent grid and XML protocol file
-	 * 
-	 * @param anAgentGrid	Associated grid of agents
-	 * @param root	XML tag containing information related to this detachment mechanism
-	 */
-	@Override
-	public void init(AgentContainer anAgentGrid, XMLParser root) 
-	{
-		super.init(anAgentGrid, root);
-		// kDet has units of: fg.um-4.hr-1
-		// this gives speed in um.hr-1
-		kDet = root.getParamDbl("kDet");
-		Double value = root.getParamDbl("maxTh");
-		maxTh = Double.isNaN(value) ? Double.POSITIVE_INFINITY : value;
-	}
-
 	/**
 	 *\brief Calculate and return the local detachment speed using this
 	 * detachment method.
@@ -70,9 +44,8 @@ public class DS_Biomass extends LevelSet
 	@Override
 	protected Double getLocalDetachmentSpeed(LocatedGroup aGroup, Simulator aSim)
 	{
-	 	if ( aGroup.cc.x > maxTh )
-	 		return Double.MAX_VALUE;
+		if ( super.getLocalDetachmentSpeed(aGroup, aSim) == Double.MAX_VALUE )
+			return Double.MAX_VALUE;
 		return kDet * ExtraMath.sq(aGroup.cc.x) / aGroup.totalConcentration;
 	}
-
 }

@@ -2,7 +2,6 @@ package simulator.geometry;
 
 import java.io.*;
 import java.util.*;
-import org.jdom.Element;
 import Jama.Matrix;
 
 import idyno.SimTimer;

@@ -187,7 +187,6 @@ public class Solver_chemostat extends DiffusionSolver
 		try
 		{
 			for (AllBC aBC : _domain.getAllBoundaries())
-			{
 				if ( aBC instanceof ConnectedBoundary )
 				{
 					Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
@@ -206,8 +205,6 @@ public class Solver_chemostat extends DiffusionSolver
 					}
 					isConstSol = aBulk._isConstant;
 				}
-				//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
-			}
 		} 
 		catch (Exception e) 
 		{

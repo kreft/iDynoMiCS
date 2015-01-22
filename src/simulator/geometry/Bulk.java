@@ -297,7 +297,7 @@ public class Bulk
 	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid)
 	{
 		String message = "Bulk dynamics \n";	
-		for (int iGrid = 0; iGrid<allSol.length; iGrid++)
+		for (int iGrid = 0; iGrid < allSol.length; iGrid++)
 		{
 			//_reacRate[iGrid] = reacGrid[iGrid].getAverageChemo();
 			//_bulkValue[iGrid]=allSol[iGrid].getAverageChemo() ;
@@ -306,7 +306,7 @@ public class Bulk
 		}
 
 		// bvm 30.4.2009: for pulsed bulk concentrations
-		for (int i=0; i<_bulkValue.length; i++)
+		for (int i = 0; i < _bulkValue.length; i++)
 			if (SimTimer.getCurrentTime()-_lastPulseTime[i] >= _pulseInterval[i]) {
 				// set bulk values to pulsed concentration
 				_bulkValue[i] = _sPulse[i];
@@ -535,9 +535,9 @@ public class Bulk
 	}
 
 	/**
-	 * \brief Determine if a particular solute is in the bulk
+	 * \brief Determine if a particular solute is in the bulk.
 	 * 
-	 * Determine if a particular solute is in the bulk. Uses the index of this solute in the simulation dictionary
+	 * Uses the index of this solute in the simulation dictionary.
 	 * 
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @return	Boolean noting whether this solute is in the bulk (true) or not (false)

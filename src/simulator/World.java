@@ -18,43 +18,51 @@ import utils.XMLParser;
 import simulator.geometry.*;
 
 /**
- * \brief Class containing methods to create and query the simulation world (bulk and computational domains)
+ * \brief Class containing methods to create and query the simulation world
+ * (bulk and computational domains).
  * 
- * The simulation world is a description of all bulks and computation domains defined in the simulation. This class is used to create 
- * the world specified in the protocol files. The world mark-up in the protocol file collects the description of all bulks and 
- * computational domains defined in the simulation. The bulk mark-up defines a bulk solute compartment that is a source or sink for 
- * solutes involved in biofilm growth. The computationDomain mark-up defines the spatial region the biofilm will grow in. Only one 
- * world may be defined, but this world may contain several bulk compartments and computationDomain domains, each with a different 
- * name. Though when simulating a chemostat scenario, the name of the bulk MUST be chemostat, regardless of the corresponding 
- * computationalDomain name. 
+ * The simulation world is a description of all bulks and computation domains
+ * defined in the simulation. This class is used to create the world specified
+ * in the protocol files. The world mark-up in the protocol file collects the
+ * description of all bulks and computational domains defined in the
+ * simulation. The bulk mark-up defines a bulk solute compartment that is a
+ * source or sink for solutes involved in biofilm growth. The
+ * computationDomain mark-up defines the spatial region the biofilm will grow
+ * in. Only one world may be defined, but this world may contain several bulk
+ * compartments and computationDomain domains, each with a different name.
+ * Though when simulating a chemostat scenario, the name of the bulk MUST be
+ * chemostat, regardless of the corresponding computationalDomain name. 
  * 
- * This class is a component class of iDynoMiCS, released under the CECIL license. Please see www.idynomics.bham.ac.uk for more information
+ * This class is a component class of iDynoMiCS, released under the CECIL
+ * license. Please see www.idynomics.bham.ac.uk for more information.
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham, UK
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham, UK.
  */
 public class World
 {
 
 	/**
-	 * ArrayList of computation domains specified in a simulation scenario
+	 * ArrayList of computation domains specified in a simulation scenario.
 	 */
 	public ArrayList<Domain> domainList = new ArrayList<Domain>();
 	
 	/**
-	 * LinkedList of bulk domains specified in a simulation scenario
+	 * LinkedList of bulk domains specified in a simulation scenario.
 	 */
-	public LinkedList<Bulk>  bulkList   = new LinkedList<Bulk>();
+	public LinkedList<Bulk> bulkList = new LinkedList<Bulk>();
 	
 	/**
-	 * Holds time constraints that are applicable to this bulk
+	 * Holds time constraints that are applicable to this bulk.
 	 */
-	public double[]          bulkTime   = new double[2];
-
+	public Double[] bulkTime = ExtraMath.newDoubleArray(2);
 	
 	/*************************************************************************************************************************
 	 * CLASS METHODS 

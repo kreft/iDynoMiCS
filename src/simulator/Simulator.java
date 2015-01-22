@@ -1,15 +1,17 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
+ * 
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator;
 
-import idyno.Idynomics;
-import idyno.SimTimer;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.util.*;
@@ -17,38 +19,41 @@ import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import de.schlichtherle.io.FileInputStream;
-import utils.ExtraMath;
-import utils.MTRandom;
-import utils.XMLParser;
-import utils.ResultFile;
-import utils.LogFile;
-import utils.Chart;
+
+import idyno.Idynomics;
+import idyno.SimTimer;
 import povray.PovRayWriter;
+import simulator.agent.*;
 import simulator.diffusionSolver.*;
 import simulator.geometry.*;
 import simulator.reaction.*;
-import simulator.agent.*;
-
+import utils.Chart;
+import utils.ExtraMath;
+import utils.LogFile;
+import utils.MTRandom;
+import utils.ResultFile;
+import utils.XMLParser;
 
 /**
- * \brief Top-level class of the simulation core. Used to create and run a simulation
+ * \brief Top-level class of the simulation core. Used to create and run a
+ * simulation.
  * 
- * The Simulator class is called by the iDynomics class and creates an object that simulates the conditions specified in a given 
- * protocol file
+ * The Simulator class is called by the iDynomics class and creates an object
+ * that simulates the conditions specified in a given protocol file.
  * 
  * @since June 2006
  * @version 1.2
  * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
- * for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
- * Engineering Sciences and Applied Mathematics, Northwestern University (USA)
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
  * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
- * University of Birmingham (UK)
+ * University of Birmingham (UK).
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
- * University of Birmingham (UK)
+ * University of Birmingham (UK).
  */
-public class Simulator 
+public class Simulator
 {
 	/**
 	 * An XML parser of the protocol file that specifies the conditions under
@@ -82,7 +87,7 @@ public class Simulator
 	 * of an XML file that describes the initial state in which the bulk
 	 * should start the simulation.
 	 */
-	private XMLParser             bulkFile;
+	private XMLParser bulkFile;
 	
 	/**
 	 * Output period at which results are written to file. Specified in the
@@ -97,7 +102,8 @@ public class Simulator
 	private double	_lastOutput;
 	
 	/**
-	 * Writer for pov-ray output files. Used in biofilm simulations but not for modelling chemostats
+	 * Writer for POV-ray output files. Used in biofilm simulations but not
+	 * for modelling chemostats.
 	 */
 	public transient PovRayWriter povRayWriter;
 	
@@ -107,10 +113,11 @@ public class Simulator
 	public transient ResultFile[] result;
 	
 	/**
-	 * Path to where results files should be stored. Specified in the protocol file
+	 * Path to where results files should be stored. Specified in the protocol
+	 * file.
 	 */
 	private String	_resultPath;
-
+	
 	/**
 	 * Boolean that runs the simulation in chemostat conditions.
 	 */
@@ -140,7 +147,10 @@ public class Simulator
 	
 	/**
 	 * Boolean controlling simulation stop point, should a criterion be
-	 * fulfilled (see e.g. DS_SolGrad and invComp).
+	 * fulfilled.
+	 * 
+	 * @see simulator.detachment.LevelSet
+	 * @see invComp
 	 */
 	public boolean continueRunning = true;
 	
@@ -225,19 +235,21 @@ public class Simulator
 	public ArrayList<Species>     speciesList = new ArrayList<Species>();
 	
 	/**
-	 * List of plasmid carriage information, if creating a Multi Episome simulation. Sonia 07-05-09
+	 * List of plasmid carriage information, if creating a MultiEpisome
+	 * simulation.
 	 */
 	public ArrayList<String>     plasmidList = new ArrayList<String>();
 	
 	/**
-	 * List of all the scan speeds of all plasmids, if creating a Multi Episome simulation. Sonia 11-10-10
+	 * List of all the scan speeds of all plasmids, if creating a MultiEpisome
+	 * simulation.
 	 */
-	public ArrayList<Double>    scanSpeedList = new ArrayList<Double>();
-
+	public ArrayList<Double> scanSpeedList = new ArrayList<Double>();
+	
 	/** 
-	 * Grid where all located agents are stored 
+	 * Grid where all located agents are stored.
 	 */
-	public AgentContainer         agentGrid;
+	public AgentContainer agentGrid;
 
 	/**
 	 * Chart object used by the createCharts method. Deprecated (KA 09/04/13) 
@@ -245,20 +257,26 @@ public class Simulator
 	private Chart _graphics;
 	
 	
-	/*************************************************************************************************************************
+	/*************************************************************************
 	 * CLASS METHODS 
-	 ************************************************************************************************************************/
+	 ************************************************************************/
 	
 	/**
-	 * \brief Simulation Constructor. Initialise simulation with protocol file and relevant result and log file paths
+	 * \brief Simulation Constructor. Initialise simulation with protocol file
+	 * and relevant result and log file paths
 	 * 
-	 * Creates the simulator object under which a simulation will be run for the conditions stated in the protocol file. This is  
-	 * called within the initSimulation method of the Idynomics class. The path to a protocol file and results folder is provided 
-	 * and the simulation initialised. Required species, solutes, world, and grids are created and set to their respective initial 
-	 * conditions, and result file objects created that will produce statistics at a specified frequency
+	 * Creates the simulator object under which a simulation will be run for
+	 * the conditions stated in the protocol file. This is called within the
+	 * initSimulation method of the Idynomics class. The path to a protocol
+	 * file and results folder is provided and the simulation initialised.
+	 * Required species, solutes, world, and grids are created and set to
+	 * their respective initial conditions, and result file objects created
+	 * that will produce statistics at a specified frequency.
 	 * 
-	 * @param protocolFile	Path to the protocol file specifying the conditions under which the simulation is run
-	 * @param resultPath	Path to a relevant directory where the simulation results will be stored
+	 * @param protocolFile	Path to the protocol file specifying the
+	 * conditions under which the simulation is run.
+	 * @param resultPath	Path to a relevant directory where the simulation
+	 * results will be stored.
 	 */
 	public Simulator(String protocolFile, String resultPath) 
 	{
@@ -323,38 +341,17 @@ public class Simulator
 	}
 
 	/**
-	 * \brief Method that starts the simulation, calling each timestep until the simulation time is over or the biofilm fills the domain
-	 * 
-	 * Method that starts the simulation, calling each timestep until the simulation time is over or the biofilm fills the domain
+	 * \brief Method that starts the simulation, calling each timestep until
+	 * the simulation time is over or the biofilm fills the domain.
 	 */
 	public void run() 
 	{
-		// Rob 5/3/11: added condition belowThreshold. This will be set false whenever
-		// a LocatedGroup is removed from above the threshold (if there is one). So
-		// far only implemented in DS_SolGrad
-		// Rob 7/6/11: changed to a more general continueRunning. Now also (potentially)
-		// used to stop a simulation if one species is washed out: see  
-		while (simulationIsRunning() && continueRunning)
+		while ( continueRunning && ! SimTimer.simIsFinished() )
 			step();
-		if (!continueRunning) writeReport();
-		
-		
+		if ( ! continueRunning )
+			writeReport();
 	}
-
-	/**
-	 * \brief Utility method that determines whether the simulation is running
-	 * 
-	 * Utility method that determines whether the simulation is running
-	 * 
-	 * @return Boolean stating if the simulation is running (true) or has stopped (false)
-	 */
-	public Boolean simulationIsRunning() 
-	{
-		return !SimTimer.simIsFinished();
-	}
-
 	
-
 	/**
 	 * \brief Perform a full iteration of the simulation for the conditions
 	 * stated in the protocol file.
@@ -367,15 +364,15 @@ public class Simulator
 		{
 			long startTime = System.currentTimeMillis();
 			
-			// Increment system time
+			// Increment system time.
 			SimTimer.applyTimeStep();
 			
-			// Check if new agents should be created
+			// Check if new agents should be created.
 			checkAgentBirth();
 			
 			LogFile.chronoMessageIn();
 			
-			// Perform diffusion-reaction relaxation
+			// Perform diffusion-reaction relaxation.
 			LogFile.chronoMessageOut("Solving Diffusion-Reaction");
 			for (DiffusionSolver aSolver : solverList)
 				aSolver.initAndSolve();
@@ -384,14 +381,16 @@ public class Simulator
 			if(isFluctEnv)
 				FluctEnv.setEnvCycle(FluctEnv.envNameList.indexOf(FluctEnv.envStatus));
 			
-			// Perform agent stepping
+			// Perform agent stepping.
 			LogFile.chronoMessageOut("Simulating agents");
 			agentGrid.step(this);
 			
-			// output result files
-			// this will output if we're close to the output period but haven't
-			// quite hit it (which happens sometimes due to floating point issues)
-			// (this will also output for sure on the last step) 
+			/*
+			 * Output result files: this will output if we're close to the
+			 * output period but haven't quite hit it (which happens sometimes
+			 * due to floating point issues). This will also output for sure
+			 * on the last step.
+			 */
 			Double testTime = SimTimer.getCurrentTime() - _lastOutput;
 			testTime -= _outputPeriod - 0.01*SimTimer.getCurrentTimeStep();
 			if ( ( testTime >= 0.0 ) || SimTimer.simIsFinished() )
@@ -431,20 +430,26 @@ public class Simulator
 
 	
 	/**
-	 * \brief Processes parameters specified in the SIMULATOR protocol file mark-up, sets the random number generator and creates the data dictionary
+	 * \brief Processes parameters specified in the SIMULATOR protocol file
+	 * mark-up, sets the random number generator and creates the data
+	 * dictionary.
 	 * 
-	 * Within the XML file, the SIMULATOR mark-up defines the parameters that control the overall simulation. These are read in from 
-	 * the XML file by this method, initialising the simulation. These parameters include specifying whether this run is under chemostat 
-	 * conditions, the setting of the simulation timestep, and time interval between the generation of output files. The random number 
-	 * generator is also initialised, either from scratch or from a previous state if this is a re-run. Thirdly, the simulation timer 
-	 * is initialised. Finally, a data dictionary is created for use by other utility methods within the simulation
+	 * Within the XML file, the SIMULATOR mark-up defines the parameters that
+	 * control the overall simulation. These are read in from the XML file by
+	 * this method, initialising the simulation. These parameters include
+	 * specifying whether this run is under chemostat conditions, the setting
+	 * of the simulation timestep, and time interval between the generation of
+	 * output files. The random number generator is also initialised, either
+	 * from scratch or from a previous state if this is a re-run. Thirdly, the
+	 * simulation timer is initialised. Finally, a data dictionary is created
+	 * for use by other utility methods within the simulation.
 	 */
 	public void createSimulator() 
 	{
 		System.out.print("\t Simulator: ");
 		XMLParser localRoot = new XMLParser(_protocolFile.getChildElement("simulator"));
-
-		/* Read the flag from protocol file to decide if this is a chemostat
+		/* 
+		 * Read the flag from protocol file to decide if this is a chemostat
 		 * run (false by default)
 		 */
 		if ( localRoot.isParamGiven("chemostat") )
@@ -463,7 +468,7 @@ public class Simulator
 			invComp = localRoot.getParamBool("invComp");
 
 		// Read in the agentTimeStep
-		if ( localRoot.isParamGiven("invComp") )
+		if ( localRoot.isParamGiven("agentTimeStep") )
 			agentTimeStep = localRoot.getParamTime("agentTimeStep");
 		else
 		{
@@ -486,14 +491,14 @@ public class Simulator
 		//sonia 05.2011 bug fix: the code was not finding the random.state file because no path was 
 		//being given to the File class to check if the file existed. 
 		File randomFile = new File(Idynomics.currentPath+File.separator+"random.state");
-
-		if(randomFile.exists()) 
+		if ( randomFile.exists() ) 
 		{
-			/* if a file called random.state exists, the random number generator is initialised using this file.
-			 *  this ensures that the random number stream does not overlap when running repeated simulations with the same protocol file
-			 *  Chinmay 11/08/2009
-			 */				
-
+			/* 
+			 * If a file called random.state exists, the random number
+			 * generator is initialised using this file. This ensures that the
+			 * random number stream does not overlap when running repeated
+			 * simulations with the same protocol file.
+			 */
 			FileInputStream randomFileInputStream;
 			ObjectInputStream randomObjectInputStream;
 			try 

@@ -1,11 +1,13 @@
 /**
  * \package agent
- * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
+ * \brief Package of utilities that create and manage agents in the simulation
+ * and their participation in relevant reactions.
  * 
- * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info".
  */
 package simulator.agent;
 
@@ -24,89 +26,92 @@ import simulator.geometry.Domain;
 import simulator.geometry.boundaryConditions.AllBC;
 
 /**
- * \brief Extends ActiveAgent by adding functionality to control agent grid location, agent shoving, agent death and division, and agent movement
+ * \brief Extends ActiveAgent by adding functionality to control agent grid
+ * location, agent shoving, agent death and division, and agent movement.
+ *  
+ * During each global timestep, agent divisions and agent growth lead to many
+ * cases where neighbouring agents will overlap. A relaxation algorithm is
+ * used to find iteratively the new overlap-minimising steady state
+ * configuration of agent locations at the end of each timestep. 
  * 
- * Extends ActiveAgent by adding functionality to control agent grid location, agent shoving, agent death and division, and agent movement. 
- * During each global timestep, agent divisions and agent growth lead to many cases where neighbouring agents will overlap. A relaxation 
- * algorithm is used to find iteratively the new overlap-minimising steady state configuration of agent locations at the end of each 
- * timestep. 
- * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
+ * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public abstract class LocatedAgent extends ActiveAgent implements Cloneable 
 {
-
 	/**
-	 * Temporary variable storing the distance between two agents
+	 * Temporary variable storing the distance between two agents.
 	 */
-	protected static ContinuousVector  _diff              = new ContinuousVector();
+	protected static ContinuousVector  _diff = new ContinuousVector();
 	
 	/**
-	 * Temporary store of the new location this cell will move to
+	 * Temporary store of the new location this cell will move to.
 	 */
-	protected static ContinuousVector  _newLoc            = new ContinuousVector();
-
+	protected static ContinuousVector  _newLoc = new ContinuousVector();
+	
 	/**
-	 * Radius of this agent
+	 * Radius of this agent.
 	 */
 	protected Double _radius = 0.0;
 	
 	/**
-	 * Cell radius including any capsules
+	 * Cell radius including any capsules.
 	 */
 	protected Double _totalRadius = 0.0;
 	
 	/**
-	 * Radius at which this agent will divide
+	 * Radius at which this agent will divide.
 	 */
 	protected Double _myDivRadius = 0.0;
 	
 	/**
-	 * Radius at which agent death is triggered
+	 * Radius at which agent death is triggered.
 	 */
 	protected Double _myDeathRadius = 0.0;
 	
 	/**
-	 * Volume of this agent
+	 * Volume of this agent.
 	 */
 	protected Double _volume = 0.0;
 	
 	/**
-	 * Cell volume including any capsules
+	 * Cell volume including any capsules.
 	 */
 	protected Double _totalVolume = 0.0;
 	
 	/**
-	 * Agent position - continuous coordinates
+	 * Agent position - continuous coordinates.
 	 */
 	protected ContinuousVector _location = new ContinuousVector();
 	
 	/**
-	 * ContinuousVector noting the move that will be applied to the agents position
+	 * ContinuousVector noting the move that will be applied to the agents position.
 	 */
 	protected ContinuousVector _movement = new ContinuousVector();
 	
 	/**
-	 * Direction in which this cell divides
+	 * Direction in which this cell divides.
 	 */
 	protected ContinuousVector _divisionDirection = new ContinuousVector();
 	
 	/**
-	 * List of neighbouring agents in this agents vicinity
+	 * List of neighbouring agents in this agent's vicinity.
 	 */
 	protected LinkedList<LocatedAgent> _myNeighbors = new LinkedList<LocatedAgent>();
 
 	/**
-	 * Index of the agent position on the vectorized grid
+	 * Index of the agent position on the vectorized grid.
 	 */
 	protected int _agentGridIndex;
 	
 	/**
-	 * Boolean noting whether this agent is interacting with a surface (true) or not (false)
+	 * Boolean noting whether this agent is interacting with a surface (true)
+	 * or not (false).
 	 */
 	protected Boolean _isAttached = false;
 
@@ -121,12 +126,12 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public Double _timeSinceLastDivisionCheck = Double.MAX_VALUE;
 
 	/**
-	 * Distance based probability from a given neighbour (used in HGT). Sonia 8-12-2010
+	 * Distance based probability from a given neighbour (used in HGT).
 	 */
 	public Double _distProb = 0.0; 								
 	
 	/**
-	 * Cumulative probability as to whether the plasmid will be transferred 
+	 * Cumulative probability as to whether the plasmid will be transferred.
 	 */
 	public Double _distCumProb = 0.0; 	
 
