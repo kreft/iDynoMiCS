@@ -12,7 +12,6 @@
 package simulator.geometry.boundaryConditions;
 
 import utils.XMLParser;
-
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.agent.LocatedAgent;
@@ -124,5 +123,10 @@ public class BoundaryConstant extends ExternalBoundary
 		// To label this agent as "shoving solved", set to zero its movement.
 		anAgent.getMovement().reset();
 		target.set(anAgent.getLocation());
+	}
+	
+	public void applyBoundary(DiscreteVector coord)
+	{
+		coord = _myShape.getOrthoProj(coord);
 	}
 }

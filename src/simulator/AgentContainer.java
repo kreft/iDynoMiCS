@@ -756,26 +756,22 @@ public class AgentContainer
 	 *
 	 * @param agentTimeStep - this should be the same as the global timeStep or lower
 	 */
-	public void agentFlushedAway(double agentTimeStep){
-
+	public void agentFlushedAway(Double agentTimeStep)
+	{
 		// after having shuffled the list (during the step()) with all the agents we are now ready to kill
 		// agents according to the dilution value read from the Bulk class
 
 		//sonia:2.03.2010 Just in case, let's do it again
 		Collections.shuffle(agentList, ExtraMath.random);
-
-		//double randNum;
-
-		for (AllBC aBC : domain.getAllBoundaries())
-		{
-			if ( aBC instanceof ConnectedBoundary )
-			{
-				Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
-				if ( aBulk.nameEquals("chemostat") )
-					Dfactor = aBulk._D;
-			}
-		}
 		
+		Bulk aBulk;
+		for ( ConnectedBoundary aBC : domain.getAllConnectedBoundaries() )
+		{
+			aBulk = ((ConnectedBoundary) aBC).getBulk();
+			if ( aBulk.nameEquals("chemostat") )
+				Dfactor = aBulk._D;
+		}
+				
 		// Rob 9/6/11: simplified and removed any effects which might be caused by rounding
 		// agentsToDilute =  Math.round(Dfactor*(agentTimeStep)* agentList.size());
 		// pDying = agentsToDilute / agentList.size();
@@ -791,7 +787,8 @@ public class AgentContainer
 		// 		}
 		// }
 		int agentsToDilute = 0;
-		if (EROSIONMETHOD){
+		if (EROSIONMETHOD)
+		{
 			// agentsToDilute = (int) Math.round(Dfactor*agentTimeStep*agentList.size());
 			// Rob 08/02/2012: Instead of simply rounding, we now use the non-integer part in a
 			// stochastic way. This means that washout of populations is possible when using a
@@ -807,13 +804,16 @@ public class AgentContainer
 			agentsToDilute = (int) Math.floor(temp);
 			tallyVariable = temp%1;
 			
-		} else{
+		}
+		else
+		{
 			// Rob 28/11/2011: Added this so we can keep the population at or below 1000
 			// EROSIONMETHOD is normally used to decide between biofilm functions so this shouldn't be a problem
 			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
 		
-		for (int i=0; i<agentsToDilute; i++){
+		for (int i=0; i<agentsToDilute; i++)
+		{
 			agentList.get(i).isDead = true;
 			agentList.get(i).death = "dilution";
 			agentList.get(i).die(false);
@@ -822,15 +822,15 @@ public class AgentContainer
 		SpecialisedAgent anAgent;
 		agentIter = agentList.listIterator();
 
-		while(agentIter.hasNext()){
+		while(agentIter.hasNext())
+		{
 			anAgent = agentIter.next();
-			if(anAgent.isDead){
+			if(anAgent.isDead)
+			{
 				agentIter.remove();
 				agentList.remove(anAgent);
 			}
 		}
-
-
 	}
 
 	/**
@@ -1537,15 +1537,15 @@ public class AgentContainer
 			 * Tally up tallyVariable, the approximate amount of mass to
 			 * remove, by the ratio variable of each border element.
 			 */
-			borderElem.ratio = SimTimer.getCurrentTimeStep() /
+			borderElem.erosionRatio = SimTimer.getCurrentTimeStep() /
 								_grid[borderElem.gridIndex].erosionTime;
 			/*
 			 *  i.e. ratio =
 			 *  (currentTimeStep * detachmentSpeed * numberFreeNeighbours)/
 			 *  	(resolution)
 			 */
-			borderElem.ratio = Math.min(borderElem.ratio, 1.0);
-			tallyVariable += borderElem.totalMass * borderElem.ratio;
+			borderElem.erosionRatio = Math.min(borderElem.erosionRatio, 1.0);
+			tallyVariable += borderElem.totalMass * borderElem.erosionRatio;
 			// Add them to detGroup.
 			for ( LocatedAgent aLoc : borderElem.group )
 				detGroup.add(aLoc);
@@ -1567,7 +1567,7 @@ public class AgentContainer
 		// Calculate detPriority for all agents in the _close list.
 		comp = new LocatedAgent.detPriorityComparator();
 		for (LocatedGroup borderElem : _levelset.getBorder() )
-			calcDetPriority(agentGrid, borderElem, borderElem.ratio);
+			calcDetPriority(agentGrid, borderElem, borderElem.erosionRatio);
 		// aLoc is the most exposed cell.
 		aLoc = Collections.max(detGroup, comp);
 		while ( aLoc.getTotalMass() < tallyVariable && 

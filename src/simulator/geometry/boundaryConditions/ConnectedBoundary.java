@@ -6,10 +6,11 @@ import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.Bulk;
 import simulator.geometry.ContinuousVector;
+import simulator.geometry.DiscreteVector;
 import simulator.geometry.Domain;
 import utils.XMLParser;
 
-public class ConnectedBoundary extends AllBC
+public abstract class ConnectedBoundary extends AllBC
 {
 	/**
 	 *  Serial version used for the serialisation of the class
@@ -20,11 +21,6 @@ public class ConnectedBoundary extends AllBC
 	 * The defined bulk in the simulation to which the liquid phase is connected
 	 */
 	protected Bulk                    _connectedBulk;
-	
-	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp)
-	{
-		
-	}
 	
 	/**
 	 * \brief Return the bulk that is connected to this boundary
@@ -66,23 +62,8 @@ public class ConnectedBoundary extends AllBC
 		_connectedBulk.updateBulk(soluteGrid, reacGrid, timeStep);
 	}
 	
-	@Override
-	public void refreshBoundary(SoluteGrid aSoluteGrid)
+	public void applyBoundary(DiscreteVector coord)
 	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setBoundary(LocatedGroup aGroup) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc)
-	{
-		
-		
+		coord = _myShape.getOrthoProj(coord);
 	}
 }

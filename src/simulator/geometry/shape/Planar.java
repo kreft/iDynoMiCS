@@ -13,6 +13,7 @@ package simulator.geometry.shape;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -63,10 +64,15 @@ public class Planar extends IsShape
 	private ContinuousVector _cVectorOut;
 	
 	/**
-	 * Dot product of the vector out with the point on the plane. Used by
-	 * intersection() but only needs to be calculated once. 
+	 * Dot product of the vector out with the point on the plane (continuous).
+	 * Used by intersection() but only needs to be calculated once. 
 	 */
-	private Double _vOutDotPPlane;
+	private Double _cOutDotPPlane;
+	
+	/**
+	 * Dot product of the vector out with the point on the plane (discrete).
+	 */
+	private int _dOutDotPPlane;
 	
 	/**
 	 * One of two discrete vectors parallel to the plane, i.e. orthogonal to
@@ -138,7 +144,8 @@ public class Planar extends IsShape
 		_cVectorOut.y = (double) _dVectorOut.j;
 		_cVectorOut.z = (double) _dVectorOut.k;
 		
-		_vOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
+		_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
+		_dOutDotPPlane = _dVectorOut.prodScalar(_dPointOnPlane);
 		
 		/* Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
 		 * plane.
@@ -154,13 +161,16 @@ public class Planar extends IsShape
 	
 	public Boolean isOutside(ContinuousVector point)
 	{
-		ContinuousVector temp = new ContinuousVector(point);
-		temp.subtract(_cPointOnPlane);
-		return ( _cVectorOut.cosAngle(temp) > 0 );
+		return ( _cVectorOut.cosAngle(getRelativePosition(point)) > 0 );
 	}
 	
-	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position, 
-											ContinuousVector vector)
+	public Boolean isOutside(DiscreteVector coord)
+	{
+		return ( _dVectorOut.cosAngle(getRelativePosition(coord)) > 0 );
+	}
+	
+	public LinkedList<ContinuousVector> getIntersections(
+						ContinuousVector position, ContinuousVector vector)
 	{
 		// If the line is parallel to his plane, return null.
 		Double c = _cVectorOut.prodScalar(vector);
@@ -168,25 +178,64 @@ public class Planar extends IsShape
 			return null;
 		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		ContinuousVector intersection = new ContinuousVector(vector);
-		/* Find the (relative) length along vector we must travel to hit the
+		/* 
+		 * Find the (relative) length along vector we must travel to hit the
 		 * plane.
 		 */
-		intersection.times((_vOutDotPPlane - _cVectorOut.prodScalar(position))/c);
+		intersection.times((_cOutDotPPlane - _cVectorOut.prodScalar(position))/c);
 		intersection.add(position);
 		return out;
 	}
 	
 	/**
 	 * 
+	 * @param point
+	 * @return
 	 */
+	private ContinuousVector getRelativePosition(ContinuousVector point)
+	{
+		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
+		pointOnPlaneToPoint.sendDiff(point, _cPointOnPlane);
+		return pointOnPlaneToPoint;
+	}
+	
+	public DiscreteVector getRelativePosition(DiscreteVector coord)
+	{
+		DiscreteVector pointOnPlaneToPoint = new DiscreteVector();
+		pointOnPlaneToPoint.sendDiff(coord, _dPointOnPlane);
+		return pointOnPlaneToPoint;
+	}
+	
+	public DiscreteVector getAbsolutePosition(DiscreteVector coord)
+	{
+		DiscreteVector out = new DiscreteVector();
+		out.sendSum(coord, _dPointOnPlane);
+		return out;
+	}
+	
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
-		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
-		pointOnPlaneToPoint.sendDiff(_cPointOnPlane, point);
+		ContinuousVector pointOnPlaneToPoint = getRelativePosition(point);
 		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
 		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
 		out[2] = _cVectorOut.cosAngle(pointOnPlaneToPoint);
+		return out;
+	}
+	
+	public ContinuousVector convertToVector(Double[] local)
+	{
+		ContinuousVector out = new ContinuousVector();
+		ContinuousVector temp = new ContinuousVector(_cVectorOut);
+		temp.times(local[0]);
+		out.add(temp);
+		temp.set(_cOrthogV);
+		temp.times(local[1]);
+		out.add(temp);
+		temp.set(_cVectorOut);
+		temp.times(local[2]);
+		out.add(temp);
+		out.add(_cPointOnPlane);
 		return out;
 	}
 	
@@ -228,6 +277,19 @@ public class Planar extends IsShape
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
 		return getIntersections(ccIn, _cVectorOut).getFirst();
+	}
+	
+	public DiscreteVector getOrthoProj(DiscreteVector coord)
+	{
+		/*
+		 * TODO Rob 23Jan2015: This is not as robust as I would like!
+		 * It will work fine if _dVector out is parallel to one axis only
+		 * (as is usually the case) but may fail otherwise.
+		 */
+		DiscreteVector out = new DiscreteVector(_dVectorOut);
+		out.times(_dOutDotPPlane - _dVectorOut.prodScalar(coord));
+		out.add(coord);
+		return out;
 	}
 
 	/**

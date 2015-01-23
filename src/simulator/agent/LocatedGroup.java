@@ -24,22 +24,23 @@ import utils.ExtraMath;
  * 
  * Object to hold a group of agents in one location on the agent grid
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  */
-public class LocatedGroup {
-
+public class LocatedGroup
+{
 	/**
 	 * Agent container this located group is within
 	 */
-	public AgentContainer           agentGrid;
+	public AgentContainer agentGrid;
 	
 	/**
 	 * Linked list to hold members of this group
 	 */
-	public LinkedList<LocatedAgent> group              = new LinkedList<LocatedAgent>();
+	public LinkedList<LocatedAgent> group = new LinkedList<LocatedAgent>();
 
 	/**
 	 * Concentration of species in this group, thus area represented
@@ -47,90 +48,86 @@ public class LocatedGroup {
 	public Double[] speciesConcentration;
 	
 	/**
-	 * Total volume of agents in this group
+	 * Total volume of agents in this group.
 	 */
 	public Double totalVolume = 0.0;
 	
-	public Double deltaV = 0.0;
-	
 	/**
-	 * Total concentration of agents in this group
+	 * Total concentration of agents in this group.
 	 */
 	public Double totalConcentration = 0.0;
 	
 	/**
-	 * Total mass of agents in this group
+	 * Total mass of agents in this group.
 	 */
 	public Double totalMass = 0.0;
 	
+	/**
+	 * Holder for the time it would take for this group to be eroded from the
+	 * top of the biofilm. 
+	 */
 	public Double erosionTime = Double.NaN;
 	
 	/**
-	 * Distance of the group at this location from the carrier
+	 * Distance of the group at this location from the carrier.
 	 */
 	public Double distanceFromCarrier = 0.0;
 	
 	/**
-	 * Distance of the group at this location from the bulk
+	 * Holder for the ratio between this group's erosionTime and the
+	 * simulation timestep.
 	 */
-	public Double distanceFromBulk = 0.0;
-	
-	public Double ratio = 0.0;
+	public Double erosionRatio = 0.0;
 
 	/**
-	 * The index of the grid at which this located group represents
+	 * The index of the grid at which this located group represents.
 	 */
-	public int                      gridIndex;
+	public int gridIndex;
 	
 	/**
-	 * Coordinates of this location as a continuous vector
+	 * Coordinates of this location as a continuous vector.
 	 */
-	public ContinuousVector         cc;
+	public ContinuousVector cc;
 	
 	/**
-	 * Coordinates of this location as a discrete
+	 * Coordinates of this location as a discrete vector.
 	 */
-	public DiscreteVector           dc;
+	public DiscreteVector dc;
 	
 	/**
-	 * Index of the neighbours of this group
+	 * Index of the neighbours of this group.
 	 */
-	public int[][][]                nbhIndex           = new int[3][3][3];
+	public int[][][] nbhIndex = new int[3][3][3];
 	
 	/**
-	 * Neighbouring groups around this group
+	 * Neighbouring groups around this group.
 	 */
-	public LocatedGroup[][][]	nbhGroup = new LocatedGroup[3][3][3];
+	public LocatedGroup[][][] nbhGroup = new LocatedGroup[3][3][3];
 
 	/**
 	 * Space occupation (-1->outside, 0->carrier, 1->biofilm, 2->liquid, 3->bulk)
 	 */ 
-	public int                      status             = 2;
+	public int status = 2;
 	
 	/**
-	 * Boolean stating whether this location is in the bulk
+	 * Boolean stating whether this location is in the carrier.
 	 */
-	public boolean                  isBulk             = false;
+	public boolean isCarrier = false;
 	
 	/**
-	 * Boolean stating whether this location is in the carrier
+	 * Boolean stating whether this location is outside the grid.
 	 */
-	public boolean                  isCarrier          = false;
+	public boolean isOutside;
 	
 	/**
-	 * Boolean stating whether this location is outside the grid
+	 * Number of free neighbours around this location.
 	 */
-	public boolean                  isOutside;
-
-	/**
-	 * Number of free neighbours around this location
-	 */
-	public int                      nFreeNbh;
+	public int nFreeNbh;
 	
 	/**
-	 * Vector to hold an amount of distance an agent is to move
+	 * Vector to hold an amount of distance an agent is to move.
 	 */
-	public ContinuousVector         move               = new ContinuousVector();
+	public ContinuousVector move = new ContinuousVector();
 
 	
 
@@ -149,8 +146,6 @@ public class LocatedGroup {
 		// Spatial location of the group
 		gridIndex = index;
 		
-		ratio = 0.0;
-
 		// Coordinates if padding is removed
 		dc = agentGrid.getGridPosition(gridIndex);
 		cc = agentGrid.getGridLocation(gridIndex);
@@ -183,10 +178,8 @@ public class LocatedGroup {
 		else
 			testNbh_2D(agentGrid.getShovingGrid());
 		distanceFromBorders();
-		if ( distanceFromCarrier<agentGrid.getResolution() )
+		if ( distanceFromCarrier < agentGrid.getResolution() )
 			isCarrier = true;
-		if ( distanceFromBulk<agentGrid.getResolution() )
-			isBulk = true;
 	}
 	
 	/**
@@ -452,26 +445,14 @@ public class LocatedGroup {
 	}
 
 	/**
-	 * \brief Compute distance to closest carrier and closest bulk
-	 * 
-	 * Compute distance to closest carrier and closest bulk
+	 * \brief Compute distance to closest carrier.
 	 */
 	public void distanceFromBorders()
 	{
-		LinkedList<AllBC> allBoundary = agentGrid.domain.getAllBoundaries();
-		
 		Double valueCarrier = Double.MAX_VALUE;
-		Double valueBulk = Double.MAX_VALUE;
-		
-		for (AllBC aBoundary : allBoundary)
-		{
-			if ( aBoundary.isSupport() )
-				valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
-			if ( aBoundary instanceof ConnectedBoundary )
-				valueBulk = Math.min(valueBulk, aBoundary.getDistance(cc));
-		}
+		for (AllBC aBoundary : agentGrid.domain.getAllSupportBoundaries() )
+			valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
 		distanceFromCarrier = valueCarrier;
-		distanceFromBulk = valueBulk;
 	}
 
 	/**
@@ -618,29 +599,6 @@ public class LocatedGroup {
 			Double f1 = ((LocatedGroup) b1).erosionTime;
 			Double f2 = ((LocatedGroup) b2).erosionTime;
 			return (int) Math.signum(f1 - f2);
-		}
-	}
-
-	/**
-	 * \brief Comparator used by the shrinking levelset algorithm
-	 * 
-	 * @author lal
-	 */
-	public static class DistanceValueComparator implements java.util.Comparator<LocatedGroup>
-	{
-
-		@Override
-		public int compare(LocatedGroup b1, LocatedGroup b2) {
-			double out = b1.distanceFromCarrier-b2.distanceFromCarrier;
-
-			if (out==0) {
-				return (b1.deltaV>b2.deltaV ? 1 : -1);
-			} else if (out>0) {
-				return 1;
-			} else {
-				return -1;
-			}
-
 		}
 	}
 }

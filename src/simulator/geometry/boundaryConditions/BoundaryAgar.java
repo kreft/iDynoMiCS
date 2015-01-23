@@ -2,6 +2,9 @@ package simulator.geometry.boundaryConditions;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.agent.LocatedAgent;
+import simulator.agent.LocatedGroup;
+import simulator.geometry.ContinuousVector;
 import simulator.geometry.Domain;
 import utils.XMLParser;
 
@@ -26,5 +29,23 @@ public class BoundaryAgar extends InternalBoundary
 								SoluteGrid[] reactionGrid, Double timeStep)
 	{
 		// TODO
+	}
+
+	@Override
+	public void refreshBoundary(SoluteGrid aSoluteGrid) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setBoundary(LocatedGroup aGroup) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc) {
+		// TODO Auto-generated method stub
+		
 	};
 }

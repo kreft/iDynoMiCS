@@ -413,5 +413,4 @@ public abstract class LevelSet
 	{
 		return _close;
 	}
-
 }

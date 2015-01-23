@@ -24,7 +24,7 @@ import simulator.geometry.boundaryConditions.AllBC;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  */
@@ -136,7 +136,8 @@ public class SoluteGrid extends SpatialGrid
 	 * @param aName	The type of grid being created (e.g. domainGrid)
 	 * @param aDomain	The computation domain to which this grid is part of
 	 */
-	public SoluteGrid(int nI, int nJ, int nK, double res,String aName, Domain aDomain) {
+	public SoluteGrid(int nI, int nJ, int nK, double res,String aName, Domain aDomain)
+	{
 		super(nI, nJ, nK, res);
 		gridName = aName;
 		_domain = aDomain;
@@ -229,24 +230,21 @@ public class SoluteGrid extends SpatialGrid
 	/* ________________________ MAIN METHODS ______________________________ */
 
 	/**
-	 * \brief Examines all objects at the boundary of the grid, and adjusts them as specified by the boundary condition rules
-	 * 
-	 * Examines all objects at the boundary of the grid, and adjusts them as specified by the boundary condition rules
+	 * \brief Examines all objects at the boundary of the grid, and adjusts
+	 * them as specified by the boundary condition rules.
 	 */
 	public void refreshBoundary() 
 	{
 		for (AllBC aBC:_domain.getAllBoundaries()) 
-		{
 				aBC.refreshBoundary(this);
-		}
 	}
 
 	/**
-	 * \brief Returns the name of this solute grid
+	 * \brief Returns the name of this solute grid.
 	 * 
-	 * Returns the name of this solute grid, as was specified in the protocol file
+	 * Name was specified in the protocol file.
 	 * 
-	 * @return	String value representing the name of this grid
+	 * @return	String value representing the name of this grid.
 	 */
 	public String getName() 
 	{
@@ -254,23 +252,23 @@ public class SoluteGrid extends SpatialGrid
 	}
 
 	/**
-	 * \brief Returns the diffusivity of the solute in this grid
+	 * \brief Returns the diffusivity of the solute in this grid.
 	 * 
-	 * Returns the diffusivity of the solute in this grid, as was specified in the protocol file
+	 * Diffusivity was specified in the protocol file.
 	 * 
-	 * @return	Double value representing the diffusivity in water of this solute
+	 * @return	Double value representing the diffusivity in water of this
+	 * solute.
 	 */
-	public double getDiffusivity() 
+	public Double getDiffusivity() 
 	{
 		return diffusivity;
 	}
 
 	/**
-	 * \brief Returns the computation domain that this solute is associated with
+	 * \brief Returns the computation domain that this solute is associated
+	 * with.
 	 * 
-	 * Returns the computation domain that this solute is associated with
-	 * 
-	 * @return	Computation domain associated with the solute in this grid
+	 * @return	Computation domain associated with the solute in this grid.
 	 */
 	public Domain getDomain() 
 	{

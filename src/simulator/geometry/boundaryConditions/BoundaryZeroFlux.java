@@ -59,11 +59,13 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	/* ________________________ SOLVER _______________________________ */
 	
 	/**
-	 * \brief Solver for the zero flux boundary condition. Initialises the course along the shape of the boundary and moves any points outside the domain inside
+	 * \brief Solver for the zero flux boundary condition.
 	 * 
-	 * Solver for the zero flux boundary condition. Initialises the course along the shape of the boundary and moves any points outside the domain inside
+	 * Initialises the course along the shape of the boundary and moves any
+	 * points outside the domain inside.
 	 * 
-	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
+	 * @param aSoluteGrid	Grid of solute information which is to be
+	 * refreshed by the solver.
 	 */
 	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
@@ -124,15 +126,22 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
 	}
 	
+	
+	public void applyBoundary(DiscreteVector coord)
+	{
+		coord = _myShape.getOrthoProj(coord);
+	}
+	
 	/**
-	 * \brief Returns a string noting the side of the domain that this boundary condition is on
+	 * \brief Returns a string noting the side of the domain that this
+	 * boundary condition is on.
 	 * 
-	 * Returns a string noting the side of the domain that this boundary condition is on
-	 * 
-	 * @return String noting the side of the domain that this condition applies to (i.e. x0z, xNz, etc)
+	 * @return String noting the side of the domain that this condition
+	 * applies to (i.e. x0z, xNz, etc).
 	 */
 	@Override
-	public String toString(){
+	public String toString()
+	{
 		return new String("ZeroFlux:"+this._mySide);
 	}
 	

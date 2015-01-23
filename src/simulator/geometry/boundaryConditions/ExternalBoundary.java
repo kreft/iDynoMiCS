@@ -11,39 +11,7 @@
  */
 package simulator.geometry.boundaryConditions;
 
-import simulator.Simulator;
-import simulator.SoluteGrid;
-import simulator.agent.LocatedAgent;
-import simulator.agent.LocatedGroup;
-import simulator.geometry.ContinuousVector;
-import simulator.geometry.Domain;
-import utils.XMLParser;
-
-public class ExternalBoundary extends AllBC
+public abstract class ExternalBoundary extends AllBC
 {
 	
-	@Override
-	public void init(Simulator aSim, Domain aDomain, XMLParser root)
-	{
-		
-	}
-	
-	@Override
-	public void refreshBoundary(SoluteGrid aSoluteGrid)
-	{
-		
-	}
-	
-	@Override
-	public void setBoundary(LocatedGroup aGroup)
-	{
-		
-	}
-	
-	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc)
-	{
-		
-	}
-
 }

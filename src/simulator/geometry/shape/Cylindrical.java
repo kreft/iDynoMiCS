@@ -150,6 +150,20 @@ public class Cylindrical extends IsShape
 		return Boolean.logicalXor(isInsideCylinder, _interiorMatchesDomain);
 	}
 	
+	public DiscreteVector getRelativePosition(DiscreteVector coord)
+	{
+		DiscreteVector pointOnPlaneToPoint = new DiscreteVector();
+		pointOnPlaneToPoint.sendDiff(coord, _dPointCenterBase);
+		return pointOnPlaneToPoint;
+	}
+	
+	public DiscreteVector getAbsolutePosition(DiscreteVector coord)
+	{
+		DiscreteVector out = new DiscreteVector();
+		out.sendSum(coord, _dPointCenterBase);
+		return out;
+	}
+	
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		Double[] p = convertToLocal(ccIn);
@@ -352,6 +366,24 @@ public class Cylindrical extends IsShape
 	 */
 	public DiscreteVector getNormalDC()
 	{
+		return null;
+	}
+
+	@Override
+	public DiscreteVector getOrthoProj(DiscreteVector coord) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContinuousVector convertToVector(Double[] local) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Boolean isOutside(DiscreteVector coord) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

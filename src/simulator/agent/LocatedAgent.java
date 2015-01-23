@@ -324,8 +324,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		// Update the totalMass field (sum of the particles masses).
 		updateMass();
 		// Check the mass is positive.
-		if (_totalMass < 0)
-			LogFile.writeLog("Warning: negative mass on agent "+_family+", "+_genealogy);
+		if ( _totalMass < 0.0 )
+			LogFile.writeLog("Warning: negative mass on agent "+sendName());
 		// Sum of (particles masses / particles density).
 		updateVolume();
 		// Compute radius according to the volume.
@@ -339,25 +339,27 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Captures cell division by making a clone of this agent using the makeKid method
-	 * 
-	 * Captures cell division by making a clone of this agent using the makeKid method
+	 * \brief Captures cell division by making a clone of this agent using the
+	 * makeKid method.
 	 */
-	public void divide() {
-		try {
-			// Create a daughter cell
+	public void divide()
+	{
+		try
+		{
 			makeKid();
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e)
+		{
 			LogFile.writeLog("Error met in LocatedAgent.divide()");
 		}
 	}
 
 	/**
-	 * \brief Determines whether or not a cell has reached the radius where cell division can be triggered
+	 * \brief Determines whether or not a cell has reached the radius where
+	 * cell division can be triggered.
 	 * 
-	 * Determines whether or not a cell has reached the radius where cell division can be triggered
-	 * 
-	 * @return	Boolean stating whether cell division should be triggered (true) or not (false)
+	 * @return	Boolean stating whether cell division should be triggered
+	 * (true) or not (false).
 	 */
 	public boolean willDivide() 
 	{

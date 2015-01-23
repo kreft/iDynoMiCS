@@ -217,9 +217,22 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * 
 	 * @param dV DiscreteVector to subtract from this vector.
 	 */
-	public void diff(DiscreteVector dV) 
+	public void subtract(DiscreteVector dV) 
 	{
 		add( -dV.i, -dV.j, -dV.k );
+	}
+	
+	/**
+	 * \brief Store in this vector the difference of two other discrete
+	 * vectors.
+	 * 
+	 * @param a	First discrete vector.
+	 * @param b	Discrete vector to subtract from the first.
+	 */
+	public void sendDiff(DiscreteVector a, DiscreteVector b)
+	{
+		set(a);
+		subtract(b);
 	}
 	
 	/**
@@ -255,6 +268,18 @@ public class DiscreteVector implements Cloneable, Serializable
 	}
 	
 	/**
+	 * \brief Calculate cosine of the angle to a given vector.
+	 * 
+	 * @param v DiscreteVector for which cosine of the angle to this one
+	 * should be calculated.
+	 * @return	Cosine of the angle to vector given.
+	 */
+	public Double cosAngle(DiscreteVector v)
+	{
+		return prodScalar(v)/(this.norm() * v.norm());
+	}
+	
+	/**
 	 * \brief Determine if this vector equals the points given in the provided
 	 * vector.
 	 * 
@@ -263,9 +288,30 @@ public class DiscreteVector implements Cloneable, Serializable
 	 */
 	public Boolean equals(DiscreteVector dc)
 	{
-		return ( (dc.i == this.i) && (dc.j == this.j) && (dc.k == this.k));
+		return equals(dc.i, dc.j, dc.k);
 	}
-
+	
+	/**
+	 * 
+	 * @param i
+	 * @param j
+	 * @param k
+	 * @return
+	 */
+	public Boolean equals(int i, int j, int k)
+	{
+		return ( (i == this.i) && (j == this.j) && (k == this.k));
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Boolean isZero()
+	{
+		return equals(0, 0, 0);
+	}
+	
 	/**
 	 * \brief Calculate scalar product (dot product) of this vector with the
 	 * discrete vector dV supplied.

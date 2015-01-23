@@ -59,6 +59,17 @@ public abstract class IsShape implements Serializable
 	public abstract Boolean isOutside(ContinuousVector cV);
 	
 	/**
+	 * 
+	 * @param coord
+	 * @return
+	 */
+	public abstract Boolean isOutside(DiscreteVector coord);
+	
+	public abstract DiscreteVector getRelativePosition(DiscreteVector coord);
+	
+	public abstract DiscreteVector getAbsolutePosition(DiscreteVector coord);
+	
+	/**
 	 * \brief Correct coordinates of a point that has gone outside this shape.
 	 * 
 	 * @param ccIn	Coordinates to be corrected
@@ -74,6 +85,13 @@ public abstract class IsShape implements Serializable
 	 * @return Corrected coordinates
 	 */
 	public abstract ContinuousVector getOrthoProj(ContinuousVector ccIn);
+	
+	/**
+	 * 
+	 * @param coord
+	 * @return
+	 */
+	public abstract DiscreteVector getOrthoProj(DiscreteVector coord);
 	
 	/**
 	 * \brief Gets the distance from a point on the other side
@@ -155,6 +173,13 @@ public abstract class IsShape implements Serializable
 	 * @return
 	 */
 	public abstract Double[] convertToLocal(ContinuousVector point);
+	
+	/**
+	 * 
+	 * @param local
+	 * @return
+	 */
+	public abstract ContinuousVector convertToVector(Double[] local);
 	
 	/**
 	 * \brief Return the (shortest) distance, over this shape, between two 

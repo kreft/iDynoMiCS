@@ -204,13 +204,16 @@ public abstract class AllBC
 	public abstract void setBoundary(LocatedGroup aGroup);
 	
 	/**
-     * Modify the movement vector : the new position is the orthognal projection
-     * on the boundary surface
+     * Modify the movement vector : the new position is the orthogonal 
+     * projection on the boundary surface.
+     * 
      * @see LocatedAgent.move();
      */
 	public abstract void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc);
-
-
+	
+	
+	public abstract void applyBoundary(DiscreteVector coord);
+	
 	/* ___________________ INTERACTION WITH THE DOMAIN _________________________ */
 
 	/**
@@ -226,11 +229,10 @@ public abstract class AllBC
 	}
 
 	/**
-	 * \brief Determine if this boundary is active for solute
+	 * \brief Determine if this boundary is active for solute.
 	 * 
-	 * Determine if this boundary is active for solute
-	 * 
-	 * @return	Boolean noting whether this boundary is active for solute (true) or not (false)
+	 * @return	Boolean noting whether this boundary is active for solute
+	 * (true) or not (false).
 	 */
 	public boolean isActive()
 	{

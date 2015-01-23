@@ -9,6 +9,8 @@
  */
 package simulator.agent;
 
+import java.math.BigInteger;
+
 import idyno.SimTimer;
 import simulator.Simulator;
 import utils.ExtraMath;
@@ -202,17 +204,17 @@ public abstract class Agent implements Cloneable {
 	}
 
 	/**
-	 * \brief Called when creating an agent : updates _generation and _genealogy field
+	 * \brief Called when creating an agent : updates _generation and
+	 * _genealogy field.
 	 * 
-	 * Called when creating an agent : updates _generation and _genealogy field
-	 * 
-	 * @param baby	The newly created agent that is the next generation of this agent
+	 * @param baby The newly created agent that is the next generation of this
+	 * agent.
 	 */
 	protected void recordGenealogy(Agent baby) 
 	{
 		// Rob 18/1/11: Shuffled around slightly to include odd numbers
 		baby._genealogy = _genealogy+ExtraMath.exp2long(this._generation);
-
+		
 		this._generation++;
 		baby._generation = this._generation;
 
@@ -229,21 +231,18 @@ public abstract class Agent implements Cloneable {
 	}
 
 	/**
-	 * \brief Returns a string containing the family name and genealogy of this agent
+	 * \brief Returns a string containing the family name and genealogy of
+	 * this agent.
 	 * 
-	 * Returns a string containing the family name and genealogy of this agent
-	 * 
-	 * @return	String containing the family name and genealogy of this agent
+	 * @return	String containing the family name and genealogy of this agent.
 	 */
-	public String sendName(){
+	public String sendName()
+	{
 		return _family+"-"+_genealogy;
 	}
-
 	
 	/**
-	 * \brief Set the family for this agent, based on the next family
-	 * 
-	 * Set the family for this agent, based on the next family
+	 * \brief Set the family for this agent, based on the next family.
 	 */
 	public void giveName() 
 	{

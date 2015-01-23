@@ -248,14 +248,16 @@ public class BoundaryCyclic extends ExternalBoundary
 	}
 	
 	/**
-	 * \brief Applies boundary conditions for all other BC types - but not
-	 * used for cyclic boundaries.
 	 * 
-	 * @param aSpGrid	SoluteGrid	
-	 * @param dC	DiscreteVector
 	 */
-	public void applyBoundary(SoluteGrid aSpGrid, DiscreteVector dC) 
-	{}
+	public void applyBoundary(DiscreteVector coord) 
+	{
+		if ( _myShape.isOutside(coord) )
+		{
+			DiscreteVector diff = _myShape.getRelativePosition(coord);
+			coord = _myOppShape.getAbsolutePosition(diff);
+		}
+	}
 
 	/**
 	 * \brief Returns the value within a boundary. Not used for cyclic

@@ -406,6 +406,25 @@ public class Domain implements IsComputationDomain
 		return _boundaryList;
 	}
 	
+	public LinkedList<AllBC> getAllSupportBoundaries()
+	{
+		LinkedList<AllBC> out = new LinkedList<AllBC>();
+		for ( AllBC aBC : _boundaryList )
+			if ( aBC.isSupport() )
+				out.add(aBC);
+		return out;
+	}
+	
+	public LinkedList<ConnectedBoundary> getAllConnectedBoundaries()
+	{
+		LinkedList<ConnectedBoundary> out = 
+										new LinkedList<ConnectedBoundary>();
+		for ( AllBC aBC : _boundaryList )
+			if ( aBC instanceof ConnectedBoundary )
+				out.add((ConnectedBoundary) aBC);
+		return out;
+	}
+	
 	/**
 	 * \brief Creates an array list containing the 'i' coordinate of the
 	 * computation domain that is the top of the boundary layer.
@@ -539,18 +558,23 @@ public class Domain implements IsComputationDomain
 	{
 		currentSim.agentGrid.getLevelSet().refreshBorder(false, currentSim);
 		LinkedList<LocatedGroup> border =
-				currentSim.agentGrid.getLevelSet().getBorder();
-		
-		// Catch if there is no biomass for some reason; in that case return zero height
-		if (border.size() == 0)	return ExtraMath.newDoubleArray(1);
-		
-		// Now copy to regular array, but watch for infinite distances
-		Double [] borderarray = ExtraMath.newDoubleArray(border.size());
-		for (int i = 0; i < border.size(); i++)
-			if (border.get(i).distanceFromCarrier < Double.MAX_VALUE)
-				borderarray[i] = border.get(i).distanceFromCarrier;
-		
-		return borderarray;
+							currentSim.agentGrid.getLevelSet().getBorder();
+		/* 
+		 * Catch if there is no biomass for some reason; in that case return
+		 * zero height.
+		 */
+		if ( border.isEmpty() )
+			return ExtraMath.newDoubleArray(1);
+		// Now copy to regular array, but watch for infinite distances.
+		ListIterator<LocatedGroup> iter = border.listIterator();
+		Double [] out = new Double[border.size()];
+		while ( iter.hasNext() )
+		{
+			out[iter.nextIndex()] = iter.next().distanceFromCarrier;
+			if ( out[iter.previousIndex()] == Double.MAX_VALUE )
+				out[iter.previousIndex()] = 0.0;
+		}
+		return out;
 	}
 	
 	/**
@@ -558,7 +582,8 @@ public class Domain implements IsComputationDomain
 	 * neighbours.
 	 * 
 	 * @author BVM 161208
-	 * @return	Boolean noting whether the elements in the boundary layerhave free neighbours
+	 * @return	Boolean noting whether the elements in the boundary layer have
+	 * free neighbours.
 	 */
 	private Boolean bdryHasFreeNbh()
 	{
@@ -598,80 +623,68 @@ public class Domain implements IsComputationDomain
 	 */
 	protected Double checkDilationRadius(int n, int m, int l)
 	{
-		// for no boundary layer, liquid means it's outside the boundary
-		// (and this routine only checks the status of non-biomass elements)
+		/*
+		 * For no boundary layer, liquid means it's outside the boundary
+		 * (and this routine only checks the status of non-biomass elements).
+		 */
 		if ( _dilationBand == 0.0 )
 			return 0.0;
 		
-		int nInterval, mInterval, lInterval;
-		int jIndex, kIndex;
-		Double deltaN, deltaM;
-		Double dilationRadiusM, dilationRadiusL;
+		int iInterval = (int) Math.floor(_dilationBand/_resolution);
+		int jInterval, kInterval;
+		DiscreteVector coord = new DiscreteVector();
+		Double deltaI, deltaJ, dilationRadiusJ, dilationRadiusK;
 		
-		nInterval = (int) Math.floor(_dilationBand/_resolution);
-		
-		for (int i = -nInterval; i <= nInterval; i++)
+		for ( int i = -iInterval; i <= iInterval; i++ )
 		{
-			// only proceed if neighbour is within computational
-			// volume top and bottom boundaries
-			if ( (n+i >= 0) && (n+i < _nI) )
+			deltaI = i * _resolution;
+			dilationRadiusJ = ExtraMath.triangleSide(_dilationBand, deltaI);
+			jInterval = (int) Math.floor(dilationRadiusJ / _resolution);
+			for ( int j = -jInterval; j <= jInterval; j++ )
 			{
-				deltaN = i*_resolution;
-				// This calculates the range in the j direction based on a right triangle
-				// with hypotenuse equal to the sphere's radius, so that the total area
-				// checked is a sphere
-				dilationRadiusM = ExtraMath.triangleSide(_dilationBand, deltaN);
-				mInterval = (int) Math.floor(dilationRadiusM/_resolution);
-				
-				for (int j = -mInterval; j <= mInterval; j++) {
-					if (_nK == 1)
+				if ( _nK == 1)
+				{
+					coord.set(n, m, 1);
+					coord.add(i, j, 0);
+					if ( checkDilationCoord(coord) )
+						return 1.0;
+				}
+				else
+				{
+					deltaJ = j * _resolution;
+					dilationRadiusK = 
+						ExtraMath.triangleSide(_dilationBand, deltaI, deltaJ);
+					kInterval = (int) Math.floor(dilationRadiusK/_resolution);
+					for ( int k = -jInterval; k <= kInterval; k++ )
 					{
-						// 2D case
-						jIndex = cyclicIndex(m+j,_nJ+2);
-						if (_biomassGrid.grid[n+i][jIndex][1] > 0.0) 
+						coord.set(i, j, k);
+						if ( coord.isZero() )
+							continue;
+						coord.add(n, m, l);
+						if ( checkDilationCoord(coord) )
 							return 1.0;
-						if (_domainGrid.grid[n+i][jIndex][1] == 0.0)
-							return 1.0;
-					}
-					else
-					{
-						// 3D case
-						deltaM = j*_resolution;
-						// This calculates the range in the k direction based on
-						// a right triangle with hypotenuse equal to the sphere's
-						// radius, so that the total area checked is a sphere
-						dilationRadiusL = ExtraMath.triangleSide(_dilationBand, deltaN, deltaM);
-						lInterval = (int) Math.floor(dilationRadiusL/_resolution);
-
-						for (int k = -lInterval; k <= lInterval; k++)
-							if ( (i != 0) || (j != 0) || (k != 0) )
-							{
-								jIndex = cyclicIndex(m+j, _nJ+2);
-								kIndex = cyclicIndex(l+k, _nK+2);
-								if (_biomassGrid.grid[n+i][jIndex][kIndex] > 0.0)
-									return 1.0;
-								if (_domainGrid.grid[n+i][jIndex][kIndex] == 0.0)
-									return 1.0;
-							}
 					}
 				}
 			}
 		}
+		
 		return 0.0;
 	}
-
+	
 	/**
-	 * \brief For cyclic boundaries, returns the index of the grid space on the
-	 * opposite side of the boundary.
 	 * 
-	 * @param val	The integer grid spqce to check.
-	 * @param limit	The limit of the grid.
-	 * @return	The integer of the grid square the opposite side of the
-	 * boundary.
+	 * @param coord
+	 * @return
 	 */
-	protected final int cyclicIndex(int val, int limit)
+	protected Boolean checkDilationCoord(DiscreteVector coord)
 	{
-		return (val<0 ? limit+val : (val>=limit ? val-limit : val));
+		for (AllBC aBC : _boundaryList )
+			aBC.applyBoundary(coord);
+		if ( _biomassGrid.getValueAt(coord) > 0.0 )
+			return true;
+		if ( _domainGrid.getValueAt(coord) == 0.0 )
+			return true;
+		return false;
 	}
 	
 	/**

@@ -28,25 +28,26 @@ import utils.ResultFile;
  * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
  *
  */
-public class SpatialGrid implements Serializable {
-
+public class SpatialGrid implements Serializable
+{
 	/**
 	 * Serial version used for the serialisation of the class
 	 */
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Name assigned to this spacial grid. Taken from an XML tag in the protocol file
-	 */
-	public String             gridName;
 	
 	/**
-	 * The unit for all values stored on this grid
+	 * Name assigned to this spatial grid. Taken from an XML tag in the
+	 * protocol file.
 	 */
-	public String			  gridUnit = "g.L-1";
+	public String gridName;
+	
+	/**
+	 * The unit for all values stored on this grid.
+	 */
+	public String gridUnit = "g.L-1";
 
 	/**
-	 * The solute grid - a three dimesional array of double values
+	 * The solute grid - a three dimensional array of Double values.
 	 */
 	public Double[][][]       grid;
 
@@ -77,11 +78,11 @@ public class SpatialGrid implements Serializable {
 
 	
 	/**
-	 * \brief Blank constructor
-	 * 
-	 * Blank constructor
+	 * \brief Blank constructor.
 	 */
-	public SpatialGrid() {
+	public SpatialGrid()
+	{
+		
 	}
 
 	/**
@@ -94,13 +95,12 @@ public class SpatialGrid implements Serializable {
 	 * @param nK	The number of grid locations in the K direction
 	 * @param resolution the grid resolution
 	 */
-	public SpatialGrid(int nI, int nJ, int nK, Double resolution) {
-
-		//sonia:chemostat
-		// set the size of the spatial grid to 1,1,1
-		if(Simulator.isChemostat){
+	public SpatialGrid(int nI, int nJ, int nK, Double resolution)
+	{
+		if ( Simulator.isChemostat )
 			_nI = _nJ = _nK = 1;
-		}else{
+		else
+		{
 			_nI = nI;
 			_nJ = nJ;
 			_nK = nK;
@@ -108,7 +108,6 @@ public class SpatialGrid implements Serializable {
 		_reso = resolution;
 		// Create a padded grid
 		initGrids();
-
 	}
 
 	/**
@@ -131,41 +130,28 @@ public class SpatialGrid implements Serializable {
 		}
 		_nK = 1;
 		_reso = resolution;
-		_is3D = false;
 		// Create a padded grid
 		initGrids();
-		
 	}
 
 	/**
 	 * \brief Creates the solute grid at the required size
 	 * 
-	 * Creates the solute grid at the required size. If this is a chemostat, this will simple be a 1x1x1, if not there are further
-	 * checks to determine whether we are simulating 3D or not
+	 * If this is a chemostat, this will simple be a 1x1x1; if not there are
+	 * further checks to determine whether we are simulating 3D or not.
 	 */
 	protected void initGrids() 
 	{
-		if(Simulator.isChemostat)
+		if ( Simulator.isChemostat )
 		{
-			//sonia:chemostat
-			//set the size of the grid to be 1,1,1 and not a padded grid
-			
 			_is3D = false;
 			grid = ExtraMath.newDoubleArray(1, 1, 1);
-
 		}
 		else
 		{
-			// Obviously if we create only one cell in the Z dimension, the grid is 2D
-			_is3D = ! (_nK==1);
-
+			_is3D = ! ( _nK == 1 );
 			grid = ExtraMath.newDoubleArray(_nI+2, _nJ+2, _nK+2);
 		}
-	
-		// KA 28/3/13 - this was turned off when I started recommenting iDynoMiCS - no reason given here but may need checking
-		// At the creation the table is automatically filled by 0
-		//setAllValueAt(0);
-
 	}
 
 	/**
@@ -186,22 +172,20 @@ public class SpatialGrid implements Serializable {
 	}
 	
 	/**
-	 * \brief Determine if a given voxel coordinate is valid or outside the grid
+	 * \brief Determine if a given voxel coordinate is valid or outside the
+	 * grid.
 	 * 
-	 * Determine if a given voxel coordinate is valid or outside the grid
-	 * 
-	 * @param i	I Coordinate of the grid location
-	 * @param j	J Coordinate of the grid location
-	 * @param k K Coordinate of the grid location
-	 * @return Boolean stating whether this location is valid (true) or outside the grid
+	 * @param i	I Coordinate of the grid location.
+	 * @param j	J Coordinate of the grid location.
+	 * @param k K Coordinate of the grid location.
+	 * @return Boolean stating whether this location is valid (true) or
+	 * outside the grid.
 	 */
 	public Boolean isValidOrPadded(int i, int j, int k)
 	{
-		Boolean out = true;
-		out &= (i>=0) && (i<=_nI);
-		out &= (j>=0) && (j<=_nJ);
-		out &= (k>=0) && (k<=_nK);
-		return out;
+		return (i >= 0) && (i <= _nI) && 
+				(j >= 0) && (j <= _nJ) &&
+				(k >= 0) && (k <= _nK);
 	}
 
 	/**

@@ -1,35 +1,14 @@
 package simulator.geometry.boundaryConditions;
 
-import simulator.Simulator;
-import simulator.SoluteGrid;
-import simulator.agent.LocatedAgent;
-import simulator.agent.LocatedGroup;
-import simulator.geometry.ContinuousVector;
-import simulator.geometry.Domain;
-import utils.XMLParser;
+import simulator.geometry.DiscreteVector;
 
-public class InternalBoundary extends AllBC
+public abstract class InternalBoundary extends AllBC
 {
-	
-	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) 
+	public void applyBoundary(DiscreteVector coord)
 	{
-		
-	}
-	
-	public void refreshBoundary(SoluteGrid aSoluteGrid)
-	{
-		
-	}
-	
-	public void setBoundary(LocatedGroup aGroup)
-	{
-		
-		
-	}
-	
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc)
-	{
-		
-		
+		/*
+		 *  Nothing to do here: coordinates either side of an internal boundary
+		 *  are valid.
+		 */ 
 	}
 }
