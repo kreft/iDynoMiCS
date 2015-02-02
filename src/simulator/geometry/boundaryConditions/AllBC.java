@@ -212,7 +212,11 @@ public abstract class AllBC
 	public abstract void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc);
 	
 	
-	public abstract void applyBoundary(DiscreteVector coord);
+	public void applyBoundary(DiscreteVector coord)
+	{
+		if ( _myShape.isOutside(coord) )
+			coord = _myShape.getOrthoProj(coord);
+	}
 	
 	/* ___________________ INTERACTION WITH THE DOMAIN _________________________ */
 
@@ -320,5 +324,41 @@ public abstract class AllBC
 	public Double getDistance(ContinuousVector position)
 	{
 		return _myShape.getDistance(position);
+	}
+	
+	protected void deadlyBoundary(LocatedAgent anAgent,
+									ContinuousVector target, String reason)
+	{
+		/*
+		 * Recording reason of death: agent will be moved to agentToKill list
+		 * when die() calls registerDeath().
+		 */
+		anAgent.death = reason;
+		
+		anAgent.die(false);
+		// To label this agent as "shoving solved", set to zero its movement.
+		anAgent.getMovement().reset();
+		target.set(anAgent.getLocation());
+	}
+	
+	protected void hardBoundary(LocatedAgent anAgent, ContinuousVector target)
+	{
+		// Define coordinates of the corrected position.
+		_myShape.orthoProj(target, target);
+		/*
+		 * Build a vector normal to the boundary and starting from the
+		 * orthogonal projection.
+		 */
+		ContinuousVector vectorIn = 
+					new ContinuousVector(_myShape.getNormalInside(target));
+		/*
+		 * The whole cell has to be inside, so make a translation equal to the
+		 * total radius.
+		 */
+		vectorIn.times(anAgent.getRadius(true));
+		// Compute the new position.
+		target.add(vectorIn);
+		// Compute and update the movement vector leading to this new position.
+		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
 	}
 }

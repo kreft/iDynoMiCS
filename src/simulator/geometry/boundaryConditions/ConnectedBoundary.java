@@ -61,9 +61,4 @@ public abstract class ConnectedBoundary extends AllBC
 	{
 		_connectedBulk.updateBulk(soluteGrid, reacGrid, timeStep);
 	}
-	
-	public void applyBoundary(DiscreteVector coord)
-	{
-		coord = _myShape.getOrthoProj(coord);
-	}
 }

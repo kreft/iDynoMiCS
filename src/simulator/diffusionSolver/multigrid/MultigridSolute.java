@@ -11,6 +11,7 @@ package simulator.diffusionSolver.multigrid;
 
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
+import simulator.geometry.DiscreteVectorIterator;
 import simulator.geometry.Domain;
 import simulator.Simulator;
 import simulator.SoluteGrid;
@@ -20,7 +21,7 @@ import utils.MatrixOperations;
 /**
  * \brief Implements static utility functions for used in multigrid method.
  * 
- * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public class MultigridSolute 
@@ -199,7 +200,8 @@ public class MultigridSolute
 		_itemp = new SoluteGrid[maxOrder];
 		_itau = new SoluteGrid[maxOrder];
 
-		for (int iGrid = 0; iGrid<maxOrder; iGrid++) {
+		for (int iGrid = 0; iGrid<maxOrder; iGrid++)
+		{
 			_i = (_nI-1)/ExtraMath.exp2(iGrid)+1;
 			_j = (_nJ-1)/ExtraMath.exp2(iGrid)+1;
 			_k = (_nK-1)/ExtraMath.exp2(iGrid)+1;
@@ -604,26 +606,21 @@ public class MultigridSolute
 	 */
 	public void setSoluteGridToBulk(int order)
 	{
-		int maxI = _conc[order].getGridSizeI();
-		int maxJ = _conc[order].getGridSizeJ();
-		int maxK = _conc[order].getGridSizeK();
-		
-		for (_i = 1; _i <= maxI; _i++)
-			for (_j = 1; _j <= maxJ; _j++) 
-				for (_k = 1; _k <= maxK; _k++)
-				{
-					if (_bLayer[order].grid[_i][_j][_k] <= BLTHRESH)
-					{
-						// outside the boundary layer (will not be solved)
-						_conc[order].grid[_i][_j][_k] = sBulk;
-					}
-					else
-					{
-						// inside the biofilm (value is not really important
-						// now)
-						_conc[order].grid[_i][_j][_k] = sBulkMax;
-					}
-				}
+		DiscreteVectorIterator dvIter = new DiscreteVectorIterator(
+											1, _conc[order].getGridSizeI(),
+											1, _conc[order].getGridSizeJ(),
+											1, _conc[order].getGridSizeK()); 
+		while ( true )
+		{
+			if ( _bLayer[order].getValueAt(dvIter) <= BLTHRESH )
+				// Outside the boundary layer (will not be solved).
+				_conc[order].setValueAt(sBulk, dvIter);
+			else
+				// Inside the biofilm (value is not really important now).
+				_conc[order].setValueAt(sBulkMax, dvIter);
+			if ( ! dvIter.setNext() )
+				break;
+		}
 	}
 	
 	/**

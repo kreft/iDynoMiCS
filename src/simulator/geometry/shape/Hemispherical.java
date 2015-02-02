@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import simulator.geometry.pointProcess.Edge;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
+import utils.Complex;
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -119,7 +121,7 @@ public class Hemispherical extends IsShape
 	 */
 	public Boolean isOutside(ContinuousVector point)
 	{
-		ContinuousVector baseToPoint = baseToPoint(point);
+		ContinuousVector baseToPoint = getRelativePosition(point);
 		// Work out if the point is inside the hemisphere.
 		Boolean isInsideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 )
 										&& ( baseToPoint.norm() <= _radius);
@@ -146,8 +148,20 @@ public class Hemispherical extends IsShape
 	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		
-		
+		ContinuousVector diff = getRelativePosition(ccIn);
+		if ( diff.isZero() )
+			return;
+		Double minDist = Double.MAX_VALUE;
+		Double dist;
+		for ( ContinuousVector intersection : getIntersections(ccIn, diff) )
+		{
+			dist = intersection.distance(ccIn);
+			if ( dist < minDist )
+			{
+				ccOut = intersection;
+				minDist = dist;
+			}
+		}
 	}
 	
 	/**
@@ -155,8 +169,9 @@ public class Hemispherical extends IsShape
 	 */
 	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
 	{
-		
-		return null;
+		ContinuousVector out = new ContinuousVector();
+		orthoProj(ccIn, out);
+		return out;
 	}
 	
 	/**
@@ -165,7 +180,7 @@ public class Hemispherical extends IsShape
 	 */
 	public Double getDistance(ContinuousVector point)
 	{
-		ContinuousVector baseToPoint = baseToPoint(point);
+		ContinuousVector baseToPoint = getRelativePosition(point);
 		Double cosAngle = _cVectorToApex.cosAngle(baseToPoint);
 		if ( cosAngle >= 0 )
 			return Math.abs(baseToPoint.norm() - _radius);
@@ -193,7 +208,7 @@ public class Hemispherical extends IsShape
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
-		ContinuousVector baseToPoint = baseToPoint(point);
+		ContinuousVector baseToPoint = getRelativePosition(point);
 		
 		out[1] = _cVectorToApex.cosAngle(baseToPoint);
 		out[2] = baseToPoint.norm();
@@ -219,7 +234,7 @@ public class Hemispherical extends IsShape
 					ContinuousVector radialVector, ContinuousVector apexVector)
 	{
 		Double[] out = new Double[3];
-		ContinuousVector baseToPoint = baseToPoint(point);
+		ContinuousVector baseToPoint = getRelativePosition(point);
 		
 		out[1] = apexVector.cosAngle(baseToPoint);
 		out[2] = baseToPoint.norm();
@@ -275,7 +290,7 @@ public class Hemispherical extends IsShape
 	 */
 	public Double distance(ContinuousVector point1, ContinuousVector point2)
 	{
-		return _radius * baseToPoint(point1).angle(baseToPoint(point2));
+		return _radius * getRelativePosition(point1).angle(getRelativePosition(point2));
 	}
 	
 	/**
@@ -283,7 +298,7 @@ public class Hemispherical extends IsShape
 	 * @param point Any point in Cartesian space.
 	 * @return	The vector from _cPointCenterBase to this point.
 	 */
-	private ContinuousVector baseToPoint(ContinuousVector point)
+	private ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
 		out.subtract(_cPointCenterBase);
@@ -292,8 +307,8 @@ public class Hemispherical extends IsShape
 	
 	private ContinuousVector midpoint(Site site1, Site site2)
 	{
-		ContinuousVector baseToS1 = baseToPoint(site1);
-		ContinuousVector baseToS2 = baseToPoint(site2);
+		ContinuousVector baseToS1 = getRelativePosition(site1);
+		ContinuousVector baseToS2 = getRelativePosition(site2);
 		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
 		
 		Double[] s2 = convertToPolar(site2, baseToS1, orthog);
@@ -325,8 +340,8 @@ public class Hemispherical extends IsShape
 		out.endPoint[0] = null;
 		out.endPoint[1] = null;
 		
-		ContinuousVector baseToS1 = baseToPoint(site1);
-		ContinuousVector baseToS2 = baseToPoint(site2);
+		ContinuousVector baseToS1 = getRelativePosition(site1);
+		ContinuousVector baseToS2 = getRelativePosition(site2);
 		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
 		orthog.normalizeVector(_radius);
 		
@@ -360,15 +375,31 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
-	/**
-	 * 
-	 */
 	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
 													ContinuousVector vector) 
 	{
-		ContinuousVector baseToP = baseToPoint(position);
-		
+		ContinuousVector baseToP = getRelativePosition(position);
+		ContinuousVector temp = new ContinuousVector();
 		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
+		// Find roots (k) of the equation: |baseToP + k*vector| = _radius
+		Complex[] roots = ExtraMath.rootsQuadratic(vector.prodScalar(vector),
+						2*vector.prodScalar(baseToP),
+						baseToP.prodScalar(baseToP) - ExtraMath.sq(_radius));
+		// Check roots are real, i.e. the line does intersect the (hemi)sphere.
+		if ( roots[0].isReal() )
+			for ( Complex root : roots )
+			{
+				// Find the (relative) position of the intersection.
+				temp.set(vector);
+				temp.times(root.getReal());
+				temp.add(baseToP);
+				// Check this is on the hemisphere, not just the sphere.
+				if ( _cVectorToApex.cosAngle(temp) >= 0.0 )
+				{
+					temp.add(_cPointCenterBase);
+					out.add(temp);
+				}
+			}
 		return out;
 	}
 	

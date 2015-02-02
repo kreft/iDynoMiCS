@@ -184,6 +184,7 @@ public class Planar extends IsShape
 		 */
 		intersection.times((_cOutDotPPlane - _cVectorOut.prodScalar(position))/c);
 		intersection.add(position);
+		out.add(intersection);
 		return out;
 	}
 	
@@ -412,24 +413,6 @@ public class Planar extends IsShape
 		move.j = indexU*_dOrthogU.j + indexV*_dOrthogV.j;
 		move.k = indexU*_dOrthogU.k + indexV*_dOrthogV.k;
 	}
-
-	/**
-     * \brief Test that the received point is coplanar with the definition
-     * point.
-     * 
-     * TODO Check this never divides by 0!
-     * 
-     * @param point	ContinuousVector of coordinates that should be tested
-     * @return	Boolean stating whether the point is cooplanar with the definition point
-     */
-	public boolean isOnShape(ContinuousVector point)
-	{
-		Double xDiff = (point.x-_cPointOnPlane.x)/_cVectorOut.x; 
-		boolean out = (xDiff == (point.y-_cPointOnPlane.y)/_cVectorOut.y);
-		out &= (xDiff == (point.z-_cPointOnPlane.z)/_cVectorOut.z);
-		return out;
-	}
-
 	
 	/**
 	 * \brief Return vector normal to the plane.

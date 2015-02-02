@@ -35,7 +35,7 @@ import simulator.agent.LocatedGroup;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  */
 public class BoundaryBulk extends ConnectedBoundary
@@ -136,15 +136,7 @@ public class BoundaryBulk extends ConnectedBoundary
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target) 
 	{
-		/*
-		 * Recording reason of death: agent will be moved to agentToKill list
-		 * when die() calls registerDeath().
-		 */
-		anAgent.death = "overBoard";
-		anAgent.die(false);
-		// To label this agent as "shoving solved", set to zero its movement.
-		anAgent.getMovement().reset();
-		target.set(anAgent.getLocation());
+		deadlyBoundary(anAgent, target, "overBoard");
 	}
 
 

@@ -28,7 +28,7 @@ import simulator.geometry.*;
  * boundary are considered to have entered the planktonic bulk domain. 
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  *
  */
@@ -113,20 +113,6 @@ public class BoundaryConstant extends ExternalBoundary
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
-		/*
-		 * Recording reason of death: agent will be moved to agentToKill list
-		 * when die() calls registerDeath().
-		 */
-		anAgent.death = "overBoard";
-		
-		anAgent.die(false);
-		// To label this agent as "shoving solved", set to zero its movement.
-		anAgent.getMovement().reset();
-		target.set(anAgent.getLocation());
-	}
-	
-	public void applyBoundary(DiscreteVector coord)
-	{
-		coord = _myShape.getOrthoProj(coord);
+		deadlyBoundary(anAgent, target, "overBoard");
 	}
 }

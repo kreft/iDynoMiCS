@@ -250,6 +250,7 @@ public class BoundaryCyclic extends ExternalBoundary
 	/**
 	 * 
 	 */
+	@Override
 	public void applyBoundary(DiscreteVector coord) 
 	{
 		if ( _myShape.isOutside(coord) )

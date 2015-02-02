@@ -28,24 +28,19 @@ public class BoundaryAgar extends InternalBoundary
 	public void updateAgar(SoluteGrid[] soluteGrid,
 								SoluteGrid[] reactionGrid, Double timeStep)
 	{
-		// TODO
-	}
-
-	@Override
-	public void refreshBoundary(SoluteGrid aSoluteGrid) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void setBoundary(LocatedGroup aGroup) {
-		// TODO Auto-generated method stub
+	public void setBoundary(LocatedGroup aGroup)
+	{
+		
 		
 	}
 
 	@Override
-	public void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc) {
-		// TODO Auto-generated method stub
-		
+	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	{
+		hardBoundary(anAgent, target);
 	};
 }

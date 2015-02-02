@@ -19,7 +19,7 @@ public class Voronoi
 	
 	private SweepTable sweepTable;
 	
-	private IsShape space;
+	private IsShape _space;
 	
 	private IsShape[] boundaries;
 	
@@ -27,8 +27,10 @@ public class Voronoi
 	
 	private ContinuousVector nextEvent;
 	
-	public Voronoi(Site[] sites)
+	public Voronoi(IsShape space, LinkedList<Site> sites)
 	{
+		_space = space;
+		
 		// Initialise the Priority Queue
 		priorityQueue = new LinkedList<ContinuousVector>();
 		for (ContinuousVector site : sites)
@@ -38,12 +40,12 @@ public class Voronoi
 		}
 		Collections.sort(priorityQueue, new Comparator<ContinuousVector>() {
 			public final int compare(ContinuousVector p1, ContinuousVector p2)
-				{ return space.compare(p1, p2);}});
+				{ return _space.compare(p1, p2);}});
 		LogFile.writeLog("Priority Queue sorted");
 		pqIterator = priorityQueue.listIterator();
 		
 		// Initialise the Sweep Table
-		sweepTable = new SweepTable(space, sites.length, 0.0, 10.0);
+		sweepTable = new SweepTable(_space, sites.size(), 0.0, 10.0);
 		
 		HalfEdge leftBoundary, rightBoundary, bisector;
 		Site nextSite, bottom;
@@ -64,7 +66,7 @@ public class Voronoi
 				// 
 				bottom = regionOnRight(leftBoundary);
 				//
-				newEdge = space.bisect(bottom, nextSite);
+				newEdge = _space.bisect(bottom, nextSite);
 				edges.add(newEdge);
 				// Create
 				bisector = new HalfEdge();
@@ -73,22 +75,22 @@ public class Voronoi
 				// 
 				sweepTable.insert(leftBoundary, bisector);
 				// 
-				intersection = space.intersect(leftBoundary, bisector);
+				intersection = _space.intersect(leftBoundary, bisector);
 				if ( intersection != null )
 				{
 					// PQdelete() ???
 					priorityQueueInsert(intersection, 
-							space.distance(intersection,  nextSite));
+							_space.distance(intersection,  nextSite));
 				}
 				
 				bisector = new HalfEdge();
 				bisector.edge = newEdge;
 				bisector.leftRight = 1;
 				
-				intersection = space.intersect(bisector, rightBoundary);
+				intersection = _space.intersect(bisector, rightBoundary);
 				if ( intersection != null )
 					priorityQueueInsert(intersection, 
-							space.distance(intersection,  nextSite));
+							_space.distance(intersection,  nextSite));
 				
 			}
 			else if ( nextEvent instanceof Vertex)
@@ -123,7 +125,7 @@ public class Voronoi
 		
 		ContinuousVector next = insertIterator.next();
 		
-		while (insertIterator.hasNext() && space.compare(vertex, next) > 0)
+		while (insertIterator.hasNext() && _space.compare(vertex, next) > 0)
 			next = insertIterator.next();
 		
 		insertIterator.add(vertex);

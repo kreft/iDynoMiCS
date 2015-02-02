@@ -9,6 +9,9 @@ public class Site extends ContinuousVector
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	
+	public Site(ContinuousVector cV)
+	{
+		super(cV);
+	}
 	
 }

@@ -26,7 +26,7 @@ import java.util.Random;
  * 		Dealing with strings
  * 		Random number generation
  * 
- * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA)
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
  * @author Robert Clegg (rjc096@bham.ac.uk), University of Birmingham, UK
@@ -249,6 +249,44 @@ public final class ExtraMath
 	public static final Double triangleSide(Double hypotenuse, Double sideA, Double sideB)
 	{
 		return Math.sqrt(sq(hypotenuse) - sq(sideA) - sq(sideB));
+	}
+	
+	/**
+	 * \brief Calculates the roots of a quadratic equation.
+	 * 
+	 * Form of the equation should be 
+	 * a*x^2 + b*x + c = 0
+	 * where x is the variable to be solved.
+	 * 
+	 *  
+	 * 
+	 * @param a
+	 * @param b
+	 * @param c
+	 * @return
+	 */
+	public static final Complex[] rootsQuadratic(Double a, Double b, Double c)
+	{
+		Double discriminant = sq(b) - (4.0*a*c);
+		Complex[] out = new Complex[2];
+		if ( discriminant < 0.0 )
+		{
+			discriminant = Math.sqrt(-discriminant);
+			for ( Complex num : out )
+				num.setImag(discriminant);
+		}
+		else
+		{
+			discriminant = Math.sqrt(discriminant);
+			for ( Complex num : out )
+				num.setReal(discriminant);
+		}
+		for ( Complex num : out )
+		{
+			num.add(-b);
+			num.div(2*a);
+		}
+		return out;
 	}
 	
 	/*  ----------------------------- Shapes  ----------------------------- */

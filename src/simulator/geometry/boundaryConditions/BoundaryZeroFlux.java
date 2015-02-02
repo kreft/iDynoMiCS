@@ -108,28 +108,7 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
-		// Define coordinates of the corrected position
-		_myShape.orthoProj(target, target);
-		
-		// Build a vector normal to the boundary and starting from the
-        // orthogonal projection		
-		vectorIn = new ContinuousVector(_myShape.getNormalInside(target));
-		
-		// The whole cell has to be inside, so make a translation equal to the
-        // total radius		
-		vectorIn.times(anAgent.getRadius(true));
-		
-		// Compute the new position
-		target.add(vectorIn);
-		
-		// Compute and update the movement vector leading to this new position
-		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
-	}
-	
-	
-	public void applyBoundary(DiscreteVector coord)
-	{
-		coord = _myShape.getOrthoProj(coord);
+		hardBoundary(anAgent, target);
 	}
 	
 	/**

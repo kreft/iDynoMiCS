@@ -37,6 +37,8 @@ public abstract class IsShape implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	public LinkedList<IsShape> boundaries;
+	
 	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
 	 * file, creating a shape.
