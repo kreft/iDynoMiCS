@@ -146,7 +146,7 @@ public abstract class IsShape implements Serializable
 	 * 
 	 * @return	Discrete vector normal to the plane.
 	 */
-	public abstract DiscreteVector getNormalDC();
+	public abstract DiscreteVector getNormalDiscrete();
 	
 	
 	

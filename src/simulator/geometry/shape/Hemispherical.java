@@ -426,7 +426,7 @@ public class Hemispherical extends IsShape
 		return null;
 	}
 	
-	public DiscreteVector getNormalDC()
+	public DiscreteVector getNormalDiscrete()
 	{
 		return null;
 	}

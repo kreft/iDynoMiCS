@@ -26,7 +26,7 @@ import java.util.Random;
  * 		Dealing with strings
  * 		Random number generation
  * 
- * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA)
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
  * @author Robert Clegg (rjc096@bham.ac.uk), University of Birmingham, UK

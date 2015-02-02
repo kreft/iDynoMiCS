@@ -12,12 +12,10 @@
 package simulator.geometry.boundaryConditions;
 
 import java.util.List;
-
 import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.SpatialGrid;
 import simulator.agent.LocatedAgent;
 import simulator.agent.LocatedGroup;
 import simulator.geometry.*;
@@ -39,7 +37,6 @@ import utils.XMLParser;
  * boundary will be translated to the other side of the domain
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- *
  */
 public class BoundaryCyclic extends ExternalBoundary
 {
@@ -214,7 +211,7 @@ public class BoundaryCyclic extends ExternalBoundary
 			// Build translator between both boundaries
 			int k = (int) Math.floor(_myOppShape.getDistance(_myShape)/
 												aSoluteGrid.getResolution());
-			translator.set(_myOppShape.getNormalDC());
+			translator.set( _myOppShape.getNormalDiscrete() );
 			translator.times(k - 1);
 			// Initialise the course along the shape of the boundary
 			_myShape.readyToFollowBoundary(aSoluteGrid);
@@ -232,7 +229,7 @@ public class BoundaryCyclic extends ExternalBoundary
 		{
 			// Initialise the course along the shape of the boundary.
 			_myShape.readyToFollowBoundary(aSoluteGrid);
-			translator.set( _myOppShape.getNormalDC() );
+			translator.set( _myOppShape.getNormalDiscrete() );
 			translator.times(2);
 			/* 
 			 * Send a point belonging to the boundary and the closest point
@@ -295,30 +292,30 @@ public class BoundaryCyclic extends ExternalBoundary
 	}
 	
 	/**
-	 * \brief Return the intersection between the opposite shape and a provided point
+	 * \brief Return the intersection between the opposite shape and a
+	 * provided point.
 	 * 
-	 * Return the intersection between the opposite shape and a provided point
-	 * 
-	 * @param cc	A position on a boundary
-	 * @return	ContinuousVector containing the intersection between the opposite shape and provided point
+	 * @param position	A position on a boundary.
+	 * @return	ContinuousVector containing the intersection between the
+	 * opposite shape and provided point.
 	 */
-	public ContinuousVector getSymmetric(ContinuousVector cc)
+	public ContinuousVector getSymmetric(ContinuousVector position)
 	{
-		// Determine on which shape you have to compute your future coordinates
-		// TODO Using first intersection is a quick fix
-		return _myOppShape.getIntersections(cc, _myShape.getNormalInside(cc)).getFirst();
+		// TODO Using first intersection is a quick fix.
+		return _myOppShape.getIntersections(position,
+							_myShape.getNormalInside(position)).getFirst();
 	}
-
 	
 	/**
-	 * \brief Returns a string noting the side of the domain that this boundary condition is on
+	 * \brief Returns a string noting the side of the domain that this
+	 * boundary condition is on.
 	 * 
-	 * Returns a string noting the side of the domain that this boundary condition is on
-	 * 
-	 * @return String noting the side of the domain that this condition applies to (i.e. x0z, xNz, etc)
+	 * @return String noting the side of the domain that this condition
+	 * applies to (i.e. x0z, xNz, etc).
 	 */
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return new String("Cyclic:"+this._mySide);
 	}
 }

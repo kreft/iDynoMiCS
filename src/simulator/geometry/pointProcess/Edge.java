@@ -1,7 +1,5 @@
 package simulator.geometry.pointProcess;
 
-import simulator.geometry.ContinuousVector;
-
 public class Edge
 {
 	

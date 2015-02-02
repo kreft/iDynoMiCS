@@ -35,18 +35,15 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Stores a vector normal to the boundary and starting from the orthogonal
-	 * projection.
-	 */
-	private static ContinuousVector vectorIn;
-	
-	/**
 	 * \brief Initialises the boundary from information contained in the
 	 * simulation protocol file.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aDomain	The domain which this boundary condition is associated with
-	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary in the protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aDomain	The domain which this boundary condition is associated
+	 * with.
+	 * @param aBoundCondMarkUp	The XML tags that have declared this boundary
+	 * in the protocol file.
 	 */
 	@Override
 	public void init(Simulator aSim, Domain aDomain, XMLParser aBoundCondMarkUp) 
@@ -70,24 +67,22 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	@Override
 	public void refreshBoundary(SoluteGrid aSoluteGrid) 
 	{
-		
-		// Initialize the course along the shape of the boundary
+		// Initialize the course along the shape of the boundary.
 		_myShape.readyToFollowBoundary(aSoluteGrid);
-
-		// Send a point belonging to the boundary and the closest point outside
-		// the domain
+		/*
+		 * Send a point belonging to the boundary and the closest point
+		 * outside the domain.
+		 */
 		while (_myShape.followBoundary(dcIn, dcOut, aSoluteGrid)) 
-		{
 			aSoluteGrid.setValueAt(aSoluteGrid.getValueAt(dcIn), dcOut);
-		}
 	}
 	
 	/**
-     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * \brief Change the status of a specified LocatedGroup to note that it
+     * has been identified as being outside this boundary.
      * 
-     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
-     * 
-     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
+     * @param aGroup	LocatedGroup object which has been detected to be
+     * outside the boundary.
      */
 	@Override
 	public void setBoundary(LocatedGroup aGroup) 
@@ -123,6 +118,4 @@ public class BoundaryZeroFlux  extends ExternalBoundary
 	{
 		return new String("ZeroFlux:"+this._mySide);
 	}
-	
-
 }

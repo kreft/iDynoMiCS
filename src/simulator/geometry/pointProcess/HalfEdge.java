@@ -9,7 +9,7 @@ public class HalfEdge
 	public Boolean deleted;
 	
 	/**
-	 * Integer donting whether this HalfEdge is on the left (0) or the right
+	 * Integer denoting whether this HalfEdge is on the left (0) or the right
 	 * (1) hand side of the Edge it corresponds to. 
 	 */
 	public int leftRight;

@@ -364,7 +364,7 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 */
-	public DiscreteVector getNormalDC()
+	public DiscreteVector getNormalDiscrete()
 	{
 		return null;
 	}

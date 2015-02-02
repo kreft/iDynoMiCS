@@ -20,7 +20,7 @@ import utils.XMLParser;
 /**
  * \brief Implements 3D vector of discrete spatial coordinates.
  * 
- * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public class DiscreteVector implements Cloneable, Serializable 
@@ -277,6 +277,11 @@ public class DiscreteVector implements Cloneable, Serializable
 	public Double cosAngle(DiscreteVector v)
 	{
 		return prodScalar(v)/(this.norm() * v.norm());
+	}
+	
+	public Boolean isParallel(DiscreteVector other)
+	{
+		return ( Math.abs(cosAngle(other)) == 1.0 );
 	}
 	
 	/**

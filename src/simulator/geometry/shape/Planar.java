@@ -11,13 +11,7 @@
  */
 package simulator.geometry.shape;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.List;
 
 import simulator.geometry.*;
 import simulator.geometry.pointProcess.Edge;
@@ -240,6 +234,11 @@ public class Planar extends IsShape
 		return out;
 	}
 	
+	public ContinuousVector getNormalContinuous()
+	{
+		return _cVectorOut;
+	}
+	
 	/**
 	 * \brief Takes a vector and returns that vector pointing towards the
 	 * inside of the shape.
@@ -305,9 +304,13 @@ public class Planar extends IsShape
 	 */
 	public Double getDistance(IsShape aBoundary)
 	{
-		ContinuousVector ccOut = 
-					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut).getFirst();
-		return _cPointOnPlane.distance(ccOut);
+		Double out = Double.MAX_VALUE;
+		for ( ContinuousVector ccOut : 
+					aBoundary.getIntersections(_cPointOnPlane, _cVectorOut) )
+		{
+			out = Math.min(out, _cPointOnPlane.distance(ccOut));
+		}
+		return out;
 	}
 	
 	
@@ -420,7 +423,7 @@ public class Planar extends IsShape
 	 * @return	Discrete vector normal to the plane
 	 */
 	@Override
-	public DiscreteVector getNormalDC()
+	public DiscreteVector getNormalDiscrete()
 	{
 		return _dVectorOut;
 	}
@@ -454,43 +457,14 @@ public class Planar extends IsShape
 		
 		ContinuousVector difference = new ContinuousVector(site2);
 		difference.subtract(site1);
-		
-		// TODO change multiplier to account for site weighting
-		Double weight = 0.5;
+		ContinuousVector direction = _cVectorOut.crossProduct(difference);
+		direction.normalizeVector();
 		
 		ContinuousVector midPoint = new ContinuousVector(difference);
-		midPoint.times(weight);
+		midPoint.times(0.5);
 		midPoint.add(site1);
 		
-		/* Find the difference and the midPoint in U, V coordinates. Since
-		 * _cOrthogU and _cOrthogV have been normailsed, this is equivalent to
-		 * dU = difference.norm() * _cOrthogU.cosAngle(difference);
-		 * etc
-		 */
-		Double dU = _cOrthogU.prodScalar(difference);
-		Double dUmid = _cOrthogU.prodScalar(midPoint);
-		Double dV = _cOrthogV.prodScalar(difference);
-		Double dVmid = _cOrthogV.prodScalar(midPoint);
-		
-		// c0*U + c1*V = c2 
-		if ( Math.abs(dU) > Math.abs(dV) )
-		{
-			// u + slope*v = midU + slope*midV
-			out.coefficient[0] = 1.0;
-			out.coefficient[1] = dV/dU;
-			// Don't need to worry about dU = 0, as |dU| > |dV|
-			out.coefficient[2] = dUmid + (dVmid*dV/dU);
-		}
-		else
-		{
-			// u/slope + v = midU/slope + midV
-			out.coefficient[0] = dU/dV;
-			out.coefficient[1] = 1.0;
-			// Don't need to worry about dV = 0, as |dU| < |dV|
-			out.coefficient[2] = (dUmid*dU/dV) + dVmid;
-		}
-		
-		return out;
+		return lineToEdge(midPoint, direction);
 	}
 	
 	public Vertex intersect(HalfEdge he1, HalfEdge he2)
@@ -502,15 +476,113 @@ public class Planar extends IsShape
 	
 	/**
 	 * 
-	 * 
+	 * TODO Move to IsShape ?
 	 *
 	 */
 	public final int compare(ContinuousVector point1,
 												ContinuousVector point2)
-	{		
-		int out = (int) Math.signum(point1.y - point2.y);
+	{
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
+		int out = (int) Math.signum(p1[1] - p2[1]);
 		if ( out == 0 )
-			out = (int) Math.signum(point1.x - point2.x);
+			out = (int) Math.signum(p1[0] - p2[0]);
 		return out;
+	}
+	
+	public Edge intersect(Planar other) 
+	{
+		// Check planes are not parallel.
+		if ( _dVectorOut.isParallel(other.getNormalDiscrete()) )
+			return null;
+		// The edge will be parallel to the cross product of the two norms.
+		ContinuousVector direction = 
+						_cVectorOut.crossProduct(other.getNormalContinuous());
+		// Find a point on the Edge.
+		ContinuousVector point = direction.crossProduct(_cVectorOut);
+		point = other.getIntersections(_cPointOnPlane, point).getFirst();
+		return lineToEdge(point, direction);
+	}
+	
+	/**
+	 * TODO Check thoroughly!
+	 * 
+	 * @param point
+	 * @param direction
+	 * @return
+	 */
+	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
+	{
+		Double[] p = convertToLocal(point);
+		Double[] d = convertToLocal(direction);
+		/*
+		 * Check the point is on the plane, that the line is parallel to it,
+		 * and that the direction vector is non-zero.   
+		 */
+		if ( p[2] != 0.0 || d[2] != 0.0 || (d[0] == 0.0 && d[1] == 0.0) )
+			return null;
+		Edge out = new Edge();
+		if ( Math.abs(d[0]) > Math.abs(d[1]) )
+		{
+			out.coefficient[0] = 1.0;
+			out.coefficient[1] = d[1]/d[0];
+			out.coefficient[2] = p[0] + (p[1]*out.coefficient[1]);
+		}
+		else
+		{
+			out.coefficient[0] = d[0]/d[1];
+			out.coefficient[1] = 1.0;
+			out.coefficient[2] = (p[0]*out.coefficient[0]) + p[1];
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Converts an Edge back to a pair of ContinuousVectors.
+	 * 
+	 * The first vector is gives a point on the line, the second the direction
+	 * of the line.
+	 * 
+	 * @param edge
+	 * @return
+	 */
+	public ContinuousVector[] edgeToLine(Edge edge)
+	{
+		Double[] point = new Double[3];
+		Double[] direction = new Double[3];
+		point[2] = 0.0;
+		direction[2] = 0.0;
+		if ( edge.coefficient[0] == 1.0 )
+		{
+			point[0] = edge.coefficient[2] - edge.coefficient[1];
+			point[1] = 1.0;
+			direction[0] = 1.0;
+			direction[1] = edge.coefficient[1];
+		}
+		else
+		{
+			point[0] = 1.0;
+			point[1] = edge.coefficient[2] - edge.coefficient[1];
+			direction[0] = edge.coefficient[1];
+			direction[1] = 1.0;
+		}
+		ContinuousVector[] out = new ContinuousVector[2];
+		out[0] = convertToVector(point);
+		out[1] = convertToVector(direction);
+		return out;
+	}
+	
+	public void restrictPlane(LinkedList<Planar> walls)
+	{
+		LinkedList<Edge> limits = new LinkedList<Edge>();
+		for ( Planar plane : walls )
+			limits.add(intersect(plane));
+		for ( Edge limit : limits )
+			for ( Edge other : limits )
+			{
+				if ( limit.equals(other) )
+					continue;
+				
+			}
 	}
 }

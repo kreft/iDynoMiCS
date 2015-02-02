@@ -30,7 +30,7 @@ import simulator.geometry.shape.*;
  */
 public abstract class AllBC
 {
-	/* _______________________________ FIELDS _________________________________ */
+	/* _____________________________ FIELDS _______________________________ */
 	/**
 	 * The name of the boundary describing its side (xOy,...).
 	 */
@@ -42,7 +42,8 @@ public abstract class AllBC
 	protected IsShape	_myShape;
 	
 	/**
-	 * Boolean noting whether this boundary is the supporting structure (substratum).
+	 * Boolean noting whether this boundary is the supporting structure
+	 * (substratum).
 	 */
 	protected boolean	_isSupport	= false;
 	
@@ -51,9 +52,10 @@ public abstract class AllBC
 	 */
 	protected boolean	activeForSolute	= true;
 	
-	/* ____________________ INTERNAL TEMPRARY VARIABLES ________________________ */
+	/* _________________ INTERNAL TEMPRARY VARIABLES ______________________ */
 	/**
-	 * Discrete coordinates of a voxel inside the computation domain but along the boundary
+	 * Discrete coordinates of a voxel inside the computation domain but along
+	 * the boundary.
 	 */ 
 	protected static DiscreteVector dcIn	= new DiscreteVector();
 	
@@ -86,39 +88,40 @@ public abstract class AllBC
 	}
 	
 	/**
-	 * \brief Initialises the boundary condition. Should be overridden by each boundary condition class file
+	 * \brief Initialises the boundary condition.
 	 * 
-	 * Initialises the boundary condition. This method should be overridden by each boundary condition class file
+	 * This method should be overridden by each boundary condition class file.
 	 * 
-	 * @param aSim	The current simulation object used to simulate the conditions specified in this protocol file
-	 * @param aDomain	The computation domain to which this boundary condition is assigned
-	 * @param root	Set of XML tags relating to one boundary condition
+	 * @param aSim	The current simulation object used to simulate the
+	 * conditions specified in this protocol file.
+	 * @param aDomain	The computation domain to which this boundary
+	 * condition is assigned.
+	 * @param root	Set of XML tags relating to one boundary condition.
 	 */
 	public abstract void init(Simulator aSim, Domain aDomain, XMLParser root);
-
 	
 	/**
-     * \brief Used during the initialisation, load the class describing the shape of the boundary defined in the parent class
+     * \brief Used during the initialisation, load the class describing the
+     * shape of the boundary defined in the parent class.
      * 
-     * Used during the initialisation, load the class describing the shape of the boundary defined in the parent class
-     * 
-     * @param geometryRoot	Usually an XML set of elements that describe the boundary to be created
-     * @param aDomain	The computational domain which this boundary is associated with
+     * @param geometryRoot	Usually an XML set of elements that describe the
+     * boundary to be created.
+     * @param aDomain	The computational domain which this boundary is
+     * associated with.
      */
 	public void readGeometry(XMLParser geometryRoot, Domain aDomain)
 	{
-		// Set the name of the boundary
+		// Set the name of the boundary.
 		_mySide = geometryRoot.getName();
-
-		// Set the class to use to define the shape
+		// Set the class to use to define the shape.
 		String className = "simulator.geometry.shape.";
 		className += geometryRoot.getChildParser("shape").getAttribute("class");
-
-		// Build the instance used to describe the shape
+		// Build the instance used to describe the shape.
 		try
 		{
 			_myShape = (IsShape) Class.forName(className).newInstance();
-			_myShape.readShape(new XMLParser(geometryRoot.getChildElement("shape")), aDomain);
+			_myShape.readShape(new 
+					XMLParser(geometryRoot.getChildElement("shape")), aDomain);
 		}
 		catch (Exception e)
 		{
@@ -127,38 +130,38 @@ public abstract class AllBC
 	}
 	
 	/**
-	 * \brief Determines if a point is outside the boundary
+	 * \brief Determines if a point is outside the boundary.
 	 * 
-	 * Determines if a point is outside the boundary
-	 * 
-	 * @param cc	ContinuousVector to check
-	 * @return	Boolean value noting whether this coordinate is outside the boundary (true) or not (false)
+	 * @param position	ContinuousVector to check.
+	 * @return	Boolean value noting whether this coordinate is outside the
+	 * boundary (true) or not (false).
 	 */
-	public boolean isOutside(ContinuousVector cc)
+	public boolean isOutside(ContinuousVector position)
 	{
-		return _myShape.isOutside(cc);
+		return _myShape.isOutside(position);
 	}
 	
 	/**
-	 * \brief Return the name of the side of the domain which this boundary is on
+	 * \brief Return the name of the side of the domain which this boundary is
+	 * on.
 	 * 
-	 * Return the name of the side of the domain which this boundary is on
-	 * 
-	 * @return	String containing the name of the side of the domain (e.g. x0z, xNz, etc)
+	 * @return	String containing the name of the side of the domain
+	 * (e.g. x0z, xNz, etc).
 	 */
 	public String getSideName()
 	{
 		return this._mySide;
 	}
-
-
+	
 	/**
-	 * \brief Solver for then boundary condition. Initialises the course along the shape of the boundary during multigrid computation 
+	 * \brief Solver for the variable concentration boundary condition.
+	 *  
+	 * Initialises the course along the shape of the boundary during multigrid
+	 * computation.
 	 * 
-	 * Solver for the variable concentration boundary condition. Initialises the course along the shape of the boundary during multigrid computation
-	 * 
-	 * @param aSoluteGrid	Grid of solute information which is to be refreshed by the solver
-	 * see ComputationDomain.refreshBoundaries()
+	 * @param aSoluteGrid	Grid of solute information which is to be
+	 * refreshed by the solver.
+	 * @see ComputationDomain.refreshBoundaries()
 	 */
 	public abstract void refreshBoundary(SoluteGrid aSoluteGrid);
 	
@@ -167,8 +170,10 @@ public abstract class AllBC
      * constant. Most of boundaries do not modify it.
      * 
      * @param relDiff	Relative difference grid
-     * @param aSolutegrid	Grid of solute information which is to be refreshed by the solver
+     * @param aSolutegrid	Grid of solute information which is to be
+     * refreshed by the solver.
      * 
+     * @see BoundaryGasMembrane
      */
 	public void refreshDiffBoundary(SoluteGrid relDiff, SoluteGrid aSolutegrid)
 	{
@@ -195,11 +200,11 @@ public abstract class AllBC
 	}
 	
 	/**
-     * \brief Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
+     * \brief Change the status of a specified LocatedGroup to note that it
+     * has been identified as being outside this boundary.
      * 
-     * Change the status of a specified LocatedGroup to note that it has been identified as being outside this boundary
-     * 
-     * @param aGroup	LocatedGroup object which has been detected to be outside the boundary
+     * @param aGroup	LocatedGroup object which has been detected to be
+     * outside the boundary.
      */
 	public abstract void setBoundary(LocatedGroup aGroup);
 	
@@ -209,8 +214,8 @@ public abstract class AllBC
      * 
      * @see LocatedAgent.move();
      */
-	public abstract void applyBoundary(LocatedAgent anAgent, ContinuousVector newLoc);
-	
+	public abstract void applyBoundary(LocatedAgent anAgent, 
+													ContinuousVector newLoc);
 	
 	public void applyBoundary(DiscreteVector coord)
 	{
@@ -326,6 +331,17 @@ public abstract class AllBC
 		return _myShape.getDistance(position);
 	}
 	
+	/**
+	 * \brief Kills an agent trying to leave this boundary.
+	 * 
+	 * Called by subclass boundaries.
+	 * 
+	 * @param anAgent
+	 * @param target
+	 * @param reason
+	 * 
+	 * @see applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	 */
 	protected void deadlyBoundary(LocatedAgent anAgent,
 									ContinuousVector target, String reason)
 	{
@@ -341,6 +357,16 @@ public abstract class AllBC
 		target.set(anAgent.getLocation());
 	}
 	
+	/**
+	 * \brief Stops an agent trying to leave this boundary.
+	 * 
+	 * Called by subclass boundaries.
+	 * 
+	 * @param anAgent
+	 * @param target
+	 * 
+	 * @see applyBoundary(LocatedAgent anAgent, ContinuousVector target)
+	 */
 	protected void hardBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
 		// Define coordinates of the corrected position.
