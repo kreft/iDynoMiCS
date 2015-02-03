@@ -71,6 +71,10 @@ public abstract class IsShape implements Serializable
 	
 	public abstract DiscreteVector getAbsolutePosition(DiscreteVector coord);
 	
+	public abstract ContinuousVector getRelativePosition(ContinuousVector point);
+	
+	public abstract ContinuousVector getAbsolutePosition(ContinuousVector point);
+	
 	/**
 	 * \brief Correct coordinates of a point that has gone outside this shape.
 	 * 
@@ -86,7 +90,12 @@ public abstract class IsShape implements Serializable
 	 * @param ccIn	Coordinates to be corrected
 	 * @return Corrected coordinates
 	 */
-	public abstract ContinuousVector getOrthoProj(ContinuousVector ccIn);
+	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
+	{
+		ContinuousVector out = new ContinuousVector();
+		orthoProj(ccIn, out);
+		return out;
+	}
 	
 	/**
 	 * 

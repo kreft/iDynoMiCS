@@ -187,11 +187,18 @@ public class Planar extends IsShape
 	 * @param point
 	 * @return
 	 */
-	private ContinuousVector getRelativePosition(ContinuousVector point)
+	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
 		pointOnPlaneToPoint.sendDiff(point, _cPointOnPlane);
 		return pointOnPlaneToPoint;
+	}
+	
+	public ContinuousVector getAbsolutePosition(ContinuousVector point)
+	{
+		ContinuousVector out = new ContinuousVector(point);
+		out.add(_cPointOnPlane);
+		return out;
 	}
 	
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
@@ -264,19 +271,6 @@ public class Planar extends IsShape
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		ccOut = getIntersections(ccIn, _cVectorOut).getFirst();
-	}
-
-	/**
-	 * \brief Correct coordinates of a point that has gone outside this shape,
-	 * returning these coordinates.
-	 * 
-	 * @param ccIn	Coordinates to be corrected.
-	 * @return Corrected coordinates.
-	 * 
-	 */
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
-	{
-		return getIntersections(ccIn, _cVectorOut).getFirst();
 	}
 	
 	public DiscreteVector getOrthoProj(DiscreteVector coord)

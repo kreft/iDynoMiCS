@@ -165,16 +165,6 @@ public class Hemispherical extends IsShape
 	}
 	
 	/**
-	 * 
-	 */
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
-	{
-		ContinuousVector out = new ContinuousVector();
-		orthoProj(ccIn, out);
-		return out;
-	}
-	
-	/**
 	 * \brief Gets the (Euclidean) distance from given point to the nearest
 	 * position on this shape. 
 	 */
@@ -254,8 +244,9 @@ public class Hemispherical extends IsShape
 							ContinuousVector radialV, ContinuousVector radialW)
 	{
 		out.set(center);
+		ContinuousVector temp = new ContinuousVector();
 		
-		ContinuousVector temp = new ContinuousVector(radialV);
+		temp.set(radialV);
 		temp.times(coords[2] * Math.cos(coords[0]) * Math.sin(coords[1]));
 		out.add(temp);
 		
@@ -298,10 +289,17 @@ public class Hemispherical extends IsShape
 	 * @param point Any point in Cartesian space.
 	 * @return	The vector from _cPointCenterBase to this point.
 	 */
-	private ContinuousVector getRelativePosition(ContinuousVector point)
+	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector out = new ContinuousVector(point);
 		out.subtract(_cPointCenterBase);
+		return out;
+	}
+	
+	public ContinuousVector getAbsolutePosition(ContinuousVector point)
+	{
+		ContinuousVector out = new ContinuousVector(point);
+		out.add(_cPointCenterBase);
 		return out;
 	}
 	
@@ -397,7 +395,7 @@ public class Hemispherical extends IsShape
 				if ( _cVectorToApex.cosAngle(temp) >= 0.0 )
 				{
 					temp.add(_cPointCenterBase);
-					out.add(temp);
+					out.add(new ContinuousVector(temp));
 				}
 			}
 		return out;

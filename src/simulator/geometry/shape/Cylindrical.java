@@ -164,6 +164,20 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
+	public ContinuousVector getRelativePosition(ContinuousVector point)
+	{
+		ContinuousVector out = new ContinuousVector(point);
+		out.subtract(_cPointCenterBase);
+		return out;
+	}
+	
+	public ContinuousVector getAbsolutePosition(ContinuousVector point)
+	{
+		ContinuousVector out = new ContinuousVector(point);
+		out.add(_cPointCenterBase);
+		return out;
+	}
+	
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
 		Double[] p = convertToLocal(ccIn);
@@ -171,28 +185,6 @@ public class Cylindrical extends IsShape
 		p[radialCoord] = _radius;
 		// The angle, p[azimuthCoord], doesn't change.
 		convertToCartesian(p, ccOut);
-	}
-	
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
-	{
-		ContinuousVector out = new ContinuousVector();
-		orthoProj(ccIn, out);
-		return out;
-	}
-	
-	public Double getDistance(ContinuousVector point)
-	{
-		ContinuousVector diff = getOrthoProj(point);
-		diff.subtract(point);
-		return diff.norm();
-		
-		/*Double[] p = convertToLocal(point);
-		Double d = Math.max(p[heightCoord] - _length, - p[heightCoord]);
-		Double r = Math.abs(p[radialCoord] - _radius);
-		if ( d < 0.0)
-			return Math.hypot(d, r);
-		else
-			return r;*/
 	}
 	
 	/**
@@ -203,22 +195,23 @@ public class Cylindrical extends IsShape
 	public Double[] convertToLocal(ContinuousVector point)
 	{
 		Double[] out = new Double[3];
-		ContinuousVector baseToPoint = baseToPoint(point);
+		ContinuousVector baseToPoint = getRelativePosition(point);
 		Double cosAngle = _cVectorAlongAxis.cosAngle(baseToPoint);
 		Double dist = baseToPoint.norm();
 		if ( cosAngle.equals(0.0) )
 			return null; //TODO
 		// cosAngle = dist/height
-		out[0] = dist/cosAngle;
-		out[1] = ExtraMath.triangleSide(dist, out[0]);
+		out[heightCoord] = dist/cosAngle;
+		out[radialCoord] = ExtraMath.triangleSide(dist, out[0]);
 		// Now find the position on the axis that is closest to the point.
 		ContinuousVector nearestOnAxis = new ContinuousVector(_cVectorAlongAxis);
-		nearestOnAxis.times(out[0]/_length);
-		/* By subtracting this from the baseToPoint vector, we flatten it onto
+		nearestOnAxis.times(out[heightCoord]/_length);
+		/* 
+		 * By subtracting this from the baseToPoint vector, we flatten it onto
 		 *  the base circle and find the angle with the reference vector.
 		 */
 		baseToPoint.subtract(nearestOnAxis);
-		out[2] = _cVectorRadiusV.angle(baseToPoint);
+		out[azimuthCoord] = _cVectorRadiusV.angle(baseToPoint);
 		return out;
 	}
 	
@@ -230,17 +223,18 @@ public class Cylindrical extends IsShape
 	private void convertToCartesian(Double[] coords, ContinuousVector out)
 	{
 		out.set(_cPointCenterBase);
+		ContinuousVector temp = new ContinuousVector();
 		
-		ContinuousVector temp = new ContinuousVector(_cVectorAlongAxis);
-		temp.times(coords[0]/_length);
+		temp.set(_cVectorAlongAxis);
+		temp.times(coords[heightCoord]/_length);
 		out.add(temp);
 		
 		temp.set(_cVectorRadiusV);
-		temp.times(coords[1]*Math.cos(coords[2]));
+		temp.times(coords[radialCoord]*Math.cos(coords[azimuthCoord]));
 		out.add(temp);
 		
 		temp.set(_cVectorRadiusW);
-		temp.times(coords[1]*Math.sin(coords[2]));
+		temp.times(coords[radialCoord]*Math.sin(coords[azimuthCoord]));
 		out.add(temp);
 	}
 	
@@ -259,40 +253,22 @@ public class Cylindrical extends IsShape
 	/**
 	 * 
 	 * 
+	 * Assumes both points on the surface!
+	 * 
 	 * @param point1
 	 * @param point2
 	 * @return
 	 */
-	public Double distanceAlongSurface(ContinuousVector point1,
-													ContinuousVector point2)
+	@Override
+	public Double distance(ContinuousVector point1, ContinuousVector point2)
 	{
 		Double[] p1 = convertToLocal(point1);
 		Double[] p2 = convertToLocal(point2);
 		
-		Double angle = Math.abs(p1[1] - p2[1]);
-		angle = Math.min(angle, 2*Math.PI);
+		Double angle = Math.abs(p1[azimuthCoord] - p2[azimuthCoord]);
+		angle = Math.min(angle, 2*Math.PI - angle);
 		
-		return Math.hypot(p1[0] - p2[0], _radius*(angle));
-	}
-	
-	/**
-	 * 
-	 * @param point Any point in Cartesian space.
-	 * @return	The vector from _cPointCenterBase to this point.
-	 */
-	private ContinuousVector baseToPoint(ContinuousVector point)
-	{
-		ContinuousVector out = new ContinuousVector(point);
-		out.subtract(_cPointCenterBase);
-		return out;
-	}
-	
-	
-	@Override
-	public Double distance(ContinuousVector point1, ContinuousVector point2)
-	{
-		
-		return null;
+		return Math.hypot(p1[heightCoord] - p2[heightCoord], _radius*(angle));
 	}
 	
 	
@@ -318,9 +294,9 @@ public class Cylindrical extends IsShape
 	{		
 		Double[] p1 = convertToLocal(point1);
 		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[1] - p2[1]);
+		int out = (int) Math.signum(p1[azimuthCoord] - p2[azimuthCoord]);
 		if ( out == 0 )
-			out = (int) Math.signum(p1[0] - p2[0]);
+			out = (int) Math.signum(p1[heightCoord] - p2[heightCoord]);
 		return out;
 	}
 	
@@ -328,6 +304,30 @@ public class Cylindrical extends IsShape
 													ContinuousVector vector)
 	{
 		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
+		/*
+		 * Flatten both the position and the vector to the plane of the base
+		 */
+		Double[] p = convertToLocal(getRelativePosition(position));
+		Double[] v = convertToLocal(vector);
+		Double diffAngle = p[azimuthCoord] - v[azimuthCoord];
+		/* 
+		 * Use the sine rule to find the angle of the intersection(s).
+		 * Note that sin(pi/2 - angle) = cos(angle)
+		 */
+		Double sinInter =  p[radialCoord] * (Math.cos(diffAngle)/_radius);
+		if ( Math.abs(sinInter) < 1.0 )
+		{
+			// The flattened line crosses the circle in two places.
+			Double interAngle = Math.acos(sinInter);
+			
+		}
+		else if ( Math.abs(sinInter) == 1.0 )
+		{
+			/*
+			 * The flattened line is a tangent to the circle, i.e. one 
+			 * (potential) intersection.
+			 */
+		}
 		return out;
 	}
 	
