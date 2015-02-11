@@ -37,7 +37,7 @@ import utils.XMLParser;
  * license. Please see www.idynomics.bham.ac.uk for more information.
  *
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre]
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
@@ -46,17 +46,17 @@ public abstract class DiffusionSolver
 	/**
 	 * A name assigned to this solver. Specified in the XML protocol file.
 	 */
-	public String                 solverName;
+	public String	solverName;
 	
 	/**
 	 * The position of this solver in the simulation dictionary.
 	 */
-	public int                    solverIndex;
+	public int	solverIndex;
 	
 	/**
 	 * The simulation object that this solver is associated with.
 	 */
-	public Simulator              mySim;
+	public Simulator	mySim;
 	
 	/**
 	 * The computational domain that this solver is associated with. Specified
@@ -80,13 +80,11 @@ public abstract class DiffusionSolver
 	 */
 	protected ArrayList<Integer>  _soluteIndex = new ArrayList<Integer>();
 	
-	protected double              internTimeStep;
+	protected Double	internTimeStep;
 	
-	protected double 			  minimalTimeStep;
+	protected Double	minimalTimeStep;
 	
-	protected double              internalIteration;
-	
-	protected double              maxIteration = 1;
+	protected int	internalIteration;
 	
 	/**
 	 * Boolean flag that determines whether this solver will actually be used.

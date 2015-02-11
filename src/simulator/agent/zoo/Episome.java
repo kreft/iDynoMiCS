@@ -11,6 +11,7 @@
 
 package simulator.agent.zoo;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.jdom.Element;
@@ -127,7 +128,7 @@ public class Episome extends InfoAgent
 	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
-		_genealogy = 0;
+		_genealogy = BigInteger.ZERO;
 		lastExchange = -1.0;
 		lastReception = -1.0;
 	}

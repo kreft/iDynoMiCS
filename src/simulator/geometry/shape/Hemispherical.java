@@ -1,12 +1,6 @@
 package simulator.geometry.shape;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
@@ -99,12 +93,17 @@ public class Hemispherical extends IsShape
 	{
 		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
 		_dVectorToApex = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
+		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 		
+		init(aDomain.getResolution());
+	}
+	
+	private void init(Double res)
+	{
 		_dVectorRadiusV = new DiscreteVector();
 		_dVectorRadiusW = new DiscreteVector();
 		_dVectorToApex.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
 		
-		Double res = aDomain.getResolution();
 		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
 		_cVectorToApex = new ContinuousVector(_dVectorToApex, res);
 		_radius = _cVectorToApex.norm();
@@ -112,10 +111,8 @@ public class Hemispherical extends IsShape
 		_cVectorRadiusV.normalizeVector(_radius);
 		_cVectorRadiusW = new ContinuousVector(_dVectorRadiusW, res);
 		_cVectorRadiusV.normalizeVector(_radius);
-		
-		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
 	}
-
+	
 	/**
 	 * 
 	 */
@@ -385,6 +382,7 @@ public class Hemispherical extends IsShape
 						baseToP.prodScalar(baseToP) - ExtraMath.sq(_radius));
 		// Check roots are real, i.e. the line does intersect the (hemi)sphere.
 		if ( roots[0].isReal() )
+		{
 			for ( Complex root : roots )
 			{
 				// Find the (relative) position of the intersection.
@@ -398,6 +396,13 @@ public class Hemispherical extends IsShape
 					out.add(new ContinuousVector(temp));
 				}
 			}
+			/*
+			 * Check intersections are different (i.e. line not tangential to
+			 * the hemisphere).
+			 */
+			if ( out.get(0).equals(out.get(1)) )
+				out.remove(1);
+		}
 		return out;
 	}
 	

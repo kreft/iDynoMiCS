@@ -114,42 +114,69 @@ public class Planar extends IsShape
 	 */
 	private static DiscreteVector origin = new DiscreteVector();
 	
+	/**
+	 * \brief Constructor method of a planar shape.
+	 * 
+	 * Used in testing.
+	 * 
+	 * @param dPointOnPlane Discrete vector giving the position of a point on
+	 * the plane.
+	 * @param dVectorOut Discrete vector giving the direction of a vector
+	 * orthogonal (i.e. at right angles to) the plane.
+	 * @param resolution The resolution of the domain grid.
+	 */
+	public Planar(DiscreteVector dPointOnPlane,
+								DiscreteVector dVectorOut, Double resolution)
+	{
+		_dPointOnPlane = new DiscreteVector(dPointOnPlane);
+		_dVectorOut = new DiscreteVector(dVectorOut);
+		init(resolution);
+	}
+	
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
 		_dPointOnPlane = new DiscreteVector(shapeRoot.getParamParser("pointIn"));
 		_dVectorOut = new DiscreteVector(shapeRoot.getParamParser("vectorOut"));
 		
-		/* 
-		 * Translate them into continuous coordinates.
+		init(aDomain.getResolution());
+	}
+	
+	/**
+	 * 
+	 * @param resolution
+	 */
+	private void init(Double resolution)
+	{
+		/*
 		 * TODO investigate why the native 
-		 * ContinuousVector(DiscreteVector, res) is not used here 
+		 * ContinuousVector(DiscreteVector, res) is not used here.
 		 */
-		Double res = aDomain.getGrid().getResolution();
 		_cPointOnPlane = new ContinuousVector();
-		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*res;
-		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*res;
-		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*res;
-		
-		// TODO investigate why the resolution is irrelevant here.
-		// Try _cVectorOut = new ContinuousVector(_dVectorOut, res); ?
-		_cVectorOut = new ContinuousVector(_dVectorOut, res);
-		_cVectorOut.x = (double) _dVectorOut.i;
-		_cVectorOut.y = (double) _dVectorOut.j;
-		_cVectorOut.z = (double) _dVectorOut.k;
-		
+		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*resolution;
+		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*resolution;
+		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*resolution;
+		// The vector out just needs to have the correct direction.
+		_cVectorOut = new ContinuousVector();
+		_cVectorOut.x = new Double(_dVectorOut.i);
+		_cVectorOut.y = new Double(_dVectorOut.j);
+		_cVectorOut.z = new Double(_dVectorOut.k);
+		/*
+		 * Dots products of the vector out with the point on the plane. Saves
+		 * having to calculate these values repeatedly.
+		 */
 		_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
 		_dOutDotPPlane = _dVectorOut.prodScalar(_dPointOnPlane);
-		
-		/* Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
+		/* 
+		 * Find two vectors orthogonal to each vector out, i.e. parallel to the
 		 * plane.
 		 */
 		_dOrthogU = new DiscreteVector();
 		_dOrthogV = new DiscreteVector();
 		_dVectorOut.orthoVector(_dOrthogU, _dOrthogV);
-		_cOrthogU = new ContinuousVector(_dOrthogU, res);
+		_cOrthogU = new ContinuousVector(_dOrthogU, resolution);
 		_cOrthogU.normalizeVector();
-		_cOrthogV = new ContinuousVector(_dOrthogV, res);
+		_cOrthogV = new ContinuousVector(_dOrthogV, resolution);
 		_cOrthogV.normalizeVector();
 	}
 	

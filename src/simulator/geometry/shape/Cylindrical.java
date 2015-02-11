@@ -10,6 +10,7 @@ import simulator.geometry.pointProcess.Edge;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
+import utils.Complex;
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -96,18 +97,17 @@ public class Cylindrical extends IsShape
 	 * @param dVectorAlongAxis
 	 * @param radius
 	 * @param interiorMatchesDomain
-	 * @param res	Grid resolution of the domain.
+	 * @param resolution Grid resolution of the domain.
 	 */
 	public Cylindrical(DiscreteVector dPointCenterBase, 
 			  				DiscreteVector dVectorAlongAxis, Double radius,
-			  				Boolean interiorMatchesDomain, Double res)
+			  				Boolean interiorMatchesDomain, Double resolution)
 	{
 		_dPointCenterBase = new DiscreteVector(dPointCenterBase);
 		_dVectorAlongAxis = new DiscreteVector(dVectorAlongAxis);
 		_radius = radius;
 		_interiorMatchesDomain = interiorMatchesDomain;
-		
-		init(res);
+		init(resolution);
 	}
 	
 	/**
@@ -300,33 +300,50 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
-	public LinkedList<ContinuousVector> getIntersections(ContinuousVector position,
-													ContinuousVector vector)
+	public LinkedList<ContinuousVector> getIntersections(
+						ContinuousVector position, ContinuousVector vector)
 	{
 		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
-		/*
-		 * Flatten both the position and the vector to the plane of the base
-		 */
-		Double[] p = convertToLocal(getRelativePosition(position));
-		Double[] v = convertToLocal(vector);
-		Double diffAngle = p[azimuthCoord] - v[azimuthCoord];
+		if ( _cVectorAlongAxis.isParallel(vector) )
+			return out;
 		/* 
-		 * Use the sine rule to find the angle of the intersection(s).
-		 * Note that sin(pi/2 - angle) = cos(angle)
+		 * Flatten both the relative position and the vector to the plane of
+		 * the base of the cylinder.
 		 */
-		Double sinInter =  p[radialCoord] * (Math.cos(diffAngle)/_radius);
-		if ( Math.abs(sinInter) < 1.0 )
+		ContinuousVector temp = getRelativePosition(position);
+		Double[] p = convertToLocal(temp);
+		p[heightCoord] = 0.0;
+		ContinuousVector pFlat = convertToVector(p);
+		Double[] v = convertToLocal(vector);
+		v[heightCoord] = 0.0;
+		ContinuousVector vFlat = convertToVector(v);
+		// Find roots (k) of the equation: |pFlat + k*vFlat| = _radius
+		Complex[] roots = ExtraMath.rootsQuadratic(vFlat.prodScalar(vFlat),
+							2*vFlat.prodScalar(pFlat),
+							pFlat.prodScalar(pFlat) - ExtraMath.sq(_radius));
+		// Check roots are real, i.e. the line does intersect the cylinder.
+		if ( roots[0].isReal() )
 		{
-			// The flattened line crosses the circle in two places.
-			Double interAngle = Math.acos(sinInter);
-			
-		}
-		else if ( Math.abs(sinInter) == 1.0 )
-		{
+			for ( Complex root : roots )
+			{
+				// Find the (relative) position of the intersection.
+				temp.set(vector);
+				temp.times(root.getReal());
+				temp.add(position);
+				/*
+				 * Check the intersection is along the (finite) length of the
+				 * cylinder.
+				 */
+				p = convertToLocal(temp);
+				if ( p[heightCoord] >= 0 && p[heightCoord] <= _length )
+					out.add(temp);
+			}
 			/*
-			 * The flattened line is a tangent to the circle, i.e. one 
-			 * (potential) intersection.
+			 * Check intersections are different (i.e. if the line is
+			 * tangential to the cylinder there is only one intersection).
 			 */
+			if ( out.get(0).equals(out.get(1)) )
+				out.remove(1);
 		}
 		return out;
 	}
