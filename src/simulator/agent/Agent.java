@@ -46,8 +46,10 @@ public abstract class Agent implements Cloneable
 	protected int _generation = 0;
 	
 	/**
-	 * Integer for the binary reading of the 0 and 1 coding the lineage. When a cells divides, one daughter has the index value 1, 
-	 * the other the index value 0, then this index is added on the left of the lineage description
+	 * Integer for the binary reading of the 0 and 1 coding the lineage. When
+	 * a cells divides, one daughter has the index value 1, the other the
+	 * index value 0, then this index is added on the left of the lineage
+	 * description.
 	 */
 	protected BigInteger _genealogy  = BigInteger.ZERO;
 	
@@ -57,12 +59,13 @@ public abstract class Agent implements Cloneable
 	protected int        _family     = 0;
 	
 	/**
-	 * Integer noting the next family that any newly created agent will belong to
+	 * Integer noting the next family that any newly created agent will belong
+	 * to.
 	 */
 	protected static int nextFamily  = 0;
-
+	
 	/**
-	 * Timestep at which this agent was created
+	 * Time at which this agent was created.
 	 */
 	protected Double _birthday;
 	
@@ -121,11 +124,11 @@ public abstract class Agent implements Cloneable
 	}
 
 	/**
-	 * \brief Creates a new agent from an existing one, and registers this new agent in the simulation
+	 * \brief Creates a new agent from an existing one, and registers this new
+	 * agent in the simulation.
 	 * 
-	 * Creates a new agent from an existing one, and registers this new agent in the simulation
-	 * 
-	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
+	 * @throws CloneNotSupportedException	Exception should the class not
+	 * implement Cloneable.
 	 */
 	public void makeKid() throws CloneNotSupportedException 
 	{
@@ -138,11 +141,10 @@ public abstract class Agent implements Cloneable
 	}
 
 	/**
-	 * \brief Clones this agent object, creating a new progeny of this agent
+	 * \brief Clones this agent object, creating a new progeny of this agent.
 	 * 
-	 * Clones this agent object, creating a new progeny of this agent
-	 * 
-	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
+	 * @throws CloneNotSupportedException	Exception should the class not
+	 * implement Cloneable.
 	 */
 	@Override
 	public Object clone() throws CloneNotSupportedException
@@ -151,69 +153,62 @@ public abstract class Agent implements Cloneable
 	}
 
 	/**
-	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container. Implemented by classes that extend Agent
+	 * \brief Registers a created agent into a respective container.
 	 * 
-	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. Implemented by classes that extend Agent
+	 * Each agent must be referenced by one such container. Implemented by
+	 * classes that extend Agent.
 	 */
 	public abstract void registerBirth();
-
 	
 	/**
-	 * \brief Perform the next timestep of the simulation for this agent
+	 * \brief Perform the next timestep of the simulation for this agent.
 	 * 
-	 * Perform the next timestep of the simulation for this agent. _lastStep is implemented to note that the agent has been stepped.
-	 * Implemented fully by agent types that extend Agent
-	 * 
+	 * _lastStep is implemented to note that the agent has been stepped.
+	 * Implemented fully by agent types that extend Agent.
 	 */
 	public void step()
 	{
 		_lastStep = SimTimer.getCurrentIter();
 		internalStep();
 	}
-
-	// KA - June 13 - this is all commented out in AgentContainer class and thus assumed we don't use this anymmore
-	//sonia 01/2011
-	// this was created here so that we can call it during agent step() 
-	//in AgentContainer class. The same applies for conjugate()
-	//public void HGTstep(double elapsedHGTtime){
-		//conjugate(elapsedHGTtime);
-	//}
-	//protected abstract void conjugate(double elapsedHGTtime);
 	
 	/**
-	 * \brief Called at each time step (under the control of the method Step of the class Agent to avoid multiple calls)
+	 * \brief Called at each time step (under the control of the method Step
+	 * of the class Agent to avoid multiple calls).
 	 * 
-	 * Called at each time step (under the control of the method Step of the class Agent to avoid multiple calls). Implemented by 
-	 * classes that extend Agent
+	 * Implemented by classes that extend Agent.
 	 */
 	protected abstract void internalStep();
-
-
+	
 	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * \brief Specifies the header of the columns of output information for
+	 * this agent.
 	 * 
-	 * Used in creation of results files - specifies the header of the columns of output information for this agent
+	 * Used in creation of results files.
 	 * 
-	 * @return	String specifying the header of each column of results associated with this agent
+	 * @return	String specifying the header of each column of results
+	 * associated with this agent.
 	 */
-	public StringBuffer sendHeader() {
-		// return the header file for this agent's values	
+	public StringBuffer sendHeader()
+	{
 		return new StringBuffer("family,genealogy,generation,birthday");
 	}
-
+	
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * \brief Creates an output string of information generated on this
+	 * particular agent.
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * Used in creation of results files. Data written matches the headers in
+	 * sendHeader().
 	 * 
-	 * @return	String containing results associated with this agent
+	 * @return	String containing results associated with this agent.
 	 */
 	public StringBuffer writeOutput()
 	{
-		// write the data matching the header file
-		return new StringBuffer(_family+","+_genealogy+","+_generation+","+_birthday);
+		return new StringBuffer(
+						_family+","+_genealogy+","+_generation+","+_birthday);
 	}
-
+	
 	/**
 	 * \brief Called when creating an agent : updates _generation and
 	 * _genealogy field.
@@ -225,21 +220,22 @@ public abstract class Agent implements Cloneable
 	{
 		// Rob 18/1/11: Shuffled around slightly to include odd numbers
 		//baby._genealogy = _genealogy+ExtraMath.exp2long(this._generation);
-		// Rob 
+		// Rob 11/2/15: Changed to BigInteger
 		baby._genealogy = new BigInteger("2");
 		baby._genealogy.pow(this._generation);
 		baby._genealogy.add(this._genealogy);
 		
 		this._generation++;
 		baby._generation = this._generation;
-
-		// Rob 25/1/11: we want to know if the genealogy goes negative
+		
+		// We want to know if the genealogy goes negative.
 		if ( baby._genealogy.signum() < 0 )
 		{
 			LogFile.writeLog("Warning: baby's genealogy has gone negative:");
-			LogFile.writeLog("family "+baby._family+", genealogy "+baby._genealogy+", generation "+baby._generation);
+			LogFile.writeLog("family "+baby._family+", genealogy "+
+							baby._genealogy+", generation "+baby._generation);
 		}
-
+		
 		// Rob 21/1/11: changed so that only the baby is given a new birthday
 		// this._birthday = SimTimer.getCurrentTime();
 		// baby._birthday = this._birthday;

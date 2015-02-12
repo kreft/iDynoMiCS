@@ -1,29 +1,32 @@
 package test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.LinkedList;
+
+import simulator.geometry.DiscreteVector;
+import simulator.geometry.shape.Planar;
 
 public class VoronoiTest
 {
 	public static void main(String[] args) 
 	{
+		Double resolution = 1.0;
+		DiscreteVector origin = new DiscreteVector(0, 0, 0);
+		DiscreteVector tenTen = new DiscreteVector(0, 10, 10);
+		DiscreteVector iUnit = new DiscreteVector(1, 0, 0);
+		DiscreteVector jUnit = new DiscreteVector(0, 1, 0);
+		DiscreteVector kUnit = new DiscreteVector(0, 0, 1);
+		Planar mainShape = new Planar(origin, iUnit, resolution);
+		LinkedList<Planar> walls = new LinkedList<Planar>();
+		walls.add(new Planar(origin, jUnit, resolution));
+		walls.add(new Planar(origin, kUnit, resolution));
+		walls.add(new Planar(tenTen, jUnit, resolution));
+		walls.add(new Planar(tenTen, kUnit, resolution));
+		mainShape.restrictPlane(walls);
 		
-		List<String> numbers = Arrays.asList("zero", "one", "two");
-		ListIterator<String> it = numbers.listIterator();
-		String[] out = new String[numbers.size()];
-		while (it.hasNext())
-		{
-			out[it.nextIndex()] = it.next();
-			//System.out.println(it.nextIndex() + " " + it.next());
-			if ( out[it.previousIndex()].contains("n") )
-				out[it.previousIndex()] = "blah";
-			//System.out.println(it.previousIndex() + " " + it.previous());
-			//System.out.println(it.nextIndex() + " " + it.next());
-			//System.out.println(" --- ");
-		}
-		for ( String s : out )
-			System.out.println(s);
-		
+		// TODO
+		// This is working, goes to zero
+		System.out.println("minStar = "+mainShape.getMinStar());
+		// this isn't working, goes to zero when it should be ten
+		System.out.println("maxStar = "+mainShape.getMaxStar());
 	}
 }

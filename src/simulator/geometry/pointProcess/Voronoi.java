@@ -45,7 +45,7 @@ public class Voronoi
 		pqIterator = priorityQueue.listIterator();
 		
 		// Initialise the Sweep Table
-		sweepTable = new SweepTable(_space, sites.size(), 0.0, 10.0);
+		sweepTable = new SweepTable(_space, sites.size());
 		
 		HalfEdge leftBoundary, rightBoundary, bisector;
 		Site nextSite, bottom;

@@ -129,13 +129,31 @@ public class Cylindrical extends IsShape
 		_dVectorRadiusV = new DiscreteVector();
 		_dVectorRadiusW = new DiscreteVector();
 		_dVectorAlongAxis.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
-		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
-		_cVectorAlongAxis = new ContinuousVector(_dVectorAlongAxis, res);
+		
+		_cPointCenterBase = new ContinuousVector();
+		_cPointCenterBase.set(_dPointCenterBase, res);
+		
+		_cVectorAlongAxis = new ContinuousVector();
+		_cVectorAlongAxis.set(_dVectorAlongAxis, res);
+		
 		_length = _cVectorAlongAxis.norm();
-		_cVectorRadiusV = new ContinuousVector(_dVectorRadiusV, res);
+		
+		_cVectorRadiusV = new ContinuousVector();
+		_cVectorRadiusV.set(_dVectorRadiusV);
 		_cVectorRadiusV.normalizeVector(_radius);
-		_cVectorRadiusW = new ContinuousVector(_dVectorRadiusW, res);
-		_cVectorRadiusV.normalizeVector(_radius);
+		
+		_cVectorRadiusW = new ContinuousVector();
+		_cVectorRadiusW.set(_dVectorRadiusW);
+		_cVectorRadiusW.normalizeVector(_radius);
+		
+		/* IMPORTANT:
+		 * - if voronoiPrimary = azimuthCoord, _maxStar = 2.0*Math.PI
+		 * - if voronoiPrimary = zenithCoord, _maxStar = Math.PI
+		 */
+		_voronoiPrimary = azimuthCoord;
+		_voronoiSecondary = heightCoord;
+		_minStar = 0.0;
+		_maxStar = 2.0*Math.PI;
 	}
 	
 	/**
@@ -185,6 +203,11 @@ public class Cylindrical extends IsShape
 		p[radialCoord] = _radius;
 		// The angle, p[azimuthCoord], doesn't change.
 		convertToCartesian(p, ccOut);
+	}
+	
+	public void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut)
+	{
+		// TODO
 	}
 	
 	/**
@@ -286,20 +309,6 @@ public class Cylindrical extends IsShape
 		return out;
 	}
 	
-	/**
-	 * TODO Check!
-	 */
-	public final int compare(ContinuousVector point1,
-											ContinuousVector point2)
-	{		
-		Double[] p1 = convertToLocal(point1);
-		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[azimuthCoord] - p2[azimuthCoord]);
-		if ( out == 0 )
-			out = (int) Math.signum(p1[heightCoord] - p2[heightCoord]);
-		return out;
-	}
-	
 	public LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector)
 	{
@@ -387,19 +396,15 @@ public class Cylindrical extends IsShape
 	}
 
 	@Override
-	public DiscreteVector getOrthoProj(DiscreteVector coord) {
+	public ContinuousVector convertToVector(Double[] local)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public ContinuousVector convertToVector(Double[] local) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Boolean isOutside(DiscreteVector coord) {
+	public Boolean isOutside(DiscreteVector coord)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -174,10 +174,26 @@ public class Planar extends IsShape
 		_dOrthogU = new DiscreteVector();
 		_dOrthogV = new DiscreteVector();
 		_dVectorOut.orthoVector(_dOrthogU, _dOrthogV);
-		_cOrthogU = new ContinuousVector(_dOrthogU, resolution);
+		
+		_cOrthogU = new ContinuousVector();
+		_cOrthogU.set(_dOrthogU);
 		_cOrthogU.normalizeVector();
-		_cOrthogV = new ContinuousVector(_dOrthogV, resolution);
+		
+		_cOrthogV = new ContinuousVector();
+		_cOrthogV.set(_dOrthogV);
 		_cOrthogV.normalizeVector();
+		
+		/*
+		System.out.println("discrete norm: "+_dVectorOut.toString());
+		System.out.println("u: "+_dOrthogU.toString());
+		System.out.println("v: "+_dOrthogV.toString());
+		System.out.println("continuous norm: "+_cVectorOut.toString());
+		System.out.println("u: "+_cOrthogU.toString());
+		System.out.println("v: "+_cOrthogV.toString());
+		*/
+		
+		_voronoiPrimary = 0;
+		_voronoiSecondary = 1;
 	}
 	
 	public Boolean isOutside(ContinuousVector point)
@@ -300,17 +316,17 @@ public class Planar extends IsShape
 		ccOut = getIntersections(ccIn, _cVectorOut).getFirst();
 	}
 	
-	public DiscreteVector getOrthoProj(DiscreteVector coord)
+	@Override
+	public void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut)
 	{
 		/*
 		 * TODO Rob 23Jan2015: This is not as robust as I would like!
 		 * It will work fine if _dVector out is parallel to one axis only
 		 * (as is usually the case) but may fail otherwise.
 		 */
-		DiscreteVector out = new DiscreteVector(_dVectorOut);
-		out.times(_dOutDotPPlane - _dVectorOut.prodScalar(coord));
-		out.add(coord);
-		return out;
+		dcOut.set(_dVectorOut);
+		dcOut.times(_dOutDotPPlane - _dVectorOut.prodScalar(dcIn));
+		dcOut.add(dcIn);
 	}
 
 	/**
@@ -488,27 +504,16 @@ public class Planar extends IsShape
 		return lineToEdge(midPoint, direction);
 	}
 	
-	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		Vertex out = new Vertex();
-		// TODO
+		
 		return out;
 	}
 	
-	/**
-	 * 
-	 * TODO Move to IsShape ?
-	 *
-	 */
-	public final int compare(ContinuousVector point1,
-												ContinuousVector point2)
+	public Vertex intersect(HalfEdge he1, HalfEdge he2)
 	{
-		Double[] p1 = convertToLocal(point1);
-		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[1] - p2[1]);
-		if ( out == 0 )
-			out = (int) Math.signum(p1[0] - p2[0]);
-		return out;
+		return intersect(he1.edge, he2.edge);
 	}
 	
 	public Edge intersect(Planar other) 
@@ -519,9 +524,12 @@ public class Planar extends IsShape
 		// The edge will be parallel to the cross product of the two norms.
 		ContinuousVector direction = 
 						_cVectorOut.crossProduct(other.getNormalContinuous());
+		System.out.println("dir: "+direction.toString());
 		// Find a point on the Edge.
 		ContinuousVector point = direction.crossProduct(_cVectorOut);
+		System.out.println("point0: "+point.toString());
 		point = other.getIntersections(_cPointOnPlane, point).getFirst();
+		System.out.println("point1: "+point.toString());
 		return lineToEdge(point, direction);
 	}
 	
@@ -535,34 +543,41 @@ public class Planar extends IsShape
 	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
 	{
 		Double[] p = convertToLocal(point);
+		System.out.println("p: ("+p[0]+","+p[1]+","+p[2]+")");
 		Double[] d = convertToLocal(direction);
+		System.out.println("d: ("+d[0]+","+d[1]+","+d[2]+")");
 		/*
 		 * Check the point is on the plane, that the line is parallel to it,
 		 * and that the direction vector is non-zero.   
 		 */
-		if ( p[2] != 0.0 || d[2] != 0.0 || (d[0] == 0.0 && d[1] == 0.0) )
+		if ( p[2] != 0.0 || d[2] != 0.0 || 
+				(d[_voronoiPrimary] == 0.0 && d[_voronoiSecondary] == 0.0) )
+		{
 			return null;
+		}
 		Edge out = new Edge();
-		if ( Math.abs(d[0]) > Math.abs(d[1]) )
+		if ( Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary]) )
 		{
 			out.coefficient[0] = 1.0;
-			out.coefficient[1] = d[1]/d[0];
-			out.coefficient[2] = p[0] + (p[1]*out.coefficient[1]);
+			out.coefficient[1] = d[_voronoiSecondary]/d[_voronoiPrimary];
+			out.coefficient[2] = p[_voronoiPrimary] + (p[1]*out.coefficient[1]);
 		}
 		else
 		{
-			out.coefficient[0] = d[0]/d[1];
+			out.coefficient[0] = d[_voronoiPrimary]/d[_voronoiSecondary];
 			out.coefficient[1] = 1.0;
-			out.coefficient[2] = (p[0]*out.coefficient[0]) + p[1];
+			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[0]) + p[_voronoiSecondary];
 		}
 		return out;
 	}
 	
 	/**
-	 * \brief Converts an Edge back to a pair of ContinuousVectors.
+	 * \brief Converts a HalfEdge back to a pair of ContinuousVectors.
 	 * 
 	 * The first vector is gives a point on the line, the second the direction
-	 * of the line.
+	 * of the line. The direction vector may not have the same length as the
+	 * original direction vector, and may even be pointing the opposite way,
+	 * but it will be parallel.
 	 * 
 	 * @param edge
 	 * @return
@@ -575,10 +590,14 @@ public class Planar extends IsShape
 		direction[2] = 0.0;
 		if ( edge.coefficient[0] == 1.0 )
 		{
-			point[0] = edge.coefficient[2] - edge.coefficient[1];
-			point[1] = 1.0;
-			direction[0] = 1.0;
-			direction[1] = edge.coefficient[1];
+			/* This corresponds to
+			 * Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary])
+			 * in lineToHalfEdge(point, direction)
+			 */
+			point[_voronoiPrimary] = edge.coefficient[2] - edge.coefficient[1];
+			point[_voronoiSecondary] = 1.0;
+			direction[_voronoiPrimary] = 1.0;
+			direction[_voronoiSecondary] = edge.coefficient[1];
 		}
 		else
 		{
@@ -595,15 +614,26 @@ public class Planar extends IsShape
 	
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
+		_maxStar = -Double.MAX_VALUE;
+		_minStar = Double.MAX_VALUE;
 		LinkedList<Edge> limits = new LinkedList<Edge>();
+		Edge temp;
+		Double[] v;
 		for ( Planar plane : walls )
-			limits.add(intersect(plane));
+		{
+			System.out.println("Looking at "+plane.getNormalDiscrete().toString());
+			temp = intersect(plane);
+			if ( temp != null )
+				limits.add(temp);
+		}
 		for ( Edge limit : limits )
 			for ( Edge other : limits )
 			{
 				if ( limit.equals(other) )
 					continue;
-				
+				v = convertToLocal(intersect(limit, other));
+				_maxStar = Math.max(_maxStar, v[_voronoiSecondary]);
+				_minStar = Math.min(_minStar, v[_voronoiSecondary]);
 			}
 	}
 }

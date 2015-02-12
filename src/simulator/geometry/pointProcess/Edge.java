@@ -10,5 +10,10 @@ public class Edge
 	
 	public Double[] coefficient;
 	
-	
+	public Edge()
+	{
+		endPoint = new Vertex[2];
+		region = new Site[2];
+		coefficient = new Double[3];
+	}
 }

@@ -37,16 +37,15 @@ public class SweepTable
 	 */
 	Double deltaValue;
 	
-	public SweepTable(IsShape space, int numberOfSites,
-										Double minValue, Double maxValue)
+	public SweepTable(IsShape shape, int numberOfSites)
 	{
-		this.space = space;
+		this.space = shape;
 
 		Double temp = 2 * Math.sqrt(numberOfSites);
 		this.size = temp.intValue();
 
-		this.minValue = minValue;
-		this.deltaValue = maxValue - minValue;
+		this.minValue = shape.getMinStar();
+		this.deltaValue = shape.getMaxStar() - minValue;
 
 		for (int i = 0; i < this.size; i++)
 			this.hash[i] = null;

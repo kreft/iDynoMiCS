@@ -22,12 +22,33 @@ public class Hemispherical extends IsShape
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * A point on the cylinder axis
+	 * In local coordinates, this gives the index of the azimuthal angle
+	 * (if the apex of the hemisphere is equivalent to the North Pole, this is
+	 * equivalent of the longitude).
+	 */
+	public final static int azimuthCoord = 0;
+	
+	/**
+	 * In local coordinates, this gives the index of the azimuth angle, also
+	 * known as the polar angle or colatitude (if the apex of the hemisphere
+	 * is equivalent to the North Pole, this is equivalent of 90 degrees minus
+	 * the latitude).
+	 */
+	public final static int zenithCoord = 1;
+	
+	/**
+	 * In local coordinates, this gives the index of the radius (distance from
+	 * the centre).
+	 */
+	public final static int radialCoord = 2;
+	
+	/**
+	 * A point at one end of the the cylinder axis.
 	 */
 	private DiscreteVector _dPointCenterBase;
 	
 	/**
-	 * 
+	 * A vector from _dPointCenterBase to the other end of the cylinder axis.
 	 */
 	private DiscreteVector _dVectorToApex;
 	
@@ -43,10 +64,14 @@ public class Hemispherical extends IsShape
 	 */
 	private DiscreteVector _dVectorRadiusW;
 	
-	
+	/**
+	 * A point at one end of the the cylinder axis.
+	 */
 	private ContinuousVector _cPointCenterBase;
 	
-	
+	/**
+	 * A vector from _dPointCenterBase to the other end of the cylinder axis.
+	 */
 	private ContinuousVector _cVectorToApex;
 	
 	/**
@@ -91,10 +116,12 @@ public class Hemispherical extends IsShape
 	 */
 	public void readShape(XMLParser shapeRoot, Domain aDomain)
 	{
-		_dPointCenterBase = new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
-		_dVectorToApex = new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
-		_interiorMatchesDomain = shapeRoot.getParamBool("interiorMatchesDomain");
-		
+		_dPointCenterBase =
+				new DiscreteVector(shapeRoot.getParamParser("pointCenter"));
+		_dVectorToApex = 
+				new DiscreteVector(shapeRoot.getParamParser("vectorAxis"));
+		_interiorMatchesDomain = 
+							shapeRoot.getParamBool("interiorMatchesDomain");
 		init(aDomain.getResolution());
 	}
 	
@@ -104,13 +131,30 @@ public class Hemispherical extends IsShape
 		_dVectorRadiusW = new DiscreteVector();
 		_dVectorToApex.orthoVector(_dVectorRadiusV, _dVectorRadiusW);
 		
-		_cPointCenterBase = new ContinuousVector(_dPointCenterBase, res);
-		_cVectorToApex = new ContinuousVector(_dVectorToApex, res);
+		_cPointCenterBase = new ContinuousVector();
+		_cPointCenterBase.set(_dPointCenterBase, res);
+		
+		_cVectorToApex = new ContinuousVector();
+		_cVectorToApex.set(_dVectorToApex, res);
+		
 		_radius = _cVectorToApex.norm();
-		_cVectorRadiusV = new ContinuousVector(_dVectorRadiusV, res);
+		
+		_cVectorRadiusV = new ContinuousVector();
+		_cVectorRadiusV.set(_dVectorRadiusV);
 		_cVectorRadiusV.normalizeVector(_radius);
-		_cVectorRadiusW = new ContinuousVector(_dVectorRadiusW, res);
+		
+		_cVectorRadiusW = new ContinuousVector();
+		_cVectorRadiusV.set(_dVectorRadiusW);
 		_cVectorRadiusV.normalizeVector(_radius);
+		
+		/* IMPORTANT:
+		 * - if voronoiPrimary = azimuthCoord, _maxStar = Math.PI
+		 * - if voronoiPrimary = zenithCoord, _maxStar = 2.0*Math.PI
+		 */
+		_voronoiPrimary = azimuthCoord;
+		_voronoiSecondary = zenithCoord;
+		_minStar = 0.0;
+		_maxStar = Math.PI;
 	}
 	
 	/**
@@ -123,7 +167,7 @@ public class Hemispherical extends IsShape
 		Boolean isInsideHS = ( _cVectorToApex.cosAngle(baseToPoint) > 0 )
 										&& ( baseToPoint.norm() <= _radius);
 		// Use the exclusive or (Xor).
-		return isInsideHS ^ _interiorMatchesDomain;
+		return Boolean.logicalXor(isInsideHS, _interiorMatchesDomain);
 	}
 	
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
@@ -186,84 +230,98 @@ public class Hemispherical extends IsShape
 	
 	/**
 	 * 
-	 * TODO use convertToPolar(point, _cVectorRadiusV, _cVectorToApex)
 	 * 
-	 * @param point 
-	 * @return 3 Doubles: (0) angle on the circular base, (1) angle with the
-	 * vector to the apex, (2) distance from the centre.
+	 * 
+	 * @param point ContinuousVector describing a point in space (Cartesian
+	 * coordinates, relative to global origin) 
+	 * @see azimuthCoord, radialCoord, zenithCoord
 	 */
 	public Double[] convertToLocal(ContinuousVector point)
 	{
-		Double[] out = new Double[3];
-		ContinuousVector baseToPoint = getRelativePosition(point);
-		
-		out[1] = _cVectorToApex.cosAngle(baseToPoint);
-		out[2] = baseToPoint.norm();
-		
-		// Should be equivalent to Planar.orthoProj() for the base of the HS
-		ContinuousVector pointOnPlane = new ContinuousVector(_cVectorToApex);
-		pointOnPlane.times(-out[1]*out[2]);
-		pointOnPlane.add(baseToPoint);
-		
-		out[0] = _cVectorRadiusV.angle(pointOnPlane);
-		out[1] = Math.acos(out[1]);
-		return out;
+		return convertToPolar(point, _cVectorRadiusV, _cVectorToApex);
 	}
 	
 	/**
+	 * 
+	 * 
 	 * 
 	 * @param point
 	 * @param radialVector
 	 * @param apexVector
 	 * @return
+	 * @see azimuthCoord, radialCoord, zenithCoord
 	 */
 	private Double[] convertToPolar(ContinuousVector point,
 					ContinuousVector radialVector, ContinuousVector apexVector)
 	{
-		Double[] out = new Double[3];
+		Double[] local = new Double[3];
 		ContinuousVector baseToPoint = getRelativePosition(point);
-		
-		out[1] = apexVector.cosAngle(baseToPoint);
-		out[2] = baseToPoint.norm();
+		Double height = apexVector.cosAngle(baseToPoint);
+		local[radialCoord] = baseToPoint.norm();
 		
 		// Should be equivalent to Planar.orthoProj() for the base of the HS
 		ContinuousVector pointOnPlane = new ContinuousVector(apexVector);
-		pointOnPlane.times(-out[1]*out[2]);
+		pointOnPlane.times(-height*local[radialCoord]);
 		pointOnPlane.add(baseToPoint);
 		
-		out[0] = radialVector.angle(pointOnPlane);
-		out[1] = Math.acos(out[1]);
-		return out;
+		local[azimuthCoord] = radialVector.angle(pointOnPlane);
+		local[zenithCoord] = Math.acos(height);
+		return local;
 	}
 	
-	private void convertToCartesian(Double[] coords, ContinuousVector out,
+	private void convertToCartesian(Double[] local, ContinuousVector out,
 							ContinuousVector center, ContinuousVector apexU,
 							ContinuousVector radialV, ContinuousVector radialW)
 	{
 		out.set(center);
 		ContinuousVector temp = new ContinuousVector();
+		Double k = local[radialCoord] * Math.sin(local[zenithCoord]);
 		
 		temp.set(radialV);
-		temp.times(coords[2] * Math.cos(coords[0]) * Math.sin(coords[1]));
+		temp.times(k * Math.cos(local[azimuthCoord]));
 		out.add(temp);
 		
 		temp.set(radialW);
-		temp.times(coords[2] * Math.sin(coords[0]) * Math.sin(coords[1]));
+		temp.times(k * Math.sin(local[azimuthCoord]));
 		out.add(temp);
 		
 		temp.set(apexU);
-		temp.times(coords[2] * Math.cos(coords[1]));
+		temp.times(local[radialCoord] * Math.cos(local[zenithCoord]));
 		out.add(temp);
 	}
 	
 	/**
 	 * 
-	 * @param coords
+	 * 
+	 * @param local
+	 * @param center
+	 * @param apexU
+	 * @param radialV
+	 * @param radialW
+	 * @return
 	 */
-	private ContinuousVector convertToCartesian(Double[] coords)
+	private ContinuousVector convertToCartesian(Double[] local,
+							ContinuousVector center, ContinuousVector apexU,
+							ContinuousVector radialV, ContinuousVector radialW)
 	{
 		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(coords, out, _cPointCenterBase, _cVectorToApex,
+		convertToCartesian(local, out, center, apexU, radialV, radialW);
+		return out;
+	}
+	
+	/**
+	 * \brief 
+	 * 
+	 * @param local Double array describing a position in local coordinates
+	 * (spherical, relative to _cPointCenterBase)
+	 * @return ContinuousVector describing the position in global coordinates
+	 * (Cartesian, relative to global origin)
+	 */
+	@Override
+	public ContinuousVector convertToVector(Double[] local)
+	{
+		ContinuousVector out = new ContinuousVector();
+		convertToCartesian(local, out, _cPointCenterBase, _cVectorToApex,
 											_cVectorRadiusV, _cVectorRadiusW);
 		return out;
 	}
@@ -307,16 +365,13 @@ public class Hemispherical extends IsShape
 		ContinuousVector orthog = baseToS1.crossProduct(baseToS2);
 		
 		Double[] s2 = convertToPolar(site2, baseToS1, orthog);
-		// TODO change multiplier for weighting
 		s2[0] *= 0.5;
 		
 		ContinuousVector newW = baseToS1.crossProduct(orthog);
 		newW.turnAround();
 		newW.normalizeVector(_radius);
 		
-		ContinuousVector out = new ContinuousVector();
-		convertToCartesian(s2, out, _cPointCenterBase, orthog, baseToS1, newW);
-		return out;
+		return convertToCartesian(s2, _cPointCenterBase, orthog, baseToS1, newW);
 	}
 	
 	/**
@@ -345,7 +400,7 @@ public class Hemispherical extends IsShape
 		
 		ContinuousVector midpoint = new ContinuousVector(); 
 		convertToCartesian(s, midpoint, _cPointCenterBase, orthog, baseToS1, baseToS1.crossProduct(orthog));
-		
+		// TODO
 		return out;
 	}
 	
@@ -353,20 +408,6 @@ public class Hemispherical extends IsShape
 	{
 		Vertex out = new Vertex();
 		// TODO
-		return out;
-	}
-	
-	/**
-	 * TODO Check!
-	 */
-	public final int compare(ContinuousVector point1,
-			ContinuousVector point2)
-	{		
-		Double[] p1 = convertToLocal(point1);
-		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[1] - p2[1]);
-		if ( out == 0 )
-			out = (int) Math.signum(p1[0] - p2[0]);
 		return out;
 	}
 	
@@ -435,19 +476,16 @@ public class Hemispherical extends IsShape
 	}
 
 	@Override
-	public DiscreteVector getOrthoProj(DiscreteVector coord) {
+	public void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut)
+	{
 		// TODO Auto-generated method stub
-		return null;
 	}
 
-	@Override
-	public ContinuousVector convertToVector(Double[] local) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 	@Override
-	public Boolean isOutside(DiscreteVector coord) {
+	public Boolean isOutside(DiscreteVector coord)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}

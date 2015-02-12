@@ -38,6 +38,16 @@ public abstract class IsShape implements Serializable
 	private static final long serialVersionUID = 1L;
 	
 	/**
+	 * Indices of the local coordinates used by the Voronoi diagram generator.
+	 */
+	protected static int _voronoiPrimary, _voronoiSecondary;
+	
+	/**
+	 * 
+	 */
+	protected static Double _minStar, _maxStar;
+	
+	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
 	 * file, creating a shape.
 	 * 
@@ -96,11 +106,24 @@ public abstract class IsShape implements Serializable
 	}
 	
 	/**
+	 * \brief Correct coordinates of a point that has gone outside this shape.
+	 * 
+	 * @param dcIn	Coordinates to be corrected
+	 * @param dcOut	Corrected coordinates
+	 */
+	public abstract void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut);
+	
+	/**
 	 * 
 	 * @param coord
 	 * @return
 	 */
-	public abstract DiscreteVector getOrthoProj(DiscreteVector coord);
+	public DiscreteVector getOrthoProj(DiscreteVector coord)
+	{
+		DiscreteVector out = new DiscreteVector();
+		orthoProj(coord, out);
+		return out;
+	}
 	
 	/**
 	 * \brief Gets the distance from a point on the other side
@@ -159,6 +182,16 @@ public abstract class IsShape implements Serializable
 	
 	/* ------------------------- Voronoi diagram -------------------------- */
 	
+	public Double getMinStar()
+	{
+		return _minStar;
+	}
+	
+	public Double getMaxStar()
+	{
+		return _maxStar;
+	}
+	
 	/**
 	 * 
 	 * @param site1
@@ -173,8 +206,16 @@ public abstract class IsShape implements Serializable
 	 * @param point2
 	 * @return
 	 */
-	public abstract int compare(ContinuousVector point1,
-										ContinuousVector point2);
+	public final int compare(ContinuousVector point1,
+										ContinuousVector point2)
+	{
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
+		int out = (int) Math.signum(p1[_voronoiPrimary] - p2[_voronoiPrimary]);
+		if ( out == 0 )
+			out = (int) Math.signum(p1[_voronoiSecondary] - p2[_voronoiSecondary]);
+		return out;
+	}
 	
 	/**
 	 * 
