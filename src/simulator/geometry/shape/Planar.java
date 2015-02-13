@@ -19,6 +19,7 @@ import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import simulator.SpatialGrid;
+import utils.ExtraMath;
 import utils.XMLParser;
 
 /**
@@ -148,10 +149,6 @@ public class Planar extends IsShape
 	 */
 	private void init(Double resolution)
 	{
-		/*
-		 * TODO investigate why the native 
-		 * ContinuousVector(DiscreteVector, res) is not used here.
-		 */
 		_cPointOnPlane = new ContinuousVector();
 		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*resolution;
 		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*resolution;
@@ -262,9 +259,12 @@ public class Planar extends IsShape
 	{
 		Double[] out = new Double[3];
 		ContinuousVector pointOnPlaneToPoint = getRelativePosition(point);
-		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
-		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
-		out[2] = _cVectorOut.cosAngle(pointOnPlaneToPoint);
+		System.out.println("RelPos "+pointOnPlaneToPoint.toString());
+		System.out.println("cOrthogU "+_cOrthogU.toString());
+		out[0] = _cOrthogU.prodScalar(pointOnPlaneToPoint);
+		System.out.println("cos(cOrthogU, RelPos) "+out[0]);
+		out[1] = _cOrthogV.prodScalar(pointOnPlaneToPoint);
+		out[2] = _cVectorOut.prodScalar(pointOnPlaneToPoint);
 		return out;
 	}
 	
@@ -506,13 +506,27 @@ public class Planar extends IsShape
 	
 	public Vertex intersect(Edge edge1, Edge edge2)
 	{
-		Vertex out = new Vertex();
+		/*System.out.println("Intersecting...");
+		System.out.println(edge1.toString());
+		System.out.println(edge2.toString());*/
+		Double[] v = ExtraMath.newDoubleArray(3);
+		Double slopeDiff = edge1.coefficient[0]*edge2.coefficient[1] - 
+									edge1.coefficient[1]*edge2.coefficient[0];
+		// Check edges are not parallel.
+		if ( slopeDiff == 0.0 )
+			return null;
 		
-		return out;
+		v[_voronoiPrimary] = (edge1.coefficient[2]*edge2.coefficient[1] -
+				edge1.coefficient[1]*edge2.coefficient[2])/slopeDiff;
+		v[_voronoiSecondary] = (edge1.coefficient[0]*edge2.coefficient[2] -
+				edge1.coefficient[2]*edge2.coefficient[0])/slopeDiff;
+		//System.out.println("v: ("+v[0]+","+v[1]+","+v[2]+")");
+		return new Vertex(convertToVector(v));
 	}
 	
 	public Vertex intersect(HalfEdge he1, HalfEdge he2)
 	{
+		//TODO
 		return intersect(he1.edge, he2.edge);
 	}
 	
@@ -527,7 +541,7 @@ public class Planar extends IsShape
 		System.out.println("dir: "+direction.toString());
 		// Find a point on the Edge.
 		ContinuousVector point = direction.crossProduct(_cVectorOut);
-		System.out.println("point0: "+point.toString());
+		//System.out.println("point0: "+point.toString());
 		point = other.getIntersections(_cPointOnPlane, point).getFirst();
 		System.out.println("point1: "+point.toString());
 		return lineToEdge(point, direction);
@@ -558,16 +572,19 @@ public class Planar extends IsShape
 		Edge out = new Edge();
 		if ( Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary]) )
 		{
+			//System.out.println("|d0| > |d1|");
 			out.coefficient[0] = 1.0;
 			out.coefficient[1] = d[_voronoiSecondary]/d[_voronoiPrimary];
-			out.coefficient[2] = p[_voronoiPrimary] + (p[1]*out.coefficient[1]);
+			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[1]) + p[_voronoiSecondary];
 		}
 		else
 		{
+			//System.out.println("|d0| <= |d1|");
 			out.coefficient[0] = d[_voronoiPrimary]/d[_voronoiSecondary];
 			out.coefficient[1] = 1.0;
-			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[0]) + p[_voronoiSecondary];
+			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[0]);
 		}
+		System.out.println(out.toString()+"\n");
 		return out;
 	}
 	
@@ -619,21 +636,37 @@ public class Planar extends IsShape
 		LinkedList<Edge> limits = new LinkedList<Edge>();
 		Edge temp;
 		Double[] v;
+		Vertex vertex;
 		for ( Planar plane : walls )
 		{
-			System.out.println("Looking at "+plane.getNormalDiscrete().toString());
+			System.out.println("Looking at "+plane.toString());
 			temp = intersect(plane);
 			if ( temp != null )
-				limits.add(temp);
-		}
-		for ( Edge limit : limits )
-			for ( Edge other : limits )
 			{
-				if ( limit.equals(other) )
+				limits.add(temp);
+				//System.out.println(temp.toString());
+			}
+		}
+		int nLimits = limits.size();
+		for (int i = 0; i < nLimits-1; i++ )
+			for (int j = i+1; j < nLimits; j++)
+			{
+				//System.out.println(limits.get(i).toString());
+				//System.out.println(limits.get(j).toString());
+				vertex = intersect(limits.get(i), limits.get(j));
+				if ( vertex == null )
 					continue;
-				v = convertToLocal(intersect(limit, other));
+				v = convertToLocal(vertex);
+				System.out.println("vertex at ("+v[0]+","+v[1]+","+v[2]+")");
 				_maxStar = Math.max(_maxStar, v[_voronoiSecondary]);
 				_minStar = Math.min(_minStar, v[_voronoiSecondary]);
 			}
+	}
+	
+	public String toString()
+	{
+		return "Plane\n\tPoint on plane: "+_cPointOnPlane.toString()+
+				"\n\tVector out: "+_cVectorOut.toString()+
+				"\n\tParallel vectors: "+_cOrthogU.toString()+_cOrthogV.toString();
 	}
 }

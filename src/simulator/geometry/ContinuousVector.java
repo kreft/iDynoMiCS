@@ -24,10 +24,10 @@ import utils.XMLParser;
  * Cartesian (x, y, z) coordinates obligatory.
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author JoÃ£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  *
  */

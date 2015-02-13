@@ -14,4 +14,8 @@ public class Site extends ContinuousVector
 		super(cV);
 	}
 	
+	public Site(Double x, Double y, Double z)
+	{
+		super(x, y, z);
+	}
 }
