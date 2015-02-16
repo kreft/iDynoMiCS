@@ -153,8 +153,8 @@ public class Hemispherical extends IsShape
 		 */
 		_voronoiPrimary = azimuthCoord;
 		_voronoiSecondary = zenithCoord;
-		_minStar = 0.0;
-		_maxStar = Math.PI;
+		_minPrimary = 0.0;
+		_maxPrimary = Math.PI;
 	}
 	
 	/**

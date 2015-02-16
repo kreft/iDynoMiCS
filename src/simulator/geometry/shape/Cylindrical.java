@@ -152,8 +152,8 @@ public class Cylindrical extends IsShape
 		 */
 		_voronoiPrimary = azimuthCoord;
 		_voronoiSecondary = heightCoord;
-		_minStar = 0.0;
-		_maxStar = 2.0*Math.PI;
+		_minPrimary = 0.0;
+		_maxPrimary = 2.0*Math.PI;
 	}
 	
 	/**

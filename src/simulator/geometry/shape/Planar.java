@@ -259,10 +259,10 @@ public class Planar extends IsShape
 	{
 		Double[] out = new Double[3];
 		ContinuousVector pointOnPlaneToPoint = getRelativePosition(point);
-		System.out.println("RelPos "+pointOnPlaneToPoint.toString());
-		System.out.println("cOrthogU "+_cOrthogU.toString());
+		//System.out.println("RelPos "+pointOnPlaneToPoint.toString());
+		//System.out.println("cOrthogU "+_cOrthogU.toString());
 		out[0] = _cOrthogU.prodScalar(pointOnPlaneToPoint);
-		System.out.println("cos(cOrthogU, RelPos) "+out[0]);
+		//System.out.println("cos(cOrthogU, RelPos) "+out[0]);
 		out[1] = _cOrthogV.prodScalar(pointOnPlaneToPoint);
 		out[2] = _cVectorOut.prodScalar(pointOnPlaneToPoint);
 		return out;
@@ -504,8 +504,11 @@ public class Planar extends IsShape
 		return lineToEdge(midPoint, direction);
 	}
 	
+	
 	public Vertex intersect(Edge edge1, Edge edge2)
 	{
+		if ( edge1 == null || edge2 == null )
+			return null;
 		/*System.out.println("Intersecting...");
 		System.out.println(edge1.toString());
 		System.out.println(edge2.toString());*/
@@ -538,12 +541,12 @@ public class Planar extends IsShape
 		// The edge will be parallel to the cross product of the two norms.
 		ContinuousVector direction = 
 						_cVectorOut.crossProduct(other.getNormalContinuous());
-		System.out.println("dir: "+direction.toString());
+		//System.out.println("dir: "+direction.toString());
 		// Find a point on the Edge.
 		ContinuousVector point = direction.crossProduct(_cVectorOut);
 		//System.out.println("point0: "+point.toString());
 		point = other.getIntersections(_cPointOnPlane, point).getFirst();
-		System.out.println("point1: "+point.toString());
+		//System.out.println("point1: "+point.toString());
 		return lineToEdge(point, direction);
 	}
 	
@@ -557,9 +560,9 @@ public class Planar extends IsShape
 	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
 	{
 		Double[] p = convertToLocal(point);
-		System.out.println("p: ("+p[0]+","+p[1]+","+p[2]+")");
+		//System.out.println("p: ("+p[0]+","+p[1]+","+p[2]+")");
 		Double[] d = convertToLocal(direction);
-		System.out.println("d: ("+d[0]+","+d[1]+","+d[2]+")");
+		//System.out.println("d: ("+d[0]+","+d[1]+","+d[2]+")");
 		/*
 		 * Check the point is on the plane, that the line is parallel to it,
 		 * and that the direction vector is non-zero.   
@@ -584,7 +587,7 @@ public class Planar extends IsShape
 			out.coefficient[1] = 1.0;
 			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[0]);
 		}
-		System.out.println(out.toString()+"\n");
+		//System.out.println(out.toString()+"\n");
 		return out;
 	}
 	
@@ -631,35 +634,28 @@ public class Planar extends IsShape
 	
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
-		_maxStar = -Double.MAX_VALUE;
-		_minStar = Double.MAX_VALUE;
+		_maxPrimary = -Double.MAX_VALUE;
+		_minPrimary = Double.MAX_VALUE;
 		LinkedList<Edge> limits = new LinkedList<Edge>();
 		Edge temp;
-		Double[] v;
+		Double primaryVal;
 		Vertex vertex;
 		for ( Planar plane : walls )
 		{
-			System.out.println("Looking at "+plane.toString());
 			temp = intersect(plane);
 			if ( temp != null )
-			{
 				limits.add(temp);
-				//System.out.println(temp.toString());
-			}
 		}
 		int nLimits = limits.size();
 		for (int i = 0; i < nLimits-1; i++ )
 			for (int j = i+1; j < nLimits; j++)
 			{
-				//System.out.println(limits.get(i).toString());
-				//System.out.println(limits.get(j).toString());
 				vertex = intersect(limits.get(i), limits.get(j));
 				if ( vertex == null )
 					continue;
-				v = convertToLocal(vertex);
-				System.out.println("vertex at ("+v[0]+","+v[1]+","+v[2]+")");
-				_maxStar = Math.max(_maxStar, v[_voronoiSecondary]);
-				_minStar = Math.min(_minStar, v[_voronoiSecondary]);
+				primaryVal = getPrimary(vertex);
+				_maxPrimary = Math.max(_maxPrimary, primaryVal);
+				_minPrimary = Math.min(_minPrimary, primaryVal);
 			}
 	}
 	

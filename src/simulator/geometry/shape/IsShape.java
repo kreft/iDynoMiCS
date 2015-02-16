@@ -45,7 +45,7 @@ public abstract class IsShape implements Serializable
 	/**
 	 * 
 	 */
-	protected static Double _minStar, _maxStar;
+	protected static Double _minPrimary, _maxPrimary;
 	
 	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
@@ -182,14 +182,48 @@ public abstract class IsShape implements Serializable
 	
 	/* ------------------------- Voronoi diagram -------------------------- */
 	
-	public Double getMinStar()
+	public Double getMinPrimary()
 	{
-		return _minStar;
+		return _minPrimary;
 	}
 	
-	public Double getMaxStar()
+	public Double getMaxPrimary()
 	{
-		return _maxStar;
+		return _maxPrimary;
+	}
+	
+	public int getPrimary()
+	{
+		return _voronoiPrimary;
+	}
+	
+	public int getSecondary()
+	{
+		return _voronoiSecondary;
+	}
+	
+	/**
+	 * \brief gets the 
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public Double getPrimary(ContinuousVector point)
+	{
+		Double[] p = convertToLocal(point);
+		return p[_voronoiPrimary];
+	}
+	
+	/**
+	 * \brief gets the 
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public Double getSecondary(ContinuousVector point)
+	{
+		Double[] p = convertToLocal(point);
+		return p[_voronoiSecondary];
 	}
 	
 	/**
@@ -199,23 +233,6 @@ public abstract class IsShape implements Serializable
 	 * @return
 	 */
 	public abstract Edge bisect(Site site1, Site site2);
-	
-	/**
-	 * 
-	 * @param point1
-	 * @param point2
-	 * @return
-	 */
-	public final int compare(ContinuousVector point1,
-										ContinuousVector point2)
-	{
-		Double[] p1 = convertToLocal(point1);
-		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[_voronoiPrimary] - p2[_voronoiPrimary]);
-		if ( out == 0 )
-			out = (int) Math.signum(p1[_voronoiSecondary] - p2[_voronoiSecondary]);
-		return out;
-	}
 	
 	/**
 	 * 
