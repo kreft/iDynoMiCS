@@ -460,7 +460,6 @@ public class XMLParser implements Serializable
 	}
 	
 	/**
-<<<<<<< HEAD
 	 * \brief Searches through the attributes of the XML tags of a given
 	 * parameter name, in a specified unit to find the String value of a
 	 * specified detail within that tag.
@@ -470,17 +469,6 @@ public class XMLParser implements Serializable
 	 * that tag, if present.
 	 * @param unit	The unit that this parameter should be measured in.
 	 * @return	The text associated with the specified detail of this tag.
-=======
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the 
-	 * String value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the 
-	 * String value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @return	The text associated with the specified detail of this tag
->>>>>>> 9c40b5e822ee9199f9fa186877b445b71cdcc1ce
 	 */
 	public String getParamSuch(String paramName,
 										String detailName, StringBuffer unit)

@@ -83,9 +83,9 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 	 * protocol file.
 	 */
 	@Override
-	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp) {
-
-		// this part is same as zero-flux boundary
+	public void init(Simulator aSim, Domain aDomain, XMLParser aBCMarkUp)
+	{
+		// This part is same as zero-flux boundary.
 		readGeometry(aBCMarkUp, aDomain);
 		aDomain.addBoundary(this);
 		_isSupport = true;

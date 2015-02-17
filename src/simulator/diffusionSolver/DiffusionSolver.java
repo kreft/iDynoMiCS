@@ -37,7 +37,7 @@ import utils.XMLParser;
  * license. Please see www.idynomics.bham.ac.uk for more information.
  *
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre]
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */

@@ -29,12 +29,12 @@ import utils.XMLParser;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).

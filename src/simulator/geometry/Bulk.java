@@ -34,47 +34,51 @@ import utils.XMLParser;
  * 
  * @since August 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  */
 public class Bulk 
 {
-
 	/**
-	 * Name assigned to this bulk, as specified in the protocol file
+	 * Name assigned to this bulk, as specified in the protocol file.
 	 */
 	private String   _name;
 	
 	/**
-	 * The simulation object being used to simulate the conditions specified in the protocol file
+	 * The simulation object being used to simulate the conditions specified
+	 * in the protocol file.
 	 */
 	public Simulator mySim;
 	
 	/**
-	 * Array containing the initial bulk concentration of each solute in the bulk. RJC 22/8/11 - Made public so that Solver_chemostat
-	 * can use it to initialise solute concentrations
+	 * Array containing the initial bulk concentration of each solute in the
+	 * bulk.
 	 */
 	public Double[] _bulkValue;
 	
 	/**
-	 * Array of reaction rates for each solute specified in this bulk
+	 * Array of reaction rates for each solute specified in this bulk.
 	 */
 	private Double[] _reacRate;
 	
 	/**
-	 * Timestep value assigned to each solute in specified in this bulk
+	 * Timestep value assigned to each solute in specified in this bulk.
 	 */
 	Double[]         _dT;
 	
 	/**
-	 * Boolean noting whether the concentration of solutes is constant or varys. Default to constant if not in protocol file
+	 * Boolean noting whether the concentration of solutes is constant or
+	 * varies. Default to constant if not in protocol file.
 	 */
 	private Boolean  _bulkIsConstant = true;
 	
 	/**
-	 * Reactor Dilusion rate of the bulk. Used if isConstant is set to false
+	 * Reactor dilution rate of the bulk. Used if isConstant is set to false.
 	 */
 	public  Double   _D;
 	
@@ -133,7 +137,6 @@ public class Bulk
 	{
 		// Solute index is the integer reference to the solute in the simulation solutes dictionary
 		int soluteIndex;
-		XMLParser parser;
 
 		// Set the simulation object to that initialised in the Simulator class
 		mySim = aSim;
@@ -144,25 +147,35 @@ public class Bulk
 		// Check the XML to determine is the concentration of the bulk is assumed to be constant or affected by mass balance
 		_bulkIsConstant = aBulkRoot.getParamBool("isConstant");
 
-		if (!_bulkIsConstant) 
+		if ( ! _bulkIsConstant ) 
 		{
-			// With bulkIsConstant set to false, the solute concentrations in the bulk vary in time. The protocol file should 
-			// specify how the bulk concentration is updated
+			/*
+			 * With bulkIsConstant set to false, the solute concentrations in
+			 * the bulk vary in time. The protocol file should specify how the
+			 * bulk concentration is updated.
+			 * 
+			 * TODO Is this actually used?
+			 */
 			String updateType = aBulkRoot.getParam("updateType");
-			
-			if (updateType != null && updateType.equals("gradient")) 
+			if ( updateType != null && updateType.equals("gradient") ) 
 			{
 				//_updateByReaction = false;
-				LogFile.writeLog("\t\tUsing gradient-based method for bulk updates.");
+				LogFile.writeLogAlways(
+						"\t\tUsing gradient-based method for bulk updates.");
 			} 
 			else
-				LogFile.writeLog("\t\tUsing reaction-based method for bulk updates.");
+			{
+				LogFile.writeLogAlways(
+						"\t\tUsing reaction-based method for bulk updates.");
+			}
 		}
-
-		
-		// Array initialisation - store the attributes of each solute in an array
-		// Build the list of concentrations for each solute in this bulk
-		LinkedList<Element> soluteList = aBulkRoot.getChildrenElements("solute");
+		/*
+		 * Array initialisation - store the attributes of each solute in an
+		 * array. Build the list of concentrations for each solute in this
+		 * bulk. 
+		 */
+		LinkedList<XMLParser> parserList = 
+									aBulkRoot.getChildrenParsers("solute");
 		_bulkValue = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		_reacRate = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		_dT = ExtraMath.newDoubleArray(aSim.soluteDic.size());
@@ -183,9 +196,8 @@ public class Bulk
 	
 
 		// Now iterate through each solute specified in this bulk
-		for (Element asoluteMarkUp : soluteList) 
+		for ( XMLParser parser : parserList ) 
 		{
-			parser = new XMLParser(asoluteMarkUp);
 			// Earlier (in createSimulation method in Simulator) we built a dictionary of solutes in this simulation. Get the index 
 			// assigned in that dictionary for this solute name. This is then used as the reference for each of the above arrays
 			soluteIndex = aSim.getSoluteIndex(parser.getName());

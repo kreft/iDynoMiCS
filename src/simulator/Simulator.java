@@ -43,12 +43,12 @@ import utils.XMLParser;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
@@ -213,6 +213,8 @@ public class Simulator
 	/**
 	 * Array of solute grids - one for each solute specified in the simulation
 	 * protocol file.
+	 * 
+	 * TODO Shouldn't these be stored in individual Domains?
 	 */
 	public SoluteGrid[]           soluteList;
 	
@@ -252,10 +254,10 @@ public class Simulator
 	public AgentContainer agentGrid;
 
 	/**
-	 * Chart object used by the createCharts method. Deprecated (KA 09/04/13) 
+	 * Chart object used by the createCharts method. Deprecated (KA 09/04/13)
+	 * TODO Consider deleting as part of graphics overhaul.
 	 */
 	private Chart _graphics;
-	
 	
 	/*************************************************************************
 	 * CLASS METHODS 
@@ -283,61 +285,67 @@ public class Simulator
 		try 
 		{
 			LogFile.chronoMessageIn("System initialisation:");
-
-			// Create pointers to protocolFiles (scenario and agents)
+			/* 
+			 * Create pointers to protocolFiles (scenario and agents).
+			 */
 			_protocolFile = new XMLParser(protocolFile);
 			_resultPath = resultPath+File.separator;
-			
-			// Now detect whether initial state files are being used that describe the states the agent and bulk should start the
-			// simulation in. If these have been specified, paths to these files will be stored in agentFile and bulkFile respectively
+			/*
+			 * Now detect whether initial state files are being used that
+			 * describe the states the agent and bulk should start the
+			 * simulation in. If these have been specified, paths to these
+			 * files will be stored in agentFile and bulkFile respectively.
+			 */
 			detectInputFiles(protocolFile);
-
-			// Read in the parameters in the SIMULATOR mark-up of the XML file.
-			// This call also deals with setting the time steps (adaptive or specified)
+			/*
+			 * Read in the parameters in the SIMULATOR mark-up of the XML
+			 * file. This call also deals with setting the time steps
+			 * (adaptive or specified).
+			 */
 			createSimulator();
-			
-			// Read in the parameters in the WORLD markup of the XML file. Creates the bulk and computation domains
+			/*
+			 * Read in the parameters in the WORLD markup of the XML file.
+			 * Creates the bulk and computation domains.
+			 */
 			createWorld();
-			
-			// Iterate through the specified solutes in this simulation, creating grids for each and initial concentrations
+			/* 
+			 * Iterate through the specified solutes in this simulation,
+			 * creating grids for each and initial concentrations.
+			 */
 			createSolutes();
-			
-			// Now create all the reactions specified in the REACTION mark-up
+			/* 
+			 * Now create all the reactions specified in the REACTION mark-up.
+			 */
 			createReactions();
-			
-			// Now to initialise the solvers, specified in the SOLVER mark-up
+			/* 
+			 * Now to initialise the solvers, specified in the SOLVER mark-up.
+			 */
 			createSolvers();
-			 
-			// Finally, from the protocol file, initialise all the specified species, establishing the required populations of each
+			/*
+			 * From the protocol file, initialise all the specified species,
+			 * establishing the required populations of each.
+			 */
 			createSpecies();
-			
-			// KA 09/04/13 - Assume this is a deprecated method as this has always been commented out. Left though for time-being
-			//createCharts();
-
-			// bvm 27.1.2009 moved this from above (just below createWorld) to allow better povray outputs
+			/*
+			 * Set up the output files.
+			 */
 			createFiles(resultPath);
-			
-			//LogFile.chronoMessageOut("done");
-
-			// Now Describe initial conditions
-			if (!Simulator.isChemostat)
-			{
+			/* 
+			 * Set up the POV-ray writer.
+			 * TODO Consider deleting as part of graphics overhaul.
+			 */
+			if ( ! Simulator.isChemostat )
 				povRayWriter.write(SimTimer.getCurrentIter());
-			}	
-			
+			/*
+			 * Generate output based on the initial conditions being simulated.
+			 */
 			writeReport();
-			 
-			// Simulation initialisation complete	 
-			 
-
+			LogFile.chronoMessageIn("System initialisation complete");
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Simulator.CreateSystem(): error met: "+e);
-			e.printStackTrace();
-			System.exit(-1);
+			LogFile.writeError(e, "Simulator.CreateSystem()");
 		}
-
 	}
 
 	/**
@@ -446,11 +454,14 @@ public class Simulator
 	 */
 	public void createSimulator() 
 	{
-		System.out.print("\t Simulator: ");
-		XMLParser localRoot = new XMLParser(_protocolFile.getChildElement("simulator"));
+		LogFile.writeLogAlways("\tCreating simulator: ");
+		XMLParser localRoot = new
+						XMLParser(_protocolFile.getChildElement("simulator"));
 		/* 
 		 * Read the flag from protocol file to decide if this is a chemostat
 		 * run (false by default)
+		 * 
+		 * TODO Move all of this to individual domains.
 		 */
 		if ( localRoot.isParamGiven("chemostat") )
 			isChemostat = localRoot.getParamBool("chemostat");
@@ -461,8 +472,11 @@ public class Simulator
 		if ( localRoot.isParamGiven("ismultiEpi") )
 			multiEpi = localRoot.getParamBool("ismultiEpi");
 		
-		/* Invasion/Competition simulation - true if the simulation should
+		/* 
+		 * Invasion/Competition simulation - true if the simulation should
 		 * stop once there is only one species left (set to false by default)
+		 * 
+		 * TODO Move this to events?
 		 */
 		if ( localRoot.isParamGiven("invComp") )
 			invComp = localRoot.getParamBool("invComp");
@@ -475,21 +489,22 @@ public class Simulator
 			LogFile.writeLogAlways("No agentTimeStep found! Exiting...");
 			System.exit(-1);
 		}
-		
-		// Read in the method of attachment of agents - whether substratum or boundary layer based.
-		// Put in an IF to check as if using protocol files for previous versions, this tag may not be present
-		// We want this to remain at the default "onetime" rather than be set to null if the tag is not present
-		// KA 170513
-		// RC 200113 - Changed so we don't use selfattach in a chemostat! 
+		/*
+		 * Read in the method of attachment of agents - whether substratum or
+		 * boundary layer based. Put in an IF to check as if using protocol
+		 * files for previous versions, this tag may not be present. We want
+		 * this to remain at the default "onetime" rather than be set to null
+		 * if the tag is not present.
+		 * 
+		 * TODO Move attachment method to species and/or events?
+		 */ 
 		if ( (localRoot.getParam("attachment") != null) && (! isChemostat) )
-		{
 			attachmentMechanism = localRoot.getParam("attachment");
-		}
 		LogFile.writeLog("Attachment mechanism is "+attachmentMechanism);
-
-		// Now we need to determine if a random.state file exists. This is used to initialise the random number generator
-		//sonia 05.2011 bug fix: the code was not finding the random.state file because no path was 
-		//being given to the File class to check if the file existed. 
+		/*
+		 * Now we need to determine if a random.state file exists. This is
+		 * used to initialise the random number generator, if it exists.
+		 */
 		File randomFile = new File(Idynomics.currentPath+File.separator+"random.state");
 		if ( randomFile.exists() ) 
 		{
@@ -503,102 +518,121 @@ public class Simulator
 			ObjectInputStream randomObjectInputStream;
 			try 
 			{
-				randomFileInputStream = new FileInputStream(Idynomics.currentPath+File.separator+"random.state");
-				randomObjectInputStream = new ObjectInputStream(randomFileInputStream);
-				ExtraMath.random = (MTRandom) randomObjectInputStream.readObject();
-				LogFile.writeLog("Read in random number generator");
+				randomFileInputStream = new FileInputStream(
+						Idynomics.currentPath+File.separator+"random.state");
+				randomObjectInputStream = new
+									ObjectInputStream(randomFileInputStream);
+				ExtraMath.random = (MTRandom)
+										randomObjectInputStream.readObject();
+				LogFile.writeLogAlways("Read in random number generator.");
 			}
 			catch (Exception e) 
 			{
-				LogFile.writeLog("Simulator.createSimulator() : error met while reading in random number state file" + e);
+				LogFile.writeError(e, "Simulator.createSimulator() while"+
+								"trying to read in random number state file");
 				System.exit(-1);
 			}
 			finally
 			{
 				try
 				{
-					System.out.println("Random number generator test: "+ExtraMath.random.nextInt());
+					System.out.println("Random number generator test: "+
+												ExtraMath.random.nextInt());
 				}
-				catch(java.lang.NullPointerException npe)
+				catch(java.lang.NullPointerException e)
 				{
-					LogFile.writeLog("Random number generator test failed!");
-					LogFile.writeLog("See Simulator.createSimulator()");
+					LogFile.writeError(e, "Simulator.createSimulator() while"+
+									"trying to test random number generator");
 				}
 			}
 		}
 		else 
 		{
-			// No random state file exists - initialise the random state generator without any previous information
+			/* 
+			 * No random state file exists - initialise the random state
+			 * generator without any previous information.
+			 */
 			long randomSeed;
 			try
 			{
 				String rSeed = localRoot.getParam("randomSeed");
 				randomSeed = Integer.parseInt(rSeed);
-				LogFile.writeLog("Using random seed in protocol file: "+randomSeed);
+				LogFile.writeLog("Using random seed in protocol file: "+
+																randomSeed);
 			}
 			catch (Exception e)
 			{
-				randomSeed = (long) (Math.random()*Calendar.getInstance().getTimeInMillis());
-				LogFile.writeLog("No valid random seed given in protocol file.");
-				LogFile.writeLog("Using a randomly generated seed : "+randomSeed);
+				randomSeed = (long) (Math.random()*
+									Calendar.getInstance().getTimeInMillis());
+				LogFile.writeLogAlways("No valid random seed given in"+
+						"protocol file.\nUsing a randomly generated seed: "+
+																randomSeed);
 			}
-			
 			ExtraMath.random = new MTRandom(randomSeed);
-			System.out.println("Random number generator test: "+ExtraMath.random.nextInt());
+			LogFile.writeLogAlways("Random number generator test: "+
+												ExtraMath.random.nextInt());
 		}
-
-		// Now to initialise the simulation timer - the timesteps specified in the SIMULATOR markup of the XML file are processed
-		// by that timer object
+		/*
+		 * Now to initialise the simulation timer - the timesteps specified in
+		 * the SIMULATOR markup of the XML file are processed by that timer
+		 * object.
+		 */
 		simTimer = new SimTimer(localRoot);
-
-		// need to reset the time & iterate if we're restarting a run
-		if (localRoot.getParamBool("restartPreviousRun")) 
+		/*
+		 * Need to reset the time & iterate if we're restarting a run.
+		 */
+		if ( localRoot.getParamBool("restartPreviousRun") ) 
 		{
-
 			simTimer.setTimerState(_resultPath+File.separator
 					+"lastIter"+File.separator
 					+"env_Sum(last).xml");
 		}
-
-		// Create dictionary - creates lists of the names of each of the species, particles, solutes, reactions, and solvers in this
-		// simulation for reference later
+		/*
+		 * Creates lists of the names of each of the species, particles,
+		 * solutes, reactions, and solvers in this simulation for reference.
+		 */
 		createDictionary();
 
-		System.out.println("done");
+		LogFile.writeLogAlways("\tSimulator created");
 	}
 
 	/**
-	 * \brief Create simulation result and POV-Ray files within the required output folder
+	 * \brief Create simulation result and POV-Ray files within the required
+	 * output folder.
 	 * 
-	 * This method creates the required env_State, env_Sum, agent_State, agent_Sum and other required result files within a specified 
-	 * result directory. This also initialises a POV-Ray writing object that will produce data that can be represented using POV-Ray
-	 *  
+	 * This method creates the required env_State, env_Sum, agent_State,
+	 * agent_Sum and other required result files within a specified result
+	 * directory. This also initialises a POV-Ray writing object that will
+	 * produce data that can be represented using POV-Ray.
+	 * 
+	 * TODO Consider removing POV-Ray as part of graphics overhaul.
+	 * 
 	 * @param resultPath	String stating the file path where these files should be created
 	 */
 	public void createFiles(String resultPath) 
 	{
-		XMLParser localRoot = new XMLParser(_protocolFile.getChildElement("simulator"));
-
+		XMLParser localRoot = new
+						XMLParser(_protocolFile.getChildElement("simulator"));
 		_outputPeriod = localRoot.getParamTime("outputPeriod");
-		
-		// Initialise data files
-		// bvm 26.1.2009: added passing of current iterate to output files to 
-		// make restarting more robust
+		/*
+		 * Initialise data files. We pass the current iterate to output files
+		 * to make restarting more robust.
+		 */
 		result = new ResultFile[6];
 		int currentIter = SimTimer.getCurrentIter();
 		result[0] = new ResultFile(resultPath, "env_State", currentIter);
 		result[1] = new ResultFile(resultPath, "env_Sum", currentIter);
 		result[2] = new ResultFile(resultPath, "agent_State", currentIter);
 		result[3] = new ResultFile(resultPath, "agent_Sum", currentIter);
-
-		//sonia 26.04.2010
-		//result files for death/removed biomass
+		/*
+		 * Result files for dead/removed biomass.
+		 */
 		result[4] = new ResultFile(resultPath, "agent_StateDeath", currentIter);
 		result[5] = new ResultFile(resultPath, "agent_SumDeath", currentIter);
-		
-		// Initialise povray files
-		// Rob: no need in a chemostat
-		if (!Simulator.isChemostat)
+		/*
+		 * Initialise POV-Ray files (no need in a chemostat)
+		 */
+		if ( ! Simulator.isChemostat )
 		{
 			povRayWriter = new PovRayWriter();
 			povRayWriter.initPovRay(this, resultPath);
@@ -606,54 +640,54 @@ public class Simulator
 	}
 
 	/**
-	 * \brief Builds a set of dictionaries capturing the names of the solutes, particles, reactions, species, and solvers in this specific simulation
-	 * 
-	 * Creates a set of dictionaries populated with the names of each of the solutes, particles, reactions, species, and solvers, that
-	 * were specified in the XML protocol file
-	 * 
+	 * \brief Builds a set of dictionaries capturing the names of the solutes,
+	 * particles, reactions, species, and solvers in this specific simulation.
 	 */
 	public void createDictionary() 
 	{
 		LinkedList<Element> list;
-
-		// Build the list of "solutes" markup
+		/*
+		 * Build the list of "solutes" markup.
+		 */
 		list = _protocolFile.getChildrenElements("solute");
 		soluteDic = new ArrayList<String>(list.size());
 		soluteList = new SoluteGrid[list.size()];
-		for (Element aChild : list)
+		for ( Element aChild : list )
 			soluteDic.add(aChild.getAttributeValue("name"));
-		
-		// Build the dictionary of "particles"
+		/* 
+		 * Build the dictionary of "particles".
+		 * Use a trick to guarantee that the EPS compartment (capsule) is in
+		 * last position (if it exists).
+		 */
 		list = _protocolFile.getChildrenElements("particle");
 		particleDic = new ArrayList<String>(list.size());
-		for (Element aChild : list)
+		for ( Element aChild : list )
 			particleDic.add(aChild.getAttributeValue("name"));
-
-		
-		// Trick to guarantee that the EPS compartment (capsule) is in
-		// last position if it exists
-		if (particleDic.remove("capsule")) particleDic.add("capsule");
-
-		// Build the dictionary of "reactions"
+		if ( particleDic.remove("capsule") )
+			particleDic.add("capsule");
+		/*
+		 * Build the dictionary of "reactions".
+		 */
 		list = _protocolFile.getChildrenElements("reaction");
 		reactionDic = new ArrayList<String>(list.size());
 		reactionList = new Reaction[list.size()];
-		for (Element aChild : list)
+		for ( Element aChild : list )
 			reactionDic.add(aChild.getAttributeValue("name"));
-
-		// Build the dictionary of "species"
+		/* 
+		 * Build the dictionary of "species".
+		 */
 		list = _protocolFile.getChildrenElements("species");
 		speciesDic = new ArrayList<String>(list.size());
-		for (Element aChild : list)
+		for ( Element aChild : list )
 			speciesDic.add(aChild.getAttributeValue("name"));
-
-		// Build the dictionary of "solvers"
+		/* 
+		 * Build the dictionary of "solvers".
+		 */
 		list = _protocolFile.getChildrenElements("solver");
 		solverDic = new ArrayList<String>(list.size());
 		solverList = new DiffusionSolver[list.size()];
-		for (Element aChild : list)
+		for ( Element aChild : list )
 			solverDic.add(aChild.getAttributeValue("name"));
-
 	}
 
 	/**
@@ -679,30 +713,28 @@ public class Simulator
 	{
 		try 
 		{
-			System.out.print("\t World: \n");
-			// Get the world markup from the protocol file.
-			XMLParser parser = new 
-							XMLParser(_protocolFile.getChildElement("world"));
-			/* Initialise a simulation world with the setup specified in the
-			 * protocol file.
+			System.out.print("\tCreating world: \n");
+			/* 
+			 * Get the world markup from the protocol file and initialise a
+			 * simulation world with this markup.
 			 */
 			world = new World();
-			world.init(this, parser);
-			/* If a initial bulk state is required and set using parameter 
+			world.init(this, _protocolFile.getChildParser("world"));
+			/* 
+			 * If a initial bulk state is required and set using parameter 
 			 * useBulkFile, we need to recreate these conditions.
 			 */
 			if (useBulkFile)
 				recreateBulkConditions();
-			System.out.println("\t done");
+			System.out.println("\tWorld created");
 		} 
 		catch (Exception e) 
 		{
-			// Log the error creating the world
 			LogFile.writeError(e, "Simulator.createWorld()");
 			System.exit(-1);
 		}
 	}
-
+	
 	/**
 	 * 
 	 * \brief Recreates bulk conditions if an initial state file was specified.

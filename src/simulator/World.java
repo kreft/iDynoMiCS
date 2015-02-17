@@ -38,7 +38,7 @@ import simulator.geometry.*;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
@@ -64,45 +64,46 @@ public class World
 	 */
 	public Double[] bulkTime = ExtraMath.newDoubleArray(2);
 	
-	/*************************************************************************************************************************
+	/*************************************************************************
 	 * CLASS METHODS 
-	 ************************************************************************************************************************/
+	 ************************************************************************/
 
 	/**
-	 * \brief Creates and registers the bulks and computationDomains defined in the world mark-up of the protocol file
+	 * \brief Creates and registers the bulks and computationDomains defined
+	 * in the world mark-up of the protocol file.
 	 * 
-	 * This method, called by the createWorld method of the Simulator class, creates and registers the bulk and computation domains 
-	 * that are defined in the protocol file. The computation domains are stored in an arraylist, with the bulk information stored in 
-	 * a linked list
+	 * The computation domains are stored in an arraylist, with the bulk
+	 * information stored in a linked list.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param worldRoot	The World mark-up within the specified protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param worldRoot	The World mark-up within the specified protocol file.
 	 */
 	public void init(Simulator aSim, XMLParser worldRoot) 
 	{
-		
+		// Create & register the defined bulks.
 		try 
 		{
-			// Create & register the defined bulks
-			for (XMLParser aBulkRoot : worldRoot.getChildrenParsers("bulk"))
+			for ( XMLParser aBulkRoot : worldRoot.getChildrenParsers("bulk") )
 				bulkList.add(new Bulk(aSim, aBulkRoot));
 		} 
 		catch(Exception e) 
 		{
 			LogFile.writeError(e, "World.init() while creating bulks");
 		} 
-		
-		try 
+		// Create & register the defined domains.
+		try
 		{
-			// Create & register the defined domains
-			for (XMLParser aDomainRoot : worldRoot.getChildrenParsers("computationDomain"))
+			for ( XMLParser aDomainRoot : 
+						worldRoot.getChildrenParsers("computationDomain") )
+			{
 				domainList.add(new Domain(aSim, aDomainRoot));
+			}
 		} 
 		catch(Exception e)
 		{
 			LogFile.writeError(e, "World.init() while creating domains");
 		} 
-
 	}
 
 	/**
@@ -111,46 +112,43 @@ public class World
 	 * 
 	 * One example - used to link solute grids to a particular domain.
 	 *  
-	 * @param cDName	The name of the domain to return from domainList.	
-	 * @return	The domain of the name specified by cDName, from domainList.
+	 * @param name	The name of the domain to return from domainList.	
+	 * @return	The domain of the name specified, from domainList.
 	 */
-	public Domain getDomain(String cDName) 
+	public Domain getDomain(String name) 
 	{
-		for (int i = 0; i < domainList.size(); i++) 
-			if ( domainList.get(i).getName().equals(cDName) ) 
-				return domainList.get(i);
-		LogFile.writeLog("World.getDomain() found no domain called "+cDName);
+		for ( Domain domain : domainList )
+			if ( domain.getName().equals(name))
+				return domain;
+		LogFile.writeLogAlways(
+							"World.getDomain() found no domain called "+name);
 		return null;
 	}
 
 	/**
-	 * \brief Return a bulk object of the given string name
+	 * \brief Return a bulk object of the given string name.
 	 * 
-	 * Return a bulk object of the given string name
-	 * 
-	 * @param bulkName	The name of the bulk that is required
-	 * @return	Bulk object of that given name
+	 * @param name	The name of the bulk that is required.
+	 * @return	Bulk object of that given name.
 	 */
-	public Bulk getBulk(String bulkName) 
+	public Bulk getBulk(String name) 
 	{
 		for (Bulk aBulk : bulkList)
-			if ( aBulk.nameEquals(bulkName) )
+			if ( aBulk.nameEquals(name) )
 				return aBulk;
-		return bulkList.getFirst();
+		LogFile.writeLogAlways("World.getBulk() found no bulk called "+name);
+		return null;
 	}
-
+	
 	/**
 	 * \brief Determines if a bulk object of a given string name exists.
 	 * 
-	 * @param bulkName	The name of the bulk that is required.
+	 * @param name	The name of the bulk that is required.
 	 * @return	Boolean stating whether or not this bulk exists.
 	 */
-	public Boolean containsBulk(String bulkName)
+	public Boolean containsBulk(String name)
 	{
-		for (Bulk aBulk : bulkList)
-			if ( aBulk.nameEquals(bulkName) )
-				return true;
-		return false;
+		return getBulk(name) != null;
 	}
 
 	/**
@@ -188,7 +186,7 @@ public class World
 				value[i] = bulkList.get(i).getValue(soluteIndex);
 		return value;
 	}
-
+	
 	/**
 	 * \brief Return the max value of a particular solute in the bulk.
 	 * 
@@ -201,5 +199,4 @@ public class World
 	{
 		return ExtraMath.max(getAllBulkValue(soluteIndex));
 	}
-
 }
