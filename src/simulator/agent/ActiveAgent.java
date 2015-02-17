@@ -101,70 +101,62 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	protected Double _totalMass;
 
 	/**
-	 * \brief Creates an ActiveAgent object and initialises the object in which associated parameters are stored
-	 * 
-	 * Creates a ActiveAgent object and initialises the object in which associated parameters are stored
+	 * \brief Creates an ActiveAgent object and initialises the object in
+	 * which associated parameters are stored.
 	 */
-	public ActiveAgent() {
+	public ActiveAgent()
+	{
 		super();
 		_speciesParam = new ActiveParam();
 
 	}
 
 	/**
-	 * \brief Creates an agent of the specified species and notes the grid in which this is assigned
-	 *
-	 * Creates an agent of the specified species and notes the grid in which this is assigned
+	 * \brief Creates an agent of the specified species and notes the grid in
+	 * which this is assigned.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param xmlMarkUp	A species mark-up within the specified protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param xmlMarkUp	A species mark-up within the specified protocol file.
 	 */
 	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) 
 	{
-		// Initialisation common to all specialised agents
+		// Initialisation common to all specialised agents.
 		super.initFromProtocolFile(aSim, xmlMarkUp);
-
-		/* Create internal compounds________________________________________ */
-
-		// Initialize tables for the compartments description
+		
+		/* Create internal compounds_______________________________________ */
+		// Initialise tables for the compartments description.
 		int nParticle = aSim.particleDic.size();
 		int nReaction = aSim.reactionList.length;
 		int nSolute = aSim.soluteList.length;
 		int reacIndex;
 		
-		// Initialise value as a Double[] of zero's
+		/*
+		 * Build the list of particles. Set the average mass of each particle
+		 * within the initial population. 
+		 */
 		particleMass = ExtraMath.newDoubleArray(nParticle);
-		
-		// Build the list of particles
-		XMLParser parser;
 		int particleIndex;
-		
-		for (Element aChild : xmlMarkUp.getChildrenElements("particle"))
+		for ( XMLParser aParser : xmlMarkUp.getChildrenParsers("particle") )
 		{
-			// Initialize the xml parser
-			parser = new XMLParser(aChild);
-			particleIndex = aSim.getParticleIndex(parser.getName());
-			
-			// Set the average mass of the particle within the initial
-			// population
-			particleMass[particleIndex] = parser.getParamMass("mass");
+			particleIndex = aSim.getParticleIndex(aParser.getName());
+			particleMass[particleIndex] = aParser.getParamMass("mass");
 		}
 		
 		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
 		
 		updateMass();
 		
-		/* Create description of reactions _________________________________ */
-
+		/* Create description of reactions ________________________________ */
 		// Initialise the arrays.
 		allReactions = aSim.reactionList;
 		reactionKnown = new ArrayList<Integer>();
 		reactionActive = new ArrayList<Integer>();
 		growthRate = ExtraMath.newDoubleArray(nReaction);
-
 		soluteYield = ExtraMath.newDoubleArray(nReaction, nSolute);
-		/* Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
+		/* 
+		 * Do not initialise reactionKinetic using ExtraMath.newDoubleArray()
 		 * as the number of j-elements in each i-array varies. Each i-array is
 		 * cloned from the reaction mark up, so no need to fill with zeros now.
 		 */
@@ -184,8 +176,8 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 			reactionKnown.add(reacIndex);
 			if (aReacElement.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
-
-			/* If reaction parameters have been redefined, load them; 
+			/* 
+			 * If reaction parameters have been redefined, load them; 
 			 * else load the parameters defined for the reaction.
 			 */
 			if ( aReacElement.getContentSize() == 0 )
@@ -206,98 +198,98 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	}
 
 	/**
-	 * \brief Create an agent using information in a previous state or initialisation file
+	 * \brief Create an agent using information in a previous state or
+	 * initialisation file.
 	 * 
-	 * Create an agent using information in a previous state or initialisation file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param singleAgentData	Data from the result or initialisation file
+	 * that is used to recreate this agent.
 	 */
 	@Override
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
-		// this routine will read data from the end of the singleAgentData array
-		// and then pass the remaining values onto the super class
-
-		// find the position to start at by using length and number of values read
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
+	{
+		/*
+		 * This routine will read data from the end of the singleAgentData
+		 * array and then pass the remaining values onto the super class.
+		 * 
+		 * First find the position to start at by using length and number of
+		 * values read. 
+		 */
 		int nValsRead = 2 + particleMass.length;
 		int iDataStart = singleAgentData.length - nValsRead;
-
-		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
-
-		// Particle Masses
-		for (int iComp = 0; iComp<particleMass.length; iComp++)
-			particleMass[iComp] = Double.parseDouble(singleAgentData[iDataStart+iComp]);
 		
+		// Read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
+		// Particle masses:
+		for ( int iComp = 0; iComp < particleMass.length; iComp++ )
+		{
+			particleMass[iComp] = 
+						Double.parseDouble(singleAgentData[iDataStart+iComp]);
+		}
 		deltaParticle = ExtraMath.newDoubleArray(particleMass.length);
+		// Other values:
+		_netGrowthRate = Double.parseDouble(
+						singleAgentData[iDataStart+particleMass.length]);
+		_netVolumeRate = Double.parseDouble(
+						singleAgentData[iDataStart+particleMass.length+1]);
 		
-		// other values
-		_netGrowthRate = Double.parseDouble(singleAgentData[iDataStart+particleMass.length]);
-		_netVolumeRate = Double.parseDouble(singleAgentData[iDataStart+particleMass.length+1]);
-
-		// now go up the hierarchy with the rest of the data
+		// Now go up the hierarchy with the rest of the data.
 		String[] remainingSingleAgentData = new String[iDataStart];
-		for (int i=0; i<iDataStart; i++)
+		for ( int i = 0; i < iDataStart; i++ )
 			remainingSingleAgentData[i] = singleAgentData[i];
 		super.initFromResultFile(aSim, remainingSingleAgentData);
-
-		// finally some creation-time calls
+		
+		// Finally some creation-time calls.
 		updateSize();
 		registerBirth();		
 	}	
-
+	
 	/**
-	 * \brief Mutate any inherited parameters for a population of agents
+	 * \brief Create a new agent with mutated parameters based on species
+	 * default values.
 	 * 
-	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
+	 * Agent is not located.
 	 */
 	@Override
-	public void mutatePop() {
-		// Mutate parameters inherited
-		super.mutatePop();
-		// Now mutate your own class parameters
-	}
-
-	/**
-	 * \brief Create a new agent with mutated parameters based on species default values. Agent is not located
-	 * 
-	 * Create a new agent with mutated parameters based on species default values. Agent is not located
-	 */
-	@Override
-	public void createNewAgent() {
-		try {
+	public void createNewAgent()
+	{
+		try
+		{
 			ActiveAgent baby = (ActiveAgent) sendNewAgent();
 			baby.mutatePop();
-
-			// Register the baby in the pathway guilds an
+			// Register the baby in the pathway guilds.
 			baby.registerBirth();
-
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e)
+		{
 			System.out.println("At ActiveAgent: createNewAgent error " + e);
 		}
 	}
 
 	/**
-	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container.
+	 * \brief Registers a created agent into a respective container.
 	 *  
-	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
-	 * species is registered into the agent grid
+	 * Each agent must be referenced by one such container. In this case, the 
+	 * species is registered into the agent grid.
 	 */
 	@Override
-	public void registerBirth() {
+	public void registerBirth()
+	{
 		super.registerBirth();
-		// register the agent in the metabolic containers
+		// Register the agent in the metabolic containers.
 		registerOnAllActiveReaction();
 	}
-
+	
+	/**
+	 * \brief Clones this agent object, creating a new progeny of this agent.
+	 * 
+	 * Ensures new clone inherits same parameters as parents.
+	 * 
+	 * @throws CloneNotSupportedException	Exception should the class not
+	 * implement Cloneable.
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Clones this agent object, creating a new progeny of this agent. Ensures new clone inherits same parameters as parents
-	 * 
-	 * Clones this agent object, creating a new progeny of this agent. Ensures new clone inherits same parameters as parents
-	 * 
-	 * @throws CloneNotSupportedException	Exception should the class not implement Cloneable
-	 */
 	public Object clone() throws CloneNotSupportedException
 	{
 		ActiveAgent out = (ActiveAgent) super.clone();
@@ -305,81 +297,71 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		out.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
 		out.allReactions = this.allReactions.clone();
 		out.growthRate = ExtraMath.newDoubleArray(this.growthRate.length);
-		// No need to initialise out.soluteYield, out.reactionKinetic, or
-		// out.particleYield using ExtraMath.newDoubleArray() as their elements
-		// are all cloned from this agent.
+		/*
+		 * No need to initialise out.soluteYield, out.reactionKinetic, or
+		 * out.particleYield using ExtraMath.newDoubleArray() as their
+		 * elements are all cloned from this agent.
+		 */
 		out.soluteYield = new Double[this.soluteYield.length][];
 		for (int iter = 0; iter < this.soluteYield.length; iter++)
 			out.soluteYield[iter] = this.soluteYield[iter].clone();
 		out.reactionKinetic = new Double[this.reactionKinetic.length][];
 		out.particleYield = new Double[this.particleYield.length][];
-		for (int iter = 0; iter < this.reactionKnown.size(); iter++)
+		for ( int jReac : this.reactionKnown )
 		{
-			int jReac = this.reactionKnown.get(iter);
-			if ( ! this.reactionKinetic[jReac].equals(null) )
-				out.reactionKinetic[jReac] = this.reactionKinetic[jReac].clone();
-			else
+			if ( this.reactionKinetic[jReac] == null )
 				out.reactionKinetic[jReac] = ExtraMath.newDoubleArray(1);
+			else
+			{
+				out.reactionKinetic[jReac] =
+										this.reactionKinetic[jReac].clone();
+			}
 			out.particleYield[jReac] = this.particleYield[jReac].clone();
 		}
-			
 		out.particleMass = this.particleMass.clone();
-
 		return (Object) out;
 	}
-
+	
 	/**
-	 * \brief Mutate any inherited parameters for this particular agent
+	 * \brief Notifies the simulation that this agent has become too small and
+	 * is then counted as dead.
 	 * 
-	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutateAgent() {
-		// Mutate parameters inherited
-		super.mutateAgent();
-		// Now mutate your own class parameters
-
-	}
-
-	/**
-	 * \brief Notifies the simulation that this agent has become too small and is then counted as dead.
+	 * Decreases the population of this species.
 	 * 
-	 * Notifies the simulation that this agent has become too small and is then counted as dead. Decreases the population of this species
-	 * 
-	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
+	 * @param isStarving	Boolean noting whether the agent currently has
+	 * access to any resources.
 	 */
 	@Override
 	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
-		// If you are too small, you must die !
-		// Decrease the population of your species
-		
-		// Unregister from the metabolic guilds
+		// Unregister from the metabolic guilds.
 		unregisterFromAllActiveReactions();
 	}
 
 	/**
-	 * \brief Called at each time step of the simulation to compute cell growth, update size, and monitor cell death and division
+	 * \brief Called at each time step of the simulation to compute cell
+	 * growth, update size, and monitor cell death and division.
 	 * 
-	 * Called at each time step of the simulation to compute cell growth, update size, and monitor cell death. Also determines whether 
-	 * the agent has reached the size at which it must divide
+	 * Also determines whether the agent has reached the size at which it must
+	 * divide.
 	 */
 	@Override
-	protected void internalStep() {
+	protected void internalStep()
+	{
 		grow();
 		updateSize();
 	}
 	
 	/**
 	 * \brief Put growth rates into effect by changing the particle masses.
+	 * 
+	 * We adjust the particle masses after calculating all the deltaParticle
+	 * values so that the reactions occur simultaneously.
 	 */
 	public void grow()
 	{
 		updateGrowthRates();
-
-		// We adjust the particle masses after calculating all the deltaParticle values
-		// so that the reactions occur simultaneously
 		for (int i = 0; i < particleMass.length; i++)
 			particleMass[i] += deltaParticle[i];
 	}

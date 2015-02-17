@@ -13,10 +13,10 @@
 package simulator.agent.zoo;
 
 import java.awt.Color;
+import java.math.BigInteger;
 
 import simulator.agent.*;
 import simulator.geometry.ContinuousVector;
-import simulator.reaction.Reaction;
 import simulator.Simulator;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -56,27 +56,26 @@ import utils.XMLParser;
 public class Bacterium extends LocatedAgent implements Cloneable 
 {	
 	/**
-	 * Boolean noting whether any EPS particles have been declared as part of this Bacterium
+	 * Boolean noting whether any EPS particles have been declared as part of
+	 * this Bacterium.
 	 */
-	protected Boolean         _hasEps          = false;
+	protected Boolean _hasEps = false;
 	
 	/**
-	 * Boolean noting whether any inert particles have been declared as part of this Bacterium
+	 * Boolean noting whether any inert particles have been declared as part
+	 * of this Bacterium.
 	 */
-	protected Boolean         _hasInert        = false;
-	
-	// KA removed 100613 as never referenced
-	//protected Species         _inertSpecies;
+	protected Boolean _hasInert = false;
 	
 	/**
-	 * Previously declared species object of the type of agent that will be created when the capsule is excreted
+	 * Previously declared species object of the type of agent that will be
+	 * created when the capsule is excreted.
 	 */
-	protected Species         _epsSpecies;
+	protected Species _epsSpecies;
 
 	/**
-	 * \brief Constructor used to generate progenitor and initialise an object to store relevant parameters
-	 * 
-	 * Constructor used to generate progenitor and initialise an object to store relevant parameters
+	 * \brief Constructor used to generate progenitor and initialise an object
+	 * to store relevant parameters
 	 */
 	public Bacterium() 
 	{
@@ -85,14 +84,15 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Used by makeKid method to create a daughter Bacterium agent by cloning this agent and parameter objects
+	 * \brief Used by makeKid method to create a daughter Bacterium agent by
+	 * cloning this agent and parameter objects.
 	 * 
-	 * Used by makeKid method to create a daughter Bacterium agent by cloning this agent and parameter objects
-	 * 
-	 * @throws CloneNotSupportedException 	Thrown if the agent cannot be cloned
+	 * @throws CloneNotSupportedException 	Thrown if the agent cannot be
+	 * cloned.
 	 */
 	@Override
-	public Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException
+	{
 		Bacterium out = (Bacterium) super.clone();
 		out._hasEps = this._hasEps;
 		out._epsSpecies = this._epsSpecies;
@@ -100,12 +100,13 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Creates a Bacterium agent from the parameters specified in the XML protocol file
-	 *
-	 * Creates a Bacterium agent from the parameters specified in the XML protocol file
+	 * \brief Creates a Bacterium agent from the parameters specified in the
+	 * XML protocol file.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aSpeciesRoot	A species mark-up within the specified protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aSpeciesRoot	A species mark-up within the specified protocol
+	 * file.
 	 */
 	@Override
 	public void initFromProtocolFile(Simulator aSim, XMLParser aSpeciesRoot) 
@@ -133,7 +134,8 @@ public class Bacterium extends LocatedAgent implements Cloneable
 		if ( this._totalMass.equals(0.0))
 		{
 			guessMass();
-			LogFile.writeLog("Guessing "+this.getSpecies().speciesName+" initial mass at: "+this._totalMass);
+			LogFile.writeLog("Guessing "+this.getSpecies().speciesName+
+										" initial mass at: "+this._totalMass);
 		}
 
 		// SET CELL RADIUS, GENERATION, AND GENEOLOGY
@@ -141,41 +143,43 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Create an agent using information in a previous state or initialisation file
+	 * \brief Create an agent using information in a previous state or
+	 * ]initialisation file.
 	 * 
-	 * Create an agent using information in a previous state or initialisation file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param singleAgentData	Data from the result or initialisation file that is used to recreate this agent
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param singleAgentData	Data from the result or initialisation file
+	 * that is used to recreate this agent.
 	 */
 	@Override
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData) {
+	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
+	{
 		// this writes no unique values, so doesn't need unique reading-in
 		// (for a template on how to read in data, look in LocatedAgent.java)
 		super.initFromResultFile(aSim,singleAgentData);
 	}
 
 	/**
-	 * \brief Initialises any new agent (progenitor or daughter cell), setting cell radius, generation, and geneology
-	 * 
-	 * Initialises any new agent (progenitor or daughter cell), setting cell radius, generation, and geneology
+	 * \brief Initialises any new agent (progenitor or daughter cell), setting
+	 * cell radius, generation, and genealogy.
 	 */
 	public void init() 
 	{
-		// Lineage management : this is a new agent, he has no known parents
+		// Lineage management : this is a new agent, he has no known parents.
 		_generation = 0;
-		_genealogy = 0;
-
-		// Determine the radius, volume and total mass of the agent
+		_genealogy = BigInteger.ZERO;
+		// Determine the radius, volume and total mass of the agent.
 		updateSize();
 	}
 
 	/**
-	 * \brief Called by Bacterium.createAgent and to obtain another instance of the same species (totally independent). The returned agent is NOT registered
+	 * \brief Called by Bacterium.createAgent and to obtain another instance
+	 * of the same species (totally independent).
 	 * 
-	 * Called by Bacterium.createAgent and to obtain another instance of the same species (totally independent). The returned agent is NOT registered
+	 * The returned agent is NOT registered.
 	 * 
-	 * @throws CloneNotSupportedException	Exception thrown if the object cannot be cloned
+	 * @throws CloneNotSupportedException	Exception thrown if the object
+	 * cannot be cloned
 	 */
 	@Override
 	public Bacterium sendNewAgent() throws CloneNotSupportedException 
@@ -187,9 +191,10 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Create a new Bacterium agent (who a priori is registered in at least one container)
+	 * \brief Create a new Bacterium agent (who a priori is registered in at
+	 * least one container).
 	 * 
-	 * Create a new Bacterium agent (who a priori is registered in at least one container). This agent is located on the relevant grid
+	 * This agent is located on the relevant grid.
 	 */
 	@Override
 	public void createNewAgent(ContinuousVector position) 
@@ -200,11 +205,10 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			Bacterium baby = sendNewAgent();
 			baby.giveName();
 
-
 			updateMass();
 			/* If no mass defined, use the division radius to find the mass */
 			// Note this should have been done already in initFromProtocolFile
-			if (this._totalMass.equals(0.0))
+			if ( this._totalMass == 0.0 )
 			{
 				guessMass();
 				LogFile.writeLog("Warning: Bacterium.createNewAgent calling guessMass()");
@@ -220,18 +224,17 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			position.x += this._totalRadius;
 			
 			baby.setLocation(position);
-
 			baby.registerBirth();
-
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e)
+		{
 			utils.LogFile.writeLog("Error met in Bacterium.createNewAgent(): "+e);
 		}
 	}
 
 	/**
-	 * \brief Mutates inherited parameters and distributes particle mass - either exponentially or normally, dependent on value of distMethod
-	 * 
-	 *  Mutates inherited parameters and distributes particle mass - either exponentially or normally, dependent on value of distMethod
+	 * \brief Mutates inherited parameters and distributes particle mass -
+	 * either exponentially or normally, dependent on value of distMethod.
 	 */
 	@Override
 	public void mutatePop() 
@@ -246,16 +249,16 @@ public class Bacterium extends LocatedAgent implements Cloneable
 				particleMass[i] *= ExtraMath.getExp2Rand();
 		else	
 			for (int i = 0; i<particleMass.length; i++)
-				particleMass[i] = ExtraMath.deviateFromCV(1.5*particleMass[i], getSpeciesParam().initialMassCV);
+				particleMass[i] = ExtraMath.deviateFromCV(
+						1.5*particleMass[i], getSpeciesParam().initialMassCV);
 	}
 
 	/**
-	 * \brief Mutate inherited agent parameters after agent division.
-	 * 
-	 *  Mutate inherited agent parameters after agent division. 
+	 * \brief Mutate inherited agent parameters after agent division. 
 	 */
 	@Override
-	public void mutateAgent() {
+	public void mutateAgent()
+	{
 		// Mutate inherited parameters
 		super.mutateAgent();
 
@@ -263,100 +266,95 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Used by Bacterium.divide() method to create a daughter cell of this agent
+	 * \brief Used by Bacterium.divide() method to create a daughter cell of
+	 * this agent.
 	 * 
-	 * Used by Bacterium.divide() method to create a daughter cell of this agent
-	 * 
-	 * @throws CloneNotSupportedException	Exception thrown if the object cannot be cloned
+	 * @throws CloneNotSupportedException	Exception thrown if the object
+	 * cannot be cloned.
 	 */
 	@Override
-	public void makeKid() throws CloneNotSupportedException {
+	public void makeKid() throws CloneNotSupportedException
+	{
 		super.makeKid();
 	}
 
 	/* ___________________ STEP METHODS _______________________________ */
-
-	/**
-	 * Called at each time step (under the control of the method Step of the
-	 * class Agent to avoid multiple calls
-	 */
 	
 	/**
-	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume
+	 * \brief Called at each time step of the simulation to compute mass
+	 * growth and update radius, mass, and volume.
 	 * 
-	 * Called at each time step of the simulation (under the control of the method Step of the class Agent) to compute mass growth 
-	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
-	 * monitors agent death
+	 * Under the control of the method Step of the class Agent to avoid
+	 * multiple calls. Also determines whether the agent has reached the size
+	 * at which it must divide, and monitors agent death.
 	 */
 	@Override
-	protected void internalStep() {
-		// Compute mass growth over all compartments
+	protected void internalStep()
+	{
+		// Compute mass growth over all compartments.
 		grow();
-
 		updateSize();
-
-		// test if the EPS capsule has to be excreted
+		
+		// Test if the EPS capsule has to be excreted.
 		manageEPS();
-
-		// Divide if you have to
-		if (willDivide()) divide();
-
-		// Die if you have to
-		if (willDie()){
+		// Divide if you have to.
+		if ( willDivide() )
+			divide();
+		// Die if you have to.
+		if ( willDie() )
+		{
 			this.death = "tooSmall";
 			die(true);
 		}
 	}
-
+	
 	/**
-	 * \brief Converts the agent into particle EPS and inert on agent death
+	 * \brief Converts the agent into particle EPS and inert on agent death.
 	 * 
-	 * Converts the agent into particle EPS and inert on agent death
-	 * 
-	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
+	 * @param isStarving	Boolean noting whether the agent currently has
+	 * access to any resources.
 	 */
 	@Override
 	public void die(Boolean isStarving)
 	{
 		super.die(isStarving);
-		if (isStarving && _hasEps)
+		if ( isStarving && _hasEps )
 			excreteEPS(1.0);
 	}
 
 	/**
-	 * \brief Excretes EPS particle with 75% of initial mass if the EPS capsule is too thick
+	 * \brief Excretes EPS particle with 75% of initial mass if the EPS
+	 * capsule is too thick.
 	 * 
-	 * Excretes EPS particle with 75% of initial mass if the EPS capsule is too thick
+	 * TODO Make it possible to set these parameters in the protocol file.
 	 */
-	public void manageEPS() {
-		if (!_hasEps) { return; }
-
-		// manage excretion
-		if (_volume/_totalVolume<(1-getSpeciesParam().epsMax)) {
-			double ratio = ExtraMath.getUniRand(.6, .9);
+	public void manageEPS()
+	{
+		if ( ! _hasEps )
+			return;
+		// Manage excretion.
+		if (_volume/_totalVolume<(1-getSpeciesParam().epsMax))
+		{
+			Double ratio = ExtraMath.getUniRand(.6, .9);
 			excreteEPS(ratio);
 		}
 	}
 
 	/**
-	 * \brief Excretes part of the agents bound EPS as slime EPS
+	 * \brief Excretes part of the agents bound EPS as slime EPS.
 	 * 
-	 * Excretes part of the agents bound EPS as slime EPS
-	 * 
-	 * @param ratio	Ratio of EPS that should be excreted
+	 * @param ratio	Ratio of EPS that should be excreted.
 	 */
 	public void excreteEPS(Double ratio)
 	{
 		int indexEPS = this._agentGrid.mySim.getParticleIndex("capsule");
-
-		// Check the mass to excrete exist
-		if (particleMass[indexEPS]*ratio == 0)
+		// Check that the mass to excrete does exist.
+		if ( particleMass[indexEPS]*ratio <= 0.0 )
 			return;
-
-		// Create the particle
+		// Create the particle.
 		ParticulateEPS eps = (ParticulateEPS) _epsSpecies.getProgenitor();
-		// If the particle has been sucessfully created, update your size
-		if (eps.createByExcretion(this, ratio))
+		// If the particle has been sucessfully created, update your size.
+		if ( eps.createByExcretion(this, ratio) )
 		{
 			particleMass[indexEPS] *= (1.0 - ratio);
 			updateSize();
@@ -364,119 +362,82 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 	
 	/**
-	 * \brief Determines if this agent has reached either the radius size limit at which it will die, or a state of zero mass
+	 * \brief Sets the mass of the primary particle of the progenitor to half
+	 * the mass at-division (i.e. the average mass after division, regardless
+	 * of babyMassFrac).
 	 * 
-	 * TODO Since this only returns super, it is pointless! Consider deleting. 
-	 * 
-	 * @return Boolean value noting whether the cell will die (true) or not (false)
-	 */
-	@Override
-	public boolean willDie()
-	{
-		return super.willDie();
-	}
-
-	/**
-	 * \brief Sets the mass of the primary particle of the progenitor to half the mass at-division
-	 * 
-	 * This sets the mass of the primary particle of the progenitor to half the mass at-division (i.e. the average mass after division, 
-	 * regardless of babyMassFrac). The mass-at-division is determined by the particle density and the volume-at-division; volume is 
-	 * determined by the divRadius, or the divRadius and the z-resolution if in a 2D simulation.
+	 * The mass-at-division is determined by the particle density and the
+	 * volume-at-division; volume is determined by the divRadius, or the
+	 * divRadius and the z-resolution if in a 2D simulation.
 	 */
 	public void guessMass()
 	{
 		Double divVol;
-		// We calculate the mass-at-division
-		if (Simulator.isChemostat || _agentGrid.is3D) {
-			// In chemostats and 3D the cell is spherical
+		// We calculate the mass-at-division.
+		if (Simulator.isChemostat || _agentGrid.is3D)
+		{
+			// In chemostats and 3D the cell is spherical.
 			divVol = ExtraMath.volumeOfASphere(getSpeciesParam().divRadius);
-			//LogFile.writeLog("spherical divVol is "+divVol);
 		} 
 		else
 		{
-			//In 2D the cell is cylindrical
+			//In 2D the cell is cylindrical.
 			divVol = ExtraMath.volumeOfACylinder(getSpeciesParam().divRadius,
 													 _species.domain.length_Z);
 		}
 		particleMass[0] = getSpeciesParam().particleDensity[0] * divVol / 2;
 		updateMass();
 	}
-
-	/* _______________ FILE OUTPUT _____________________ */
-
-	/**
-	 * \brief Used in creation of results files - specifies the header of the columns of output information for this agent
-	 * 
-	 * TODO Consider deleting
-	 * 
-	 * @return	String specifying the header of each column of results associated with this agent
-	 */
-	@Override
-	public StringBuffer sendHeader()
-	{
-		return super.sendHeader();
-	}
-
-	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
-	 * 
-	 * TODO Consider deleting
-	 * 
-	 * @return	String containing results associated with this agent
-	 */
-	@Override
-	public StringBuffer writeOutput()
-	{
-		return super.writeOutput();
-  	}
-
-
+	
 	/* _______________ RADIUS, MASS AND VOLUME _____________________ */
 
 	/**
-	 * \brief Update the volume of this agent by examining the particle density
-	 * 
-	 * Update the volume of this agent by examining the particle density
+	 * \brief Update the volume of this agent by examining the particle
+	 * density.
 	 */
 	@Override
 	public void updateVolume()
 	{
 		_totalVolume = 0.0;
-		for (int i = 0; i<particleMass.length; i++)
-  			_totalVolume += particleMass[i]/getSpeciesParam().particleDensity[i];
-		
-  		// Compute volume without EPS capsule
-		if (_hasEps)
+		for (int i = 0; i < particleMass.length; i++ )
 		{
-  			int i = particleMass.length-1;
-  			_volume = _totalVolume-particleMass[i]/getSpeciesParam().particleDensity[i];
+			_totalVolume += particleMass[i] /
+										getSpeciesParam().particleDensity[i];
+		}
+  		// Compute volume with or without EPS capsule.
+		if ( _hasEps )
+		{
+  			int i = particleMass.length - 1;
+  			_volume = _totalVolume-particleMass[i] / 
+  										getSpeciesParam().particleDensity[i];
   		}
 		else
 			_volume = _totalVolume;
   	}
-
-
+	
 	/**
-	 * \brief Return the set of parameters that is associated with the object of this species
+	 * \brief Return the set of parameters that is associated with the object
+	 * of this species.
 	 * 
-	 * Return the set of parameters that is associated with the object of this species
-	 * 
-	 * @return Object of BacteriumParam that stores the parameters associated with this species
+	 * @return Object of BacteriumParam that stores the parameters associated
+	 * with this species.
 	 */
 	@Override
-	public BacteriumParam getSpeciesParam() {
+	public BacteriumParam getSpeciesParam()
+	{
 		return (BacteriumParam) _speciesParam;
 	}
 
 	/**
-	 * \brief Determine whether this bacterium contains any eps particles (capsule in the protocol file)
+	 * \brief Determine whether this bacterium contains any EPS particles
+	 * (capsule in the protocol file).
 	 * 
-	 *  Determine whether this bacterium contains any eps particles (capsule in the protocol file)
-	 *  
-	 *  @return Boolean noting whether this bacterium object contains eps particles
+	 *  @return Boolean noting whether this bacterium object contains EPS
+	 *  particles.
 	 */
 	@Override
-	public boolean hasEPS() {
+	public boolean hasEPS()
+	{
 		return _hasEps;
 	}
 
@@ -488,78 +449,43 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 *  @return Boolean noting whether this bacterium object contains inert particles
 	 */
 	@Override
-	public boolean hasInert() {
+	public boolean hasInert()
+	{
 		return _hasInert;
 	}
-
+	
 	/**
-	 * \brief Return the simulation time at which this agent was created
+	 * \brief Compute the active fraction of the bacterium, ignoring EPS
+	 * (i.e. only compare active and inert compartments).
 	 * 
-	 * Return the simulation time at which this agent was created
-	 * 
-	 * @return	Double noting the simulation time at which this agent was created
-	 */
-	public double getBirthday(){
-		return this._birthday;
-	}
-
-	/**
-	 * \brief Compute the active fraction of the bacterium, ignoring EPS (i.e. only compare active and inert compartments)
-	 * 
-	 * Compute the active fraction of the bacterium, ignoring EPS (i.e. only compare active and inert compartments)
-	 * 
-	 * @return Double noting the fraction of the bacterium that is active
+	 * @return Double noting the fraction of the bacterium that is active.
 	 */
 	@Override
-	public double getActiveFrac()
+	public Double getActiveFrac()
 	{
 		if ( ! hasInert() )
 			return 1.0;
   		int indexActive = this._agentGrid.mySim.getParticleIndex("biomass");
   		int indexInert = this._agentGrid.mySim.getParticleIndex("inert");
-		Double val = particleMass[indexActive]/(particleMass[indexActive] + particleMass[indexInert]); 
-		if (Double.isNaN(val))
+		Double val = particleMass[indexActive] /
+					(particleMass[indexActive] + particleMass[indexInert]); 
+		if ( Double.isNaN(val) )
 			val = 1.0;
   		return val;
   	}
-
+	
 	/**
-	 * \brief Send the colour associated to the species to the defined EPS capsule (if appropriate)
+	 * \brief Send the colour associated to the species to the defined EPS
+	 * capsule (if appropriate).
 	 * 
-	 * Send the colour associated to the species to the defined EPS capsule (if appropriate)
-	 * 
-	 * @return Color object that this species of Bacterium has been assigned
+	 * @return Color object that this species of Bacterium has been assigned.
 	 */
 	@Override
-	public Color getColorCapsule() {
-		if (_epsSpecies==null) return getSpeciesParam().epsColor;
-		else return _epsSpecies.color;
-	}
-
-
-	/**
-	 * \brief Used for POV-Ray output, defines the colour that this species of Bacterium has been assigned
-	 * 
-	 * Used for POV-Ray output, defines the colour that this species of Bacterium has been assigned
-	 * 
-	 * @return Color object that this species of Bacterium has been assigned
-	 */
-	@Override
-	public Color getColor() {
-		return super.getColor();
-
-
-	}
-
-	
-	public void addActiveReaction(Reaction aReaction, Boolean useDefaultParam) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	public void addReaction(Reaction aReaction, Boolean useDefaultParam) {
-		// TODO Auto-generated method stub
-		
+	public Color getColorCapsule()
+	{
+		if ( _epsSpecies == null )
+			return getSpeciesParam().epsColor;
+		else
+			return _epsSpecies.color;
 	}
 }

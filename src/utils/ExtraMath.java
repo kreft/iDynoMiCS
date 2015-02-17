@@ -141,22 +141,6 @@ public final class ExtraMath
 	}
 	
 	/**
-	 * \brief Calculate 2 to the power of x where x is a long integer.
-	 * 
-	 * Returns 1 if x is less than zero.
-	 * 
-	 * @param x
-	 * @return 2^x
-	 */
-	public static final long exp2long(int x)
-	{
-		long out = 1;
-		for (int i = 0; i< x; i++)
-			out *= 2;
-		return out;
-	}
-	
-	/**
 	 * \brief Calculate 2 to the power of x where x is a double.
 	 * 
 	 * @param x The exponent

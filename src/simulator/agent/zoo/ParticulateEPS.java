@@ -9,6 +9,8 @@
  */
 package simulator.agent.zoo;
 
+import java.math.BigInteger;
+
 import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
@@ -94,7 +96,7 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
-		_genealogy = 0;
+		_genealogy = BigInteger.ZERO;
 
 		// Determine the radius, volume and total mass of the agent
 		updateSize();

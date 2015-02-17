@@ -52,11 +52,6 @@ public class Solver_chemostat extends DiffusionSolver
 	protected  SoluteGrid[] 		allReac;
 	
 	/**
-	 * Computational domain that this solver is associated with
-	 */
-	protected Domain                _domain;
-	
-	/**
 	 * Array of reactive biomasses
 	 */
 	protected MultigridSolute []    _reactiveBiomass;
@@ -143,9 +138,6 @@ public class Solver_chemostat extends DiffusionSolver
 		allSolute = new SoluteGrid[nSolute];
 		allReac = new SoluteGrid[nSolute];
 
-		// We read in the domain from the protocol file
-		_domain = aSimulator.world.getDomain(xmlRoot.getAttribute("domain"));
-
 		// Initialise variables used by the ODE solvers
 		hmax = xmlRoot.getParamDbl("hmax");
 		rtol = xmlRoot.getParamDbl("rtol");
@@ -186,7 +178,7 @@ public class Solver_chemostat extends DiffusionSolver
 	{
 		try
 		{
-			for (AllBC aBC : _domain.getAllBoundaries())
+			for (AllBC aBC : myDomain.getAllBoundaries())
 				if ( aBC instanceof ConnectedBoundary )
 				{
 					Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
@@ -198,7 +190,7 @@ public class Solver_chemostat extends DiffusionSolver
 							allSolute[i] = mySim.soluteList[i];
 							allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
 							//LogFile.writeLog(" allSolute["+i+"] = "+allSolute[i].grid[0][0][0]);
-							allReac[i] = new SoluteGrid (1,1,1, _domain._resolution,
+							allReac[i] = new SoluteGrid (1,1,1, myDomain._resolution,
 									mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
 							allReac[i].resetToZero();
 						}
@@ -592,7 +584,7 @@ public class Solver_chemostat extends DiffusionSolver
 	{
 		try
 		{
-			for (AllBC aBC : _domain.getAllBoundaries())
+			for (AllBC aBC : myDomain.getAllBoundaries())
 				if ( aBC instanceof ConnectedBoundary )
 				{
 					Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();

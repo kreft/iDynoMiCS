@@ -228,7 +228,9 @@ public class SpatialGrid implements Serializable
 	 */
 	public ContinuousVector getContinuousCoordinates(DiscreteVector dC)
 	{
-		return new ContinuousVector(dC, _reso);
+		ContinuousVector out = new ContinuousVector();
+		out.setToVoxelCenter(dC, _reso);
+		return out;
 	}
 
 	/**

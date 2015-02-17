@@ -1223,7 +1223,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * @return	Double value stating the active fraction of this agent
 	 */
-	public double getActiveFrac() {
+	public Double getActiveFrac()
+	{
 		return 1.0;
 	}
 

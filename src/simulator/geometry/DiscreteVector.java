@@ -365,6 +365,6 @@ public class DiscreteVector implements Cloneable, Serializable
 	@Override
 	public String toString()
 	{
-		return "("+i+"-"+j+"-"+k+")";
+		return "("+i+","+j+","+k+")";
 	}
 }

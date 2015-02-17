@@ -24,10 +24,10 @@ import utils.XMLParser;
  * Cartesian (x, y, z) coordinates obligatory.
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author JoÃ£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  *
  */
@@ -86,19 +86,6 @@ public class ContinuousVector implements Cloneable
 	}
 	
 	/**
-	 * \brief Translate a discrete coordinates expressed on a discrete spatial
-	 * grid with the resolution res to form continuous vector.
-	 * 
-	 * @param dC Discrete vector containing points on a grid.
-	 * @param res The resolution of this grid, to use to transform these points.
-	 */
-	public ContinuousVector(DiscreteVector dC, Double res)
-	{
-		set(dC.i + 0.5, dC.j + 0.5, dC.k + 0.5);
-		times(res);
-	}
-	
-	/**
 	 * \brief Create a continuous vector from three provided points.
 	 * 
 	 * @param x	X coordinate.
@@ -134,7 +121,37 @@ public class ContinuousVector implements Cloneable
 		this.y = y;
 		this.z = z;
 	}
-
+	
+	/**
+	 * 
+	 * @param dC
+	 * @param res
+	 */
+	public void setToVoxelCenter(DiscreteVector dC, Double res)
+	{
+		set(dC.i + 0.5, dC.j + 0.5, dC.k + 0.5);
+		times(res);
+	}
+	
+	/**
+	 * 
+	 * @param dC
+	 */
+	public void set(DiscreteVector dC)
+	{
+		set(dC.i + 0.0, dC.j + 0.0, dC.k + 0.0);
+	}
+	
+	/**
+	 * 
+	 * @param dC
+	 * @param res
+	 */
+	public void set(DiscreteVector dC, Double res)
+	{
+		set(dC);
+		times(res);
+	}
 	
 	/**
 	 * \brief Set all points in the vector to zero.
@@ -209,9 +226,9 @@ public class ContinuousVector implements Cloneable
 	@Override
 	public String toString()
 	{
-		return ExtraMath.toString(x, false)
-				+",\t"+ExtraMath.toString(y, false)
-				+",\t"+ExtraMath.toString(z, false);
+		return "("+ExtraMath.toString(x, false)
+				+", "+ExtraMath.toString(y, false)
+				+", "+ExtraMath.toString(z, false)+")";
 	}
 	
 	/**
@@ -362,6 +379,8 @@ public class ContinuousVector implements Cloneable
 	 */
 	public Double cosAngle(ContinuousVector v)
 	{
+		if ( this.isZero() || v.isZero() )
+			return 0.0;
 		return prodScalar(v)/(this.norm() * v.norm());
 	}
 	

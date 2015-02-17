@@ -9,6 +9,7 @@
 
 package simulator.agent.zoo;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -16,7 +17,6 @@ import org.jdom.Element;
 
 import utils.XMLParser;
 import utils.ExtraMath;
-
 import idyno.SimTimer;
 import simulator.agent.*;
 import simulator.reaction.Reaction;
@@ -127,7 +127,7 @@ public class MultiEpisome extends InfoAgent {
 
 	public MultiEpisome reset(MultiEpisome aPlasmid){
 		aPlasmid._generation = 0;
-		aPlasmid._genealogy = 0;
+		aPlasmid._genealogy = BigInteger.ZERO;
 		aPlasmid.lastExchange = -1;
 		aPlasmid.lastReception = -1;
 		
@@ -141,7 +141,7 @@ public class MultiEpisome extends InfoAgent {
 	public void init() {
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
-		_genealogy = 0;
+		_genealogy = BigInteger.ZERO;
 		//sonia 01.03.2010 changed from -1 to 0
 		lastExchange = 0;
 		lastReception = SimTimer.getCurrentTime();

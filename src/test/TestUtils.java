@@ -16,8 +16,6 @@ public class TestUtils
 	/**
 	 * \brief Main program script used to call features of iDynoMiCS being tested
 	 * 
-	 * Main program script used to call features of iDynoMiCS being tested
-	 * 
 	 * @param args	Any system input arguments required by this test
 	 */
 	public static void main(String[] args) 

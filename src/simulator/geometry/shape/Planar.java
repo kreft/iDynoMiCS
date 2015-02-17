@@ -19,6 +19,7 @@ import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import simulator.SpatialGrid;
+import utils.ExtraMath;
 import utils.XMLParser;
 
 /**
@@ -114,43 +115,82 @@ public class Planar extends IsShape
 	 */
 	private static DiscreteVector origin = new DiscreteVector();
 	
+	/**
+	 * \brief Constructor method of a planar shape.
+	 * 
+	 * Used in testing.
+	 * 
+	 * @param dPointOnPlane Discrete vector giving the position of a point on
+	 * the plane.
+	 * @param dVectorOut Discrete vector giving the direction of a vector
+	 * orthogonal (i.e. at right angles to) the plane.
+	 * @param resolution The resolution of the domain grid.
+	 */
+	public Planar(DiscreteVector dPointOnPlane,
+								DiscreteVector dVectorOut, Double resolution)
+	{
+		_dPointOnPlane = new DiscreteVector(dPointOnPlane);
+		_dVectorOut = new DiscreteVector(dVectorOut);
+		init(resolution);
+	}
+	
 	public void readShape(XMLParser shapeRoot, Domain aDomain) 
 	{
 		// Build the variables describing the plane.
 		_dPointOnPlane = new DiscreteVector(shapeRoot.getParamParser("pointIn"));
 		_dVectorOut = new DiscreteVector(shapeRoot.getParamParser("vectorOut"));
 		
-		/* 
-		 * Translate them into continuous coordinates.
-		 * TODO investigate why the native 
-		 * ContinuousVector(DiscreteVector, res) is not used here 
-		 */
-		Double res = aDomain.getGrid().getResolution();
+		init(aDomain.getResolution());
+	}
+	
+	/**
+	 * 
+	 * @param resolution
+	 */
+	private void init(Double resolution)
+	{
 		_cPointOnPlane = new ContinuousVector();
-		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*res;
-		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*res;
-		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*res;
-		
-		// TODO investigate why the resolution is irrelevant here.
-		// Try _cVectorOut = new ContinuousVector(_dVectorOut, res); ?
-		_cVectorOut = new ContinuousVector(_dVectorOut, res);
-		_cVectorOut.x = (double) _dVectorOut.i;
-		_cVectorOut.y = (double) _dVectorOut.j;
-		_cVectorOut.z = (double) _dVectorOut.k;
-		
+		_cPointOnPlane.x = (_dPointOnPlane.i+(1-_dVectorOut.i)/2)*resolution;
+		_cPointOnPlane.y = (_dPointOnPlane.j+(1-_dVectorOut.j)/2)*resolution;
+		_cPointOnPlane.z = (_dPointOnPlane.k+(1-_dVectorOut.k)/2)*resolution;
+		// The vector out just needs to have the correct direction.
+		_cVectorOut = new ContinuousVector();
+		_cVectorOut.x = new Double(_dVectorOut.i);
+		_cVectorOut.y = new Double(_dVectorOut.j);
+		_cVectorOut.z = new Double(_dVectorOut.k);
+		/*
+		 * Dots products of the vector out with the point on the plane. Saves
+		 * having to calculate these values repeatedly.
+		 */
 		_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
 		_dOutDotPPlane = _dVectorOut.prodScalar(_dPointOnPlane);
-		
-		/* Find two vectors orthogonal to _vectorDCOut, i.e. parallel to the
+		/* 
+		 * Find two vectors orthogonal to each vector out, i.e. parallel to the
 		 * plane.
 		 */
 		_dOrthogU = new DiscreteVector();
 		_dOrthogV = new DiscreteVector();
 		_dVectorOut.orthoVector(_dOrthogU, _dOrthogV);
-		_cOrthogU = new ContinuousVector(_dOrthogU, res);
+		
+		_cOrthogU = new ContinuousVector();
+		_cOrthogU.set(_dOrthogU);
 		_cOrthogU.normalizeVector();
-		_cOrthogV = new ContinuousVector(_dOrthogV, res);
+		
+		_cOrthogV = new ContinuousVector();
+		_cOrthogV.set(_dOrthogV);
 		_cOrthogV.normalizeVector();
+		
+		/*
+		System.out.println("discrete norm: "+_dVectorOut.toString());
+		System.out.println("u: "+_dOrthogU.toString());
+		System.out.println("v: "+_dOrthogV.toString());
+		System.out.println("continuous norm: "+_cVectorOut.toString());
+		System.out.println("u: "+_cOrthogU.toString());
+		System.out.println("v: "+_cOrthogV.toString());
+		*/
+		
+		_voronoiPrimary = 0;
+		_voronoiSecondary = 1;
 	}
 	
 	public Boolean isOutside(ContinuousVector point)
@@ -187,11 +227,18 @@ public class Planar extends IsShape
 	 * @param point
 	 * @return
 	 */
-	private ContinuousVector getRelativePosition(ContinuousVector point)
+	public ContinuousVector getRelativePosition(ContinuousVector point)
 	{
 		ContinuousVector pointOnPlaneToPoint = new ContinuousVector();
 		pointOnPlaneToPoint.sendDiff(point, _cPointOnPlane);
 		return pointOnPlaneToPoint;
+	}
+	
+	public ContinuousVector getAbsolutePosition(ContinuousVector point)
+	{
+		ContinuousVector out = new ContinuousVector(point);
+		out.add(_cPointOnPlane);
+		return out;
 	}
 	
 	public DiscreteVector getRelativePosition(DiscreteVector coord)
@@ -212,9 +259,12 @@ public class Planar extends IsShape
 	{
 		Double[] out = new Double[3];
 		ContinuousVector pointOnPlaneToPoint = getRelativePosition(point);
-		out[0] = _cOrthogU.cosAngle(pointOnPlaneToPoint);
-		out[1] = _cOrthogV.cosAngle(pointOnPlaneToPoint);
-		out[2] = _cVectorOut.cosAngle(pointOnPlaneToPoint);
+		//System.out.println("RelPos "+pointOnPlaneToPoint.toString());
+		//System.out.println("cOrthogU "+_cOrthogU.toString());
+		out[0] = _cOrthogU.prodScalar(pointOnPlaneToPoint);
+		//System.out.println("cos(cOrthogU, RelPos) "+out[0]);
+		out[1] = _cOrthogV.prodScalar(pointOnPlaneToPoint);
+		out[2] = _cVectorOut.prodScalar(pointOnPlaneToPoint);
 		return out;
 	}
 	
@@ -265,31 +315,18 @@ public class Planar extends IsShape
 	{
 		ccOut = getIntersections(ccIn, _cVectorOut).getFirst();
 	}
-
-	/**
-	 * \brief Correct coordinates of a point that has gone outside this shape,
-	 * returning these coordinates.
-	 * 
-	 * @param ccIn	Coordinates to be corrected.
-	 * @return Corrected coordinates.
-	 * 
-	 */
-	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
-	{
-		return getIntersections(ccIn, _cVectorOut).getFirst();
-	}
 	
-	public DiscreteVector getOrthoProj(DiscreteVector coord)
+	@Override
+	public void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut)
 	{
 		/*
 		 * TODO Rob 23Jan2015: This is not as robust as I would like!
 		 * It will work fine if _dVector out is parallel to one axis only
 		 * (as is usually the case) but may fail otherwise.
 		 */
-		DiscreteVector out = new DiscreteVector(_dVectorOut);
-		out.times(_dOutDotPPlane - _dVectorOut.prodScalar(coord));
-		out.add(coord);
-		return out;
+		dcOut.set(_dVectorOut);
+		dcOut.times(_dOutDotPPlane - _dVectorOut.prodScalar(dcIn));
+		dcOut.add(dcIn);
 	}
 
 	/**
@@ -467,27 +504,33 @@ public class Planar extends IsShape
 		return lineToEdge(midPoint, direction);
 	}
 	
-	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	
+	public Vertex intersect(Edge edge1, Edge edge2)
 	{
-		Vertex out = new Vertex();
-		// TODO
-		return out;
+		if ( edge1 == null || edge2 == null )
+			return null;
+		/*System.out.println("Intersecting...");
+		System.out.println(edge1.toString());
+		System.out.println(edge2.toString());*/
+		Double[] v = ExtraMath.newDoubleArray(3);
+		Double slopeDiff = edge1.coefficient[0]*edge2.coefficient[1] - 
+									edge1.coefficient[1]*edge2.coefficient[0];
+		// Check edges are not parallel.
+		if ( slopeDiff == 0.0 )
+			return null;
+		
+		v[_voronoiPrimary] = (edge1.coefficient[2]*edge2.coefficient[1] -
+				edge1.coefficient[1]*edge2.coefficient[2])/slopeDiff;
+		v[_voronoiSecondary] = (edge1.coefficient[0]*edge2.coefficient[2] -
+				edge1.coefficient[2]*edge2.coefficient[0])/slopeDiff;
+		//System.out.println("v: ("+v[0]+","+v[1]+","+v[2]+")");
+		return new Vertex(convertToVector(v));
 	}
 	
-	/**
-	 * 
-	 * TODO Move to IsShape ?
-	 *
-	 */
-	public final int compare(ContinuousVector point1,
-												ContinuousVector point2)
+	public Vertex intersect(HalfEdge he1, HalfEdge he2)
 	{
-		Double[] p1 = convertToLocal(point1);
-		Double[] p2 = convertToLocal(point2);
-		int out = (int) Math.signum(p1[1] - p2[1]);
-		if ( out == 0 )
-			out = (int) Math.signum(p1[0] - p2[0]);
-		return out;
+		//TODO
+		return intersect(he1.edge, he2.edge);
 	}
 	
 	public Edge intersect(Planar other) 
@@ -498,9 +541,12 @@ public class Planar extends IsShape
 		// The edge will be parallel to the cross product of the two norms.
 		ContinuousVector direction = 
 						_cVectorOut.crossProduct(other.getNormalContinuous());
+		//System.out.println("dir: "+direction.toString());
 		// Find a point on the Edge.
 		ContinuousVector point = direction.crossProduct(_cVectorOut);
+		//System.out.println("point0: "+point.toString());
 		point = other.getIntersections(_cPointOnPlane, point).getFirst();
+		//System.out.println("point1: "+point.toString());
 		return lineToEdge(point, direction);
 	}
 	
@@ -514,34 +560,44 @@ public class Planar extends IsShape
 	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
 	{
 		Double[] p = convertToLocal(point);
+		//System.out.println("p: ("+p[0]+","+p[1]+","+p[2]+")");
 		Double[] d = convertToLocal(direction);
+		//System.out.println("d: ("+d[0]+","+d[1]+","+d[2]+")");
 		/*
 		 * Check the point is on the plane, that the line is parallel to it,
 		 * and that the direction vector is non-zero.   
 		 */
-		if ( p[2] != 0.0 || d[2] != 0.0 || (d[0] == 0.0 && d[1] == 0.0) )
-			return null;
-		Edge out = new Edge();
-		if ( Math.abs(d[0]) > Math.abs(d[1]) )
+		if ( p[2] != 0.0 || d[2] != 0.0 || 
+				(d[_voronoiPrimary] == 0.0 && d[_voronoiSecondary] == 0.0) )
 		{
+			return null;
+		}
+		Edge out = new Edge();
+		if ( Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary]) )
+		{
+			//System.out.println("|d0| > |d1|");
 			out.coefficient[0] = 1.0;
-			out.coefficient[1] = d[1]/d[0];
-			out.coefficient[2] = p[0] + (p[1]*out.coefficient[1]);
+			out.coefficient[1] = d[_voronoiSecondary]/d[_voronoiPrimary];
+			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[1]) + p[_voronoiSecondary];
 		}
 		else
 		{
-			out.coefficient[0] = d[0]/d[1];
+			//System.out.println("|d0| <= |d1|");
+			out.coefficient[0] = d[_voronoiPrimary]/d[_voronoiSecondary];
 			out.coefficient[1] = 1.0;
-			out.coefficient[2] = (p[0]*out.coefficient[0]) + p[1];
+			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[0]);
 		}
+		//System.out.println(out.toString()+"\n");
 		return out;
 	}
 	
 	/**
-	 * \brief Converts an Edge back to a pair of ContinuousVectors.
+	 * \brief Converts a HalfEdge back to a pair of ContinuousVectors.
 	 * 
 	 * The first vector is gives a point on the line, the second the direction
-	 * of the line.
+	 * of the line. The direction vector may not have the same length as the
+	 * original direction vector, and may even be pointing the opposite way,
+	 * but it will be parallel.
 	 * 
 	 * @param edge
 	 * @return
@@ -554,10 +610,14 @@ public class Planar extends IsShape
 		direction[2] = 0.0;
 		if ( edge.coefficient[0] == 1.0 )
 		{
-			point[0] = edge.coefficient[2] - edge.coefficient[1];
-			point[1] = 1.0;
-			direction[0] = 1.0;
-			direction[1] = edge.coefficient[1];
+			/* This corresponds to
+			 * Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary])
+			 * in lineToHalfEdge(point, direction)
+			 */
+			point[_voronoiPrimary] = edge.coefficient[2] - edge.coefficient[1];
+			point[_voronoiSecondary] = 1.0;
+			direction[_voronoiPrimary] = 1.0;
+			direction[_voronoiSecondary] = edge.coefficient[1];
 		}
 		else
 		{
@@ -574,15 +634,35 @@ public class Planar extends IsShape
 	
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
+		_maxPrimary = -Double.MAX_VALUE;
+		_minPrimary = Double.MAX_VALUE;
 		LinkedList<Edge> limits = new LinkedList<Edge>();
+		Edge temp;
+		Double primaryVal;
+		Vertex vertex;
 		for ( Planar plane : walls )
-			limits.add(intersect(plane));
-		for ( Edge limit : limits )
-			for ( Edge other : limits )
+		{
+			temp = intersect(plane);
+			if ( temp != null )
+				limits.add(temp);
+		}
+		int nLimits = limits.size();
+		for (int i = 0; i < nLimits-1; i++ )
+			for (int j = i+1; j < nLimits; j++)
 			{
-				if ( limit.equals(other) )
+				vertex = intersect(limits.get(i), limits.get(j));
+				if ( vertex == null )
 					continue;
-				
+				primaryVal = getPrimary(vertex);
+				_maxPrimary = Math.max(_maxPrimary, primaryVal);
+				_minPrimary = Math.min(_minPrimary, primaryVal);
 			}
+	}
+	
+	public String toString()
+	{
+		return "Plane\n\tPoint on plane: "+_cPointOnPlane.toString()+
+				"\n\tVector out: "+_cVectorOut.toString()+
+				"\n\tParallel vectors: "+_cOrthogU.toString()+_cOrthogV.toString();
 	}
 }

@@ -86,11 +86,6 @@ public class Solver_multigrid extends DiffusionSolver
 	/**
 	 * 
 	 */
-	protected Domain            _domain;
-	
-	/**
-	 * 
-	 */
 	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot)
 	{
@@ -108,7 +103,6 @@ public class Solver_multigrid extends DiffusionSolver
 		allReac = new SoluteGrid[nSolute];
 		allDiffReac = new SoluteGrid[nSolute];
 		
-		_domain = aSimulator.world.getDomain(xmlRoot.getAttribute("domain"));
 		_bLayer = new MultigridSolute(_soluteList[0], "boundary layer");
 		_diffusivity = 
 				new MultigridSolute(_soluteList[0], "relative diffusivity");
@@ -145,14 +139,14 @@ public class Solver_multigrid extends DiffusionSolver
 	@Override
 	public void initializeConcentrationFields()
 	{
-		minimalTimeStep = SimTimer.getCurrentTimeStep()/10;
+		minimalTimeStep = 0.1*SimTimer.getCurrentTimeStep();
 		
 		// Refresh, then insert, the boundary layer and the diffusivity grid.
-		_domain.refreshBioFilmGrids();
+		myDomain.refreshBioFilmGrids();
 		
-		_bLayer.setFinest(_domain.getBoundaryLayer());
+		_bLayer.setFinest(myDomain.getBoundaryLayer());
 		_bLayer.restrictToCoarsest();
-		_diffusivity.setFinest(_domain.getDiffusivity());
+		_diffusivity.setFinest(myDomain.getDiffusivity());
 		_diffusivity.restrictToCoarsest();
 		
 		// Prepare a soluteGrid with catalyst CONCENTRATION.

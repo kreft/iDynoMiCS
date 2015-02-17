@@ -258,8 +258,9 @@ public abstract class AllBC
 	 */
 	public boolean isOutside(DiscreteVector dc, SpatialGrid aSpatialGrid)
 	{
-		return _myShape.isOutside(new
-						ContinuousVector(dc, aSpatialGrid.getResolution()));
+		ContinuousVector temp = new ContinuousVector();
+		temp.setToVoxelCenter(dc, aSpatialGrid.getResolution());
+		return _myShape.isOutside(temp);
 	}
 
 	/* ____________________ TOOLBOX ______________________________ */

@@ -17,6 +17,11 @@ public abstract class Epithelium
 	
 	private Voronoi voronoi;
 	
+	public Epithelium()
+	{
+		
+	}
+	
 	public void setBoundaries(BoundaryEpithelium[] internal, AllBC[] external)
 	{
 		_internalBCs = internal;

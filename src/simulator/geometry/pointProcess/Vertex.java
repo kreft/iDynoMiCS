@@ -13,4 +13,16 @@ public class Vertex extends ContinuousVector
 	 * 
 	 */
 	public Double starValue;
+	
+	public Vertex()
+	{
+		super();
+		starValue = Double.NaN;
+	}
+	
+	public Vertex(ContinuousVector position)
+	{
+		super(position);
+		starValue = Double.NaN;
+	}
 }

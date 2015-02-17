@@ -163,9 +163,9 @@ public class Domain implements IsComputationDomain
 	 */
 	protected double _biofilmDiffusivity = 1.0;
 	
-	/*************************************************************************************************************************
+	/*************************************************************************
 	 * CLASS METHODS 
-	 ************************************************************************************************************************/
+	 ************************************************************************/
 	
 	/**
 	 * \brief Creates a computation domain compartment object with attributes
@@ -484,19 +484,19 @@ public class Domain implements IsComputationDomain
 	}
 	
 	/**
-	 * \brief Calculates the diffusivity and boundary layer grid levels
+	 * \brief Calculates the diffusivity and boundary layer grid levels.
 	 * 
-	 * Calculates the diffusivity and boundary layer grid levels. In previous versions of iDynoMiCS this method could 
-	 * be found within refreshBioFilmGrids. This has been moved here as, with the addition of self attachment, this method needs to be 
-	 * called before agent initialisation. KA May 2013
+	 * In previous versions of iDynoMiCS this method could be found within
+	 * refreshBioFilmGrids. This has been moved here as, with the addition of
+	 * self attachment, this method needs to be called before agent
+	 * initialisation. KA May 2013.
 	 */
 	public void calculateComputationDomainGrids()
 	{
 		for (int i = 1; i < _nI+1; i++) 
 			for (int j = 1; j < _nJ+1; j++) 
 				for (int k = 1; k < _nK+1; k++) 
-				{
-					if (_biomassGrid.grid[i][j][k] > 0)
+					if ( _biomassGrid.grid[i][j][k] > 0.0 )
 					{
 						// if this is biomass,
 						_boundaryLayer.grid[i][j][k] = 1.0;
@@ -508,12 +508,11 @@ public class Domain implements IsComputationDomain
 						// (checkDilationRadius will set the value to 1 if it is
 						//  within the boundary layer)
 						_boundaryLayer.grid[i][j][k] = checkDilationRadius(i, j, k);
-						if (_domainGrid.grid[i][j][k].equals(-1.0))
+						if ( _domainGrid.grid[i][j][k] == -1.0 )
 							_diffusivityGrid.grid[i][j][k] = Double.MIN_VALUE;
 						else
-							_diffusivityGrid.grid[i][j][k] = 1.0d;
+							_diffusivityGrid.grid[i][j][k] = 1.0;
 					}
-				}
 	}
 
 	

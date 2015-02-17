@@ -37,7 +37,15 @@ public abstract class IsShape implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public LinkedList<IsShape> boundaries;
+	/**
+	 * Indices of the local coordinates used by the Voronoi diagram generator.
+	 */
+	protected static int _voronoiPrimary, _voronoiSecondary;
+	
+	/**
+	 * 
+	 */
+	protected static Double _minPrimary, _maxPrimary;
 	
 	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
@@ -71,6 +79,10 @@ public abstract class IsShape implements Serializable
 	
 	public abstract DiscreteVector getAbsolutePosition(DiscreteVector coord);
 	
+	public abstract ContinuousVector getRelativePosition(ContinuousVector point);
+	
+	public abstract ContinuousVector getAbsolutePosition(ContinuousVector point);
+	
 	/**
 	 * \brief Correct coordinates of a point that has gone outside this shape.
 	 * 
@@ -86,14 +98,32 @@ public abstract class IsShape implements Serializable
 	 * @param ccIn	Coordinates to be corrected
 	 * @return Corrected coordinates
 	 */
-	public abstract ContinuousVector getOrthoProj(ContinuousVector ccIn);
+	public ContinuousVector getOrthoProj(ContinuousVector ccIn)
+	{
+		ContinuousVector out = new ContinuousVector();
+		orthoProj(ccIn, out);
+		return out;
+	}
+	
+	/**
+	 * \brief Correct coordinates of a point that has gone outside this shape.
+	 * 
+	 * @param dcIn	Coordinates to be corrected
+	 * @param dcOut	Corrected coordinates
+	 */
+	public abstract void orthoProj(DiscreteVector dcIn, DiscreteVector dcOut);
 	
 	/**
 	 * 
 	 * @param coord
 	 * @return
 	 */
-	public abstract DiscreteVector getOrthoProj(DiscreteVector coord);
+	public DiscreteVector getOrthoProj(DiscreteVector coord)
+	{
+		DiscreteVector out = new DiscreteVector();
+		orthoProj(coord, out);
+		return out;
+	}
 	
 	/**
 	 * \brief Gets the distance from a point on the other side
@@ -152,6 +182,50 @@ public abstract class IsShape implements Serializable
 	
 	/* ------------------------- Voronoi diagram -------------------------- */
 	
+	public Double getMinPrimary()
+	{
+		return _minPrimary;
+	}
+	
+	public Double getMaxPrimary()
+	{
+		return _maxPrimary;
+	}
+	
+	public int getPrimary()
+	{
+		return _voronoiPrimary;
+	}
+	
+	public int getSecondary()
+	{
+		return _voronoiSecondary;
+	}
+	
+	/**
+	 * \brief gets the 
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public Double getPrimary(ContinuousVector point)
+	{
+		Double[] p = convertToLocal(point);
+		return p[_voronoiPrimary];
+	}
+	
+	/**
+	 * \brief gets the 
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public Double getSecondary(ContinuousVector point)
+	{
+		Double[] p = convertToLocal(point);
+		return p[_voronoiSecondary];
+	}
+	
 	/**
 	 * 
 	 * @param site1
@@ -159,15 +233,6 @@ public abstract class IsShape implements Serializable
 	 * @return
 	 */
 	public abstract Edge bisect(Site site1, Site site2);
-	
-	/**
-	 * 
-	 * @param point1
-	 * @param point2
-	 * @return
-	 */
-	public abstract int compare(ContinuousVector point1,
-										ContinuousVector point2);
 	
 	/**
 	 * 
