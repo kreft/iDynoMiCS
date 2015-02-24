@@ -64,7 +64,7 @@ public class Voronoi
 			
 			if ( nextEvent instanceof Site )
 			{
-				System.out.println("nextEvent is a Site at "+nextEvent.toString());
+				System.out.println("\nnextEvent is a Site at "+nextEvent.toString());
 				nextSite = (Site) nextEvent;
 				// Find the first HalfEdge to the left of this site
 				leftBoundary = sweepTable.leftBoundary(nextSite);
@@ -72,11 +72,11 @@ public class Voronoi
 				rightBoundary = leftBoundary.rightNeighbor;
 				// 
 				bottom = regionOnRight(leftBoundary);
-				//System.out.println("nextSite at "+nextSite.toString());
-				//System.out.println("bottom at "+bottom.toString());
+				
+				System.out.println("bottom at "+bottom.toString());
 				//
 				newEdge = _space.bisect(bottom, nextSite);
-				//System.out.println("newEdge "+newEdge.toString());
+				System.out.println("newEdge "+newEdge.toString());
 				edges.add(newEdge);
 				// Create
 				bisector = new HalfEdge(newEdge, true);

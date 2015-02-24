@@ -191,6 +191,7 @@ public class Planar extends IsShape
 		
 		_voronoiPrimary = 0;
 		_voronoiSecondary = 1;
+		_voronoiIgnore = 2;
 	}
 	
 	public Boolean isOutside(ContinuousVector point)
@@ -259,11 +260,11 @@ public class Planar extends IsShape
 	{
 		Double[] out = new Double[3];
 		ContinuousVector pointOnPlaneToPoint = getRelativePosition(point);
-		//System.out.println("RelPos "+pointOnPlaneToPoint.toString());
-		//System.out.println("cOrthogU "+_cOrthogU.toString());
+		//System.out.println("\tRelPos "+pointOnPlaneToPoint.toString());
 		out[0] = _cOrthogU.prodScalar(pointOnPlaneToPoint);
-		//System.out.println("cos(cOrthogU, RelPos) "+out[0]);
+		//System.out.println("\tcos(cOrthogU, RelPos) "+out[0]);
 		out[1] = _cOrthogV.prodScalar(pointOnPlaneToPoint);
+		//System.out.println("\tcos(cOrthogV, RelPos) "+out[1]);
 		out[2] = _cVectorOut.prodScalar(pointOnPlaneToPoint);
 		return out;
 	}
@@ -271,15 +272,20 @@ public class Planar extends IsShape
 	public ContinuousVector convertToVector(Double[] local)
 	{
 		ContinuousVector out = new ContinuousVector();
-		ContinuousVector temp = new ContinuousVector(_cVectorOut);
+		ContinuousVector temp = new ContinuousVector();
+		
+		temp.set(_cOrthogU);
 		temp.times(local[0]);
 		out.add(temp);
+		
 		temp.set(_cOrthogV);
 		temp.times(local[1]);
 		out.add(temp);
+		
 		temp.set(_cVectorOut);
 		temp.times(local[2]);
 		out.add(temp);
+		
 		out.add(_cPointOnPlane);
 		return out;
 	}
@@ -483,7 +489,17 @@ public class Planar extends IsShape
 		if ( site1.equals(site2) )
 			return null;
 		
-		Edge out = new Edge();
+		ContinuousVector difference = new ContinuousVector();
+		difference.sendDiff(site2, site1);
+		
+		ContinuousVector direction = _cVectorOut.crossProduct(difference);
+		direction.normalizeVector();
+		
+		ContinuousVector midPoint = new ContinuousVector(difference);
+		midPoint.times(0.5);
+		midPoint.add(site1);
+		
+		Edge out = lineToEdge(midPoint, direction);
 		
 		out.region[0] = site1;
 		out.region[1] = site2;
@@ -492,16 +508,7 @@ public class Planar extends IsShape
 		out.endPoint[0] = null;
 		out.endPoint[1] = null;
 		
-		ContinuousVector difference = new ContinuousVector(site2);
-		difference.subtract(site1);
-		ContinuousVector direction = _cVectorOut.crossProduct(difference);
-		direction.normalizeVector();
-		
-		ContinuousVector midPoint = new ContinuousVector(difference);
-		midPoint.times(0.5);
-		midPoint.add(site1);
-		
-		return lineToEdge(midPoint, direction);
+		return out;
 	}
 	
 	
@@ -509,9 +516,9 @@ public class Planar extends IsShape
 	{
 		if ( edge1 == null || edge2 == null )
 			return null;
-		/*System.out.println("Intersecting...");
-		System.out.println(edge1.toString());
-		System.out.println(edge2.toString());*/
+		//System.out.println("Intersecting...");
+		//System.out.println(edge1.toString());
+		//System.out.println(edge2.toString());
 		Double[] v = ExtraMath.newDoubleArray(3);
 		Double slopeDiff = edge1.coefficient[0]*edge2.coefficient[1] - 
 									edge1.coefficient[1]*edge2.coefficient[0];
@@ -524,7 +531,9 @@ public class Planar extends IsShape
 		v[_voronoiSecondary] = (edge1.coefficient[0]*edge2.coefficient[2] -
 				edge1.coefficient[2]*edge2.coefficient[0])/slopeDiff;
 		//System.out.println("v: ("+v[0]+","+v[1]+","+v[2]+")");
-		return new Vertex(convertToVector(v));
+		Vertex out = new Vertex(convertToVector(v));
+		//System.out.println("As coord: "+out.toString());
+		return out;
 	}
 	
 	public Vertex intersect(HalfEdge he1, HalfEdge he2)
@@ -553,6 +562,10 @@ public class Planar extends IsShape
 	/**
 	 * TODO Check thoroughly!
 	 * 
+	 * Note that this differs from previous versions of the code, in that we
+	 * are using the direction of the line rather than e.g. the difference
+	 * vector between two sites to be intersected.
+	 * 
 	 * @param point
 	 * @param direction
 	 * @return
@@ -560,14 +573,14 @@ public class Planar extends IsShape
 	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
 	{
 		Double[] p = convertToLocal(point);
-		//System.out.println("p: ("+p[0]+","+p[1]+","+p[2]+")");
+		System.out.println("\tp: ("+p[0]+","+p[1]+","+p[2]+")");
 		Double[] d = convertToLocal(direction);
-		//System.out.println("d: ("+d[0]+","+d[1]+","+d[2]+")");
+		System.out.println("\td: ("+d[0]+","+d[1]+","+d[2]+")");
 		/*
 		 * Check the point is on the plane, that the line is parallel to it,
 		 * and that the direction vector is non-zero.   
 		 */
-		if ( p[2] != 0.0 || d[2] != 0.0 || 
+		if ( p[_voronoiIgnore] != 0.0 || d[_voronoiIgnore] != 0.0 || 
 				(d[_voronoiPrimary] == 0.0 && d[_voronoiSecondary] == 0.0) )
 		{
 			return null;
@@ -575,17 +588,17 @@ public class Planar extends IsShape
 		Edge out = new Edge();
 		if ( Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary]) )
 		{
-			//System.out.println("|d0| > |d1|");
-			out.coefficient[0] = 1.0;
-			out.coefficient[1] = d[_voronoiSecondary]/d[_voronoiPrimary];
-			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[1]) + p[_voronoiSecondary];
+			System.out.println("\t|d0| > |d1|");
+			out.coefficient[0] = -d[_voronoiSecondary]/d[_voronoiPrimary];
+			out.coefficient[1] = 1.0;
+			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[0]) + p[_voronoiSecondary];
 		}
 		else
 		{
-			//System.out.println("|d0| <= |d1|");
-			out.coefficient[0] = d[_voronoiPrimary]/d[_voronoiSecondary];
-			out.coefficient[1] = 1.0;
-			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[0]);
+			System.out.println("\t|d0| <= |d1|");
+			out.coefficient[0] = 1.0;
+			out.coefficient[1] = -d[_voronoiPrimary]/d[_voronoiSecondary];
+			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[1]);
 		}
 		//System.out.println(out.toString()+"\n");
 		return out;
@@ -634,6 +647,7 @@ public class Planar extends IsShape
 	
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
+		//System.out.println("RESTRICING PLANE");
 		_maxPrimary = -Double.MAX_VALUE;
 		_minPrimary = Double.MAX_VALUE;
 		LinkedList<Edge> limits = new LinkedList<Edge>();
@@ -642,20 +656,28 @@ public class Planar extends IsShape
 		Vertex vertex;
 		for ( Planar plane : walls )
 		{
+			//System.out.println("Finding edge with one other plane");
 			temp = intersect(plane);
 			if ( temp != null )
+			{
 				limits.add(temp);
+				//System.out.println("intersecting edge "+temp.toString());
+			}
 		}
 		int nLimits = limits.size();
 		for (int i = 0; i < nLimits-1; i++ )
 			for (int j = i+1; j < nLimits; j++)
 			{
+				//System.out.println("Finding vertex between 2 planes "+i+" and "+j);
 				vertex = intersect(limits.get(i), limits.get(j));
 				if ( vertex == null )
 					continue;
 				primaryVal = getPrimary(vertex);
+				//System.out.println("Before ("+i+","+j+"): "+_minPrimary+" to "+_maxPrimary);
+				//System.out.println("vertex at "+vertex.toString()+" -> "+primaryVal);
 				_maxPrimary = Math.max(_maxPrimary, primaryVal);
 				_minPrimary = Math.min(_minPrimary, primaryVal);
+				//System.out.println("After ("+i+","+j+"): "+_minPrimary+" to "+_maxPrimary+"\n");
 			}
 	}
 	

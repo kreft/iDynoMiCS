@@ -28,11 +28,23 @@ public class Edge
 		}
 		if ( coefficient[1] != 0.0 )
 		{
+			if ( coefficient[1] > 0.0 )
+				out += "+ ";
 			if ( coefficient[1] != 1.0 )
 				out += coefficient[1].toString()+"*";
 			out += "v ";
 		}
-		out += "= "+coefficient[2].toString();
-		return out;
+		out += "= "+coefficient[2].toString()+" [L: ";
+		if ( region[0] == null )
+			out += "empty";
+		else
+			out += region[0].toString();
+		out += ", R: ";
+		if ( region[1] == null )
+			out += "empty";
+		else
+			out += region[1].toString();
+		
+		return out + "]";
 	}
 }

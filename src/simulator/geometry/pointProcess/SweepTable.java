@@ -49,7 +49,7 @@ public class SweepTable
 		
 		Double temp = 2.0 * Math.sqrt(numberOfSites + 4);
 		this.size = temp.intValue();
-
+		System.out.println("Space min "+shape.getMinPrimary()+", max "+shape.getMaxPrimary());
 		this.minValue = shape.getMinPrimary();
 		this.deltaValue = shape.getMaxPrimary() - minValue;
 		
@@ -120,10 +120,12 @@ public class SweepTable
 	public HalfEdge leftBoundary(ContinuousVector point)
 	{
 		/* Use hash table to get close to desired halfedge */
+		//System.out.println("size "+size+", value "+getValue(point)+", min "+minValue+", delta "+deltaValue);
 		Double temp = size*(getValue(point)-minValue)/deltaValue;
 		int bucket = temp.intValue();
 		/* Ensure bucket is in the range (0, this.size - 1) */
 		bucket = Math.max(Math.min(bucket, size - 1), 0);
+		System.out.println("bucket "+bucket);
 		HalfEdge out = get(bucket);
 		
 		/* Starting with bucket, search backwards and forwards in the hash map
@@ -184,6 +186,9 @@ public class SweepTable
 	
 	private Boolean isHErightOfPoint(HalfEdge halfEdge, ContinuousVector point)
 	{
+		System.out.println("Looking at point "+point.toString());
+		System.out.println("\thalfEdge "+halfEdge.toString());
+		System.out.println("\tand region "+halfEdge.getRightRegion().toString());
 		Double[] p = _space.convertToLocal(point);
 		Double[] r = _space.convertToLocal(halfEdge.getRightRegion());
 		Double primaryDiff = p[primary] - r[primary];

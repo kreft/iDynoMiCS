@@ -11,10 +11,10 @@ public class VoronoiTest
 {
 	public static void main(String[] args) 
 	{
-		Double resolution = 1.0;
+		Double resolution = 8.0;
 		
 		DiscreteVector origin = new DiscreteVector(0, 0, 0);
-		DiscreteVector tenTen = new DiscreteVector(0, 250, 250);
+		DiscreteVector tenTen = new DiscreteVector(0, 33, 33);
 		DiscreteVector iUnit = new DiscreteVector(1, 0, 0);
 		DiscreteVector jUnit = new DiscreteVector(0, 1, 0);
 		DiscreteVector kUnit = new DiscreteVector(0, 0, 1);

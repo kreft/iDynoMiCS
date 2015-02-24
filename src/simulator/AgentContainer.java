@@ -1094,7 +1094,7 @@ public class AgentContainer
  			
  			textBuffer.append(spPop[spIndex]).append(",");
  			textBuffer.append(spMass[spIndex]).append(",");
- 			textBuffer.append(spGrowth[spIndex]).append(",");
+ 			textBuffer.append(spGrowth[spIndex]);
  			
  			/*<----HGT Sonia begin---->*/
  			if(Simulator.multiEpi)

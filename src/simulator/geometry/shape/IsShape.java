@@ -40,7 +40,7 @@ public abstract class IsShape implements Serializable
 	/**
 	 * Indices of the local coordinates used by the Voronoi diagram generator.
 	 */
-	protected static int _voronoiPrimary, _voronoiSecondary;
+	protected static int _voronoiPrimary, _voronoiSecondary, _voronoiIgnore;
 	
 	/**
 	 * 
@@ -211,6 +211,7 @@ public abstract class IsShape implements Serializable
 	public Double getPrimary(ContinuousVector point)
 	{
 		Double[] p = convertToLocal(point);
+		//System.out.println("p ("+p[0]+", "+p[1]+", "+p[2]+") take "+_voronoiPrimary);
 		return p[_voronoiPrimary];
 	}
 	
