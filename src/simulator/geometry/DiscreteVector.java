@@ -63,9 +63,18 @@ public class DiscreteVector implements Cloneable, Serializable
 	 */
 	public DiscreteVector(Element coordinatesRoot)
 	{
-		i = Integer.parseInt(coordinatesRoot.getAttributeValue("x"));
-		j = Integer.parseInt(coordinatesRoot.getAttributeValue("y"));
-		k = Integer.parseInt(coordinatesRoot.getAttributeValue("z"));
+		try
+		{
+			i = Integer.parseInt(coordinatesRoot.getAttributeValue("i"));
+			j = Integer.parseInt(coordinatesRoot.getAttributeValue("j"));
+			k = Integer.parseInt(coordinatesRoot.getAttributeValue("k"));
+		}
+		catch (Exception e)
+		{
+			i = Integer.parseInt(coordinatesRoot.getAttributeValue("x"));
+			j = Integer.parseInt(coordinatesRoot.getAttributeValue("y"));
+			k = Integer.parseInt(coordinatesRoot.getAttributeValue("z"));
+		}
 	}
 	
 	/**
