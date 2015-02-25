@@ -92,6 +92,14 @@ public class Cylindrical extends IsShape
 	private Boolean _interiorMatchesDomain;
 	
 	/**
+	 * Generic constructor for instance creator (leave empty).
+	 */
+	public Cylindrical()
+	{
+		
+	}
+	
+	/**
 	 * 
 	 * @param dPointCenterBase
 	 * @param dVectorAlongAxis

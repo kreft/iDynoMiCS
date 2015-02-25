@@ -116,6 +116,14 @@ public class Planar extends IsShape
 	private static DiscreteVector origin = new DiscreteVector();
 	
 	/**
+	 * Generic constructor for instance creator (leave empty).
+	 */
+	public Planar()
+	{
+		
+	}
+	
+	/**
 	 * \brief Constructor method of a planar shape.
 	 * 
 	 * Used in testing.

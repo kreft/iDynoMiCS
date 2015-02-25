@@ -34,7 +34,7 @@ import utils.XMLParser;
  * these representations are used in definining reactions in the protocol file.
  * 
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,

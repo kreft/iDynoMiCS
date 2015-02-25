@@ -98,6 +98,14 @@ public class Hemispherical extends IsShape
 	private Boolean _interiorMatchesDomain;
 	
 	/**
+	 * Generic constructor for instance creator (leave empty).
+	 */
+	public Hemispherical()
+	{
+		
+	}
+	
+	/**
 	 * 
 	 * @param dPointCenterBase
 	 * @param dVectorToApex
