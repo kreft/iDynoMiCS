@@ -34,15 +34,23 @@ public class SimpleInhibition extends IsKineticFactor
 	private Double _Ki;
 	
 	/**
+	 * \brief Generic constructor used by the instance creator.
+	 */
+	public SimpleInhibition()
+	{
+		nParam = 1;
+	}
+	
+	/**
 	 * \brief Constructs the kinetic, setting the half-maximum concentration.
 	 * 
 	 * @param Ki Half-Maximum concentration of the solute of interest.
 	 */
-	public SimpleInhibition(Double Ki)
+	/*public SimpleInhibition(Double Ki)
 	{
 		_Ki = Ki;
 		nParam = 1;
-	}
+	}*/
 	
 	/**
 	 * \brief Initialise the kinetic, reading in kinetic parameter information

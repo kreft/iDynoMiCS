@@ -70,10 +70,6 @@ public class DiscreteVector implements Cloneable, Serializable
 	 */
 	public DiscreteVector(XMLParser coordinatesRoot)
 	{
-		i = coordinatesRoot.getAttributeInt("i");
-		j = coordinatesRoot.getAttributeInt("j");
-		k = coordinatesRoot.getAttributeInt("k");
-		
 		try
 		{
 			i = coordinatesRoot.getAttributeInt("i");
@@ -82,15 +78,14 @@ public class DiscreteVector implements Cloneable, Serializable
 		}
 		catch (Exception e)
 		{
-			i = (int) (double) coordinatesRoot.getAttributeDbl("x");
-			j = (int) (double) coordinatesRoot.getAttributeDbl("y");
-			k = (int) (double) coordinatesRoot.getAttributeDbl("z");
+			i = Integer.parseInt(coordinatesRoot.getAttribute("x"));
+			j = Integer.parseInt(coordinatesRoot.getAttribute("y"));
+			k = Integer.parseInt(coordinatesRoot.getAttribute("z"));
 			LogFile.writeLogAlways("----------------------------------------");
 			LogFile.writeLogAlways("Please give discrete vectors as i, j, k!");
 			LogFile.writeLogAlways("x, y, z should be for continuous vectors");
 			LogFile.writeLogAlways("----------------------------------------");
 		}
-		
 	}
 	
 	/**

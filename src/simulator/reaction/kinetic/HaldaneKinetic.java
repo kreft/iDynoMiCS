@@ -40,6 +40,14 @@ public class HaldaneKinetic extends IsKineticFactor
 	private Double _Ki;
 	
 	/**
+	 * \brief Generic constructor used by the instance creator.
+	 */
+	public HaldaneKinetic()
+	{
+		nParam = 2;
+	}
+	
+	/**
 	 * \brief Constructor to set kinetic parameters to the supplied values.
 	 * 
 	 * @param Ks	Half-Maximum concentration of the solute

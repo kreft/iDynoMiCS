@@ -50,6 +50,14 @@ public class HillKinetic extends IsKineticFactor
 	private Double _KsPowH;
 	
 	/**
+	 * \brief Generic constructor used by the instance creator.
+	 */
+	public HillKinetic()
+	{
+		nParam = 2;
+	}
+	
+	/**
 	 * \brief Constructs the kinetic, setting the half-maximum concentration
 	 * and the exponent.
 	 * 
