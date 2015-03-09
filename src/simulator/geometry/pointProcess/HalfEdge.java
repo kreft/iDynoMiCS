@@ -46,6 +46,11 @@ public class HalfEdge
 		this.deleted = false;
 	}
 	
+	public int getLeftRight()
+	{
+		return leftRight;
+	}
+	
 	public Boolean isOnLeft()
 	{
 		return leftRight == left;

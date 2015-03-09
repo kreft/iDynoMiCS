@@ -50,9 +50,15 @@ public class Voronoi
 		edges = new LinkedList<Edge>();
 		
 		HalfEdge leftBoundary, rightBoundary, bisector;
-		Site nextSite, bottom;
+		
+		// TODO is this necessary?
+		HalfEdge leftLeftBoundary, rightRightBoundary;
+		
+		
+		Site nextSite, bottom, top;
 		Edge newEdge;
 		Vertex nextVertex, intersection;
+		Double offset;
 		
 		// Skip the first site, as this is the very bottom one.
 		pqIterator.next();
@@ -94,17 +100,36 @@ public class Voronoi
 				}
 				
 				bisector = new HalfEdge(newEdge, false);
-				
 				intersection = _space.intersect(bisector, rightBoundary);
+				
 				if ( intersection != null )
-					priorityQueueInsert(intersection, 
-							_space.distance(intersection,  nextSite));
-				
-				
+				{
+					offset = _space.distance(intersection,  nextSite);
+					priorityQueueInsert(intersection, offset);
+				}
 			}
 			else if ( nextEvent instanceof Vertex)
 			{
 				nextVertex = (Vertex) nextEvent;
+				
+				leftBoundary = sweepTable.leftBoundary(nextVertex);; 
+				leftLeftBoundary = leftBoundary.leftNeighbor;
+				rightBoundary = leftBoundary.rightNeighbor;
+				rightRightBoundary = rightBoundary.rightNeighbor;
+				
+				bottom = regionOnLeft(leftBoundary);
+				
+				top = regionOnRight(leftBoundary);
+				
+				
+				
+				// TODO set vertex number?
+				
+				setEndPoint(leftBoundary.edge,
+									leftBoundary.getLeftRight(), nextVertex);
+				
+				setEndPoint(rightBoundary.edge,
+									rightBoundary.getLeftRight(), nextVertex);
 				
 				
 				
@@ -113,12 +138,23 @@ public class Voronoi
 			
 		} // End of while ( pqIterator.hasNext() )
 		
+		
+		
 		// Deal with any Edges that cross boundaries
 		// TODO just those in sweepTable?
 		
 	}
 	
-	
+	/**
+	 * \brief Comparator for points, so they can be lexicographically ordered.
+	 * 
+	 * Fortune's paper states that, for the purpose of the priority queue,
+	 * points in the xy-plane should first be ordered be y and then by x. I.e.
+	 * p < q if py < qy, or if py = qy and px < px. Since here we are less
+	 * restricted in the surfaces we work over, we order first according to
+	 * the "secondary" value of points (equivalent to their py, etc) and then
+	 * according to their "primary" value (equivalent to px, etc).
+	 */
 	public static class PositionComparator implements 
 										java.util.Comparator<ContinuousVector> 
 	{
@@ -143,7 +179,8 @@ public class Voronoi
 	 * \brief Compare two points according to the local scheme.
 	 * 
 	 * PriorityQueue uses the other axis to SweepTable.
-	 * Primary-axis = y-axis in Fortune's paper.
+	 * 
+	 * TODO This is identical to the compare() method above... combine?
 	 * 
 	 * @param point1
 	 * @param point2
@@ -176,16 +213,22 @@ public class Voronoi
 	 */
 	private void priorityQueueInsert(Vertex vertex, Double starOffset)
 	{
-		int currentIndex = Math.max(pqIterator.nextIndex() - 1, 0);
-		ListIterator<ContinuousVector> insertIterator = 
-									priorityQueue.listIterator(currentIndex);
+		ContinuousVector current = pqIterator.previous();
+		ContinuousVector next;
 		vertex.starValue = getValue(vertex) + starOffset;
-		ContinuousVector next = insertIterator.next();
-		while ( insertIterator.hasNext() && compare(vertex, next) > 0)
-		{
-			next = insertIterator.next();
-		}
-		insertIterator.add(vertex);
+		/*
+		 * Search the priority queue for a position with
+		 * compare(vertex, next) < 0
+		 */
+		do { next = pqIterator.next(); }
+		while ( pqIterator.hasNext() && compare(vertex, next) > 0 );
+		// Once we've found the right place, add the vertex.
+		pqIterator.add(vertex);
+		// Get back to where we were before.
+		while ( ! next.equals(current) && pqIterator.hasPrevious() )
+			next = pqIterator.previous();
+		if ( pqIterator.hasNext() )
+			next = pqIterator.next();
 	}
 	
 	/**

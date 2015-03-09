@@ -272,4 +272,12 @@ public class SweepTable
 		}
 		return out;
 	}
+	
+	public void clipAll()
+	{
+		// TODO
+		for (HalfEdge he = leftEnd; he != rightEnd; he = he.rightNeighbor)
+			he = null;
+		
+	}
 }
