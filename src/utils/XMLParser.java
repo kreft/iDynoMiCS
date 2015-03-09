@@ -724,7 +724,7 @@ public class XMLParser implements Serializable
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Unable to create class");
+			LogFile.writeLog("Unable to create class: "+prefix);
 			return null;
 		}
 	}
