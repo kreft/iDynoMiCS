@@ -11,10 +11,6 @@
  */
 package simulator.geometry;
 
-import java.io.Serializable;
-
-import org.jdom.*;
-
 import utils.ExtraMath;
 import utils.XMLParser;
 
@@ -24,20 +20,15 @@ import utils.XMLParser;
  * Cartesian (x, y, z) coordinates obligatory.
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author JoÃ£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  *
  */
 public class ContinuousVector implements Cloneable
 {
-	/**
-	 * Serial version used for the serialisation of the class
-	 */
-	private static final long serialVersionUID = 1L;
-	
 	/**
 	 * X coordinate of the point contained in this vector
 	 */

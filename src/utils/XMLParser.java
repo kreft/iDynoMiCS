@@ -277,14 +277,6 @@ public class XMLParser implements Serializable
 		for (Object child : childList)
 		{
 			out.add((Element) child);
-			/*
-			if (child.getClass().equals("Element"))
-				out.add((Element) child);
-			else
-			{
-				LogFile.writeLogAlways("Error reading in child elements! "
-																+childMarkup);
-			}*/
 		}
 		return out;
 	}
@@ -362,10 +354,8 @@ public class XMLParser implements Serializable
 		for (Element aChild : childList)
 			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
 				return (Element) aChild;
-		/*
-		LogFile.writeLogAlways("Could not find XML child element with name "+
-								childMarkup+" and "+attrName+" = "+attrValue);
-		*/
+		LogFile.writeLog("Could not find XML child element with name "+
+							childMarkup+" and "+attrName+" = "+attrValue);
 		return null;
 	}
 	
@@ -532,7 +522,7 @@ public class XMLParser implements Serializable
 	{
 		Integer out = stringToInteger(getAttribute(attributeName));
 		if ( out == nullInt )
-			LogFile.writeLogAlways("No value given for "+attributeName+"!");
+			LogFile.writeLog("No value given for "+attributeName+"!");
 		return out;
 	}
 	
@@ -547,7 +537,7 @@ public class XMLParser implements Serializable
 	{
 		Integer out = stringToInteger(getParam(paramName));
 		if ( out == nullInt )
-			LogFile.writeLogAlways("No value given for "+paramName+"!");
+			LogFile.writeLog("No value given for "+paramName+"!");
 		return out;
 	}
 	
@@ -579,7 +569,7 @@ public class XMLParser implements Serializable
 	{
 		Boolean out = stringToBoolean(getParam(paramName));
 		if ( out == nullBool )
-			LogFile.writeLogAlways("No value given for "+paramName+"!");
+			LogFile.writeLog("No value given for "+paramName+"!");
 		return out;
 	}
 	
@@ -599,7 +589,7 @@ public class XMLParser implements Serializable
 		Boolean out = stringToBoolean(getParamSuch(paramName, detailName));
 		if ( out == nullBool )
 		{
-			LogFile.writeLogAlways("No value given for "+paramName+
+			LogFile.writeLog("No value given for "+paramName+
 													" with "+detailName+"!");
 		}
 		return out;
@@ -632,7 +622,7 @@ public class XMLParser implements Serializable
 	{
 		Double out = stringToDouble(getValue());
 		if ( out == nullDbl )
-			LogFile.writeLogAlways("No value given!");
+			LogFile.writeLog("No value given!");
 		return out;
 	}
 	
@@ -648,7 +638,7 @@ public class XMLParser implements Serializable
 	{
 		Double out = stringToDouble(getAttribute(attributeName));
 		if ( out == nullDbl )
-			LogFile.writeLogAlways("No value given for "+attributeName+"!");
+			LogFile.writeLog("No value given for "+attributeName+"!");
 		return out;
 	}
 	
@@ -668,7 +658,7 @@ public class XMLParser implements Serializable
 		Double out = stringToDouble(getChildAttrStr(childName, attrName));
 		if ( out == nullDbl )
 		{
-			LogFile.writeLogAlways("No value given for "+attrName+
+			LogFile.writeLog("No value given for "+attrName+
 														" of "+childName+"!");
 		}
 		return out;
@@ -685,7 +675,7 @@ public class XMLParser implements Serializable
 	{
 		Double out = stringToDouble(getParam(paramName));
 		if ( out == nullDbl )
-			LogFile.writeLogAlways("No value given for "+paramName+"!");
+			LogFile.writeLog("No value given for "+paramName+"!");
 		return out;
 	}
 
@@ -702,7 +692,7 @@ public class XMLParser implements Serializable
 	{
 		Double out = stringToDouble(getParam(paramName, unit));
 		if ( out == nullDbl )
-			LogFile.writeLogAlways("No value given for "+paramName+"!");
+			LogFile.writeLog("No value given for "+paramName+"!");
 		return out;
 	}
 	
@@ -722,7 +712,7 @@ public class XMLParser implements Serializable
 		Double out = stringToDouble(getParamSuch(paramName, detailName));
 		if ( out == nullDbl )
 		{
-			LogFile.writeLogAlways("No value given for "+paramName+
+			LogFile.writeLog("No value given for "+paramName+
 													" with "+detailName+"!");
 		}
 		return out;
@@ -746,7 +736,7 @@ public class XMLParser implements Serializable
 		Double out = stringToDouble(getParamSuch(paramName, detailName, unit));
 		if ( out == nullDbl )
 		{
-			LogFile.writeLogAlways("No value given for "+paramName+
+			LogFile.writeLog("No value given for "+paramName+
 													" with "+detailName+"!");
 		}
 		return out;
@@ -774,7 +764,7 @@ public class XMLParser implements Serializable
 						attrName, attrValue).getAttributeValue(attr2Name));
 		if ( out == nullDbl )
 		{
-			LogFile.writeLogAlways("No value given for "+attr2Name+" of "+
+			LogFile.writeLog("No value given for "+attr2Name+" of "+
 							childName+" with "+attrName+" = "+attrValue+"!");
 		}
 		return out;
@@ -901,7 +891,7 @@ public class XMLParser implements Serializable
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Unable to create class: "+prefix);
+			LogFile.writeLogAlways("Unable to create class: "+prefix);
 			return null;
 		}
 	}

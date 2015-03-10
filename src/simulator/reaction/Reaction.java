@@ -200,7 +200,7 @@ public abstract class Reaction implements Serializable
 			if ( aBC instanceof ConnectedBoundary )
 			{
 				Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
-				if ( aBulk.nameEquals("chemostat") )
+				if ( aBulk != null && aBulk.nameEquals("chemostat") )
 					Dil = aBulk._D;
 			}
 		

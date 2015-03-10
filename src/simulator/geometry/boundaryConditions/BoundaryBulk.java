@@ -35,22 +35,11 @@ import simulator.agent.LocatedGroup;
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
  * Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  */
 public class BoundaryBulk extends ConnectedBoundary
 {
-	/**
-	 * Serial version used for the serialisation of the class
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * The defined bulk in the simulation to which the liquid phase is
-	 * connected.
-	 */
-	protected Bulk	_connectedBulk;
-	
 	/**
 	 * Value of solute in the bulk.
 	 */

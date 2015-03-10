@@ -350,7 +350,10 @@ public class Domain implements IsComputationDomain
 		// Find the first of the boundaries which has been crossed
 		for (AllBC aBoundary : _boundaryList)
 			if (aBoundary.isOutside(newLoc))
+			{
+				System.out.println("agent at "+newLoc.toString()+" crossed boundary "+aBoundary.getSide());
 				return aBoundary;
+			}
 		
 		// If you are here, it means that no boundary is being crossed.
 		return null;

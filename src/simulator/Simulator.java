@@ -1108,13 +1108,15 @@ public class Simulator
 			 */
 			if ( this.attachmentMechanism.equals("onetime") )
 			{
-				creatingAgents = creatingAgents &&
-						this.oneTimeAttachmentAgentBirth(aSpRoot, spIndex);
+				creatingAgents = 
+						this.oneTimeAttachmentAgentBirth(aSpRoot, spIndex)
+						&& creatingAgents;
 			}
 			else if ( this.attachmentMechanism.equals("selfattach") )
 			{
-				creatingAgents = creatingAgents &&
-							this.selfAttachmentAgentBirth(aSpRoot, spIndex);
+				creatingAgents = 
+							this.selfAttachmentAgentBirth(aSpRoot, spIndex)
+							&& creatingAgents;
 			}
 		}
 		if ( creatingAgents )

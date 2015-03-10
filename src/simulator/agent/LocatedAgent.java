@@ -34,10 +34,10 @@ import simulator.geometry.boundaryConditions.AllBC;
  * used to find iteratively the new overlap-minimising steady state
  * configuration of agent locations at the end of each timestep. 
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  * @author Rob Clegg (rjc096@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
@@ -824,6 +824,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		AllBC aBoundary = getDomain().testCrossedBoundary(_newLoc);
 		int nDim = (_agentGrid.is3D ? 3 : 2);
 		Boolean test = ( aBoundary != null );
+		if ( aBoundary == null )
+			LogFile.writeLog("boundary null");
+		else
+			LogFile.writeLog("Testing boundary "+aBoundary.getSide());
 		int counter = 0;
 
 		// Test all boundaries and apply corrections according to crossed
@@ -833,10 +837,16 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			counter++;
 			aBoundary.applyBoundary(this, _newLoc);
 			aBoundary = getDomain().testCrossedBoundary(_newLoc);
-
 			test = (aBoundary != null) || (counter > nDim);
 			if (counter > nDim)
-				System.out.println("Problem in LocatedAgent.checkBoundaries()");
+			{
+				LogFile.writeLogAlways(
+						"Problem in LocatedAgent.checkBoundaries():\n"+
+						"\tcounter ("+counter+") > nDim ("+nDim+")\n"+
+						"\tLocatedAgent moving from "+_location.toString()+
+						" to "+_newLoc.toString()+"\n"+
+						"\ttotalRadius "+_totalRadius);
+			}
 		}
 	}
 

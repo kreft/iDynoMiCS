@@ -145,6 +145,8 @@ public abstract class AllBC
 	 * \brief Return the name of the side of the domain which this boundary is
 	 * on.
 	 * 
+	 * TODO this is a duplicate of getSide()!
+	 * 
 	 * @return	String containing the name of the side of the domain
 	 * (e.g. x0z, xNz, etc).
 	 */

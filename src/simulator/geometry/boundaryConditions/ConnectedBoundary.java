@@ -1,22 +1,10 @@
 package simulator.geometry.boundaryConditions;
 
-import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.agent.LocatedAgent;
-import simulator.agent.LocatedGroup;
 import simulator.geometry.Bulk;
-import simulator.geometry.ContinuousVector;
-import simulator.geometry.DiscreteVector;
-import simulator.geometry.Domain;
-import utils.XMLParser;
 
 public abstract class ConnectedBoundary extends AllBC
 {
-	/**
-	 *  Serial version used for the serialisation of the class
-	 */
-	private static final long         serialVersionUID = 1L;
-	
 	/**
 	 * The defined bulk in the simulation to which the liquid phase is connected
 	 */

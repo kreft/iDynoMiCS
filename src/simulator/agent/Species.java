@@ -33,10 +33,10 @@ import utils.ExtraMath;
  * here. From version 1.2 of iDynoMiCS, this class also manages agent input
  * for both one-time and self attachment scenarios.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
