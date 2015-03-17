@@ -20,6 +20,7 @@ import simulator.geometry.pointProcess.Site;
 import simulator.geometry.pointProcess.Vertex;
 import simulator.SpatialGrid;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -171,6 +172,7 @@ public class Planar extends IsShape
 		 * having to calculate these values repeatedly.
 		 */
 		_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
+		//_cOutDotPPlane = _cVectorOut.prodScalar(_cPointOnPlane);
 		_dOutDotPPlane = _dVectorOut.prodScalar(_dPointOnPlane);
 		/* 
 		 * Find two vectors orthogonal to each vector out, i.e. parallel to the
@@ -223,9 +225,10 @@ public class Planar extends IsShape
 		ContinuousVector intersection = new ContinuousVector(vector);
 		/* 
 		 * Find the (relative) length along vector we must travel to hit the
-		 * plane.
+		 * plane. 
 		 */
-		intersection.times((_cOutDotPPlane - _cVectorOut.prodScalar(position))/c);
+		Double k = (_cOutDotPPlane - _cVectorOut.prodScalar(position))/c;
+		intersection.times(k);
 		intersection.add(position);
 		out.add(intersection);
 		return out;
@@ -307,12 +310,11 @@ public class Planar extends IsShape
 	 * \brief Takes a vector and returns that vector pointing towards the
 	 * inside of the shape.
 	 * 
-	 * @param cc	Vector outside the shape.
 	 * @return ContinuousVector that is pointing towards the inside of the
 	 * shape.
 	 * 
 	 */
-	public ContinuousVector getNormalInside(ContinuousVector cc)
+	public ContinuousVector getNormalInside()
 	{
 		ContinuousVector out = new ContinuousVector(_cVectorOut);
 		out.turnAround();
@@ -327,7 +329,7 @@ public class Planar extends IsShape
 	 */
 	public void orthoProj(ContinuousVector ccIn, ContinuousVector ccOut)
 	{
-		ccOut = getIntersections(ccIn, _cVectorOut).getFirst();
+		ccOut.set(getIntersections(ccIn, _cVectorOut).getFirst());
 	}
 	
 	@Override

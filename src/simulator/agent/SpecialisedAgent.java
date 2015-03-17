@@ -17,16 +17,15 @@ import utils.LogFile;
 import utils.XMLParser;
 
 /**
- * \brief Extension of Agent class, adds location and parameter information for an object of a particular species in the simulation
+ * \brief Extension of Agent class, adds location and parameter information
+ * for an object of a particular species in the simulation.
  * 
- * Extension of Agent class, adds location and parameter information for an object of a particular species in the simulation
- * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
 public abstract class SpecialisedAgent extends Agent implements HasSpecies, Cloneable 
 {
-	
 	/**
 	 * Type of species that this agent is representing
 	 */
@@ -126,32 +125,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 */
 	@Override
 	public abstract SpecialisedAgent sendNewAgent() throws CloneNotSupportedException;
-
-	/**
-	 * \brief Mutate any inherited parameters for this particular agent
-	 * 
-	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutateAgent() 
-	{
-		// Mutate parameters inherited
-		super.mutateAgent();
-		// Now mutate your parameters
-	}
-
-	/**
-	 * \brief Mutate any inherited parameters for a population of agents
-	 * 
-	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutatePop() 
-	{
-		// Mutate parameters inherited
-		// Now mutate your parameters
-	}
-
+	
 	/**
 	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container.
 	 *  
@@ -172,7 +146,8 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
 	 */
-	public void die(Boolean isStarving) {
+	public void die(Boolean isStarving)
+	{
 		// If you are too small, you must die !
 		// Decrease the population of your species
 		_species.notifyDeath();
@@ -242,38 +217,15 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Return the name of the species represented by this agent
+	 * \brief Return the name of the species represented by this agent.
 	 * 
-	 * Return the name of the species represented by this agent
-	 * 
-	 * @return	Name of the species represented
+	 * @return	Name of the species represented.
 	 */
-	public String getName() {
+	public String getName()
+	{
 		return _species.speciesName;
 	}
-
-	/**
-	 * \brief Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
-	 * 
-	 * Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
-	 *  
-	 * @return	Boolean value noting whether this agent will be detached
-	 */
-	public Boolean willDetach() {
-		return false;
-	}
-
-	/**
-	 * \brief Returns the integer grid index where this agent resides. Implemented by extending classes
-	 * 
-	 * Returns the integer grid index where this agent resides. Implemented by extending classes
-	 *  
-	 * @return	Integer grid index where this agent is located within
-	 */
-	public int getGridIndex() {
-		return 0;
-	}
-
+	
 	/**
 	 * \brief Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
 	 * 
@@ -285,21 +237,11 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
-	public Double interact(boolean MUTUAL, boolean pull, boolean seq, double gain) {
+	public Double interact(boolean MUTUAL, boolean seq)
+	{
 		return 0.0;
 	}
-
-	/**
-	 * \brief Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
-	 * 
-	 * Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
-	 *  
-	 * @return	Boolean noting whether or not this agent is moving
-	 */
-	public Boolean isMoving() {
-		return false;
-	}
-
+	
 	/**
 	 * \brief Used in POV-Ray output to display this species - writes a colour definition to the passed-in file
 	 * 
@@ -309,7 +251,8 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param fr	POV-Ray output file where the colour definition should be applied
 	 */
-	public void writePOVColorDefinition(FileWriter fr) throws IOException {
+	public void writePOVColorDefinition(FileWriter fr) throws IOException
+	{
 		fr.write("#declare "+_species.speciesName+" = color rgb < ");
 		fr.write((_species.color.getRed()) / 255.0 + " , ");
 		fr.write((_species.color.getGreen()) / 255.0 + " , ");

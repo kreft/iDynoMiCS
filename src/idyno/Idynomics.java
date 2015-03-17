@@ -52,10 +52,10 @@ import utils.XMLParser;
 * 
 * @since June 2006
 * @version 1.2
-* @author Andreas Dötsch		(andreas.doetsch@helmholtz-hzi.de)
+* @author Andreas DÃ¶tsch		(andreas.doetsch@helmholtz-hzi.de)
 * @author Laurent Lardon		(lardonl@supagro.inra.fr)
 * @author Brian Merkey			(brim@env.dtu.dk, bvm@northwestern.edu)
-* @author João Xavier			(xavierj@mskcc.org)
+* @author JoÃ£o Xavier			(xavierj@mskcc.org)
 * @author Cristian Picioreanu 	(C.Picioreanu@tudelft.nl)
 * @author Jan-Ulrich Kreft		(j.kreft@bham.ac.uk)
 * @author Robert Clegg 			(r.j.clegg@bham.ac.uk)

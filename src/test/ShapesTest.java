@@ -10,9 +10,12 @@ public class ShapesTest
 	{
 		Double resolution = 1.0;
 		
-		DiscreteVector discrete1 = new DiscreteVector();
+		DiscreteVector pointOnPlane = new DiscreteVector();
+		DiscreteVector vectorOut = new DiscreteVector(1, 0, 0);
 		
-		Planar plane1 = new Planar(discrete1, discrete1, resolution);
+		Planar plane1 = new Planar(pointOnPlane, vectorOut, resolution);
+		
+		
 		
 	}
 	

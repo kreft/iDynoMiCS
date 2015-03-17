@@ -24,7 +24,7 @@ import utils.XMLParser;
  * 
  * Extended by a number of agent types.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
  */
@@ -114,16 +114,6 @@ public abstract class Agent implements Cloneable
 	}
 	
 	/**
-	 * \brief Mutates agent parameters.
-	 * 
-	 * Implemented by classes that extend this class.
-	 */
-	public void mutateAgent()
-	{
-		// Now mutate your parameters
-	}
-
-	/**
 	 * \brief Creates a new agent from an existing one, and registers this new
 	 * agent in the simulation.
 	 * 
@@ -133,9 +123,7 @@ public abstract class Agent implements Cloneable
 	public void makeKid() throws CloneNotSupportedException 
 	{
 
-		Agent anAgent = (Agent) this.clone();		
-		anAgent.mutateAgent();
-
+		Agent anAgent = (Agent) this.clone();
 		// Now register the agent in the appropriate container
 		registerBirth();
 	}
@@ -270,5 +258,10 @@ public abstract class Agent implements Cloneable
 	public Double getBirthday()
 	{
 		return this._birthday;
+	}
+
+	public void mutatePop()
+	{
+	
 	}
 }

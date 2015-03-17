@@ -166,17 +166,6 @@ public class Episome extends InfoAgent
 	}
 	
 	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutatePop()
-	{
-		// Mutate inherited parameters
-		super.mutatePop();
-		// Now mutate your parameters
-	}
-
-	/**
 	 * TODO Is this any different from the super class? 
 	 */
 	@Override
@@ -190,36 +179,17 @@ public class Episome extends InfoAgent
 	@Override
 	public void makeKid() throws CloneNotSupportedException
 	{
-		// Clone the plamid
+		/*
+		 * Clone the plasmid.
+		 */
 		Episome baby = this.sendNewAgent();
-		
-		// Mutate parameters
-		baby.mutateAgent();
-		
-		// Register the plasmid (species population)
+		/*
+		 * Register the plasmid (species population).
+		 */
 		baby.registerBirth();
 	}
 	
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutateAgent()
-	{
-		// Mutate inherited parameters
-		super.mutateAgent();
-		// Now mutate your parameters
-	}
-
 	/* _______________________________________________________________________ */
-
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void internalStep()
-	{
-	}
 
 	/**
 	 * Test if the episome can be transfered.

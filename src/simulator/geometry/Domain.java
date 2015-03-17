@@ -351,7 +351,10 @@ public class Domain implements IsComputationDomain
 		for (AllBC aBoundary : _boundaryList)
 			if (aBoundary.isOutside(newLoc))
 			{
-				System.out.println("agent at "+newLoc.toString()+" crossed boundary "+aBoundary.getSide());
+				/*
+				System.out.println("agent at "+newLoc.toString()+
+								" crossed boundary "+aBoundary.getSide());
+				*/
 				return aBoundary;
 			}
 		
@@ -496,20 +499,26 @@ public class Domain implements IsComputationDomain
 	 */
 	public void calculateComputationDomainGrids()
 	{
-		for (int i = 1; i < _nI+1; i++) 
-			for (int j = 1; j < _nJ+1; j++) 
-				for (int k = 1; k < _nK+1; k++) 
+		LogFile.writeLogDebug("Debugging Domain.calculateComputationDomainGrids()");
+		for (int i = 1; i <= _nI; i++) 
+			for (int j = 1; j <= _nJ; j++) 
+				for (int k = 1; k <= _nK; k++)
 					if ( _biomassGrid.grid[i][j][k] > 0.0 )
 					{
-						// if this is biomass,
+						LogFile.writeLogDebug("\t("+i+","+j+","+k+") is biomass");
+						/*
+						 * This is biomass.
+						 */
 						_boundaryLayer.grid[i][j][k] = 1.0;
 						_diffusivityGrid.grid[i][j][k] = _biofilmDiffusivity;
 					}
 					else
 					{
-						// if liquid, check dilation sphere for biomass
-						// (checkDilationRadius will set the value to 1 if it is
-						//  within the boundary layer)
+						/*
+						 * This is liquid, check dilation sphere for biomass:
+						 * checkDilationRadius will set the value to 1 if it is
+						 * within the boundary layer.
+						 */
 						_boundaryLayer.grid[i][j][k] = checkDilationRadius(i, j, k);
 						if ( _domainGrid.grid[i][j][k] == -1.0 )
 							_diffusivityGrid.grid[i][j][k] = Double.MIN_VALUE;
@@ -631,7 +640,8 @@ public class Domain implements IsComputationDomain
 		 */
 		if ( _dilationBand == 0.0 )
 			return 0.0;
-		
+		LogFile.writeLogDebug("Debugging Domain.checkDilationRadius()");
+		LogFile.writeLogDebug("\tLooking at ("+n+","+m+","+l+")");
 		int iInterval = (int) Math.floor(_dilationBand/_resolution);
 		int jInterval, kInterval;
 		DiscreteVector coord = new DiscreteVector();
@@ -646,7 +656,7 @@ public class Domain implements IsComputationDomain
 			{
 				if ( _nK == 1)
 				{
-					coord.set(n, m, 1);
+					coord.set(n, m, 0);
 					coord.add(i, j, 0);
 					if ( checkDilationCoord(coord) )
 						return 1.0;
@@ -669,7 +679,6 @@ public class Domain implements IsComputationDomain
 				}
 			}
 		}
-		
 		return 0.0;
 	}
 	
@@ -680,12 +689,20 @@ public class Domain implements IsComputationDomain
 	 */
 	protected Boolean checkDilationCoord(DiscreteVector coord)
 	{
+		LogFile.writeLogDebug("Debugging Domain.checkDilationCoord()");
 		for (AllBC aBC : _boundaryList )
 			aBC.applyBoundary(coord);
 		if ( _biomassGrid.getValueAt(coord) > 0.0 )
+		{
+			LogFile.writeLogDebug("\t"+coord.toString()+" is biomass");
 			return true;
+		}
 		if ( _domainGrid.getValueAt(coord) == 0.0 )
+		{
+			LogFile.writeLogDebug("\t"+coord.toString()+" is solid");
 			return true;
+		}
+		LogFile.writeLogDebug("\t"+coord.toString()+" is liquid");
 		return false;
 	}
 	

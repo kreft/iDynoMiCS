@@ -22,11 +22,8 @@ import simulator.agent.*;
 import simulator.reaction.Reaction;
 import simulator.Simulator;
 
-public class MultiEpisome extends InfoAgent {
-
-	// Serial version used for the serialisation of the class
-	private static final long   serialVersionUID  = 1L;
-
+public class MultiEpisome extends InfoAgent
+{
 	//sonia:I've changed it to public
 	public MultiEpiBac              _host;
 
@@ -197,23 +194,8 @@ public class MultiEpisome extends InfoAgent {
 		// Clone the plamid
 		MultiEpisome baby = this.sendNewAgent();
 
-		// Mutate parameters
-		baby.mutateAgent();
-
 		// Register the plasmid (species population)
 		baby.registerBirth();
-	}
-
-	@Override
-	public void mutateAgent() {
-		// Mutate inherited parameters
-		super.mutateAgent();
-		// lastReception = -(getSpeciesParam().receptionLag +1);
-		// lastExchange = -(getSpeciesParam().exchangeLag +1);
-		//sonia 11.10.2010
-		lastReception=0;
-		lastExchange=0;
-		// Now mutate your parameters
 	}
 
 	/* _______________________________________________________________________ */

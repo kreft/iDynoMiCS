@@ -20,11 +20,12 @@ import simulator.geometry.boundaryConditions.BoundaryAgar;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
@@ -159,6 +160,13 @@ public class Solver_multigrid extends DiffusionSolver
 
 		for (int iSolute : _soluteIndex)
 			_solute[iSolute].readBulk();
+		/*
+		LogFile.writeLogAlways("Solver_multigrid.initializeConcentrationfields()");
+		LogFile.writeLogAlways("Padded range is "+_solute[0].getGrid().getMin()+
+								" to "+_solute[0].getGrid().getMax());
+		LogFile.writeLogAlways("Unpadded range is "+_solute[0].getGrid().getMinUnpadded()+
+										" to "+_solute[0].getGrid().getMaxUnpadded());
+		*/
 	}
 
 	/**

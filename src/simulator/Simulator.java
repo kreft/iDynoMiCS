@@ -103,7 +103,7 @@ public class Simulator
 	
 	/**
 	 * Writer for POV-ray output files. Used in biofilm simulations but not
-	 * for modelling chemostats.
+	 * for modeling chemostats.
 	 */
 	public transient PovRayWriter povRayWriter;
 	
@@ -378,19 +378,19 @@ public class Simulator
 			// Check if new agents should be created.
 			checkAgentBirth();
 			
-			LogFile.chronoMessageIn();
+			LogFile.chronoMessageIn("Solving Diffusion-Reaction");
 			
 			// Perform diffusion-reaction relaxation.
-			LogFile.chronoMessageOut("Solving Diffusion-Reaction");
 			for (DiffusionSolver aSolver : solverList)
 				aSolver.initAndSolve();
+			LogFile.chronoMessageOut("Diffusion-Reaction solved");
 			
 			//sonia: 25-08-09
 			if(isFluctEnv)
 				FluctEnv.setEnvCycle(FluctEnv.envNameList.indexOf(FluctEnv.envStatus));
 			
 			// Perform agent stepping.
-			LogFile.chronoMessageOut("Simulating agents");
+			LogFile.chronoMessageIn("Simulating agents");
 			agentGrid.step(this);
 			
 			/*
@@ -410,22 +410,20 @@ public class Simulator
 				//and death/removed biomass
 				agentGrid.removeAllDead();
 			}	
-			
-			// Rob 11/2/2012
-			// If this is an invComp simulation (default is false), stop if there are fewer than
-			// two species remaining
+			/*
+			 * If this is an invComp simulation (default is false), stop if
+			 * there are fewer than two species remaining.
+			 */
 			if (invComp)
 			{
 				int specAlive = 0;
-				
-				for (int iSpecies = 0; iSpecies<speciesDic.size(); iSpecies++) {
-					if (speciesList.get(iSpecies).getPopulation() > 0)
-						specAlive++; 
-				}
-				if (specAlive < 2)
-					continueRunning = false;
+				for ( Species aSpec : speciesList )
+					if ( aSpec.getPopulation() > 0 )
+						specAlive++;
+				continueRunning = (specAlive >= 2);
 			}
-	
+			LogFile.chronoMessageOut("Agents simulated");
+			
 			SimTimer.updateTimeStep(world);
 			LogFile.writeEndOfStep(System.currentTimeMillis()-startTime);
 			

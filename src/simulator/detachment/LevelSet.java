@@ -28,7 +28,7 @@ import utils.XMLParser;
 /**
  * \brief Solver used for modelling detachment.
  * 
- * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Joï¿½o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public abstract class LevelSet
@@ -188,12 +188,10 @@ public abstract class LevelSet
 	{
 		_close.clear();
 		_alive.clear();
-		// go through all elements
 		for (LocatedGroup aGroup : _shovingGrid)
 		{
 			aGroup.resetMove();
-			// aGroup.updateDeltaVolume();
-			if (aGroup.isCarrier)
+			if ( aGroup.isCarrier )
 				_close.add(aGroup);
 		}
 	}

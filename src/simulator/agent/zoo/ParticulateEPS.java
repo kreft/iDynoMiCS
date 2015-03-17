@@ -234,17 +234,6 @@ public class ParticulateEPS extends LocatedAgent
 	}
 
 	/**
-	 * \brief Mutate any inherited parameters for this particular agent
-	 * 
-	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutatePop() 
-	{
-		super.mutatePop();
-	}
-
-	/**
 	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume
 	 * 
 	 * Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. Also determines whether 

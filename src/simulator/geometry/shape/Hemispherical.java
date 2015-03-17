@@ -467,7 +467,7 @@ public class Hemispherical extends IsShape
 	}
 	
 	
-	public ContinuousVector getNormalInside(ContinuousVector cc)
+	public ContinuousVector getNormalInside()
 	{
 		return null;
 	}

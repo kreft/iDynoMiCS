@@ -13,6 +13,7 @@ package simulator.geometry.boundaryConditions;
 
 import java.util.LinkedList;
 
+import utils.LogFile;
 import utils.XMLParser;
 import simulator.Simulator;
 import simulator.SoluteGrid;
@@ -136,7 +137,7 @@ public abstract class AllBC
 	 * @return	Boolean value noting whether this coordinate is outside the
 	 * boundary (true) or not (false).
 	 */
-	public boolean isOutside(ContinuousVector position)
+	public Boolean isOutside(ContinuousVector position)
 	{
 		return _myShape.isOutside(position);
 	}
@@ -379,11 +380,12 @@ public abstract class AllBC
 		 * orthogonal projection.
 		 */
 		ContinuousVector vectorIn = 
-					new ContinuousVector(_myShape.getNormalInside(target));
+							new ContinuousVector(_myShape.getNormalInside());
 		/*
 		 * The whole cell has to be inside, so make a translation equal to the
 		 * total radius.
 		 */
+		vectorIn.normalizeVector();
 		vectorIn.times(anAgent.getRadius(true));
 		// Compute the new position.
 		target.add(vectorIn);

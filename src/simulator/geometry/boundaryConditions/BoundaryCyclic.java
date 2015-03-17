@@ -142,7 +142,7 @@ public class BoundaryCyclic extends ExternalBoundary
 	{
 		// TODO Using first intersection is a quick fix.
 		ContinuousVector nCC = _myShape.getIntersections(position,
-							_myShape.getNormalInside(position)).getFirst();
+									_myShape.getNormalInside()).getFirst();
 		ContinuousVector bCC = getSymmetric(nCC);
 		bCC.subtract(nCC);
 		nCC.sendSum(bCC, position);
@@ -176,10 +176,14 @@ public class BoundaryCyclic extends ExternalBoundary
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
+		LogFile.writeLogDebug("Debugging BoundaryCyclic.applyBoundary()");
+		LogFile.writeLogDebug("\tAgent currently at "+anAgent.getLocation().toString());
+		LogFile.writeLogDebug("\tTarget "+target.toString());
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.
 		vectorIn = _myShape.getIntersections(anAgent.getLocation(),
 											anAgent.getMovement()).getFirst();
+		LogFile.writeLogDebug("\tIntersection at "+vectorIn.toString());
 		// Determine the remaining movement when we touch the boundary.
 		target.sendDiff(target, vectorIn);
 		// Apply the residual movement on the symmetric point.
@@ -187,6 +191,7 @@ public class BoundaryCyclic extends ExternalBoundary
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
 		anAgent.getMovement().sendDiff(target, anAgent.getLocation());
+		LogFile.writeLogDebug("\tNew target "+target.toString());
 	}
 
 	/**
@@ -303,7 +308,7 @@ public class BoundaryCyclic extends ExternalBoundary
 	{
 		// TODO Using first intersection is a quick fix.
 		return _myOppShape.getIntersections(position,
-							_myShape.getNormalInside(position)).getFirst();
+							_myShape.getNormalInside()).getFirst();
 	}
 	
 	/**

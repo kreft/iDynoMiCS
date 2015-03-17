@@ -238,33 +238,18 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 */
 	@Override
 	public void mutatePop() 
-	{
-		// Mutate inherited parameters
-		super.mutatePop();
-		
+	{	
 		// distMethod true -> distribute exponentially
 		// distMethod false -> distribute normally
 		if (getSpeciesParam().distMethod)
 			for (int i = 0; i < particleMass.length; i++)
 				particleMass[i] *= ExtraMath.getExp2Rand();
-		else	
+		else
 			for (int i = 0; i<particleMass.length; i++)
 				particleMass[i] = ExtraMath.deviateFromCV(
 						1.5*particleMass[i], getSpeciesParam().initialMassCV);
 	}
-
-	/**
-	 * \brief Mutate inherited agent parameters after agent division. 
-	 */
-	@Override
-	public void mutateAgent()
-	{
-		// Mutate inherited parameters
-		super.mutateAgent();
-
-		// Now mutate your parameters
-	}
-
+	
 	/**
 	 * \brief Used by Bacterium.divide() method to create a daughter cell of
 	 * this agent.
@@ -436,7 +421,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 *  particles.
 	 */
 	@Override
-	public boolean hasEPS()
+	public Boolean hasEPS()
 	{
 		return _hasEps;
 	}
@@ -449,7 +434,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 *  @return Boolean noting whether this bacterium object contains inert particles
 	 */
 	@Override
-	public boolean hasInert()
+	public Boolean hasInert()
 	{
 		return _hasInert;
 	}

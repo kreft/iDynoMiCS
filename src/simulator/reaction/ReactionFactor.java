@@ -25,7 +25,7 @@ import utils.XMLParser;
  * decomposed in several kinetic factors (one factor by solute).
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author Sï¿½nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK)
  *
  */

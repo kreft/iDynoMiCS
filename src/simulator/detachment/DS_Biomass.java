@@ -26,7 +26,7 @@ import utils.ExtraMath;
  * speed and the timestep, with the detachment speed calculated via one of the
  * given forms. This class captures the Biomass detachment method.
  * 
- * @author Jo„o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author Jo√£o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public class DS_Biomass extends LevelSet 

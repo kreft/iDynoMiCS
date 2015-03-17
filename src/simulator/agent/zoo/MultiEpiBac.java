@@ -58,7 +58,7 @@ public class MultiEpiBac extends BactEPS
 
 	//sonia 8-12-2010
 	//distance based probability ordering management
-	public Map<Double, LocatedAgent> teste = new HashMap <Double, LocatedAgent> ();
+	public Map<Double, LocatedAgent> test = new HashMap <Double, LocatedAgent> ();
 	/* _________________________ CONSTRUCTOR _____________________________ */
 	/**
 	 * Empty constructor ; called to build a progenitor ; the speciesParameter
@@ -150,30 +150,13 @@ public class MultiEpiBac extends BactEPS
 			System.out.println("at createNewAgent in EpiBac error " + e);
 		}
 	}
-
-	@Override
-	public void mutatePop() {
-		// Mutate inherited parameters
-		super.mutatePop();
-		// Now mutate your parameters
-	}
-
+	
 	/* ______________________ CELL DIVISION ___________________ */
-
-	@Override
-	public void mutateAgent() {
-		// Mutate inherited parameters
-		super.mutateAgent();
-
-
-		// Now mutate your parameters
-	}
 
 	@Override
 	public void makeKid() throws CloneNotSupportedException {
 		// Create the new instance
 		MultiEpiBac baby = sendNewAgent();
-		baby.mutateAgent();
 
 		// Update the lineage
 		recordGenealogy(baby);
@@ -547,30 +530,18 @@ public class MultiEpiBac extends BactEPS
 			// First test whether the plasmid will be transferred and then proceed with the 
 			// distance-based probability of transfer to a nearest recipient
 
-			if(testDonorTransfer(aPlasmid)){
-
-
-				double cumProbSum=0;
-
-				for (int i=0; i< aPlasmid.nbhList.size(); i++){
-
+			if ( testDonorTransfer(aPlasmid) )
+			{
+				Double cumProbSum = 0.0;
+				for ( LocatedAgent agent : aPlasmid.nbhList )
+					cumProbSum += agent._distCumProb;
+				Double normRand = ExtraMath.getUniRandDbl()*cumProbSum;
+				for (int i = 0; i< aPlasmid.nbhList.size(); i++)
+				{
 					aLoc =	aPlasmid.nbhList.get(i);
-					cumProbSum += aLoc._distCumProb;
-				}
-
-				double random = 0;
-				double normRand =0;
-				random = ExtraMath.getUniRandDbl();
-				normRand = random*cumProbSum;
-
-				int pos=0;
-				for (int i=0; i< aPlasmid.nbhList.size(); i++){
-
-					aLoc =	aPlasmid.nbhList.get(i);
-
-					if(aLoc._distCumProb<normRand){
+					if( aLoc._distCumProb < normRand )
+					{
 						aLoc = aPlasmid.nbhList.remove(i);
-						pos=i;
 						break;
 					}
 				}
@@ -605,48 +576,49 @@ public class MultiEpiBac extends BactEPS
 	 * listNbh contains all locatedAgents located in the neighbourhood
 	 * @param nbhRadius
 	 */
-	public void buildNbh(double nbhRadius, MultiEpisome aPlasmid) {
-
-		double dist=0;
-		double dRadius=0;
-		double rRadius=0;		
-		double distProb=0;
-
-		int radius = (int) Math.ceil(nbhRadius/_agentGrid.getResolution());
+	public void buildNbh(double nbhRadius, MultiEpisome aPlasmid)
+	{
+		Double dist = 0.0;
+		/*
+		 * Donor radius.
+		 */
+		Double dRadius = 0.0;
+		/*
+		 * Recipient radius.
+		 */
+		Double rRadius = 0.0;		
+		Double distProb = 0.0;
+		
+		Double radius = Math.ceil(nbhRadius/_agentGrid.getResolution());
 		_agentGrid.getPotentialShovers(_agentGridIndex, radius, _myNeighbors);
-
-
+		
 		// Now remove too far agents (apply circular perimeter)
-		for (int iter = 0; iter<_myNeighbors.size(); iter++) {
-
+		for (int iter = 0; iter<_myNeighbors.size(); iter++)
+		{
 			LocatedAgent aLocAgent = _myNeighbors.removeFirst();
-			dist = this.getDistance(aLocAgent);
-
-			//sonia 4/10/2010
-			// the distance between two cells is measured from their surface and not from the centre of their mass
-			dRadius=this.getRadius(false);
+			/*
+			 * The distance between two cells is measured from their surface
+			 * and not from the center of their mass.
+			 */
+			dRadius = this.getRadius(false);
 			rRadius = aLocAgent.getRadius(false);
-			dist = dist - dRadius - rRadius;
-
-			if(dist<nbhRadius){
-
-				aLocAgent._distProb = (dRadius*dRadius)/ ((dRadius + dist) * (dRadius + dist));
-				distProb = aLocAgent._distProb ;
-
-				//aPlasmid.nbhList.addLast(aLocAgent);
-				//_myNeighbors.addLast(aLocAgent);
-				teste.put(distProb, aLocAgent);	
+			dist = this.getDistance(aLocAgent) - dRadius - rRadius;
+			if ( dist < nbhRadius )
+			{
+				distProb = ExtraMath.sq(dRadius/(dRadius+dist));
+				aLocAgent._distProb = distProb;
+				test.put(distProb, aLocAgent);	
 			}	
 		}
 
 		//sonia 10.2010 code for ordering the recipients according to their distance to the donor cell
 
-		for (Iterator<Double> iter1 = teste.keySet().iterator(); iter1.hasNext();) {
+		for (Iterator<Double> iter1 = test.keySet().iterator(); iter1.hasNext();) {
 
 			double reach = iter1.next();
 			//System.out.println("porbability based distance is " + reach);
 			if (reach<nbhRadius){
-				aPlasmid.nbhList.addLast(teste.get(reach));
+				aPlasmid.nbhList.addLast(test.get(reach));
 			}
 		}
 		//System.out.println("nbhList with close enough recipients size is " + aPlasmid.nbhList.size());

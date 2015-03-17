@@ -115,6 +115,9 @@ public class ContinuousVector implements Cloneable
 	
 	/**
 	 * 
+	 * TODO Rob 13Mar2015: Check padding.
+	 * Compare Agentcontainer.getGridLocation(int index)
+	 * 
 	 * @param dC
 	 * @param res
 	 */

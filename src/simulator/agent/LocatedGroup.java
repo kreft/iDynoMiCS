@@ -1,11 +1,13 @@
 /**
  * \package agent
- * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
+ * \brief Package of utilities that create and manage agents in the simulation
+ * and their participation in relevant reactions
  * 
- * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.agent;
 
@@ -15,19 +17,17 @@ import simulator.Simulator;
 import simulator.AgentContainer;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
-import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
+import utils.LogFile;
 
 /**
- * \brief Object to hold a group of agents in one location on the agent grid
+ * \brief Object to hold a group of agents in one location on the agent grid.
  * 
- * Object to hold a group of agents in one location on the agent grid
- * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
  * for Infection Research (Germany).
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * @author SÃ³nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
  * University of Birmingham (UK).
  */
 public class LocatedGroup
@@ -105,7 +105,12 @@ public class LocatedGroup
 	public LocatedGroup[][][] nbhGroup = new LocatedGroup[3][3][3];
 
 	/**
-	 * Space occupation (-1->outside, 0->carrier, 1->biofilm, 2->liquid, 3->bulk)
+	 * Space occupation
+	 * -1 outside
+	 * 0  carrier
+	 * 1  biofilm
+	 * 2  liquid
+	 * 3  bulk
 	 */ 
 	public int status = 2;
 	
@@ -142,6 +147,7 @@ public class LocatedGroup
 	 */
 	public LocatedGroup(int index, AgentContainer anAgentGrid, Simulator aSimulator) 
 	{
+		//LogFile.writeLogDebug("Debugging LocatedGroup()");
 		agentGrid = anAgentGrid;
 		// Spatial location of the group
 		gridIndex = index;
@@ -156,7 +162,7 @@ public class LocatedGroup
 		// Check if the group is inside the domain
 		isOutside = false;
 		for (AllBC aBC : anAgentGrid.domain.getAllBoundaries())
-			if (aBC.isOutside(cc))
+			if ( aBC.isOutside(cc) )
 			{
 				isOutside = true;
 				status = -1;
@@ -164,6 +170,12 @@ public class LocatedGroup
 				aBC.setBoundary(this);
 				break;
 			}
+		/*
+		if ( isOutside )
+			LogFile.writeLogDebug("\tLocatedGroup at "+dc.toString()+" is outside");
+		else
+			LogFile.writeLogDebug("\tLocatedGroup at "+dc.toString()+" is inside");
+		*/
 	}
 
 	/**
@@ -179,7 +191,15 @@ public class LocatedGroup
 			testNbh_2D(agentGrid.getShovingGrid());
 		distanceFromBorders();
 		if ( distanceFromCarrier < agentGrid.getResolution() )
+		{
+			LogFile.writeLogDebug("\tLocatedGroup is carrier");
 			isCarrier = true;
+			return;
+		}
+		else
+			LogFile.writeLogDebug("\tLocatedGroup is not carrier");
+		//LogFile.writeLogDebug("Debugging LocatedGroup.init()");
+		//LogFile.writeLogDebug("\tLG at "+dc.toString()+" is not outside/carrier");
 	}
 	
 	/**
@@ -251,7 +271,7 @@ public class LocatedGroup
 		}
 		return move.norm();
 	}
-
+	
 	public void resetMove()
 	{
 		move.reset();
@@ -271,45 +291,42 @@ public class LocatedGroup
 			aLoc.addMovement(move);
 		}
 	}
-
+	
 	/**
 	 * \brief Safely remove located agent from agentList & agentGrid.
+	 * 
+	 * TODO Rob 16Mar2015: Maybe add reason for death as an argument to make
+	 * this method more general?
 	 */
 	public void killAll()
 	{
-		ListIterator<LocatedAgent> iter = group.listIterator();
-		LocatedAgent aLoc;
-		while ( iter.hasNext() )
+		for ( LocatedAgent aLoc : group )
 		{
-			aLoc = iter.next();
-			//sonia 27.04.2010
-			//added add aLoc to agentToKill list and reason of death;
-			aLoc.death="detachment";
+			aLoc.death = "detachment";
 			agentGrid._agentToKill.add(aLoc);
 			agentGrid.agentList.remove(aLoc);
-			iter.remove();
 		}
+		group.clear();
+		if ( !Simulator.isChemostat )
+			status = 2;
 	}
-
+	
 	/**
-	 * \brief Remove an agent from this LocatedGroup
+	 * \brief Remove an agent from this LocatedGroup.
 	 * 
-	 * Remove an agent from this LocatedGroup
-	 * @param anAgent	LocatedAgent to remove from this group
+	 * @param anAgent	LocatedAgent to remove from this group.
 	 */
 	public void remove(LocatedAgent anAgent)
 	{
 		group.remove(anAgent);
-		
 		if ( group.isEmpty() && !Simulator.isChemostat )
 			status = 2;
 	}
-
+	
 	/**
-	 * \brief Add an agent to this LocatedGroup
+	 * \brief Add an agent to this LocatedGroup.
 	 * 
-	 * Add an agent to this LocatedGroup
-	 * @param anAgent	LocatedAgent to add to this group
+	 * @param anAgent	LocatedAgent to add to this group.
 	 */
 	public void add(LocatedAgent anAgent) 
 	{
@@ -317,38 +334,21 @@ public class LocatedGroup
 		status = 1;
 		anAgent.setGridIndex(gridIndex);
 	}
-
+	
 	/**
-	 * \brief Shuffle coordinates of an agent inside the group
+	 * \brief Move the X parameter by a specified amount.
 	 * 
-	 * Shuffle coordinates of an agent inside the group.
-	 * 
-	 * @param aLoc	LocatedAgent which is to be shuffled
-	 */
-	public void host(LocatedAgent aLoc)
-	{
-		Double res = agentGrid.getResolution();
-		ContinuousVector cc = aLoc.getLocation();
-		cc.y = ExtraMath.getUniRand(this.cc.y-res/2, this.cc.y+res/2);
-		cc.z = ExtraMath.getUniRand(this.cc.z-res/2, this.cc.z+res/2);
-		cc.x = this.cc.x-res/2;
-		add(aLoc);
-	}
-
-	/**
-	 * \brief Move the X parameter by a specified amount
-	 * 
-	 * Move the X parameter by a specified amount
-	 * 
-	 * @param i	The current I grid element
-	 * @return	Located group reached by that move
+	 * @param i	The current I grid element.
+	 * @return	Located group reached by that move.
 	 */
 	public LocatedGroup moveX(int i)
 	{
-		int delta = (int) Math.signum(i);
+		LogFile.writeLogDebug("Debugging LocatedGroup.moveX()");
+		int delta = Integer.signum(i);
+		LogFile.writeLogDebug("\ti = "+i+", delta = "+delta);
 		LocatedGroup out = nbhGroup[delta+1][1][1];
 		i -= delta;
-		while (i != 0)
+		while ( i != 0 )
 		{
 			out = moveX(delta);
 			i -= delta;
@@ -357,19 +357,17 @@ public class LocatedGroup
 	}
 	
 	/**
-	 * \brief Move the Y parameter by a specified amount
+	 * \brief Move the Y parameter by a specified amount.
 	 * 
-	 * Move the Y parameter by a specified amount
-	 * 
-	 * @param j	The current grid element
-	 * @return	Located group reached by that move
+	 * @param j	The current grid element.
+	 * @return	Located group reached by that move.
 	 */
 	public LocatedGroup moveY(int j)
 	{
-		int delta = (int) Math.signum(j);
+		int delta = Integer.signum(j);
 		LocatedGroup out = nbhGroup[1][delta+1][1];
 		j -= delta;
-		while (j != 0)
+		while ( j != 0 )
 		{
 			out = moveY(delta);
 			j -= delta;
@@ -378,96 +376,53 @@ public class LocatedGroup
 	}
 
 	/**
-	 * \brief Move the Z parameter by a specified amount
+	 * \brief Move the Z parameter by a specified amount.
 	 * 
-	 * Move the Z parameter by a specified amount
-	 * 
-	 * @param k	The current grid element
-	 * @return	Located group reached by that move
+	 * @param k	The current grid element.
+	 * @return	Located group reached by that move.
 	 */
 	public LocatedGroup moveZ(int k)
 	{
-		int delta = (int) Math.signum(k);
+		int delta = Integer.signum(k);
 		LocatedGroup out = nbhGroup[1][1][delta+1];
 		k -= delta;
-		while (k != 0)
+		while ( k != 0 )
 		{
 			out = moveZ(delta);
 			k -= delta;
 		}
 		return out;
 	}
-
-	/**
-	 * \brief Compute the difference vector between two continuous vectors
-	 * 
-	 * Compute the difference vector between two continuous vectors
-	 * 
-	 * @param me	Location of one agent expressed as continuous vector
-	 * @param him	Location of second agent expressed as continuous vector
-	 * @param move	ContinuousVector to hold the difference between the two vectors
-	 * @return	Double distance between the two points
-	 * @deprecated
-	 */
-	@Deprecated
-	public double computeDifferenceVector(ContinuousVector me, ContinuousVector him,
-			ContinuousVector move) {
-		double gridLength;
-
-		move.x = me.x-him.x;
-		// check periodicity in X
-		gridLength = agentGrid.domain.length_X;
-		if (Math.abs(move.x)>.5*gridLength) {
-			move.x -= Math.signum(move.x)*gridLength;
-		}
-
-		move.y = me.y-him.y;
-		// check periodicity in Y
-		gridLength = agentGrid.domain.length_Y;
-		if (Math.abs(move.y)>.5*gridLength) {
-			move.y -= Math.signum(move.y)*gridLength;
-		}
-
-		if (agentGrid.is3D) {
-			move.z = me.z-him.z;
-			// check periodicity in Z
-			gridLength = agentGrid.domain.length_Z;
-			if (Math.abs(move.z)>.5*gridLength) {
-				move.z -= Math.signum(move.z)*gridLength;
-			}
-
-		} else {
-			move.z = 0.0;
-		}
-		double d = Math.sqrt(move.x*move.x+move.y*move.y+move.z*move.z);
-
-		return d;
-	}
-
+	
 	/**
 	 * \brief Compute distance to closest carrier.
 	 */
 	public void distanceFromBorders()
 	{
+		LogFile.writeLogDebug("Debugging LocatedGroup.distanceFromBorders()");
+		LogFile.writeLogDebug("\tLocatedGroup at "+cc.toString());
 		Double valueCarrier = Double.MAX_VALUE;
 		for (AllBC aBoundary : agentGrid.domain.getAllSupportBoundaries() )
+		{
 			valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
+			LogFile.writeLogDebug("\tdistance from supporting boundary "+
+							aBoundary.getSide()+" = "+aBoundary.getDistance(cc));
+		}
+		LogFile.writeLogDebug("\tMin dist = "+valueCarrier);
 		distanceFromCarrier = valueCarrier;
 	}
 
 	/**
-	 * \brief Use the boundary conditions to build 3D neighbourhood reference map
+	 * \brief Use the boundary conditions to build 3D neighbourhood reference
+	 * map.
 	 * 
-	 * Use the boundary conditions to build 3D neighbourhood reference map
-	 * 
-	 * @param shovGrid	The shoving grid used to build reference map
+	 * @param shovGrid	The shoving grid used to build reference map.
 	 */
-	protected void testNbh_3D(LocatedGroup[] shovGrid) {
+	protected void testNbh_3D(LocatedGroup[] shovGrid)
+	{
 		AllBC aBC;
 		int index;
 		DiscreteVector nbhDC = new DiscreteVector();
-
-		// Build neighbourhood reference map
 		for (int i = 0; i<3; i++) 
 			for (int j = 0; j<3; j++)
 				for (int k = 0; k<3; k++)
@@ -481,7 +436,7 @@ public class LocatedGroup
 						// conditions until no more boundaries are crossed; the neighbor will
 						// then be within the domain if appropriate (periodic boundary) or will
 						// be the outside-domain neighbor that was picked originally
-						if (shovGrid[index].isOutside)
+						if ( shovGrid[index].isOutside )
 						{
 							int oldindex;
 							do {
@@ -492,8 +447,9 @@ public class LocatedGroup
 								index = agentGrid.getIndexedPosition(aBC.lookAt(shovGrid[index].cc));
 							} while (oldindex != index);
 						}
-
-						// Store the reference to your neighbour
+						/*
+						 * Store the reference to your neighbour.
+						 */
 						nbhIndex[i][j][k] = index;
 						nbhGroup[i][j][k] = shovGrid[index];
 					}
@@ -515,10 +471,8 @@ public class LocatedGroup
 		int index, oldIndex;
 		DiscreteVector nbhDC = new DiscreteVector();
 		ContinuousVector cc;
-		// Build neighbourhood reference map
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
-			{
 				try
 				{
 					// Get your supposed neighbour.
@@ -545,7 +499,6 @@ public class LocatedGroup
 				{
 					// Nothing done here.
 				}
-			}
 	}
 
 	/**
@@ -584,6 +537,20 @@ public class LocatedGroup
 				nFreeNbh++;
 		}
 		return nFreeNbh;
+	}
+	
+	/**
+	 * Used for debugging purposes.
+	 */
+	public int countNullNeighbours()
+	{
+		int numNull = 0;
+		for ( LocatedGroup[][] nbhZ : nbhGroup )
+			for ( LocatedGroup[] nbhY : nbhZ )
+				for ( LocatedGroup nbhX : nbhY )
+					if ( nbhX == null )
+						numNull++;
+		return numNull;
 	}
 
 	/**

@@ -130,24 +130,12 @@ public class EpiBac extends BactEPS
 	}
 
 	/* ______________________ CELL DIVISION ___________________ */
-
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutateAgent()
-	{
-		// Mutate inherited parameters
-		super.mutateAgent();
-		// Now mutate your parameters
-	}
-
+	
 	@Override
 	public void makeKid() throws CloneNotSupportedException
 	{
 		// Create the new instance
 		EpiBac baby = sendNewAgent();
-		baby.mutateAgent();
 		// Update the lineage
 		recordGenealogy(baby);
 		// Share mass of all compounds between two daughter cells and compute

@@ -195,7 +195,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 		 * Build a vector normal to the boundary and starting from the
 		 * orthogonal projection.
 		 */
-		vectorIn = new ContinuousVector(_myShape.getNormalInside(target));
+		vectorIn = new ContinuousVector(_myShape.getNormalInside());
 		/*
 		 * The whole cell has to be inside, so make a translation equal to the
 		 * total radius.

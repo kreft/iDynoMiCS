@@ -511,7 +511,11 @@ public abstract class Reaction implements Serializable
 	public void fitAgentMassOnGrid(SpatialGrid aSpG)
 	{
 		for (ActiveAgent anActiveAgent : _guild)
+		{
+			if ( anActiveAgent.isDead )
+				continue;
 			anActiveAgent.fitMassOnGrid(aSpG, this._catalystIndex);
+		}
 	}
 
 	/**
@@ -607,6 +611,8 @@ public abstract class Reaction implements Serializable
 		_reacGrid.resetToZero();
 		for (ActiveAgent anAgent : _guild)
 		{
+			if ( anAgent.isDead )
+				continue;
 			// Sum mass of catalyser compartments on each grid cell
 			anAgent.fitMassOnGrid(_guildGrid, _catalystIndex);
 			// Apparent reaction rate on each grid cell

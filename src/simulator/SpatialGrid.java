@@ -1,15 +1,17 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
@@ -19,14 +21,15 @@ import utils.MatrixOperations;
 import utils.ResultFile;
 
 /**
- * \brief Class defining a spatial grid, i.e. a matrix of double. The grid is padded, 3D grid
+ * \brief Class defining a spatial grid, i.e. a matrix of double.
  * 
- * Class defining a spatial grid, i.e. a matrix of double. The grid is padded, 3D grid
+ * The grid is padded, 3D grid.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class SpatialGrid implements Serializable
 {
@@ -88,12 +91,13 @@ public class SpatialGrid implements Serializable
 	/**
 	 * \brief Default constructor for an empty spatial grid
 	 * 
-	 * Default constructor for an empty spatial grid. Sets the grid resolution and dimensions as provided in the simulation protocol file
+	 * Sets the grid resolution and dimensions as provided in the simulation
+	 * protocol file.
 	 * 
-	 * @param nI	The number of grid locations in the I direction
-	 * @param nJ	The number of grid locations in the J direction
-	 * @param nK	The number of grid locations in the K direction
-	 * @param resolution the grid resolution
+	 * @param nI	The number of grid locations in the I direction.
+	 * @param nJ	The number of grid locations in the J direction.
+	 * @param nK	The number of grid locations in the K direction.
+	 * @param resolution The grid resolution.
 	 */
 	public SpatialGrid(int nI, int nJ, int nK, Double resolution)
 	{
@@ -106,14 +110,15 @@ public class SpatialGrid implements Serializable
 			_nK = nK;
 		}
 		_reso = resolution;
-		// Create a padded grid
+		// Create a padded grid.
 		initGrids();
 	}
-
+	
 	/**
 	 * \brief Default constructor for an empty 2D spatial grid
 	 * 
-	 * Default constructor for an empty 2D spatial grid. Sets the grid resolution and dimensions as provided in the simulation protocol file
+	 * Sets the grid resolution and dimensions as provided in the simulation
+	 * protocol file.
 	 * 
 	 * @param nI	The number of grid locations in the I direction
 	 * @param nJ	The number of grid locations in the J direction
@@ -121,7 +126,7 @@ public class SpatialGrid implements Serializable
 	 */
 	public SpatialGrid(int nI, int nJ, Double resolution)
 	{
-		if(Simulator.isChemostat)
+		if ( Simulator.isChemostat )
 			_nI = _nJ = 1;
 		else
 		{
@@ -130,10 +135,10 @@ public class SpatialGrid implements Serializable
 		}
 		_nK = 1;
 		_reso = resolution;
-		// Create a padded grid
+		// Create a padded grid.
 		initGrids();
 	}
-
+	
 	/**
 	 * \brief Creates the solute grid at the required size
 	 * 
@@ -158,17 +163,17 @@ public class SpatialGrid implements Serializable
 	 * \brief Determine if a given discrete position is valid or outside the
 	 * grid (Padding excluded).
 	 * 
+	 * TODO Rob 13Mar2015: Surely this should be > 0 to exclude padding?
+	 * 
 	 * @param dC	DiscreteVector to validate
 	 * @return Boolean stating whether this location is valid (true) or
 	 * outside the grid.
 	 */
 	public Boolean isValid(DiscreteVector dC)
 	{
-		Boolean out = true;
-		out &= (dC.i >= 0) && (dC.i < _nI);
-		out &= (dC.j >= 0) && (dC.j < _nJ);
-		out &= (dC.k >= 0) && (dC.k < _nK);
-		return out;
+		return (dC.i >= 0) && (dC.i < _nI) && 
+				(dC.j >= 0) && (dC.j < _nJ) &&
+				(dC.k >= 0) && (dC.k < _nK);
 	}
 	
 	/**
@@ -189,14 +194,16 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Determine if a given continuous location is valid or outside the grid
+	 * \brief Determine if a given continuous location is valid or outside the
+	 * grid.
 	 * 
-	 * @param cc	ContinuousVector to validate
-	 * @return Boolean stating whether this location is valid (true) or outside the grid
+	 * @param position	ContinuousVector to validate.
+	 * @return Boolean stating whether this location is valid (true) or
+	 * outside the grid (false).
 	 */
-	public boolean isValid(ContinuousVector cc)
+	public Boolean isValid(ContinuousVector position)
 	{
-		return isValid(getDiscreteCoordinates(cc));
+		return isValid(getDiscreteCoordinates(position));
 	}
 
 	/**
@@ -219,30 +226,19 @@ public class SpatialGrid implements Serializable
 	}
 
 	/**
-	 * \brief Transform a position, expressed as a discrete vector into a continuous location on the basis of the resolution of the grid
+	 * \brief Transform a position, expressed as a discrete vector into a
+	 * continuous location on the basis of the resolution of the grid.
 	 * 
-	 * Transform a position, expressed as a discrete vector into a continuous location on the basis of the resolution of the grid
-	 * 
-	 * @param dC	DiscreteVector to be transformed
-	 * @return	ContinuousVector created from this discrete position
+	 * @param coord	DiscreteVector to be transformed.
+	 * @return	ContinuousVector created from this discrete position.
 	 */
-	public ContinuousVector getContinuousCoordinates(DiscreteVector dC)
+	public ContinuousVector getContinuousCoordinates(DiscreteVector coord)
 	{
 		ContinuousVector out = new ContinuousVector();
-		out.setToVoxelCenter(dC, _reso);
+		out.setToVoxelCenter(coord, _reso);
 		return out;
 	}
-
-	/**
-	 * Rob 13 Jan 2015: deleted as unusued. Recommend using 
-	 * ContinunousVector(DiscreteVector dC, Double res)
-	 * in future, should this be needed.
-	 *
-	public ContinuousVector getContinuousCoordinates(int i, int j, int k)
-	{
-		return new ContinuousVector((i+0.5)*_reso, (j+0.5)*_reso, (k+0.5)*_reso);
-	}*/
-
+	
 	/**
 	 * \brief Return the maximum value on this grid (padding included).
 	 * 
@@ -252,7 +248,20 @@ public class SpatialGrid implements Serializable
 	{
 		return MatrixOperations.max(grid);
 	}
-
+	
+	public Double getMaxUnpadded()
+	{
+		Double out = Double.NEGATIVE_INFINITY;
+		for ( int i = 0; i < _nI; i++ )
+			for ( int j = 0; j < _nJ; j++ )
+				for ( int k = 0; k < _nK; k++ )
+				{
+					out = Math.max(out, grid[i][j][k]);
+				}
+					
+		return out;
+	}
+	
 	/**
 	 * \brief Return the average value on this grid (padding excluded).
 	 * 
@@ -278,11 +287,25 @@ public class SpatialGrid implements Serializable
 	 * 
 	 * @return Minimum value of the grid
 	 */
-	public double getMin()
+	public Double getMin()
 	{
 		return MatrixOperations.min(grid);
 	}
-
+	
+	public Double getMinUnpadded()
+	{
+		Double out = Double.POSITIVE_INFINITY;
+		for ( int i = 0; i < _nI; i++ )
+			for ( int j = 0; j < _nJ; j++ )
+				for ( int k = 0; k < _nK; k++ )
+				{
+					System.out.println("Looking at "+i+", "+j+", "+k+": "+grid[i][j][k]);
+					out = Math.min(out, grid[i][j][k]);
+				}
+					
+		return out;
+	}
+	
 	/**
 	 * \brief For a given location, calculate the 2nd spatial derivative
 	 * according to X.
@@ -884,24 +907,22 @@ public class SpatialGrid implements Serializable
 		// main fix here however, is that grid is a double and not an
 		// array, as previously coded (this reduces the amount of 
 		// storage space taken by envState files by about a 2 thirds!)
-
-		//sonia:chemostat
-		if(Simulator.isChemostat){
-			// bufferState.write(Arrays.toString(grid[i][j]));
+		
+		
+		if ( Simulator.isChemostat )
+		{
 			bufferState.write(Double.toString(grid[0][0][0]));
 			bufferState.write(";\n");
-
 		}
 		else
 		{
-
 			// KA 06062013 - turned off the printing of the padding. Will need to ensure this is clear from v1.2
 			// Fill the mark-up
-			if (_nK==1)
+			if ( _nK == 1 )
 			{
 				// We have a 2D grid
-				for (int i = 1; i<_nI+1; i++)
-					for (int j = 1; j<_nJ+1; j++)
+				for ( int i = 1; i < _nI + 1; i++ )
+					for ( int j = 1; j < _nJ + 1; j++ )
 					{
 						bufferState.write(grid[i][j][1].toString());
 						bufferState.write(";\n");
@@ -910,16 +931,15 @@ public class SpatialGrid implements Serializable
 			else
 			{
 				// We have a 3D grid 
-				for (int i = 1; i<_nI+1; i++)
-					for (int j = 1; j<_nJ+1; j++)
-						for (int k=1; k<_nK+1; k++)
+				for ( int i = 1; i < _nI + 1; i++ )
+					for ( int j = 1; j < _nJ + 1; j++ )
+						for ( int k = 1; k < _nK + 1; k++ )
 						{
 							bufferState.write(grid[i][j][k].toString());
 							bufferState.write(";\n");
 						}
 			}
 		}
-
 		// Close the mark-up
 		bufferState.write("\n</solute>\n");
 		

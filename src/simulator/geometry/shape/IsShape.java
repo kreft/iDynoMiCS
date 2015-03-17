@@ -169,7 +169,7 @@ public abstract class IsShape implements Serializable
 	 * @return ContinuousVector that is pointing towards the inside of the
 	 * shape.
 	 */
-	public abstract ContinuousVector getNormalInside(ContinuousVector cc);
+	public abstract ContinuousVector getNormalInside();
 		
 	/**
 	 * \brief Return vector normal to the plane.
