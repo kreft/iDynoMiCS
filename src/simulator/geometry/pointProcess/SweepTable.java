@@ -119,7 +119,9 @@ public class SweepTable
 	 */
 	public HalfEdge leftBoundary(ContinuousVector point)
 	{
-		/* Use hash table to get close to desired halfedge */
+		/*
+		 * Use hash table to get close to desired halfedge
+		 */
 		//System.out.println("size "+size+", value "+getValue(point)+", min "+minValue+", delta "+deltaValue);
 		Double temp = size*(getValue(point)-minValue)/deltaValue;
 		int bucket = temp.intValue();
@@ -148,18 +150,32 @@ public class SweepTable
 		 */ 
 		if (out==leftEnd || ((out!=rightEnd) && isHErightOfPoint(out, point)))
 		{
-			do { out = out.rightNeighbor; }
-			while ( out != rightEnd && isHErightOfPoint(out, point) );
+			printHalfEdge("Starting left with ", out, ", going right");
+			do
+			{
+				out = out.rightNeighbor;
+				
+				printHalfEdge("\tTrying ", out, "");
+				if ( out != rightEnd )
+					System.out.println("\t\tIs right of point? "+isHErightOfPoint(out, point));
+			}
+			while ( out != rightEnd && isHEleftOfPoint(out, point) );
 			/* This is the HalfEdge immediately the right of the point, so go
 			 * left one HE.
 			 */
 			out = out.leftNeighbor;
+			printHalfEdge("\tGoing left one, to ", out, "");
 		}
 		else
 		{
+			printHalfEdge("Starting right with ", out, ", going left");
 			// Need a do-while in case: out == rightEnd && isLeftOfSite()
-			do { out = out.leftNeighbor; }
-			while ( (out != leftEnd) && isHEleftOfPoint(out, point) );
+			do
+			{
+				out = out.leftNeighbor;
+				printHalfEdge("\tTrying ", out, "");
+			}
+			while ( out != rightEnd && isHErightOfPoint(out, point) );
 			/* Nothing more to do here - we've found the HalfEdge immediately
 			 * to the left of the point.
 			 */
@@ -179,68 +195,122 @@ public class SweepTable
 	 * @param point
 	 * @return
 	 */
-	private Boolean isHEleftOfPoint(HalfEdge halfEdge, ContinuousVector point)
-	{
-		return ! isHErightOfPoint(halfEdge, point);
-	}
-	
 	private Boolean isHErightOfPoint(HalfEdge halfEdge, ContinuousVector point)
 	{
-		System.out.println("Looking at point "+point.toString());
-		System.out.println("\thalfEdge "+halfEdge.toString());
-		System.out.println("\tand region "+halfEdge.getRightRegion().toString());
+		return ! isHEleftOfPoint(halfEdge, point);
+	}
+	
+	/**
+	 * 
+	 * @param halfEdge
+	 * @param point
+	 * @return
+	 */
+	private Boolean isHEleftOfPoint(HalfEdge halfEdge, ContinuousVector point)
+	{
+		/*
+		 * Convert the point given, and the Site on the right of the HalfEdge,
+		 * to local coordinates.
+		 */
 		Double[] p = _space.convertToLocal(point);
-		Double[] r = _space.convertToLocal(halfEdge.getRightRegion());
+		Double[] r = _space.convertToLocal(halfEdge.getSiteAbove());
 		Double primaryDiff = p[primary] - r[primary];
-		if ( primaryDiff > 0 && halfEdge.isOnLeft() )
+		/*
+		 * TODO Delete above?
+		 */
+		Boolean rightOfSiteAbove = 
+					_space.comparePrimary(point, halfEdge.getSiteAbove()) > 0;
+		Boolean leftOfSiteAbove = ! rightOfSiteAbove;
+		/*
+		 * If the point's primary coordinate is greater than the site's, and
+		 * the HE is on the left side of the Edge, then the HE is on the left
+		 * of the point.
+		 */
+		if ( rightOfSiteAbove && halfEdge.isOnLeft() )
 			return true;
-		if ( primaryDiff < 0 && halfEdge.isOnRight() )
+		/*
+		 * If the point's primary coordinate is smaller than the site's, and
+		 * the HE is on the right side of the Edge, then the HE is on the
+		 * right of the point.
+		 */
+		if ( leftOfSiteAbove && halfEdge.isOnRight() )
 			return false;
-		
+		/*
+		 * Those were the simple cases: now solve the more complicated cases.
+		 */
 		Double secondaryDiff = p[secondary] - r[secondary];
-		Boolean above = true;
-		// Temporary variables.
-		Double a = halfEdge.edge.coefficient[0];
-		Double b = halfEdge.edge.coefficient[1];
-		Double c = halfEdge.edge.coefficient[2];
+		Boolean pointAboveEdge = true;
+		/*
+		 * Unpack the edge equation to make code more readable. Names are as
+		 * for edges in the plane.
+		 */
+		Double kv = halfEdge.edge.coefficient[1];
+		/*
+		 * Temporary variables to make code more readable.
+		 */
+		ContinuousVector pointOnEdge =
+					_space.getEdgePointFromPrimary(halfEdge.edge, p[primary]);
 		Double t1, t2, t3;
-		if ( halfEdge.isNearVertical() )
+		if ( halfEdge.edge.isNearVertical() )
 		{
+			/*
+			 * The edge is more parallel to the secondary axis than it is to
+			 * the primary axis.
+			 * 
+			 * In the plane, u + kv*v = K and so v = (-1/kv)*(u - K).
+			 *     If kv is negative, the slope of the edge is positive and >1
+			 * (-1 < kv < 0). In other words it's pointing between 12:00 and
+			 * 1:30 on a clock, or North to NW on a compass.
+			 *     If kv is non-negative, the slope of the edge is negative
+			 * and >1 or the line is vertical (0 <= kv < 1). In other words
+			 * it's pointing between 10:30 and 12:00 on a clock, or NE to
+			 * North on a compass.
+			 */
 			Boolean fast = false;
-			if ( primaryDiff < 0 && b < 0.0 || primaryDiff > 0 && b >= 0.0 )
+			if ( leftOfSiteAbove && kv < 0.0 || rightOfSiteAbove && kv >= 0.0 )
 			{
-				above = ( secondaryDiff >= b * primaryDiff);
-				fast = above;
+				/*
+				 * 
+				 */
+				pointAboveEdge = ( secondaryDiff >= kv * primaryDiff);
+				fast = pointAboveEdge;
 			}
 			else
 			{
-				above = p[primary] + p[secondary]*b > c;
-				if ( b < 0.0 )
-					above = ! above;
-				if ( ! above )
+				/*
+				 * 
+				 */
+				pointAboveEdge = _space.compareSecondary(point, pointOnEdge) > 0;
+				if ( kv > 0.0 )
+					pointAboveEdge = ! pointAboveEdge;
+				if ( ! pointAboveEdge )
 					fast = true;
 			}
+			/*
+			 * If fast is false the problem is still not solved, and so we
+			 * test further.
+			 */
 			if ( ! fast )
 			{
 				t1 = ExtraMath.sq(primaryDiff) - ExtraMath.sq(secondaryDiff);
-				t1 *= b;
-				t2 = r[primary] - _space.getPrimary(halfEdge.getLeftRegion());
-				t2 *= secondaryDiff * (1.0 + ExtraMath.sq(b));
+				t1 *= kv;
+				t2 = r[primary] - _space.getPrimary(halfEdge.getSiteBelow());
+				t2 *= secondaryDiff * (1.0 + ExtraMath.sq(kv));
 				t2 += 2.0 * primaryDiff * secondaryDiff;
-				above = t1 < t2;
-				if ( b < 0.0 )
-					above = ! above;
+				pointAboveEdge = t1 < t2;
+				if ( kv < 0.0 )
+					pointAboveEdge = ! pointAboveEdge;
 			}
 		}
 		else
 		{
-			t1 = c - a*p[primary];
-			t2 = p[secondary] - t1;
-			t3 = t1 - r[secondary];
-			above = ExtraMath.sq(t2) >
-								ExtraMath.sq(primaryDiff) + ExtraMath.sq(t3); 
+			/*
+			 * TODO Explain why this is the way it is!
+			 */
+			pointAboveEdge = _space.distance(point, pointOnEdge) > 
+					_space.distance(halfEdge.getSiteAbove(), pointOnEdge);
 		}
-		return halfEdge.isOnLeft() == above;
+		return halfEdge.isOnLeft() == pointAboveEdge;
 	}
 	
 	private Double getValue(ContinuousVector point)
@@ -279,5 +349,24 @@ public class SweepTable
 		for (HalfEdge he = leftEnd; he != rightEnd; he = he.rightNeighbor)
 			he = null;
 		
+	}
+	
+	public void printSweepTable()
+	{
+		System.out.println("Sweep Table:");
+		for ( HalfEdge he = this.leftEnd; he != null; he = he.rightNeighbor)
+			System.out.println(he.toString());
+	}
+	
+	public void printHalfEdge(String preMsg, HalfEdge he, String postMsg)
+	{
+		String msg = preMsg;
+		if ( he.equals(this.leftEnd) )
+			msg += "SweepTable leftEnd";
+		else if ( he.equals(this.rightEnd) )
+			msg += "SweepTable rightEnd";
+		else
+			msg += he.toString();
+		System.out.println(msg+postMsg);
 	}
 }

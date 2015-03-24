@@ -117,6 +117,13 @@ public class Planar extends IsShape
 	private static DiscreteVector origin = new DiscreteVector();
 	
 	/**
+	 * If this plane is restricted, store the limits in this list.
+	 * 
+	 * @see restrictPlane()
+	 */
+	private LinkedList<Edge> limits = new LinkedList<Edge>();
+	
+	/**
 	 * Generic constructor for instance creator (leave empty).
 	 */
 	public Planar()
@@ -511,8 +518,8 @@ public class Planar extends IsShape
 		
 		Edge out = lineToEdge(midPoint, direction);
 		
-		out.region[0] = site1;
-		out.region[1] = site2;
+		out.site[0] = site1;
+		out.site[1] = site2;
 		
 		// Already implicitly the case, but stated explicitly for clarity.
 		out.endPoint[0] = null;
@@ -546,12 +553,6 @@ public class Planar extends IsShape
 		return out;
 	}
 	
-	public Vertex intersect(HalfEdge he1, HalfEdge he2)
-	{
-		//TODO
-		return intersect(he1.edge, he2.edge);
-	}
-	
 	public Edge intersect(Planar other) 
 	{
 		// Check planes are not parallel.
@@ -583,9 +584,9 @@ public class Planar extends IsShape
 	public Edge lineToEdge(ContinuousVector point, ContinuousVector direction)
 	{
 		Double[] p = convertToLocal(point);
-		System.out.println("\tp: ("+p[0]+","+p[1]+","+p[2]+")");
+		//System.out.println("\tp: ("+p[0]+","+p[1]+","+p[2]+")");
 		Double[] d = convertToLocal(direction);
-		System.out.println("\td: ("+d[0]+","+d[1]+","+d[2]+")");
+		//System.out.println("\td: ("+d[0]+","+d[1]+","+d[2]+")");
 		/*
 		 * Check the point is on the plane, that the line is parallel to it,
 		 * and that the direction vector is non-zero.   
@@ -598,14 +599,14 @@ public class Planar extends IsShape
 		Edge out = new Edge();
 		if ( Math.abs(d[_voronoiPrimary]) > Math.abs(d[_voronoiSecondary]) )
 		{
-			System.out.println("\t|d0| > |d1|");
+			//System.out.println("\t|d0| > |d1|");
 			out.coefficient[0] = -d[_voronoiSecondary]/d[_voronoiPrimary];
 			out.coefficient[1] = 1.0;
 			out.coefficient[2] = (p[_voronoiPrimary]*out.coefficient[0]) + p[_voronoiSecondary];
 		}
 		else
 		{
-			System.out.println("\t|d0| <= |d1|");
+			//System.out.println("\t|d0| <= |d1|");
 			out.coefficient[0] = 1.0;
 			out.coefficient[1] = -d[_voronoiPrimary]/d[_voronoiSecondary];
 			out.coefficient[2] = p[_voronoiPrimary] + (p[_voronoiSecondary]*out.coefficient[1]);
@@ -655,12 +656,55 @@ public class Planar extends IsShape
 		return out;
 	}
 	
+	/**
+	 * \brief Find the points where an Edge crosses the boundaries that restrict
+	 * this shape.
+	 * 
+	 * @param edge
+	 * @return
+	 */
+	public void clipEdgeToLimits(Edge edge)
+	{
+		Vertex vertex;
+		Boolean isLeftOf;
+		for (Edge limit : limits )
+		{
+			vertex = intersect(edge, limit);
+			if ( vertex == null )
+				continue;
+			/*
+			 * If there is no left endPoint set and this intersection is left
+			 * of the right intersection, use it.
+			 * 
+			 * If there is a left endPoint set but this intersection is to the
+			 * right of it, then the endPoint must be outside the domain
+			 */
+			if ( edge.endPoint[0] == null )
+			{
+				
+				if ( comparePrimary(vertex, edge.endPoint[1]) < 0 )
+					edge.endPoint[0] = vertex;
+			}
+			else
+			{
+				
+					
+			}
+			
+			
+			/*
+			 * Do the right endPoint.
+			 */
+			
+			
+		}
+	}
+	
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
 		//System.out.println("RESTRICING PLANE");
 		_maxPrimary = -Double.MAX_VALUE;
 		_minPrimary = Double.MAX_VALUE;
-		LinkedList<Edge> limits = new LinkedList<Edge>();
 		Edge temp;
 		Double primaryVal;
 		Vertex vertex;
@@ -689,6 +733,58 @@ public class Planar extends IsShape
 				_minPrimary = Math.min(_minPrimary, primaryVal);
 				//System.out.println("After ("+i+","+j+"): "+_minPrimary+" to "+_maxPrimary+"\n");
 			}
+	}
+	
+	public ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue)
+	{
+		Double[] p = ExtraMath.newDoubleArray(3);
+		/*
+		 * If the line is vertical, this makes no sense.
+		 */
+		if ( edge.coefficient[1] == 0.0 )
+			return null;
+		p[_voronoiPrimary] = primaryValue;
+		/*
+		 * v = (K - ku*u)/kv
+		 */
+		p[_voronoiSecondary] = edge.coefficient[2];
+		p[_voronoiSecondary] -= edge.coefficient[0]*primaryValue;
+		p[_voronoiSecondary] /= edge.coefficient[1];
+		return convertToVector(p);
+	}
+	
+	public StringBuffer writeShapeInformation(StringBuffer outputString)
+	{
+		outputString.append("<Surface shape=\"Planar\"");
+		outputString.append(" cPointOnPlane=\""+_cPointOnPlane.toString()+"\"");
+		outputString.append(" cOrthogU=\""+_cOrthogU.toString()+"\"");
+		outputString.append(" cOrthogV=\""+_cOrthogV.toString()+"\"");
+		if ( limits.isEmpty() )
+			outputString.append("/>\n");
+		else
+		{
+			outputString.append(">\n");
+			for ( Edge limit : limits )
+			{
+				outputString.append("\t<Limit");
+				outputString.append(" ku=\""+limit.coefficient[0]+"\"");
+				outputString.append(" kv=\""+limit.coefficient[1]+"\"");
+				outputString.append(" K=\""+limit.coefficient[2]+"\"");
+				outputString.append("/>\n");
+			}
+			outputString.append("</Surface>\n");
+		}
+		return outputString;
+	}
+	
+	public StringBuffer getSitesHeader()
+	{
+		return new StringBuffer("u,v");
+	}
+	
+	public StringBuffer getEdgesHeader()
+	{
+		return new StringBuffer("u1,v1,u2,v2");
 	}
 	
 	public String toString()

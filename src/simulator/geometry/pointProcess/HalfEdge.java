@@ -10,23 +10,24 @@ public class HalfEdge
 	
 	public Vertex vertex;
 	
-	private static final int left = 0;
-	private static final int right = 1;
+	public static final int left = 0;
+	public static final int right = 1;
 	
 	/**
 	 * Integer denoting whether this HalfEdge is on the left (0) or the right
 	 * (1) hand side of the Edge it corresponds to. 
 	 */
-	private int leftRight;
+	private int side;
+	
 	
 	/**
-	 * leftRight is set to left by default.
+	 * side is set to left by default.
 	 */
 	public HalfEdge()
 	{
 		this.edge = null;
 		this.vertex = null;
-		this.leftRight = left;
+		this.side = Edge.left;
 		this.deleted = false;
 	}
 	
@@ -42,40 +43,88 @@ public class HalfEdge
 	{
 		this.edge = edge;
 		this.vertex = null;
-		this.leftRight = placeOnLeft ? left : right;
+		this.side = placeOnLeft ? Edge.left : Edge.right;
 		this.deleted = false;
 	}
 	
-	public int getLeftRight()
+	public int getSide()
 	{
-		return leftRight;
+		return side;
 	}
 	
 	public Boolean isOnLeft()
 	{
-		return leftRight == left;
+		return side == Edge.left;
 	}
 	
 	public Boolean isOnRight()
 	{
-		return leftRight == right;
+		return side == Edge.right;
 	}
 	
-	public Site getLeftRegion()
+	/**
+	 * \brief Gets the site below this HalfEdge's associated Edge.
+	 * 
+	 * @return Site below the Edge associated with this HalfEdge. Null if this
+	 * Edge is not yet set.
+	 */
+	public Site getSiteBelow()
 	{
-		return edge.region[left];
+		return ( this.edge == null ) ? null : this.edge.getSiteBelow();
 	}
 	
-	public Site getRightRegion()
+	/**
+	 * \brief Gets the site above this HalfEdge's associated Edge.
+	 * 
+	 * @return Site above the Edge associated with this HalfEdge. Null if this
+	 * Edge is not yet set.
+	 */
+	public Site getSiteAbove()
 	{
-		return edge.region[right];
+		return ( this.edge == null ) ? null : this.edge.getSiteAbove();
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	public Site getSiteOnLeft()
+	{
+		return this.isOnLeft() ? this.getSiteBelow() : this.getSiteAbove();
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	public Site getSiteOnRight()
+	{
+		return this.isOnRight() ? this.getSiteBelow() : this.getSiteAbove();
 	}
 	
 	public Boolean isNearVertical()
 	{
-		return edge.coefficient[0] == 1.0;
+		return edge.isNearVertical();
 	}
 	
+	/**
+	 * TODO Maybe move to space?
+	 * 
+	 * @param primaryValue
+	 * @return
+	 */
+	public Double getSecondaryValue(Double primaryValue)
+	{
+		return edge.coefficient[2] - edge.coefficient[0]*primaryValue;
+	}
+	
+	/**
+	 * \brief Prints out a description of this HalfEdge to screen.
+	 * 
+	 * Useful during testing and debugging.
+	 */
 	public String toString()
 	{
 		String out = "HalfEdge ";

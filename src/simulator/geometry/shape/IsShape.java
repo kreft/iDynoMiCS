@@ -227,6 +227,34 @@ public abstract class IsShape implements Serializable
 		return p[_voronoiSecondary];
 	}
 	
+	public int comparePrimary(ContinuousVector point1, ContinuousVector point2)
+	{
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
+		Double temp = p1[_voronoiPrimary] - p2[_voronoiPrimary];
+		int out = (int) Math.signum(temp);
+		if ( out == 0 )
+		{
+			temp = p1[_voronoiSecondary] - p2[_voronoiSecondary];
+			out = (int) Math.signum(temp);
+		}
+		return out;
+	}
+	
+	public int compareSecondary(ContinuousVector point1, ContinuousVector point2)
+	{
+		Double[] p1 = convertToLocal(point1);
+		Double[] p2 = convertToLocal(point2);
+		Double temp = p1[_voronoiSecondary] - p2[_voronoiSecondary];
+		int out = (int) Math.signum(temp);
+		if ( out == 0 )
+		{
+			temp = p1[_voronoiPrimary] - p2[_voronoiPrimary];
+			out = (int) Math.signum(temp);
+		}
+		return out;
+	}
+	
 	/**
 	 * 
 	 * @param site1
@@ -257,7 +285,8 @@ public abstract class IsShape implements Serializable
 	 * @param point2
 	 * @return
 	 */
-	public abstract Double distance(ContinuousVector point1, ContinuousVector point2);
+	public abstract Double distance(ContinuousVector point1,
+									ContinuousVector point2);
 	
 	/**
 	 * 
@@ -265,8 +294,33 @@ public abstract class IsShape implements Serializable
 	 * @param he2
 	 * @return
 	 */
-	public abstract Vertex intersect(HalfEdge he1, HalfEdge he2);
+	public abstract Vertex intersect(Edge edge1, Edge edge2);
 	
+	public abstract void clipEdgeToLimits(Edge edge);
+	
+	/**
+	 * \brief Write information about this shape to the given StringBuffer.
+	 * 
+	 * This method is not necessarily part of the "Voronoi diagram" methods, 
+	 * but could instead be moved to more general methods.
+	 * 
+	 * @param outputString
+	 * @return
+	 */
+	public abstract StringBuffer
+							writeShapeInformation(StringBuffer outputString);
+	
+	public abstract StringBuffer getSitesHeader();
+	
+	public abstract StringBuffer getEdgesHeader();
+	
+	public StringBuffer getVectorOutput(ContinuousVector point)
+	{
+		Double[] p = convertToLocal(point);
+		return new StringBuffer(p[_voronoiPrimary]+","+p[_voronoiSecondary]);
+	}
+	
+	public abstract ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue);
 	
 	/* ---------------------- SpatialGrid boundaries ---------------------- */
 	

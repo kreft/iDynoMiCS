@@ -1328,12 +1328,12 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Writes information on the shoving grid to the output string specified
+	 * \brief Writes information on the shoving grid to the output string
+	 * specified.
 	 * 
-	 * Writes information on the shoving grid to the output string specified
-	 * 
-	 * @param outputString	String that will be output in the result file
-	 * @return	String with information about the grid (resolution and size in I,J,K directions)
+	 * @param outputString	String that will be output in the result file.
+	 * @return	String with information about the grid (resolution and size in
+	 * I, J, K directions).
 	 */
 	public StringBuffer writeGridInformation(StringBuffer outputString)
 	{
@@ -1348,11 +1348,11 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Writes information on the environment to the result files if this is a fluctenv simulation
+	 * \brief Writes information on the environment to the result files if
+	 * this is a fluctenv simulation.
 	 * 
-	 * Writes information on the environment to the result files if this is a fluctenv simulation
-	 * 
-	 * @return	Stringbuffer with information about the environment for writing to the output file
+	 * @return	StringBuffer with information about the environment for
+	 * writing to the output file.
 	 */
 	public StringBuffer writeFluctEnvInformation(StringBuffer outputString)
 	{

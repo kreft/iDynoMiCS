@@ -30,7 +30,16 @@ public class VoronoiTest
 		mainShape.restrictPlane(walls);
 		
 		LinkedList<Site> sites = new LinkedList<Site>();
-        sites.add(new Site(0.0,206.2160890468038,127.96839725139543));
+		//sites.add(new Site(0.0,5.0,8.0));
+		//sites.add(new Site(0.0,2.0,2.0));
+		//sites.add(new Site(0.0,6.0,4.0));
+		sites.add(new Site(0.0,8.0,2.0));
+		sites.add(new Site(0.0,4.0,4.0));
+		sites.add(new Site(0.0,5.0,8.0));
+		
+		// Kieran's sites
+		/*
+		sites.add(new Site(0.0,206.2160890468038,127.96839725139543));
         sites.add(new Site(0.0,82.32194396558708,56.39845559072465));
         sites.add(new Site(0.0,243.45542809645158,50.96943378402841));
         sites.add(new Site(0.0,1.3251214345680484,171.5992947408901));
@@ -64,7 +73,7 @@ public class VoronoiTest
         sites.add(new Site(0.0,151.81728949121702,151.5676829854818));
         sites.add(new Site(0.0,187.14356504246678,250.75143779522674));
         sites.add(new Site(0.0,209.04129817533493,204.29868041769666));
-        
+        */
         Voronoi voronoi = new Voronoi(mainShape, sites);
 	}
 }

@@ -310,7 +310,7 @@ public class Cylindrical extends IsShape
 		return null;
 	}
 	
-	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		Vertex out = new Vertex();
 		// TODO
@@ -415,5 +415,41 @@ public class Cylindrical extends IsShape
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public StringBuffer writeShapeInformation(StringBuffer outputString)
+	{
+		outputString.append("<Surface shape=\"Cylindrical\"");
+		outputString.append(" cPointCenterBase=\""+
+										_cPointCenterBase.toString()+"\"");
+		outputString.append(" cVectorRadiusV=\""+
+											_cVectorRadiusV.toString()+"\"");
+		outputString.append(" cVectorRadiusW=\""+
+											_cVectorRadiusW.toString()+"\"");
+		outputString.append("/>\n");
+		return outputString;
+	}
+	
+	public StringBuffer getSitesHeader()
+	{
+		return new StringBuffer("azimuth,height");
+	}
+	
+	public StringBuffer getEdgesHeader()
+	{
+		return new StringBuffer("azimuth1,height1,azimuth2,height2");
+	}
+
+	@Override
+	public void clipEdgeToLimits(Edge edge) {
+		// TODO Auto-generated method stub
+		
 	}
 }

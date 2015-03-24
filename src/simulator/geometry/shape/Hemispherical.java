@@ -392,8 +392,8 @@ public class Hemispherical extends IsShape
 			return null;
 		Edge out = new Edge();
 		// Set the regions on either side of the Edge.
-		out.region[0] = site1;
-		out.region[1] = site2;
+		out.site[0] = site1;
+		out.site[1] = site2;
 		// Already implicitly the case, but stated explicitly for clarity.
 		out.endPoint[0] = null;
 		out.endPoint[1] = null;
@@ -412,7 +412,7 @@ public class Hemispherical extends IsShape
 		return out;
 	}
 	
-	public Vertex intersect(HalfEdge he1, HalfEdge he2)
+	public Vertex intersect(Edge edge1, Edge edge2)
 	{
 		Vertex out = new Vertex();
 		// TODO
@@ -496,5 +496,41 @@ public class Hemispherical extends IsShape
 	{
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public StringBuffer writeShapeInformation(StringBuffer outputString)
+	{
+		outputString.append("<Surface shape=\"Hemispherical\"");
+		outputString.append(" cPointCenterBase=\""+
+										_cPointCenterBase.toString()+"\"");
+		outputString.append(" cVectorRadiusV=\""+
+											_cVectorRadiusV.toString()+"\"");
+		outputString.append(" cVectorRadiusW=\""+
+											_cVectorRadiusW.toString()+"\"");
+		outputString.append("/>\n");
+		return outputString;
+	}
+	
+	public StringBuffer getSitesHeader()
+	{
+		return new StringBuffer("azimuth,zenith");
+	}
+	
+	public StringBuffer getEdgesHeader()
+	{
+		return new StringBuffer("azimuth1,zenith1,azimuth2,zenith2");
+	}
+
+	@Override
+	public void clipEdgeToLimits(Edge edge) {
+		// TODO Auto-generated method stub
+		
 	}
 }
