@@ -57,8 +57,8 @@ public class SweepTable
 		
 		this.leftEnd = new HalfEdge();
 		this.rightEnd = new HalfEdge();
-		this.leftEnd.rightNeighbor = this.rightEnd;
-		this.rightEnd.leftNeighbor = this.leftEnd;
+		this.leftEnd.nextNeighbor = this.rightEnd;
+		this.rightEnd.previousNeighbor = this.leftEnd;
 
 		this.hash[0] = leftEnd;
 		this.hash[this.size - 1] = rightEnd;
@@ -93,10 +93,10 @@ public class SweepTable
 	 */
 	public void insert(HalfEdge oldLeft, HalfEdge newRight)
 	{
-		newRight.leftNeighbor = oldLeft;
-		newRight.rightNeighbor = oldLeft.rightNeighbor;
-		(newRight.rightNeighbor).leftNeighbor = newRight;
-		oldLeft.rightNeighbor = newRight;
+		newRight.previousNeighbor = oldLeft;
+		newRight.nextNeighbor = oldLeft.nextNeighbor;
+		(newRight.nextNeighbor).previousNeighbor = newRight;
+		oldLeft.nextNeighbor = newRight;
 	}
 	
 	/**
@@ -106,8 +106,8 @@ public class SweepTable
 	 */
 	public void delete(HalfEdge he)
 	{
-		(he.leftNeighbor).rightNeighbor = he.rightNeighbor;
-		(he.rightNeighbor).leftNeighbor = he.leftNeighbor;
+		(he.previousNeighbor).nextNeighbor = he.nextNeighbor;
+		(he.nextNeighbor).previousNeighbor = he.previousNeighbor;
 		he.deleted = true;
 	}
 	
@@ -153,7 +153,7 @@ public class SweepTable
 			printHalfEdge("Starting left with ", out, ", going right");
 			do
 			{
-				out = out.rightNeighbor;
+				out = out.nextNeighbor;
 				
 				printHalfEdge("\tTrying ", out, "");
 				if ( out != rightEnd )
@@ -163,7 +163,7 @@ public class SweepTable
 			/* This is the HalfEdge immediately the right of the point, so go
 			 * left one HE.
 			 */
-			out = out.leftNeighbor;
+			out = out.previousNeighbor;
 			printHalfEdge("\tGoing left one, to ", out, "");
 		}
 		else
@@ -172,7 +172,7 @@ public class SweepTable
 			// Need a do-while in case: out == rightEnd && isLeftOfSite()
 			do
 			{
-				out = out.leftNeighbor;
+				out = out.previousNeighbor;
 				printHalfEdge("\tTrying ", out, "");
 			}
 			while ( out != rightEnd && isHErightOfPoint(out, point) );
@@ -226,14 +226,14 @@ public class SweepTable
 		 * the HE is on the left side of the Edge, then the HE is on the left
 		 * of the point.
 		 */
-		if ( rightOfSiteAbove && halfEdge.isOnLeft() )
+		if ( rightOfSiteAbove && halfEdge.isOutbound() )
 			return true;
 		/*
 		 * If the point's primary coordinate is smaller than the site's, and
 		 * the HE is on the right side of the Edge, then the HE is on the
 		 * right of the point.
 		 */
-		if ( leftOfSiteAbove && halfEdge.isOnRight() )
+		if ( leftOfSiteAbove && halfEdge.isInbound() )
 			return false;
 		/*
 		 * Those were the simple cases: now solve the more complicated cases.
@@ -310,7 +310,7 @@ public class SweepTable
 			pointAboveEdge = _space.distance(point, pointOnEdge) > 
 					_space.distance(halfEdge.getSiteAbove(), pointOnEdge);
 		}
-		return halfEdge.isOnLeft() == pointAboveEdge;
+		return halfEdge.isOutbound() == pointAboveEdge;
 	}
 	
 	private Double getValue(ContinuousVector point)
@@ -346,7 +346,7 @@ public class SweepTable
 	public void clipAll()
 	{
 		// TODO
-		for (HalfEdge he = leftEnd; he != rightEnd; he = he.rightNeighbor)
+		for (HalfEdge he = leftEnd; he != rightEnd; he = he.nextNeighbor)
 			he = null;
 		
 	}
@@ -354,7 +354,7 @@ public class SweepTable
 	public void printSweepTable()
 	{
 		System.out.println("Sweep Table:");
-		for ( HalfEdge he = this.leftEnd; he != null; he = he.rightNeighbor)
+		for ( HalfEdge he = this.leftEnd; he != null; he = he.nextNeighbor)
 			System.out.println(he.toString());
 	}
 	

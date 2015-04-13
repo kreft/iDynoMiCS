@@ -4,21 +4,20 @@ public class HalfEdge
 {
 	public Edge edge;
 	
-	public HalfEdge leftNeighbor, rightNeighbor;
+	public HalfEdge previousNeighbor, nextNeighbor;
 	
 	public Boolean deleted;
 	
 	public Vertex vertex;
 	
-	public static final int left = 0;
-	public static final int right = 1;
+	public static final int outbound = 0;
+	public static final int inbound = 1;
 	
 	/**
-	 * Integer denoting whether this HalfEdge is on the left (0) or the right
-	 * (1) hand side of the Edge it corresponds to. 
+	 * Integer denoting whether this HalfEdge is on the out-bound (0) or the
+	 * in-bound (1) side of the Edge it corresponds to. 
 	 */
-	private int side;
-	
+	private Boolean isOutbound;
 	
 	/**
 	 * side is set to left by default.
@@ -27,7 +26,7 @@ public class HalfEdge
 	{
 		this.edge = null;
 		this.vertex = null;
-		this.side = Edge.left;
+		this.isOutbound = true;
 		this.deleted = false;
 	}
 	
@@ -36,30 +35,25 @@ public class HalfEdge
 	 * 
 	 * 
 	 * @param edge Edge to be associated with this HalfEdge.
-	 * @param placeOnLeft Boolean noting whether to place this HalfEdge on the
-	 * left (true) or on the right (false).
+	 * @param isOutbound Boolean noting whether to make this HalfEdge 
+	 * out-bound (true) or in-bound (false).
 	 */
-	public HalfEdge(Edge edge, Boolean placeOnLeft)
+	public HalfEdge(Edge edge, Boolean isOutbound)
 	{
 		this.edge = edge;
 		this.vertex = null;
-		this.side = placeOnLeft ? Edge.left : Edge.right;
+		this.isOutbound = isOutbound;
 		this.deleted = false;
 	}
 	
-	public int getSide()
+	public Boolean isOutbound()
 	{
-		return side;
+		return this.isOutbound;
 	}
 	
-	public Boolean isOnLeft()
+	public Boolean isInbound()
 	{
-		return side == Edge.left;
-	}
-	
-	public Boolean isOnRight()
-	{
-		return side == Edge.right;
+		return ! this.isOutbound;
 	}
 	
 	/**
@@ -89,9 +83,9 @@ public class HalfEdge
 	 * 
 	 * @return
 	 */
-	public Site getSiteOnLeft()
+	public Site getSiteBehind()
 	{
-		return this.isOnLeft() ? this.getSiteBelow() : this.getSiteAbove();
+		return this.isOutbound ? this.getSiteBelow() : this.getSiteAbove();
 	}
 	
 	/**
@@ -99,9 +93,9 @@ public class HalfEdge
 	 * 
 	 * @return
 	 */
-	public Site getSiteOnRight()
+	public Site getSiteAhead()
 	{
-		return this.isOnRight() ? this.getSiteBelow() : this.getSiteAbove();
+		return this.isOutbound ? this.getSiteAbove() : this.getSiteBelow();
 	}
 	
 	public Boolean isNearVertical()
@@ -132,17 +126,17 @@ public class HalfEdge
 			out += "(deleted) ";
 		
 		out += "on the ";
-		out += ( isOnLeft() ) ? "left" : "right";
+		out += ( isOutbound() ) ? "left" : "right";
 		
 		out += " with ";
-		if ( leftNeighbor == null )
+		if ( previousNeighbor == null )
 		{
-			if ( rightNeighbor == null )
+			if ( nextNeighbor == null )
 				out += "no neighbors";
 			else
 				out += "right neighbor only";
 		}
-		else if ( rightNeighbor == null )
+		else if ( nextNeighbor == null )
 			out += "left neighbor only";
 		else
 			out += "left and right neighbors";

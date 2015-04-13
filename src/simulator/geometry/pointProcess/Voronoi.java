@@ -94,11 +94,11 @@ public class Voronoi
 				 * Store the HalfEdge immediately to the right, as the left
 				 * HE will change before we need it.
 				 */
-				rightBoundary = leftBoundary.rightNeighbor;
+				rightBoundary = leftBoundary.nextNeighbor;
 				/*
 				 * 
 				 */
-				bottom = leftBoundary.getSiteOnRight();
+				bottom = leftBoundary.getSiteAhead();
 				if ( bottom == null )
 					bottom = bottomSite();
 				System.out.println("bottom at "+bottom.toString());
@@ -161,27 +161,27 @@ public class Voronoi
 				/*
 				 * 
 				 */
-				leftLeftBoundary = leftBoundary.leftNeighbor;
+				leftLeftBoundary = leftBoundary.previousNeighbor;
 				/*
 				 * Store the HalfEdge immediately to the right, as the left
 				 * HE will change before we need it.
 				 */
-				rightBoundary = leftBoundary.rightNeighbor;
+				rightBoundary = leftBoundary.nextNeighbor;
 				/*
 				 * 
 				 */
-				rightRightBoundary = rightBoundary.rightNeighbor;
+				rightRightBoundary = rightBoundary.nextNeighbor;
 				/*
 				 * Get the site to the left of the HalfEdge on the left.
 				 */
-				bottom = leftBoundary.getSiteOnLeft();
+				bottom = leftBoundary.getSiteBehind();
 				if ( bottom == null )
 					bottom = bottomSite();
 				System.out.println("bottom at "+bottom.toString());
 				/*
 				 * Get the site to the right of the HalfEdge on the right.
 				 */
-				top = rightBoundary.getSiteOnRight();
+				top = rightBoundary.getSiteAhead();
 				if ( top == null )
 					top = bottomSite();
 				// TODO set vertex number?
@@ -189,9 +189,9 @@ public class Voronoi
 				 * 
 				 */
 				System.out.println("HalfEdge on left: "+leftBoundary.toString());
-				setEndPoint(leftBoundary.edge, leftBoundary.isOnLeft(), nextVertex);
+				setEndPoint(leftBoundary.edge, leftBoundary.isOutbound(), nextVertex);
 				System.out.println("HalfEdge on right: "+rightBoundary.toString());
-				setEndPoint(rightBoundary.edge, rightBoundary.isOnLeft(), nextVertex);
+				setEndPoint(rightBoundary.edge, rightBoundary.isOutbound(), nextVertex);
 				/*
 				 * Assume the new bisector will be left-handed.
 				 */
@@ -303,7 +303,7 @@ public class Voronoi
 		/*
 		 * 
 		 */
-		if ( rightOfSite == temp.isOnLeft() )
+		if ( rightOfSite == temp.isOutbound() )
 			return null;
 		/*
 		 * Once we've passed all these checks, the vertex can be returned.
@@ -391,19 +391,21 @@ public class Voronoi
 	}
 	
 	/**
-	 * TODO Make more robust
+	 * TODO Check inner-outer
+	 * 
+	 * 
 	 * 
 	 * @param edge
-	 * @param isLeftHanded
+	 * @param isOutbound
 	 * @param vertex
 	 */
-	private void setEndPoint(Edge edge, Boolean isLeftHanded, Vertex vertex)
+	private void setEndPoint(Edge edge, Boolean isOutbound, Vertex vertex)
 	{
 		String msg = "Setting ";
-		msg += isLeftHanded ? "left" : "right";
-		msg += "-hand vertex of edge to ";
+		msg += isOutbound ? "inner" : "outer";
+		msg += " vertex of edge to ";
 		System.out.println(msg+vertex.toString());
-		edge.setEndPoint(vertex, isLeftHanded);
+		edge.setEndPoint(vertex, isOutbound);
 		if ( edge.areEndPointsSet() )
 			clip(edge);
 	}

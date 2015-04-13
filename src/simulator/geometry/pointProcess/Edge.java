@@ -8,9 +8,15 @@ public class Edge
 	
 	public Double[] coefficient;
 	
-	public static final int left = 0;
-	public static final int right = 1;
+	/**
+	 * Indices of end points (i.e. vertices) at either end of the edge.
+	 */
+	public static final int inner = 0;
+	public static final int outer = 1;
 	
+	/**
+	 * Indices of sites on either side of the edge.
+	 */
 	public static final int below = 0;
 	public static final int above = 1;
 	
@@ -23,18 +29,18 @@ public class Edge
 	
 	public Boolean areEndPointsSet()
 	{
-		return (endPoint[left] != null) && (endPoint[right] != null);
+		return (endPoint[inner] != null) && (endPoint[outer] != null);
 	}
 	
 	/**
-	 * \brief Set the 
+	 * \brief Set one of the end points of this Edge to the given Vertex. 
 	 * 
 	 * @param vertex
-	 * @param setOnLeft
+	 * @param setInner
 	 */
-	public void setEndPoint(Vertex vertex, Boolean setOnLeft)
+	public void setEndPoint(Vertex vertex, Boolean setInner)
 	{
-		endPoint[setOnLeft ? left : right] = vertex;
+		endPoint[setInner ? inner : outer] = vertex;
 	}
 	
 	public Site getSiteBelow()
