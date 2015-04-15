@@ -181,9 +181,13 @@ public class World
 	{
 		// Initialise value as a Double[] of zero's
 		Double[] value = ExtraMath.newDoubleArray(bulkList.size());
-		for (int i = 0; i < bulkList.size(); i++) 
-			if ( bulkList.get(i).contains(soluteIndex) )
-				value[i] = bulkList.get(i).getValue(soluteIndex);
+		int i = 0;
+		for ( Bulk bulk : bulkList )
+		{
+			if ( bulk.contains(soluteIndex) )
+				value[i] = bulk.getValue(soluteIndex);
+			i++;
+		}		
 		return value;
 	}
 	

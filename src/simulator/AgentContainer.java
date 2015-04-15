@@ -57,11 +57,6 @@ public class AgentContainer
 	public LinkedList<SpecialisedAgent> agentList;
 	
 	/**
-	 * Iterator for all agents in this grid
-	 */
-	public ListIterator<SpecialisedAgent> agentIter;
-
-	/**
 	 * Temporary containers used to store agents who will be added or removed.
 	 * Visibility public so that it can be accessed from LocatedGroup in
 	 * killAll().
@@ -249,7 +244,6 @@ public class AgentContainer
 		mySim = aSimulator;
 		
 		agentList = new LinkedList<SpecialisedAgent>();
-		agentIter = agentList.listIterator();
 		// Optimised the resolution of the grid used to sort located agents
 		checkGridSize(aSimulator, root);
 
@@ -326,15 +320,8 @@ public class AgentContainer
 			if ( ! Simulator.isChemostat )
 				followPressure();
 			
-			for (agentIter = agentList.listIterator(); agentIter.hasNext(); )
-			{
-				anAgent = agentIter.next();
-				anAgent.step();
-			}
-			/*
 			for ( SpecialisedAgent agent : agentList )
 				agent.step();
-			*/
 			
 			Collections.shuffle(agentList, ExtraMath.random);
 
@@ -514,13 +501,11 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Solve spatial spreading through application of shoving (acts only on located agents)
+	 * \brief Solve spatial spreading through application of shoving (acts
+	 * only on located agents).
 	 * 
-	 * Solve spatial spreading through application of shoving (acts only on located agents)
-	 * 
-	 * @param fullRelax	Boolean noting whether a full relax of the grid is applied
-	 * @param shoveOnly	Boolean noting whether to apply shoving only or to also apply agent pushing
-	 * @param maxShoveIter	The maximum number of shoving iterations that should be applied to find a new position
+	 * @param maxShoveIter	The maximum number of shoving iterations that
+	 * should be applied to find a new position.
 	 */
 	public void shoveAllLocated(int maxShoveIter)
 	{
@@ -529,7 +514,7 @@ public class AgentContainer
 		shovIter = 0;
 		do 
 		{
-			nMoved = performMove(false);
+			nMoved = performMove();
 		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
 		LogFile.writeLog(nMoved + "/" + agentList.size() + " after " + shovIter
 				+ " shove iterations");
@@ -553,13 +538,9 @@ public class AgentContainer
 	/**
 	 * \brief Moves an agent as a result of shoving or pushing due to growth
 	 *
-	 * Moves an agent as a result of shoving or pushing due to growth
-	 * 
-	 * @param pushOnly	Boolean noting whether to apply shoving only or to also apply agent pushing
 	 * @param isSynchro
-	 * @param gain
 	 */
-	protected int performMove(boolean isSynchro)
+	protected int performMove()
 	{
 		int nMoved = 0;
 		Double deltaMove;
@@ -568,21 +549,8 @@ public class AgentContainer
 		 */
 		for ( SpecialisedAgent agent : agentList )
 		{
-			deltaMove = agent.interact(MUTUAL, ! isSynchro);
+			deltaMove = agent.interact(MUTUAL);
 			nMoved += (deltaMove >= 0.1  ? 1 : 0);
-		}
-
-		if ( ! isSynchro )
-			return nMoved;
-
-		for ( SpecialisedAgent anAgent : agentList )
-		{
-			// Compute movement, deltaMove is relative movement
-			deltaMove = anAgent.move();
-			nMoved += (deltaMove >= 0.1  ? 1 : 0);
-			
-			if ( anAgent.isDead )
-				anAgent.death = "invalidMove";
 		}
 		return nMoved;
 	}
@@ -591,17 +559,17 @@ public class AgentContainer
 	/**
 	 * \brief Refresh the space occupation map as agents may have moved
 	 * 
-	 * Refresh the space occupation map as agents may have moved. Each grid square has a status: -1:outside, 0:carrier,1:biofilm, 
-	 * 2:liquid, 3:bulk
+	 * Each grid square has a status:
+	 * -1 outside
+	 * 0  carrier
+	 * 1  biofilm 
+	 * 2  liquid 
+	 * 3  bulk
 	 */
 	protected void refreshGroupStatus()
 	{
 		for ( LocatedGroup aLG : _grid )
 			aLG.refreshElement();
-		/*
-		for (int index = 0; index < _nTotal; index++)
-			_grid[index].refreshElement();
-		*/
 	}
 
 	/**
@@ -617,29 +585,13 @@ public class AgentContainer
 	public void getPotentialShovers(int index, Double range,
 											LinkedList<LocatedAgent> nbList)
 	{
-		LogFile.writeLogDebug("Debugging AgentContainer.getPotentialShovers()");
-		LogFile.writeLogDebug("\tLocatedGroup at "+_grid[index].dc.toString());
-		if ( _grid[index].isOutside )
-			LogFile.writeLogDebug("\toutside");
-		if ( _grid[index].isCarrier )
-			LogFile.writeLogDebug("\tcarrier");
-		
-			
 		LocatedGroup aGroup;
 		int radius = Math.max(1, (int) Math.floor(range / this._res));
-		LogFile.writeLogDebug("\tradius = "+radius);
-		LogFile.writeLogDebug("\tAgents in this grid element = "+
-													_grid[index].group.size());
-		LogFile.writeLogDebug("\tLocatedGroup at "+_grid[index].dc.toString()+
-					" has "+_grid[index].countNullNeighbours()+" null neighbours");
 		nbList.clear();
 		for (int i = -radius; i <= radius; i++)
 		{
 			if ( _grid[index].moveX(i) == null )
-			{
-				LogFile.writeLogDebug("\tLocatedGroup is null...");
 				continue;
-			}
 			for (int j = -radius; j <= radius; j++)
 			{
 				if ( is3D )
@@ -648,28 +600,16 @@ public class AgentContainer
 						continue;
 					for (int k = -radius; k <= radius; k++)
 					{
-						String msg = "\t\tLooking "+i+"up, "+j+" right, "+k+" back: ";
 						aGroup = _grid[index].moveX(i).moveY(j).moveZ(k);
 						if ( aGroup != null )
-						{
 							nbList.addAll(aGroup.group);
-							LogFile.writeLogDebug(msg+aGroup.group.size());
-						}
-						else
-							LogFile.writeLogDebug(msg+0);
 					}
 				}
 				else
 				{
 					aGroup = _grid[index].moveX(i).moveY(j);
-					String msg = "\t\tLooking "+i+"up, "+j+" right: ";
 					if ( aGroup != null )
-					{
 						nbList.addAll(aGroup.group);
-						LogFile.writeLogDebug(msg+aGroup.group.size());
-					}
-					else
-						LogFile.writeLogDebug(msg+0);
 				}
 			}
 		}
@@ -678,30 +618,29 @@ public class AgentContainer
 	/* ________________ TOOLS:GRID, MAP & TREE MANAGEMENT __________________ */
 
 	/**
-	 * \brief Registers the birth of an agent and adds this to the agent grid
+	 * \brief Registers the birth of an agent and adds this to the agent grid.
 	 * 
-	 * Registers the birth of an agent and adds this to the agent grid
-	 * 
-	 * @param anAgent	New agent to add to the agent grid
+	 * @param anAgent	New agent to add to the agent grid.
 	 */
 	public void registerBirth(SpecialisedAgent anAgent) 
 	{
 		// Add the agent to agentList
-		agentIter.add(anAgent);
+		agentList.add(anAgent);
 
 		// Add the agent on the grid
-		if (anAgent instanceof LocatedAgent) {
+		if (anAgent instanceof LocatedAgent)
+		{
 			LocatedAgent aLoc = (LocatedAgent) anAgent;
-			try {
-				if(Simulator.isChemostat){
+			try
+			{
+				if ( Simulator.isChemostat )
 					_grid[0].add(aLoc);
-				}else{
-					int index = getIndexedPosition(aLoc.getLocation());
-					if (!Double.isNaN(index))
-						_grid[index].add(aLoc);
-				}
-			} catch (Exception e) {
-				LogFile.writeLog("Error:Failed to add an agent on the grid");
+				else
+					_grid[getIndexedPosition(aLoc.getLocation())].add(aLoc);
+			}
+			catch (Exception e)
+			{
+				LogFile.writeError(e, "AgentContainer.registerBirth()");
 			}
 		}
 
@@ -823,17 +762,9 @@ public class AgentContainer
 		}
 		
 		// TODO Rob 13Mar2015: Simplify? agentList.removeAll(_agentToKill);
-		SpecialisedAgent anAgent;
-		agentIter = agentList.listIterator();
-		while ( agentIter.hasNext() )
-		{
-			anAgent = agentIter.next();
-			if(anAgent.isDead)
-			{
-				agentIter.remove();
+		for ( SpecialisedAgent anAgent : agentList )
+			if ( anAgent.isDead )
 				agentList.remove(anAgent);
-			}
-		}
 	}
 	
 	/**
@@ -1498,7 +1429,7 @@ public class AgentContainer
 			{
 				numRemoved += _grid[index].group.size();
 				massRemoved += _grid[index].totalMass;
-				_grid[index].killAll();
+				_grid[index].killAll("detachment");
 			}
 
 		LogFile.writeLog("Sloughing " + numRemoved + " ("
@@ -1856,11 +1787,9 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Return the agent time step
+	 * \brief Return the agent time step.
 	 * 
-	 * Return the agent time step
-	 * 
-	 * @return	Double value stating the agent time step
+	 * @return	Double value stating the agent time step.
 	 */
 	public Double getAgentTimeStep()
 	{
@@ -1868,17 +1797,15 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Return the resolution of the grid
+	 * \brief Return the resolution of the grid.
 	 * 
-	 * Return the resolution of the grid
-	 * 
-	 * @return	Resolution of the agent grid
+	 * @return	Resolution of the agent grid.
 	 */
 	public Double getResolution()
 	{
 		return _res;
 	}
-
+	
 	/**
 	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array.
 	 * 

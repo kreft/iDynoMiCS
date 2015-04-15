@@ -109,26 +109,6 @@ public class EpiBac extends BactEPS
 		return baby;
 	}
 
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void createNewAgent(ContinuousVector position)
-	{
-		super.createNewAgent(position);
-	}
-	
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutatePop()
-	{
-		// Mutate inherited parameters
-		super.mutatePop();
-		// Now mutate your parameters
-	}
-
 	/* ______________________ CELL DIVISION ___________________ */
 	
 	@Override
@@ -226,17 +206,6 @@ public class EpiBac extends BactEPS
 		for (Episome aPlasmid : _plasmidHosted)
 			if (aPlasmid.isReadyToConjugate())
 				searchConjugation(aPlasmid);
-	}
-
-	/**
-	 * Remove agent and all references from the system.
-	 * 
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void die(Boolean isStarving)
-	{
-		super.die(isStarving);
 	}
 
 	/* __________________ CONJUGATION ___________________________ */

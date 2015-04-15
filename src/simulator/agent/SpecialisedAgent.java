@@ -232,12 +232,9 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
 	 * 
 	 * @param MUTUAL	Whether movement is shared between two agents or applied only to this one
-	 * @param pull	Boolean noting whether this action is shoving (false) or pulling (shrinking biofilm) (true)
-	 * @param seq	Whether the move should be applied immediately or wait until the end of the step
-	 * @param gain	Double noting change in position
 	 * @return	The move to be applied once the shoving or pull calculations have been performed
 	 */
-	public Double interact(boolean MUTUAL, boolean seq)
+	public Double interact(boolean MUTUAL)
 	{
 		return 0.0;
 	}

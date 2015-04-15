@@ -191,15 +191,7 @@ public class LocatedGroup
 			testNbh_2D(agentGrid.getShovingGrid());
 		distanceFromBorders();
 		if ( distanceFromCarrier < agentGrid.getResolution() )
-		{
-			LogFile.writeLogDebug("\tLocatedGroup is carrier");
 			isCarrier = true;
-			return;
-		}
-		else
-			LogFile.writeLogDebug("\tLocatedGroup is not carrier");
-		//LogFile.writeLogDebug("Debugging LocatedGroup.init()");
-		//LogFile.writeLogDebug("\tLG at "+dc.toString()+" is not outside/carrier");
 	}
 	
 	/**
@@ -295,19 +287,18 @@ public class LocatedGroup
 	/**
 	 * \brief Safely remove located agent from agentList & agentGrid.
 	 * 
-	 * TODO Rob 16Mar2015: Maybe add reason for death as an argument to make
-	 * this method more general?
+	 * @param reason One-word string giving the reason for death.
 	 */
-	public void killAll()
+	public void killAll(String reason)
 	{
 		for ( LocatedAgent aLoc : group )
 		{
-			aLoc.death = "detachment";
+			aLoc.death = reason;
 			agentGrid._agentToKill.add(aLoc);
 			agentGrid.agentList.remove(aLoc);
 		}
 		group.clear();
-		if ( !Simulator.isChemostat )
+		if ( ! Simulator.isChemostat )
 			status = 2;
 	}
 	
@@ -343,9 +334,7 @@ public class LocatedGroup
 	 */
 	public LocatedGroup moveX(int i)
 	{
-		LogFile.writeLogDebug("Debugging LocatedGroup.moveX()");
 		int delta = Integer.signum(i);
-		LogFile.writeLogDebug("\ti = "+i+", delta = "+delta);
 		LocatedGroup out = nbhGroup[delta+1][1][1];
 		i -= delta;
 		while ( i != 0 )
@@ -399,16 +388,9 @@ public class LocatedGroup
 	 */
 	public void distanceFromBorders()
 	{
-		LogFile.writeLogDebug("Debugging LocatedGroup.distanceFromBorders()");
-		LogFile.writeLogDebug("\tLocatedGroup at "+cc.toString());
 		Double valueCarrier = Double.MAX_VALUE;
 		for (AllBC aBoundary : agentGrid.domain.getAllSupportBoundaries() )
-		{
 			valueCarrier = Math.min(valueCarrier, aBoundary.getDistance(cc));
-			LogFile.writeLogDebug("\tdistance from supporting boundary "+
-							aBoundary.getSide()+" = "+aBoundary.getDistance(cc));
-		}
-		LogFile.writeLogDebug("\tMin dist = "+valueCarrier);
 		distanceFromCarrier = valueCarrier;
 	}
 
@@ -557,15 +539,17 @@ public class LocatedGroup
 	 * \brief Comparator used by the detachment levelset algorithm
 	 * 
 	 * @author Chaodong Zhang
+	 * @author Robert Clegg
 	 */
 	public static class TValueComparator implements java.util.Comparator<Object> 
 	{
 		@Override
 		public int compare(Object b1, Object b2) 
 		{
-			Double f1 = ((LocatedGroup) b1).erosionTime;
-			Double f2 = ((LocatedGroup) b2).erosionTime;
-			return (int) Math.signum(f1 - f2);
+			Double temp = ((LocatedGroup) b1).erosionTime -
+						  ((LocatedGroup) b2).erosionTime;
+			temp = Math.signum(temp);
+			return temp.intValue();
 		}
 	}
 }

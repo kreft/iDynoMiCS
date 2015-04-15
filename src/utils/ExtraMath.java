@@ -633,7 +633,8 @@ public final class ExtraMath
 	 * 
 	 * @return A uniformly distributed random number in [0,1).
 	 */
-	public static Double getUniRandDbl() {
+	public static Double getUniRandDbl()
+	{
 		return random.nextDouble();
 	}
 	
@@ -647,6 +648,18 @@ public final class ExtraMath
 	public static Double getUniRandDbl(Double lBound, Double uBound)
 	{
 		return getUniRandDbl()*(uBound-lBound)+lBound;
+	}
+	
+	/**
+	 * \brief Return a uniformly distributed random number between 0 and 2*pi.
+	 * 
+	 * Lower bound (0) is inclusive, upper bound (2*pi) is exclusive.
+	 * 
+	 * @return A uniformly distributed random number in [0, 2*pi).
+	 */
+	public static Double getUniRandAngle()
+	{
+		return 2 * Math.PI * random.nextDouble();
 	}
 	
 	/**

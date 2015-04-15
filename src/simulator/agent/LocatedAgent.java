@@ -174,9 +174,6 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			// Get a clone of the progenitor.
 			LocatedAgent baby = (LocatedAgent) sendNewAgent();
 			baby.giveName();
-			// Randomize its mass.
-			baby.mutatePop();
-			
 			baby.updateSize();
 			
 			this._myDivRadius = getDivRadius();
@@ -343,7 +340,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		}
 		catch (CloneNotSupportedException e)
 		{
-			LogFile.writeLog("Error met in LocatedAgent.divide()");
+			LogFile.writeError(e, "LocatedAgent.divide()");
 		}
 	}
 
@@ -439,7 +436,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	public void divideCompounds(LocatedAgent baby, Double babyMassFrac)
 	{
 		/*
-		 * Choose the division plan and apply position modifications.
+		 * Apply babyMassFrac.
 		 */
 		for (int i = 0; i<particleMass.length; i++)
 		{
@@ -460,17 +457,17 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * new agent, at a specified ratio.
 	 * 
 	 * @param baby	The new agent, which is inheriting mass.
-	 * @param splitRatio	The ratio of the EPS that should be transferred to
-	 * the new agent.
+	 * @param babyMassFrac	The ratio of the biomass/EPS that should be 
+	 * transferred to the new agent.
 	 */
-	public void transferCompounds(LocatedAgent baby, Double splitRatio)
+	public void transferCompounds(LocatedAgent baby, Double babyMassFrac)
 	{
-		Double m;
+		Double massToTransfer;
 		for (int i = 0; i<particleMass.length; i++)
 		{
-			m = this.particleMass[i] * splitRatio;
-			baby.particleMass[i] += m;
-			this.particleMass[i] = this.particleMass[i] - m;
+			massToTransfer = this.particleMass[i] * babyMassFrac;
+			baby.particleMass[i] += massToTransfer;
+			this.particleMass[i] -= massToTransfer;
 		}
 		/*
 		 * Update radius, mass and volumes.
@@ -480,17 +477,16 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 	
 	/**
-	 * \brief Set the movement vector that states where to put a newly-created particle
+	 * \brief Set the movement vector that states where to put a newly-created
+	 * particle.
 	 * 
-	 * Set the movement vector that states where to put a newly-created particle
-	 * 
-	 * @param distance	Distance between the this agent and the new agent
+	 * @param distance	Distance between the this agent and the new agent.
 	 */
 	public void setDivisionDirection(Double distance)
 	{
 		Double phi, theta;
-		phi = 2 * Math.PI * ExtraMath.getUniRandDbl();
-		theta = 2 * Math.PI * ExtraMath.getUniRandDbl();
+		phi = ExtraMath.getUniRandAngle();
+		theta = ExtraMath.getUniRandAngle();
 		_divisionDirection.x = distance * Math.sin(phi) * Math.cos(theta);
 		_divisionDirection.y = distance * Math.sin(phi) * Math.sin(theta);
 		if ( _agentGrid.is3D )
@@ -506,30 +502,19 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * 
 	 * Implemented by extending classes (LocatedAgent).
 	 * 
-	 * TODO Rob 13Mar2015: This needs work!
-	 * MUTUAL is set in the protocol file
-	 * shoveOnly is always true 
-	 * seq is always true
-	 * gain is always 1.0
-	 * 
-	 * @param MUTUAL	Whether movement is shared between two agents or applied only to this one
-	 * @param shoveOnly	Boolean noting whether this action is shoving (false) or pulling (shrinking biofilm) (true)
-	 * @param seq	Whether the move should be applied immediately or wait until the end of the step
-	 * @param gain	Double noting change in position
-	 * @return	The move to be applied once the shoving or pull calculations have been performed
+	 * @param MUTUAL	Whether movement is shared between two agents or
+	 * applied only to this one. Set in the protocol file.
+	 * @return	The move to be applied once the shoving or pull calculations
+	 * have been performed.
 	 */
 	@Override
-	public Double interact(boolean MUTUAL, boolean seq)
+	public Double interact(boolean MUTUAL)
 	{
-		LogFile.writeLogDebug("Debugging LocatedAgent.interact()");
-		LogFile.writeLogDebug("\tAgent at "+_location.toString());
 		move();
 		/*
 		 * Rebuild your neighbourhood.
 		 */
 		getPotentialShovers(getInteractDistance());
-		LogFile.writeLogDebug("\tInteract distance = "+getInteractDistance());
-		LogFile.writeLogDebug("\tNum neighbours = "+_myNeighbors.size());
 		for ( LocatedAgent neighbour : _myNeighbors )
 			addPushMovement(neighbour, MUTUAL);
 		_myNeighbors.clear();
@@ -554,19 +539,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		 */
 		if ( aNeighbor == this )
 			return;
-		LogFile.writeLogDebug("Debugging LocatedAgent.addPushMovement()");
-		LogFile.writeLogDebug("\tMy location: "+_location.toString()+
-				", neighbour's location: "+aNeighbor.getLocation().toString());
 		/*
-		 * Build the escape vector and find the distance between you and your
-		 * neighbour. 
+		 * Find the vector from your neighbour's cell centre to your cell
+		 * centre.
 		 */
 		ContinuousVector diff = computeDifferenceVector(aNeighbor);
 		/*
 		 * Compute effective cell-cell distance.
 		 */
 		Double delta = diff.norm() - getInteractDistance(aNeighbor);
-		LogFile.writeLogDebug("\tDiff between us "+diff.toString()+", delta: "+delta);
 		/*
 		 * Apply the shoving calculated. If it's mutual, apply half to each.
 		 */
@@ -586,6 +567,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * \brief Pulling : The movement of agents by a shrinking biofilm. Move calculated and added to the agents movement vector.
 	 * 
 	 * The movement of agents by a shrinking biofilm. Move calculated and added to the agents movement vector. 
+	 * 
+	 * TODO Not currently used... consider deleting?
 	 * 
 	 * @param aNeighbor	 Reference to the potentially shoving neighbour
 	 * @param isMutual	Whether movement is shared between two agents or applied only to this one
@@ -627,8 +610,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Computes the shortest distance between this agent and a position
+	 * \brief Computes the shortest vector between this agent and a position
 	 * given as a ContinuousVector. Assumes cyclic boundaries.
+	 * 
+	 * If the vector is all zero's, returns a vector of random direction and
+	 * length = 0.01 * radius.
+	 * 
+	 * TODO Can we do this without assuming cyclic boundaries? I.e. actually
+	 * check..
 	 * 
 	 * @param position	ContinuousVector of position to calculate distance to.
 	 * @return The shortest movement vector to go from a to b, taking into
@@ -662,15 +651,23 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 			if (Math.abs(diff.z) > 0.5 * gridLength)
 				diff.z -= Math.signum(diff.z) * gridLength;
 		}
-		Double d = diff.norm();
-		if ( d.equals(0.0) )
+		/*
+		 * If this is a zero vector, give it random direction and a norm of
+		 * 0.01 * radius.
+		 */
+		if ( diff.isZero() )
 		{
-			d = 1e-2*_radius;
 			diff.alea(_agentGrid.is3D);
+			diff.normalizeVector(0.01*_radius);
 		}
 		return diff;
 	}
 	
+	/**
+	 * 
+	 * @param aLoc
+	 * @return
+	 */
 	public ContinuousVector computeDifferenceVector(LocatedAgent aLoc)
 	{
 		return computeDifferenceVector(aLoc._location);
@@ -700,32 +697,32 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Find a sibling of this agent.
+	 * \brief Find siblings of this agent in the immediate surroundings.
 	 * 
 	 * @param indexSpecies	The index used to reference this species in the
 	 * simulation dictionary.
 	 */
 	public void findCloseSiblings(int indexSpecies) 
 	{
-		int nNb;
-		boolean test;
 		Double shoveDist;
 		LocatedAgent aNb;
-
+		/*
+		 * Find and count neighbours.
+		 */
 		getPotentialShovers(getInteractDistance());
-		nNb = _myNeighbors.size();
-
-		for (int iNb = 0; iNb<nNb; iNb++)
+		int nNb = _myNeighbors.size();
+		/*
+		 * Loop through them, only re-appending them to the neighbour list
+		 * if they are: (1) different to this agent, (2) the same species as 
+		 * this agent, and (3) close enough to this agent.  
+		 */
+		for ( int iNb = 0; iNb < nNb; iNb++ )
 		{
 			aNb = _myNeighbors.removeFirst();
-			// test EPS-species
-			test = (indexSpecies == aNb.speciesIndex);
-			
-			// Test distance
+			if ( aNb == this || indexSpecies != aNb.speciesIndex)
+				continue;
 			shoveDist = 2 * (getShoveRadius() + aNb.getShoveRadius());
-			test = (getDistance(aNb) <= shoveDist) && test;
-			
-			if (test & aNb != this)
+			if ( getDistance(aNb) <= shoveDist )
 				_myNeighbors.addLast(aNb);
 		}
 	}
@@ -733,6 +730,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * \brief With the agent move calculated, apply this movement, taking care
 	 * to respect boundary conditions.
+	 * 
+	 * @return Distance moved relative to total radius.
 	 */
 	@Override
 	public Double move()
@@ -807,9 +806,11 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 				LogFile.writeLogAlways(
 						"Problem in LocatedAgent.checkBoundaries(): "+
 						"\n\tLocatedAgent at "+_location.toString()+
-						" with radius "+_totalRadius+" on boundary "+
+						", trying to move to "+_newLoc.toString()+
+						", with radius "+_totalRadius+" on boundary "+
 						aBoundary.getSide()+" ("+aBoundary.getClass()+")"+
 						"\n\tcounter ("+counter+") > nDim ("+nDim+")");
+				return;
 			}
 		}
 	}

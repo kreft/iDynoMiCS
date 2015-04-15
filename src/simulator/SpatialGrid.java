@@ -292,17 +292,18 @@ public class SpatialGrid implements Serializable
 		return MatrixOperations.min(grid);
 	}
 	
+	/**
+	 * TODO Check and make sure this is used.
+	 * 
+	 * @return
+	 */
 	public Double getMinUnpadded()
 	{
 		Double out = Double.POSITIVE_INFINITY;
 		for ( int i = 0; i < _nI; i++ )
 			for ( int j = 0; j < _nJ; j++ )
 				for ( int k = 0; k < _nK; k++ )
-				{
-					System.out.println("Looking at "+i+", "+j+", "+k+": "+grid[i][j][k]);
 					out = Math.min(out, grid[i][j][k]);
-				}
-					
 		return out;
 	}
 	
@@ -581,8 +582,10 @@ public class SpatialGrid implements Serializable
 	 */
 	public Double getValueAt(int i, int j, int k) 
 	{
-		if (isValidOrPadded(i, j, k)) return grid[i][j][k];
-		else return Double.NaN;
+		if (isValidOrPadded(i, j, k))
+			return grid[i][j][k];
+		else
+			return Double.NaN;
 	}
 
 	/**

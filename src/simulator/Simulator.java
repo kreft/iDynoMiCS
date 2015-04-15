@@ -453,8 +453,7 @@ public class Simulator
 	public void createSimulator() 
 	{
 		LogFile.writeLogAlways("\tCreating simulator: ");
-		XMLParser localRoot = new
-						XMLParser(_protocolFile.getChildElement("simulator"));
+		XMLParser localRoot = _protocolFile.getChildParser("simulator");
 		/* 
 		 * Read the flag from protocol file to decide if this is a chemostat
 		 * run (false by default)
@@ -609,8 +608,7 @@ public class Simulator
 	 */
 	public void createFiles(String resultPath) 
 	{
-		XMLParser localRoot = new
-						XMLParser(_protocolFile.getChildElement("simulator"));
+		XMLParser localRoot = _protocolFile.getChildParser("simulator");
 		_outputPeriod = localRoot.getParamTime("outputPeriod");
 		/*
 		 * Initialise data files. We pass the current iterate to output files
@@ -660,7 +658,7 @@ public class Simulator
 		list = _protocolFile.getChildrenElements("particle");
 		particleDic = new ArrayList<String>(list.size());
 		for ( Element aChild : list )
-			particleDic.add(aChild.getAttributeValue("name"));
+			particleDic.add(aChild.getName());
 		if ( particleDic.remove("capsule") )
 			particleDic.add("capsule");
 		/*
@@ -670,14 +668,14 @@ public class Simulator
 		reactionDic = new ArrayList<String>(list.size());
 		reactionList = new Reaction[list.size()];
 		for ( Element aChild : list )
-			reactionDic.add(aChild.getAttributeValue("name"));
+			reactionDic.add(aChild.getName());
 		/* 
 		 * Build the dictionary of "species".
 		 */
 		list = _protocolFile.getChildrenElements("species");
 		speciesDic = new ArrayList<String>(list.size());
 		for ( Element aChild : list )
-			speciesDic.add(aChild.getAttributeValue("name"));
+			speciesDic.add(aChild.getName());
 		/* 
 		 * Build the dictionary of "solvers".
 		 */
@@ -685,7 +683,7 @@ public class Simulator
 		solverDic = new ArrayList<String>(list.size());
 		solverList = new DiffusionSolver[list.size()];
 		for ( Element aChild : list )
-			solverDic.add(aChild.getAttributeValue("name"));
+			solverDic.add(aChild.getName());
 	}
 
 	/**
@@ -796,8 +794,8 @@ public class Simulator
 	public void createSolutes() 
 	{
 		System.out.print("\t Solutes: \n");
-		//try 
-		//{
+		try 
+		{
 			// Count of solutes and reference to solute list.
 			int iSolute = 0;
 			/* First get a linked list of all the Solute tags in the XML 
@@ -807,22 +805,22 @@ public class Simulator
 			{
 				soluteList[iSolute] = new SoluteGrid(this, aSol);
 				LogFile.writeLog("\t\t"+soluteList[iSolute].getName()+
-									" ("+soluteList[iSolute].soluteIndex+")");
+						" ("+soluteList[iSolute].soluteIndex+")");
 				iSolute++;
 			}
 			System.out.println("\t done");
-		/*}
+		}
 		catch (Exception e) 
 		{
 			LogFile.writeError(e, "Simulator.createSolutes()");
-		}*/
+		}
 	}
 
 	/**
 	 * \brief Create all reactions described in the protocol file
 	 * 
-	 * This method creates all the reactions that were described in the XML protocol file, storing these in an array of reaction 
-	 * objects.
+	 * This method creates all the reactions that were described in the XML
+	 * protocol file, storing these in an array of reaction objects.
 	 */
 	public void createReactions() throws Exception 
 	{
@@ -834,13 +832,12 @@ public class Simulator
 		int iReaction = 0;
 		
 		// Now to go through each reaction in the file
-		for (Element aReactionMarkUp : _protocolFile.getChildrenElements("reaction")) 
+		for (XMLParser parser : _protocolFile.getChildrenParsers("reaction"))
 		{
-			XMLParser aReactionRoot = new XMLParser(aReactionMarkUp);
 			// Create a reaction object
-			aReaction = (Reaction) aReactionRoot.instanceCreator("simulator.reaction");
+			aReaction = (Reaction) parser.instanceCreator("simulator.reaction");
 			// Initialise that reation as specified in the XML file
-			aReaction.init(this, aReactionRoot);
+			aReaction.init(this, parser);
 
 			// register the created object into the reactions container
 			reactionList[iReaction] = aReaction;
@@ -857,8 +854,8 @@ public class Simulator
 	/**
 	 * \brief Creates the pressure solvers specified in the protocol file
 	 * 
-	 * This method processes the pressure solvers that are specified in the XML protocol file. These are used to compute the steady 
-	 * state solute profile within the computational domain
+	 * These are used to compute the steady state solute profile within the
+	 * computational domain.
 	 */
 	public void createSolvers() throws Exception 
 	{
@@ -866,11 +863,8 @@ public class Simulator
 		try
 		{
 			// Now for each specified solver in the XML file
-			for (Element aSolverMarkUp : _protocolFile.getChildrenElements("solver")) 
+			for (XMLParser parser : _protocolFile.getChildrenParsers("solver"))
 			{
-				// Initialise the XML parser
-				XMLParser parser = new XMLParser(aSolverMarkUp);
-	
 				// Create the solver,initialise it and register it
 				DiffusionSolver aSolver =
 					(DiffusionSolver) parser.instanceCreator("simulator.diffusionSolver");
@@ -904,52 +898,47 @@ public class Simulator
 	{
 		// THIS PROCESS IS CONDUCTED IN THREE DISTINCT STAGES
 		// STAGE 1: CREATE THE SPECIES (AND THE PROGENITOR) AND REGISTER IT
-		//try 
-		//{ 
+		try 
+		{ 
 			System.out.print("\t Species: \n");
-			
 			XMLParser speciesDefaults;
-			// Read in the 'Species Defaults' from the parameter file
-			if(_protocolFile.getChildElement("speciesDefaults") != null)
-			{
-			    speciesDefaults = new XMLParser(_protocolFile.getChildElement("speciesDefaults"));
-			}
+			Species aSpecies;
+			/*
+			 * Read in the 'Species Defaults' from the parameter file.
+			 */
+			if ( _protocolFile.getChildElement("speciesDefaults") != null )
+			    speciesDefaults = _protocolFile.getChildParser("speciesDefaults");
 			else
-			{
 				speciesDefaults = new XMLParser(new Element("speciesDefaults"));
-			}
-			
-			
-			// Now iterate through all species specified in the protocol file
-			for (Element aSpeciesMarkUp : _protocolFile.getChildrenElements("species")) 
+			/*
+			 * Now iterate through all species specified in the protocol file.
+			 * Create a new species object for each specification and add to
+			 * the list of species in this simulation.
+			 */
+			for ( XMLParser parser : _protocolFile.getChildrenParsers("species"))
 			{
-				// Create a new species object for this specification
-				Species aSpecies = new Species(this, new XMLParser(aSpeciesMarkUp), speciesDefaults); 
-				// Add to the list of species in this simulation
+				aSpecies = new Species(this, parser, speciesDefaults); 
 				speciesList.add(aSpecies);
-				
 				LogFile.writeLog("\t\t"+aSpecies.speciesName+" ("+aSpecies.speciesIndex+")");
 			}
-		
 			System.out.print("\t done\n");
-			/*
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Error in Simulator.createSpecies() first stage");
-            e.printStackTrace();
+			LogFile.writeError(e, "Simulator.createSpecies() first stage");
 		}
-		*/
 		
 		// STAGE 2: CREATE THE AGENT GRID
 		try 
 		{ 
 			System.out.print("\t Agent Grid: \n");
-			
-			// Get the agent grid markup from the XML file
-			XMLParser parser = new XMLParser(_protocolFile.getChildElement("agentGrid"));
-			
-			// Create the grid using specification in the XML file
+			/*
+			 * Get the agent grid markup from the XML file
+			 */
+			XMLParser parser = _protocolFile.getChildParser("agentGrid");
+			/*
+			 * Create the grid using specification in the XML file
+			 */
 			agentGrid = new AgentContainer(this, parser, agentTimeStep);
 			is3D = agentGrid.is3D;
 			System.out.print("\t done\n");
@@ -957,22 +946,22 @@ public class Simulator
 			// Finalise the initialisation of the progenitor
 			System.out.print("\t Species progenitor: \n");
 			
-			for (Element aSpeciesMarkUp : _protocolFile.getChildrenElements("species")) 
+			for (XMLParser spParser : _protocolFile.getChildrenParsers("species")) 
 			{
-				parser = new XMLParser(aSpeciesMarkUp);
+				
 				
 				// Create the progenitor
-				getSpecies(parser.getName()).getProgenitor().
-										initFromProtocolFile(this, parser);
+				getSpecies(spParser.getName()).getProgenitor().
+										initFromProtocolFile(this, spParser);
 				
 				//sonia: creating a list with the plasmid names which will be used afterwards to write the agentSum report
 				// Whether MultiEpiBac and MultiEpisome agents are being used 
 				if(multiEpi)
 				{
-					if(parser.getAttribute("class").equals("MultiEpisome"))
+					if ( spParser.getAttribute("class").equals("MultiEpisome"))
 					{
-						String plName = parser.getName();
-						Double scanSpeed = parser.getParamDbl("scanSpeed");
+						String plName = spParser.getName();
+						Double scanSpeed = spParser.getParamDbl("scanSpeed");
 						plasmidList.add(plName);
 						scanSpeedList.add(scanSpeed);
 
@@ -1100,21 +1089,21 @@ public class Simulator
 			 * version 1.2), a switch is useful if further methods are added
 			 * later.
 			 * 
-			 * Rob Nov 2014: Added the && to each update of creatingAgents.
+			 * Rob Apr 2015: Added the || to each update of creatingAgents.
 			 * If the last species isn't creating agents but an earlier
 			 * species is, the old method wouldn't have relaxed the grid.
 			 */
 			if ( this.attachmentMechanism.equals("onetime") )
 			{
 				creatingAgents = 
-						this.oneTimeAttachmentAgentBirth(aSpRoot, spIndex)
-						&& creatingAgents;
+							this.oneTimeAttachmentAgentBirth(aSpRoot, spIndex)
+							|| creatingAgents;
 			}
 			else if ( this.attachmentMechanism.equals("selfattach") )
 			{
 				creatingAgents = 
 							this.selfAttachmentAgentBirth(aSpRoot, spIndex)
-							&& creatingAgents;
+							|| creatingAgents;
 			}
 		}
 		if ( creatingAgents )
@@ -1138,7 +1127,6 @@ public class Simulator
 		for (XMLParser anArea : aSpRoot.getChildrenParsers("initArea"))
 			if (SimTimer.isDuringNextStep(anArea.getParamTime("birthday"))) 
 			{
-				this.agentGrid.agentIter = agentGrid.agentList.listIterator();
 				speciesList.get(spIndex).createPop(anArea);
 				creatingAgents = true;
 			}
@@ -1183,51 +1171,52 @@ public class Simulator
 	}
 	
 	/**
-	 * \brief Creates the required number of cells at the boundary layer in self-attachment scenarios. Differs dependent on whether within an injection period
+	 * \brief Creates the required number of cells at the boundary layer in 
+	 * self-attachment scenarios. Differs dependent on whether within an 
+	 * injection period.
 	 * 
-	 * For self-attachment scenarios, it is possible to model injection of cells during the simulation, as well as periods that follow 
-	 * where no cells are injected. In these cases, the number of cells injected from the boundary layer will differ (to model the fact 
-	 * that the attachment rate may be different in these periods). This rate is supplied to this function, and the required number of 
-	 * cells created
+	 * For self-attachment scenarios, it is possible to model injection of
+	 * cells during the simulation, as well as periods that follow where no
+	 * cells are injected. In these cases, the number of cells injected from
+	 * the boundary layer will differ (to model the fact that the attachment
+	 * rate may be different in these periods). This rate is supplied to this
+	 * function, and the required number of cells created.
 	 * 
-	 * @param cellAttachmentFrequency	The number of cells to create at the boundary layer per hour, for this injection period
-	 * @param parser	The XML object for this species. From the simulation protocol file
-	 * @param spIndex	The index of this species in the simulation species list
-	 * @return	A boolean noting whether any agents were created in this step
+	 * @param cellAttachmentFrequency	The number of cells to create at the
+	 * boundary layer per hour, for this injection period.
+	 * @param parser	The XML object for this species. From the simulation
+	 * protocol file.
+	 * @param spIndex	The index of this species in the simulation species
+	 * list.
+	 * @return	A boolean noting whether any agents were created in this step.
 	 */
-	public boolean create_Required_Number_Of_SelfAttaching_Agents(double cellAttachmentFrequency, XMLParser parser, int spIndex)
+	public boolean create_Required_Number_Of_SelfAttaching_Agents(
+				Double cellAttachmentFrequency, XMLParser parser, int spIndex)
 	{
-		boolean creatingAgents = false;
-		
-		// To keep things consistent, the global timestep is specified in hours, and the number of cells injected is also specified 
-		// in hours. Thus we need to work out we are injecting the correct number of cells here.
-		
-		int wholeAgentsThisTimeStep = (int)(cellAttachmentFrequency * SimTimer.getCurrentTimeStep());
-		double remainder = (cellAttachmentFrequency * SimTimer.getCurrentTimeStep()) - wholeAgentsThisTimeStep;
-		
-		if(remainder>0)
+		/*
+		 * To keep things consistent, the global timestep is specified in
+		 * hours, and the number of cells injected is also specified per hour.
+		 * Thus we need to work out we are injecting the correct number of
+		 * cells here. 
+		 */
+		Double tally = cellAttachmentFrequency * SimTimer.getCurrentTimeStep()
+								+ speciesList.get(spIndex).newAgentCounter;
+		int wholeAgentsThisTimeStep = tally.intValue();
+		tally -= wholeAgentsThisTimeStep;
+		/*
+		 * Update the remainder for this species.
+		 */
+		speciesList.get(spIndex).newAgentCounter = tally;
+		/*
+		 * Now create these agents.
+		 */
+		if ( wholeAgentsThisTimeStep > 0 )
 		{
-			// increment the remainder for this species
-			speciesList.get(spIndex).newAgentCounter = speciesList.get(spIndex).newAgentCounter+remainder;
+			speciesList.get(spIndex).createBoundaryLayerPop(parser,
+													wholeAgentsThisTimeStep);
+			return true;
 		}
-		
-		// Now see if the remainder has totalled a new cell
-		if(speciesList.get(spIndex).newAgentCounter >= 1)
-		{
-			wholeAgentsThisTimeStep++;
-			speciesList.get(spIndex).newAgentCounter--;
-		}
-		
-		// Now create these agents
-		if(wholeAgentsThisTimeStep>0)
-		{
-			this.agentGrid.agentIter = agentGrid.agentList.listIterator();
-			speciesList.get(spIndex).createBoundaryLayerPop(parser,wholeAgentsThisTimeStep);
-			creatingAgents = true;
-			
-		}
-		
-		return creatingAgents;
+		return false;
 	}
 
 	/**

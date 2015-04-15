@@ -165,32 +165,45 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		particleYield = ExtraMath.newDoubleArray(nReaction, nParticle);
 		
 		Reaction aReaction;
-		// Read the XML file.
-		for (Element aReacElement : xmlMarkUp.getChildrenElements("reaction"))
+		/*
+		 * Read the XML file. Note that this is not a parser (yet) and so we
+		 * should not use XMLParser.getName(), etc.
+		 */
+		for (Element aReacElem : xmlMarkUp.getChildrenElements("reaction"))
 		{
 			reacIndex = aSim.getReactionIndex(
-									aReacElement.getAttributeValue("name"));
+										aReacElem.getAttributeValue("name"));
 			aReaction = allReactions[reacIndex];
-			
-			// Add the reaction to the list of known (and active) reactions.
+			/*
+			 * Add the reaction to the list of known (and active) reactions.
+			 */
 			reactionKnown.add(reacIndex);
-			if (aReacElement.getAttributeValue("status").equals("active"))
+			if (aReacElem.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
 			/* 
 			 * If reaction parameters have been redefined, load them; 
 			 * else load the parameters defined for the reaction.
 			 */
-			if ( aReacElement.getContentSize() == 0 )
+			if ( aReacElem.getContentSize() == 0 )
 			{
 				soluteYield[reacIndex] = aReaction.getSoluteYield();
 				particleYield[reacIndex] = aReaction.getParticulateYield();
 				reactionKinetic[reacIndex] = aReaction.getKinetic();
 			}
 			else
-				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElement));
+			{
+				/*
+				 * TODO Rob 15Apr2014: This seems a dangerous way of doing
+				 * things... having kinetics here that differ from those in
+				 * the simulator may play havoc with the diffusion-reaction
+				 * solver(s).
+				 */
+				aReaction.initFromAgent(this, aSim, new XMLParser(aReacElem));
+			}
 		}
-
-		// Now copy these value in the speciesParam strucure
+		/*
+		 * Now copy these value in the speciesParam structure.
+		 */
 		getSpeciesParam().soluteYield = soluteYield.clone();
 		getSpeciesParam().particleYield = particleYield.clone();
 		getSpeciesParam().reactionKinetic = reactionKinetic.clone();
@@ -256,7 +269,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		try
 		{
 			ActiveAgent baby = (ActiveAgent) sendNewAgent();
-			baby.mutatePop();
 			// Register the baby in the pathway guilds.
 			baby.registerBirth();
 		}

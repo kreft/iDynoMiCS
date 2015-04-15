@@ -112,14 +112,15 @@ public class Species implements Serializable
 	public Double injectionOffAttachmentFrequency = 0.0;
 	
 	/**
-	 * Used in self-attachment cases where the number of agents specified in the protocol file leaves a remainder per timestep. When this 
-	 * remainder reaches 1, a new cell is introduced to the simulation
+	 * Used in self-attachment cases where the number of agents specified in
+	 * the protocol file leaves a remainder per timestep. When this remainder
+	 * reaches 1, a new cell is introduced to the simulation.
 	 */
 	public Double newAgentCounter = 0.0;
 	
 	/**
-	 * For self-attaching species, this holds the XY angle the cell is moving. This is global as this may change due to bouncing of 
-	 * boundaries
+	 * For self-attaching species, this holds the XY angle the cell is moving.
+	 * This is global as this may change due to bouncing of boundaries.
 	 */
 	public Double angleOfMovingAgentXY = 0.0;
 	

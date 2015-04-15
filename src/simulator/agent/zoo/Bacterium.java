@@ -215,7 +215,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			}
 			
 			// randomise its mass
-			baby.mutatePop();
+			baby.randomiseMass();
 			//System.out.println("RADIUS AT THIS POINT: "+this._totalRadius);
 			baby.updateSize();
 			//System.out.println("RADIUS AFTER CALL: "+this._totalRadius);
@@ -236,8 +236,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 * \brief Mutates inherited parameters and distributes particle mass -
 	 * either exponentially or normally, dependent on value of distMethod.
 	 */
-	@Override
-	public void mutatePop() 
+	public void randomiseMass() 
 	{	
 		// distMethod true -> distribute exponentially
 		// distMethod false -> distribute normally

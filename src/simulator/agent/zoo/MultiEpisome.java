@@ -162,24 +162,12 @@ public class MultiEpisome extends InfoAgent
 		try {
 			// Clone the plasmid
 			MultiEpisome baby = this.sendNewAgent();
-
-			// Mutate parameters
-			baby.mutatePop();
-
 			// Register the plasmid (species population)
 			baby.registerBirth();
 
 		} catch (CloneNotSupportedException e) {
 			System.out.println("at Episome: createNewAgent error " + e);
 		}
-	}
-
-	@Override
-	public void mutatePop() {
-		// Mutate inherited parameters
-		super.mutatePop();
-
-		// Now mutate your parameters
 	}
 
 	@Override

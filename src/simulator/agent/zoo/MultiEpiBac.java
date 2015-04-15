@@ -139,7 +139,7 @@ public class MultiEpiBac extends BactEPS
 		try {
 			// Clone the agent
 			MultiEpiBac baby = sendNewAgent();
-			baby.mutatePop();
+			baby.randomiseMass();
 			baby.setLocation(position);
 			baby.giveName();
 			baby.updateSize();
@@ -380,17 +380,6 @@ public class MultiEpiBac extends BactEPS
 			//}
 		}
 
-	}
-
-	/**
-	 * Remove agent and all references from the system
-	 * 
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void die(Boolean isStarving)
-	{
-		super.die(isStarving);
 	}
 
 	/* __________________ CONJUGATION ___________________________ */

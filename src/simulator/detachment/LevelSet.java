@@ -249,7 +249,7 @@ public abstract class LevelSet
 			aGroup.erosionTime = computeTValue(aGroup, aSim);
 			// Mark all particles for detachment if it is the case.
 			if ( aGroup.erosionTime < timeStep )
-				aGroup.killAll();
+				aGroup.killAll("detachment");
 			// Add element to _close
 			_close.add(aGroup);
 		}

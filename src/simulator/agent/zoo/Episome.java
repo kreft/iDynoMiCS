@@ -152,10 +152,8 @@ public class Episome extends InfoAgent
 	{
 		try
 		{
-			// Clone the plamid
+			// Clone the plasmid
 			Episome baby = this.sendNewAgent();
-			// Mutate parameters
-			baby.mutatePop();
 			// Register the plasmid (species population)
 			baby.registerBirth();
 		}

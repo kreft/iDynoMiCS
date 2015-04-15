@@ -259,9 +259,4 @@ public abstract class Agent implements Cloneable
 	{
 		return this._birthday;
 	}
-
-	public void mutatePop()
-	{
-	
-	}
 }
