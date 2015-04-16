@@ -10,10 +10,13 @@
 package simulator.diffusionSolver.multigrid;
 
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
+import simulator.geometry.DiscreteVectorIterator;
 import simulator.geometry.Domain;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.MatrixOperations;
 
 /**
@@ -172,8 +175,8 @@ public class MultigridSolute
 	 * @param bLayer	Boundary layer.
 	 * @param sBulk	Max level of this solute in the bulk.
 	 */
-	public MultigridSolute(SoluteGrid aSolute, MultigridSolute relDiff, MultigridSolute bLayer,
-	        Double sBulk)
+	public MultigridSolute(SoluteGrid aSolute, MultigridSolute relDiff,
+										MultigridSolute bLayer, Double sBulk)
 	{
 		realGrid = aSolute;
 		soluteName = realGrid.gridName;
@@ -198,7 +201,8 @@ public class MultigridSolute
 		_itemp = new SoluteGrid[maxOrder];
 		_itau = new SoluteGrid[maxOrder];
 
-		for (int iGrid = 0; iGrid<maxOrder; iGrid++) {
+		for (int iGrid = 0; iGrid<maxOrder; iGrid++)
+		{
 			_i = (_nI-1)/ExtraMath.exp2(iGrid)+1;
 			_j = (_nJ-1)/ExtraMath.exp2(iGrid)+1;
 			_k = (_nK-1)/ExtraMath.exp2(iGrid)+1;
@@ -215,15 +219,14 @@ public class MultigridSolute
 	}
 
 	/**
-	 * \brief Constructor used for biomass, bLayer and relative diffusivity grids
-	 * 
-	 * Constructor used for biomass, bLayer and relative diffusivity grids
+	 * \brief Constructor used for biomass, bLayer and relative diffusivity
+	 * grids.
 	 * 
 	 * @param aSolute	SoluteGrid to be used by the Multigrid
 	 * @param gridName	Name of the solute grid
 	 */
-	public MultigridSolute(SoluteGrid aSolute, String gridName) {
-
+	public MultigridSolute(SoluteGrid aSolute, String gridName)
+	{
 		soluteName = gridName;
 		_domain = aSolute.getDomain();
 		realGrid = aSolute;
@@ -233,38 +236,39 @@ public class MultigridSolute
 		_nK = aSolute.getGridSizeK();
 		
 		//sonia:chemostat
-		if(Simulator.isChemostat){
+		if(Simulator.isChemostat)
+		{
 			_conc = new SoluteGrid[1];
-			_conc[0]= new SoluteGrid(_nI, _nJ, _nK, _domain._resolution, aSolute);
-			
-		}else{
-		
-		setReferenceSide();
-		_conc = new SoluteGrid[maxOrder];
-
-		for (int iGrid = 0; iGrid<maxOrder; iGrid++) {
-			int i = (_nI-1)/ExtraMath.exp2(iGrid)+1;
-			int j = (_nJ-1)/ExtraMath.exp2(iGrid)+1;
-			int k = (_nK-1)/ExtraMath.exp2(iGrid)+1;
-			double r = _referenceSystemSide/referenceIndex(i,j,k);
-
-			// with padding for boundary conditions
-			_conc[maxOrder-iGrid-1] = new SoluteGrid(i, j, k, r, aSolute);
+			_conc[0]= new SoluteGrid(_nI, _nJ, _nK, _domain._resolution, aSolute);	
 		}
+		else
+		{
+			setReferenceSide();
+			_conc = new SoluteGrid[maxOrder];
+
+			for (int iGrid = 0; iGrid<maxOrder; iGrid++)
+			{
+				int i = (_nI-1)/ExtraMath.exp2(iGrid)+1;
+				int j = (_nJ-1)/ExtraMath.exp2(iGrid)+1;
+				int k = (_nK-1)/ExtraMath.exp2(iGrid)+1;
+				double r = _referenceSystemSide/referenceIndex(i,j,k);
+				// with padding for boundary conditions
+				_conc[maxOrder-iGrid-1] = new SoluteGrid(i, j, k, r, aSolute);
+			}
 		}
 	}
 
 	/**
-	 * \brief Beginning of each nested loop
-	 * 
-	 * Beginning of each nested loop
+	 * \brief Beginning of each nested loop.
 	 * 
 	 * @param order	Integer noting the order of process
 	 */
-	public void initLoop(int order) {
-		MultigridUtils.interpolateBoundaryLayer(_conc[order], _conc[order-1], _bLayer[order].grid);
-		// set each chemical's r.h.s. to 0
-		_rhs[order].setAllValueAt(0d);
+	public void initLoop(int order)
+	{
+		MultigridUtils.interpolateBoundaryLayer(_conc[order],
+										_conc[order-1], _bLayer[order].grid);
+		// Set each solute's r.h.s. to 0
+		_rhs[order].setAllValueAt(0.0);
 	}
 
 	public void downward(int order, int outer)
@@ -623,6 +627,22 @@ public class MultigridSolute
 						_conc[order].grid[_i][_j][_k] = sBulkMax;
 					}
 				}
+		/*
+		DiscreteVectorIterator dvIter = new DiscreteVectorIterator(
+											1, _conc[order].getGridSizeI(),
+											1, _conc[order].getGridSizeJ(),
+											1, _conc[order].getGridSizeK()); 
+		while ( true )
+		{
+			if ( _bLayer[order].getValueAt(dvIter) <= BLTHRESH )
+				// Outside the boundary layer (will not be solved).
+				_conc[order].setValueAt(sBulk, dvIter);
+			else
+				// Inside the biofilm (value is not really important now).
+				_conc[order].setValueAt(sBulkMax, dvIter);
+			if ( ! dvIter.setNext() )
+				break;
+		}*/
 	}
 	
 	/**
@@ -660,7 +680,7 @@ public class MultigridSolute
 	{
 		for (int order = maxOrder - 1; order > 0; order--)
 		{
-			_conc[order-1].setAllValueAt(0);
+			_conc[order-1].resetToZero();
 			MultigridUtils.restrict(_conc[order], _conc[order-1]);
 		}
 	}
@@ -670,23 +690,29 @@ public class MultigridSolute
 	 */
 	public void setReferenceSide()
 	{
-		_referenceSystemSide = (double) Math.min(_nI, _nJ);
+		_referenceSystemSide = Double.valueOf(Math.min(_nI, _nJ));
 		if (_nK>1) _referenceSystemSide = Math.min(_referenceSystemSide, _nK);
 
 		maxOrder = ExtraMath.log2(_referenceSystemSide).intValue();
 		_referenceSystemSide -= 1;
 		_referenceSystemSide *= realGrid.getResolution();
 	}
-
 	
-	// this is meant to return the correct index value following
-	// the logic of setReferenceSide() above
+	/**
+	 * This is meant to return the correct index value following the logic of
+	 * setReferenceSide() above.
+	 * 
+	 * @param i
+	 * @param j
+	 * @param k
+	 * @return
+	 */
 	private Double referenceIndex(int i, int j, int k)
 	{
 		if (_nK > 1)
-			return (double) Math.min(i, Math.min(j, k)) - 1;
+			return Double.valueOf(Math.min(i, Math.min(j, k)) - 1);
 		else
-			return (double) Math.min(i, j) - 1;
+			return Double.valueOf(Math.min(i, j) - 1);
 	}
 	
 	/**
@@ -694,8 +720,8 @@ public class MultigridSolute
 	 */
 	public void refreshDiffBoundaries(int order)
 	{
-		for (int i = 0; i < _domain.getAllBoundaries().size(); i++)
-			_domain.getAllBoundaries().get(i).refreshDiffBoundary(_relDiff[order], realGrid);
+		for ( AllBC boundary : _domain.getAllBoundaries() )
+			boundary.refreshDiffBoundary(_relDiff[order], realGrid);
 	}
 	
 	/**
@@ -715,12 +741,17 @@ public class MultigridSolute
 	}
 	
 	/**
-	 * Update bulk concentration
+	 * Update bulk concentration.
+	 * 
+	 * TODO Rob 13Mar2015: This just gets one of the bulk values, ignoring the
+	 * case where there may be more than one bulk.
 	 */
 	public void readBulk()
 	{
-		for (AllBC aBC : _domain.getAllBoundaries())
-			if (aBC.hasBulk())
-				sBulk = aBC.getBulk().getValue(realGrid.soluteIndex);
+		for ( ConnectedBoundary aBC : _domain.getAllConnectedBoundaries() )
+		{
+			sBulk = aBC.getBulkValue(realGrid.soluteIndex);
+			return;
+		}
 	}
 }

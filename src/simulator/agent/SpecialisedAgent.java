@@ -17,16 +17,15 @@ import utils.LogFile;
 import utils.XMLParser;
 
 /**
- * \brief Extension of Agent class, adds location and parameter information for an object of a particular species in the simulation
+ * \brief Extension of Agent class, adds location and parameter information
+ * for an object of a particular species in the simulation.
  * 
- * Extension of Agent class, adds location and parameter information for an object of a particular species in the simulation
- * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  */
 public abstract class SpecialisedAgent extends Agent implements HasSpecies, Cloneable 
 {
-	
 	/**
 	 * Type of species that this agent is representing
 	 */
@@ -112,78 +111,58 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Create a new agent with mutated parameters based on species default values
-	 * 
-	 * Create a new agent with mutated parameters based on species default values
+	 * \brief Create a new agent with mutated parameters based on species
+	 * default values.
 	 */
 	@Override
 	public abstract void createNewAgent();
 
 	/**
-	 * \brief Implemented by classes that extend this class - obtain another instance of the same species (totally independent)
+	 * \brief Obtain another instance of the same species (totally
+	 * independent).
 	 * 
-	 * Implemented by classes that extend this class - obtain another instance of the same species (totally independent)
+	 * Implemented by classes that extend this class.
 	 */
 	@Override
-	public abstract SpecialisedAgent sendNewAgent() throws CloneNotSupportedException;
-
+	public abstract SpecialisedAgent sendNewAgent() throws 
+												CloneNotSupportedException;
+	
 	/**
-	 * \brief Mutate any inherited parameters for this particular agent
-	 * 
-	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutateAgent() 
-	{
-		// Mutate parameters inherited
-		super.mutateAgent();
-		// Now mutate your parameters
-	}
-
-	/**
-	 * \brief Mutate any inherited parameters for a population of agents
-	 * 
-	 * Mutate any inherited parameters for a population of agents. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutatePop() 
-	{
-		// Mutate parameters inherited
-		// Now mutate your parameters
-	}
-
-	/**
-	 * \brief Registers a created agent into a respective container. Each agent must be referenced by one such container.
+	 * \brief Registers a created agent into a respective container.
 	 *  
-	 * Registers a created agent into a respective container. Each agent must be referenced by one such container. In this case, the 
-	 * species is registered into the agent grid
+	 * Each agent must be referenced by one such container. In this case, the 
+	 * species is registered into the agent grid.
 	 */
 	@Override
-	public void registerBirth() {
+	public void registerBirth()
+	{
 		_agentGrid = _species.currentSimulator.agentGrid;
 		_agentGrid.registerBirth(this);
 		_species.notifyBirth();
 	}
 
 	/**
-	 * \brief Notifies the simulation that this agent has become too small and is then counted as dead.
+	 * \brief Notifies the simulation that this agent has become too small and
+	 * is then counted as dead.
 	 * 
-	 * Notifies the simulation that this agent has become too small and is then counted as dead. Decreases the population of this species
-	 * 
-	 * @param isStarving	Boolean noting whether the agent currently has access to any resources
+	 * @param isStarving	Boolean noting whether the agent currently has
+	 * access to any resources.
 	 */
-	public void die(Boolean isStarving) {
-		// If you are too small, you must die !
-		// Decrease the population of your species
+	public void die(Boolean isStarving)
+	{
+		/*
+		 * If you are too small, you must die!
+		 * Decrease the population of your species
+		 */
 		_species.notifyDeath();
 		isDead = true;
 		_agentGrid.registerDeath(this);
 	}
-
+	
 	/**
-	 * \brief Used in the calculation of delta move in Agent Container class. Will investigate further why this class returns 0
+	 * \brief Used in the calculation of delta move in Agent Container class.
 	 * 
-	 * Used in the calculation of delta move in Agent Container class. Will investigate further why this class returns 0
+	 * Will investigate further why this class returns 0.
 	 * 
 	 * @return	0
 	 */
@@ -191,19 +170,7 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	{
 		return 0.0;
 	}
-
-
-	/**
-	 * \brief Set the species parameters to a specified Species Parameter object
-	 * 
-	 * Set the species parameters to a specified Species Parameter object
-	 * 
-	 * @param aSpeciesParam
-	 */
-	public void setSpeciesParam(SpeciesParam aSpeciesParam) {
-		_speciesParam = aSpeciesParam;
-	}
-
+	
 	/**
 	 * \brief Returns the object containing a set of parameters associated with a particular agent (species)
 	 * 
@@ -216,90 +183,52 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	}
 
 	/**
-	 * \brief Returns the species object that is represented by this agent
+	 * \brief Returns the species object that is represented by this agent.
 	 * 
-	 * Returns the species object that is represented by this agent
-	 * 
-	 * @return	Object of the Species class that this agent is representing
+	 * @return	Object of the Species class that this agent is representing.
 	 */
-	public Species getSpecies() {
+	public Species getSpecies()
+	{
 		return _species;
 	}
 
 	/**
-	 * \brief Set the progenitor Specialised agent to a specified species
+	 * \brief Set the progenitor Specialised agent to a specified species.
 	 * 
-	 * Set the progenitor Specialised agent to a specified species. New agents of this species are created using this information
-	 * 
-	 * @param aSpecies	A species object to use as the progenitor
+	 * @param aSpecies	A species object to use as the progenitor.
 	 */
 	@Override
 	public void setSpecies(Species aSpecies) 
 	{
 		_species = aSpecies;
 		speciesIndex = aSpecies.speciesIndex;
-
 	}
 
 	/**
-	 * \brief Return the name of the species represented by this agent
+	 * \brief Return the name of the species represented by this agent.
 	 * 
-	 * Return the name of the species represented by this agent
-	 * 
-	 * @return	Name of the species represented
+	 * @return	Name of the species represented.
 	 */
-	public String getName() {
+	public String getName()
+	{
 		return _species.speciesName;
 	}
-
+	
 	/**
-	 * \brief Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
+	 * \brief Models a mechanical interaction between two located agents.
 	 * 
-	 * Returns a boolean noting whether this agent is detached and may be removed in sloughing. Implemented by extending classes
-	 *  
-	 * @return	Boolean value noting whether this agent will be detached
+	 * Implemented by extending classes (LocatedAgent)
+	 * 
+	 * @param MUTUAL	Whether movement is shared between two agents or 
+	 * applied only to this one.
+	 * @return	The move to be applied once the shoving or pull calculations
+	 * have been performed.
 	 */
-	public Boolean willDetach() {
-		return false;
-	}
-
-	/**
-	 * \brief Returns the integer grid index where this agent resides. Implemented by extending classes
-	 * 
-	 * Returns the integer grid index where this agent resides. Implemented by extending classes
-	 *  
-	 * @return	Integer grid index where this agent is located within
-	 */
-	public int getGridIndex() {
-		return 0;
-	}
-
-	/**
-	 * \brief Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
-	 * 
-	 * Models a mechanical interaction between two located agents. Implemented by extending classes (LocatedAgent)
-	 * 
-	 * @param MUTUAL	Whether movement is shared between two agents or applied only to this one
-	 * @param pull	Boolean noting whether this action is shoving (false) or pulling (shrinking biofilm) (true)
-	 * @param seq	Whether the move should be applied immediately or wait until the end of the step
-	 * @param gain	Double noting change in position
-	 * @return	The move to be applied once the shoving or pull calculations have been performed
-	 */
-	public Double interact(boolean MUTUAL, boolean pull, boolean seq, double gain) {
+	public Double interact(boolean MUTUAL)
+	{
 		return 0.0;
 	}
-
-	/**
-	 * \brief Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
-	 * 
-	 * Returns a boolean noting whether this agent is moving due to growth and sloughing. Implemented by extending classes
-	 *  
-	 * @return	Boolean noting whether or not this agent is moving
-	 */
-	public Boolean isMoving() {
-		return false;
-	}
-
+	
 	/**
 	 * \brief Used in POV-Ray output to display this species - writes a colour definition to the passed-in file
 	 * 
@@ -309,7 +238,8 @@ public abstract class SpecialisedAgent extends Agent implements HasSpecies, Clon
 	 * 
 	 * @param fr	POV-Ray output file where the colour definition should be applied
 	 */
-	public void writePOVColorDefinition(FileWriter fr) throws IOException {
+	public void writePOVColorDefinition(FileWriter fr) throws IOException
+	{
 		fr.write("#declare "+_species.speciesName+" = color rgb < ");
 		fr.write((_species.color.getRed()) / 255.0 + " , ");
 		fr.write((_species.color.getGreen()) / 255.0 + " , ");

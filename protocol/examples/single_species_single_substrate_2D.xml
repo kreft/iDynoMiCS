@@ -234,8 +234,8 @@
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
-					<param name="pointIn" x="-1" y="0" z="0"/>
-					<param name="vectorOut" x="-1" y="0" z="0"/>
+					<param name="pointIn" i="-1" j="0" k="0"/>
+					<param name="vectorOut" i="-1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
@@ -243,30 +243,30 @@
 				<param name="activeForSolute">yes</param>
 				<param name="bulk">MyTank</param>
 				<shape class="Planar">
-					<param name="pointIn" x="33" y="0" z="0"/>
-					<param name="vectorOut" x="1" y="0" z="0"/>
+					<param name="pointIn" i="33" j="0" k="0"/>
+					<param name="vectorOut" i="1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0z">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="-1" z="0"/>
-					<param name="vectorOut" x="0" y="-1" z="0"/>
+					<param name="pointIn" i="0" j="-1" k="0"/>
+					<param name="vectorOut" i="0" j="-1" k="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="33" z="0"/>
-					<param name="vectorOut" x="0" y="1" z="0"/>
+					<param name="pointIn" i="0" j="33" k="0"/>
+					<param name="vectorOut" i="0" j="1" k="0"/>
 				</shape>
 			</boundaryCondition>
-
+			
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="-1"/>
-					<param name="vectorOut" x="0" y="0" z="-1"/>
+					<param name="pointIn" i="0" j="0" k="-1"/>
+					<param name="vectorOut" i="0" j="0" k="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="1"/>
-					<param name="vectorOut" x="0" y="0" z="1"/>
+					<param name="pointIn" i="0" j="0" k="1"/>
+					<param name="vectorOut" i="0" j="0" k="1"/>
 				</shape>
 			</boundaryCondition>
 		</computationDomain>
@@ -409,6 +409,8 @@
 			<param name="kDet" unit="um-1.hour-1">5e-5</param>
 			<param name="maxTh" unit="um">200</param>
 		</detachment>
+		
+		<param name="erosionMethod">false</param>
 
 		<!-- The 'sloughDetachedBiomass' parameter sets whether biomass that is no longer
 			connected to the substratum will be removed. In general this should be true, but
@@ -539,8 +541,8 @@
 
 		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
-			<coordinates x="0" y="132" z="0"/>
-			<coordinates x="10" y="132" z="0"/>
+			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="4" y="264" z="0"/>
 		</initArea>
 	</species>
 

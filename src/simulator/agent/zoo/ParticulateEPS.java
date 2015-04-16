@@ -9,6 +9,8 @@
  */
 package simulator.agent.zoo;
 
+import java.math.BigInteger;
+
 import simulator.agent.LocatedAgent;
 import simulator.Simulator;
 import simulator.geometry.ContinuousVector;
@@ -94,7 +96,7 @@ public class ParticulateEPS extends LocatedAgent
 	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
-		_genealogy = 0;
+		_genealogy = BigInteger.ZERO;
 
 		// Determine the radius, volume and total mass of the agent
 		updateSize();
@@ -128,7 +130,6 @@ public class ParticulateEPS extends LocatedAgent
 		try
 		{
 			ParticulateEPS baby = (ParticulateEPS) sendNewAgent();
-			baby.mutatePop();
 			baby.setLocation(position);
 			baby.updateSize();
 			baby.registerBirth();
@@ -152,8 +153,6 @@ public class ParticulateEPS extends LocatedAgent
 		try {
 			ParticulateEPS baby = sendNewAgent();
 			baby._movement.reset();
-			// randomize its mass
-			baby.mutatePop();
 			baby.updateSize();
 
 			// Give a location to the new agent and register it on the agent
@@ -190,9 +189,6 @@ public class ParticulateEPS extends LocatedAgent
 	public boolean createInertByExcretion(Bacterium mother, double ratio) {
 		try {
 			ParticulateEPS baby = sendNewAgent();
-
-			// randomize its mass
-			baby.mutatePop();
 			baby.updateSize();
 
 			// Give a location to the new agent and register it on the agent
@@ -232,17 +228,6 @@ public class ParticulateEPS extends LocatedAgent
 	}
 
 	/**
-	 * \brief Mutate any inherited parameters for this particular agent
-	 * 
-	 * Mutate any inherited parameters for this particular agent. KA June 2013 - not sure this action is implemented
-	 */
-	@Override
-	public void mutatePop() 
-	{
-		super.mutatePop();
-	}
-
-	/**
 	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume
 	 * 
 	 * Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. Also determines whether 
@@ -274,7 +259,7 @@ public class ParticulateEPS extends LocatedAgent
 	@Override
 	public boolean willDivide() 
 	{
-		return getRadius(true)>getSpeciesParam().divRadius;
+		return getRadius(true) > getSpeciesParam().divRadius;
 	}
 
 	/**
@@ -284,37 +269,39 @@ public class ParticulateEPS extends LocatedAgent
 	 * 
 	 * @return	Boolean noting whether a biomass transfer is possible
 	 */
-	public boolean willTransfer() {
+	public boolean willTransfer()
+	{
 		return getRadius(true)<=ExtraMath.deviateFromCV(getSpeciesParam().transferRadius,
 		        getSpeciesParam().deathRadiusCV);
 	}
 
 	/**
-	 * \brief Method to transfer biomass to a neighbour should the agent become too small
-	 * 
-	 * Method to transfer biomass to a neighbour should the agent become too small
+	 * \brief Method to transfer biomass to a neighbour should the agent
+	 * become too small.
 	 */
 	protected void transferBiomass() 
 	{
-		// Find a neighbour with the same species in your range
+		/*
+		 * Find a neighbour with the same species in your range.
+		 */
 		findCloseSiblings(speciesIndex);
-
-		// Remove to big siblings
+		/*
+		 * Remove any large siblings, i.e. those about to divide.
+		 */
 		int nNb = _myNeighbors.size();
-		for (int iNb = 0; iNb<nNb; iNb++) {
-			LocatedAgent aLoc = _myNeighbors.removeFirst();
-			if (!aLoc.willDivide()) _myNeighbors.add(aLoc);
+		LocatedAgent aLoc;
+		for ( int iNb = 0; iNb < nNb; iNb++ )
+		{
+			aLoc = _myNeighbors.removeFirst();
+			if ( ! aLoc.willDivide() )
+				_myNeighbors.add(aLoc);
 		}
-		if (_myNeighbors.isEmpty()) return;
-
-		// If other particles are around you, transfer your mass
+		/*
+		 * If other particles are around you, transfer your mass.
+		 */
 		nNb = _myNeighbors.size();
-		double ratio = 0d;
-		for (int iNb = 0; iNb<nNb; iNb++) {
-			ratio = nNb-iNb;
-			ratio = 1/ratio;
-			transferCompounds(_myNeighbors.removeFirst(), ratio);
-		}
+		for (int iNb = 0; iNb < nNb; iNb++)
+			transferCompounds(_myNeighbors.removeFirst(), 1.0/(nNb-iNb));
 	}
 
 	/**
@@ -389,12 +376,11 @@ public class ParticulateEPS extends LocatedAgent
 	/**
 	 * \brief Return the set of parameters that is associated with the object of this species
 	 * 
-	 * Return the set of parameters that is associated with the object of this species
-	 * 
 	 * @return Object of ParticulateParam that stores the parameters associated with this species
 	 */
 	@Override
-	public ParticulateEPSParam getSpeciesParam() {
+	public ParticulateEPSParam getSpeciesParam()
+	{
 		return (ParticulateEPSParam) _speciesParam;
 	}
 

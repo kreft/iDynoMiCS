@@ -34,54 +34,58 @@ import utils.XMLParser;
  * 
  * @since August 2006
  * @version 1.2
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
- * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
+ * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France.
+ * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of
+ * Engineering Sciences and Applied Mathematics, Northwestern University (USA).
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK).
  */
 public class Bulk 
 {
-
 	/**
-	 * Name assigned to this bulk, as specified in the protocol file
+	 * Name assigned to this bulk, as specified in the protocol file.
 	 */
 	private String   _name;
 	
 	/**
-	 * The simulation object being used to simulate the conditions specified in the protocol file
+	 * The simulation object being used to simulate the conditions specified
+	 * in the protocol file.
 	 */
 	public Simulator mySim;
 	
 	/**
-	 * Array containing the initial bulk concentration of each solute in the bulk. RJC 22/8/11 - Made public so that Solver_chemostat
-	 * can use it to initialise solute concentrations
+	 * Array containing the initial bulk concentration of each solute in the
+	 * bulk.
 	 */
-	public double[] _bulkValue;
+	public Double[] _bulkValue;
 	
 	/**
-	 * Array of reaction rates for each solute specified in this bulk
+	 * Array of reaction rates for each solute specified in this bulk.
 	 */
-	private double[] _reacRate;
+	private Double[] _reacRate;
 	
 	/**
-	 * Timestep value assigned to each solute in specified in this bulk
+	 * Timestep value assigned to each solute in specified in this bulk.
 	 */
 	Double[]         _dT;
 	
 	/**
-	 * Boolean noting whether the concentration of solutes is constant or varys. Default to constant if not in protocol file
+	 * Boolean noting whether the concentration of solutes is constant or
+	 * varies. Default to constant if not in protocol file.
 	 */
 	private Boolean  _bulkIsConstant = true;
 	
 	/**
-	 * Reactor Dilusion rate of the bulk. Used if isConstant is set to false
+	 * Reactor dilution rate of the bulk. Used if isConstant is set to false.
 	 */
-	public  double   _D;
+	public  Double   _D;
 	
 	/**
 	 * Array of doubles that specify the feed flow concentration of each solute in this simulation (if applicable)
 	 */
-	public  double[] _sIn;
+	public  Double[] _sIn;
 
 	/**
 	 * Array of booleans that note whether each solute specified in the simulation is present in this bulk
@@ -96,22 +100,22 @@ public class Bulk
 	/**
 	 * Array of sPulse values assigned to each solute, if applicable. Used in pulsing to spike the concentration of a solute at a given rate
 	 */
-	private double[] _sPulse;
+	private Double[] _sPulse;
 	
 	/**
 	 * Array of pulseRate values assigned to each solute, if applicable. Sets the rate that the concentration of a solute is spiked if pulsing is employed
 	 */
-	private double[] _pulseRate;
+	private Double[] _pulseRate;
 	
 	/**
 	 * Array of interval values assigned to each solute, if applicable. Sets the interval at which concentration spiking occurs, if employed
 	 */
-	private double[] _pulseInterval;
+	private Double[] _pulseInterval;
 	
 	/**
 	 * Array that stores the last time in the simulation that particular solute was spiked, if applicable. Used with pulsed concentrations
 	 */
-	private double[] _lastPulseTime;
+	private Double[] _lastPulseTime;
 
 	
 	/*************************************************************************************************************************
@@ -133,99 +137,114 @@ public class Bulk
 	{
 		// Solute index is the integer reference to the solute in the simulation solutes dictionary
 		int soluteIndex;
-		XMLParser parser;
 
 		// Set the simulation object to that initialised in the Simulator class
 		mySim = aSim;
 		
 		// Get the name of this Bulk compartment object
-		_name = aBulkRoot.getAttribute("name");
+		_name = aBulkRoot.getName();
 		
 		// Check the XML to determine is the concentration of the bulk is assumed to be constant or affected by mass balance
 		_bulkIsConstant = aBulkRoot.getParamBool("isConstant");
 
-		if (!_bulkIsConstant) 
+		if ( ! _bulkIsConstant ) 
 		{
-			// With bulkIsConstant set to false, the solute concentrations in the bulk vary in time. The protocol file should 
-			// specify how the bulk concentration is updated
+			/*
+			 * With bulkIsConstant set to false, the solute concentrations in
+			 * the bulk vary in time. The protocol file should specify how the
+			 * bulk concentration is updated.
+			 * 
+			 * TODO Is this actually used?
+			 */
 			String updateType = aBulkRoot.getParam("updateType");
-			
-			if (updateType != null && updateType.equals("gradient")) 
+			if ( updateType != null && updateType.equals("gradient") ) 
 			{
 				//_updateByReaction = false;
-				LogFile.writeLog("\t\tUsing gradient-based method for bulk updates.");
+				LogFile.writeLogAlways(
+						"\t\tUsing gradient-based method for bulk updates.");
 			} 
 			else
-				LogFile.writeLog("\t\tUsing reaction-based method for bulk updates.");
+			{
+				LogFile.writeLogAlways(
+						"\t\tUsing reaction-based method for bulk updates.");
+			}
 		}
-
-		
-		// Array initialisation - store the attributes of each solute in an array
-		// Build the list of concentrations for each solute in this bulk
-		LinkedList<Element> soluteList = aBulkRoot.buildSetMarkUp("solute");
-		_bulkValue = new double[aSim.soluteDic.size()];
-		_reacRate = new double[aSim.soluteDic.size()];
+		/*
+		 * Array initialisation - store the attributes of each solute in an
+		 * array. Build the list of concentrations for each solute in this
+		 * bulk. 
+		 */
+		LinkedList<XMLParser> parserList = 
+									aBulkRoot.getChildrenParsers("solute");
+		_bulkValue = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_reacRate = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		_dT = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 
 		_isConstant = new Boolean[aSim.soluteDic.size()];
 		_isInBulk = new Boolean[aSim.soluteDic.size()];
 		Arrays.fill(_isInBulk, false);
 
-		_pulseRate = new double[aSim.soluteDic.size()];
-		_pulseInterval = new double[aSim.soluteDic.size()];
-		_lastPulseTime = new double[aSim.soluteDic.size()];
-
-		_sIn = new double[aSim.soluteDic.size()];
-		_sPulse = new double[aSim.soluteDic.size()];
+		_pulseRate = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_pulseInterval = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_lastPulseTime = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		
+		_sIn = ExtraMath.newDoubleArray(aSim.soluteDic.size());
+		_sPulse = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		
 		// Parameter D is the Reactor Dilusion rate, used if isConstand is set to false
 		_D = aBulkRoot.getParamDbl("D");
 	
 
 		// Now iterate through each solute specified in this bulk
-		for (Element asoluteMarkUp : soluteList) 
+		for ( XMLParser parser : parserList ) 
 		{
-			parser = new XMLParser(asoluteMarkUp);
 			// Earlier (in createSimulation method in Simulator) we built a dictionary of solutes in this simulation. Get the index 
 			// assigned in that dictionary for this solute name. This is then used as the reference for each of the above arrays
-			soluteIndex = aSim.getSoluteIndex(parser.getAttribute("name"));
+			soluteIndex = aSim.getSoluteIndex(parser.getName());
 			
 			// Get the Sbulk value for this solute - the initial bulk concentration of this solute
-			_bulkValue[soluteIndex] = parser.getParamConc("Sbulk");
+			_bulkValue[soluteIndex] = parser.getParamConcn("Sbulk");
 			LogFile.writeLog("Setting initial "+_bulkValue[soluteIndex]);
 			
 			// Note in the boolean array that this solute is present in the bulk if concentration value is over zero
-			if (Double.isNaN(_bulkValue[soluteIndex])) _bulkValue[soluteIndex] = 0;
+			if ( Double.isNaN(_bulkValue[soluteIndex]) )
+				_bulkValue[soluteIndex] = 0.0;
 			_isInBulk[soluteIndex]= true;
 
 			// Note in the array whether the concentration of this solute is set to vary over time (as determined earlier in this method
-			_isConstant[soluteIndex] = _bulkIsConstant;
-
 			// However each solute can have its own isConstant value - check whether this is the case, and if so determine if the 
 			// concentration of this solute is variable. Even if the bulk is set to isConstant, the solute can be set to be varied and 
 			// thus override the compartment
-			String isconst = parser.getParam("isConstant");
-			if (isconst != null)
-				_isConstant[soluteIndex] = Boolean.valueOf(isconst);
+			if ( parser.isParamGiven("isConstant"))
+				_isConstant[soluteIndex] = parser.getParamBool("isConstant");
+			else
+				_isConstant[soluteIndex] = _bulkIsConstant;
 			
 			// Get the concentration of each solute in the feed flow (for varying concentrations)
-			_sIn[soluteIndex] = parser.getParamDbl("Sin");
-			if (Double.isNaN(_sIn[soluteIndex])) _sIn[soluteIndex] = 0;
-
+			if ( parser.isParamGiven("Sin"))
+				_sIn[soluteIndex] = parser.getParamConcn("Sin");
+			else
+				_sIn[soluteIndex] = 0.0;
+			
 			// Now check for pulses. The pulseRate parameters can be used to periodically spike the concentration of a solute to that
 			// specified in Spulse parameter at a given time
 			
 			// for pulses, set pulse concentration and interval
-			_sPulse[soluteIndex] = parser.getParamDbl("Spulse");
-			if (Double.isNaN(_sPulse[soluteIndex])) _sPulse[soluteIndex] = 0;
-
-			// pulse interval will be infinite if the rate is zero
-			_pulseInterval[soluteIndex] = Double.MAX_VALUE;
-			_lastPulseTime[soluteIndex] = 0.;
-			_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
-			if (!Double.isNaN(_pulseRate[soluteIndex]) && _pulseRate[soluteIndex]!=0.)
-				_pulseInterval[soluteIndex] = 1./_pulseRate[soluteIndex];
-			
+			if ( parser.isParamGiven("Spulse"))
+			{
+				_sPulse[soluteIndex] = parser.getParamConcn("Spulse");
+				_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
+				// pulse interval will be infinite if the rate is zero
+				_pulseInterval[soluteIndex] = Double.MAX_VALUE;
+				_lastPulseTime[soluteIndex] = 0.0;
+				if ( ! _pulseRate[soluteIndex].isNaN() && 
+											! _pulseRate[soluteIndex].equals(0.0) )
+				{
+					_pulseInterval[soluteIndex] = 1.0/_pulseRate[soluteIndex];
+				}
+			}
+			else
+				_sPulse[soluteIndex] = 0.0;
 		}
 	}
                   
@@ -240,9 +259,11 @@ public class Bulk
 	 * @param reacGrid	Grid of all reactions in the simulated system
 	 * @param timeStep	Internal timestep used to update the simulation environment
 	 */
-	public void updateBulk(SoluteGrid[] soluteGrid, SoluteGrid[] reacGrid, double timeStep) {
-
-		if (_bulkIsConstant) return;
+	public void updateBulk(SoluteGrid[] soluteGrid,
+									SoluteGrid[] reacGrid, Double timeStep)
+	{
+		if (_bulkIsConstant)
+			return;
 
 		// THE GRADIENT METHOD SHOULD ONLY BE USED AS A TEST FOR updateBulkByReaction
 		// AND THEN ONLY FOR FLAT BIOFILMS. DO NOT USE FOR GENERAL SIMULATIONS.
@@ -285,11 +306,11 @@ public class Bulk
 	 * @param allSol	Grid of all solutes in the simulated system
 	 * @param reacGrid	Grid of all reactions in the simulated system
 	 */
-	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid){
+	public void updateChemostatBulk(SoluteGrid[] allSol, SoluteGrid[] reacGrid)
+	{
 		String message = "Bulk dynamics \n";	
-
-		for (int iGrid = 0; iGrid<allSol.length; iGrid++) {
-
+		for (int iGrid = 0; iGrid < allSol.length; iGrid++)
+		{
 			//_reacRate[iGrid] = reacGrid[iGrid].getAverageChemo();
 			//_bulkValue[iGrid]=allSol[iGrid].getAverageChemo() ;
 			_reacRate[iGrid] = reacGrid[iGrid].grid[0][0][0];
@@ -297,7 +318,7 @@ public class Bulk
 		}
 
 		// bvm 30.4.2009: for pulsed bulk concentrations
-		for (int i=0; i<_bulkValue.length; i++)
+		for (int i = 0; i < _bulkValue.length; i++)
 			if (SimTimer.getCurrentTime()-_lastPulseTime[i] >= _pulseInterval[i]) {
 				// set bulk values to pulsed concentration
 				_bulkValue[i] = _sPulse[i];
@@ -526,9 +547,9 @@ public class Bulk
 	}
 
 	/**
-	 * \brief Determine if a particular solute is in the bulk
+	 * \brief Determine if a particular solute is in the bulk.
 	 * 
-	 * Determine if a particular solute is in the bulk. Uses the index of this solute in the simulation dictionary
+	 * Uses the index of this solute in the simulation dictionary.
 	 * 
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @return	Boolean noting whether this solute is in the bulk (true) or not (false)
@@ -546,7 +567,8 @@ public class Bulk
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @return	Level of this particular solute in the bulk
 	 */
-	public double getValue(int soluteIndex) {
+	public Double getValue(int soluteIndex)
+	{
 		return _bulkValue[soluteIndex];
 	}
 
@@ -558,49 +580,60 @@ public class Bulk
 	 * @param soluteIndex	Index of solute in the simulation dictionary
 	 * @param value	Level at which to set the solute level
 	 */
-	public void setValue(int soluteIndex, double value) {
+	public void setValue(int soluteIndex, Double value)
+	{
 		_bulkValue[soluteIndex] = value;
 	}
 
 	/**
-	 * \brief Get the name of this bulk
+	 * \brief Get the name of this bulk.
 	 * 
-	 * Get the name of this bulk
-	 * 
-	 * @return	String containing the name of this bulk
+	 * @return	String containing the name of this bulk.
 	 */
-	public String getName() {
+	public String getName()
+	{
 		return _name;
 	}
-
+	
 	/**
-	 * \brief Return the time constraint of the bulk
+	 * \brief Check whether the given String is equal to this Bulk's name.
 	 * 
-	 * Return the time constraint of the bulk
-	 * 
-	 * @return	Double containing the time constraint of this bulk
+	 * @param name String to be checked.
+	 * @return	boolean stating whether on not this Bulk's name matches the
+	 * String given.
 	 */
-	public double getTimeConstraint() {
-		double out = ExtraMath.max(_dT);
-		for (int iGrid = 0; iGrid<_dT.length; iGrid++) {
-			if (_dT[iGrid].equals(0.0))
-				continue;
-			out = Math.min(out, Math.abs(_dT[iGrid]));
-		}
-		if (out==0) out = Double.POSITIVE_INFINITY;
-
-		return out;
+	public boolean nameEquals(String name)
+	{
+		return _name.equals(name);
 	}
 
 	/**
-	 * \brief Writes a description of the bulk in the result file
+	 * \brief Return the time constraint of the bulk.
 	 * 
-	 * Writes a description of the bulk in the result file
+	 * Finds the value of _dT that is closest to zero (exclusive). 
+	 * 
+	 * @return	Double containing the time constraint of this bulk.
+	 */
+	public Double getTimeConstraint()
+	{
+		Double out = Double.POSITIVE_INFINITY;
+		for ( Double dt : _dT )
+		{
+			if ( dt.equals(0.0) )
+				continue;
+			out = Math.min(out, Math.abs(dt));
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Writes a description of the bulk in the result file.
 	 * 
 	 * @param buffer	Buffer to which simulation results are being written
 	 * @throws Exception	Exception thrown if this buffer cannot be written to
 	 */
-	public void writeReport(ResultFile buffer) throws Exception {
+	public void writeReport(ResultFile buffer) throws Exception
+	{
 		StringBuffer text = new StringBuffer();
 		String soluteName;
 

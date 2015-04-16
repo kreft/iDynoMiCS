@@ -21,7 +21,7 @@ import java.awt.Color;
  * 
  * Extends LocatedParam to create an object that can store all common parameters for Bacteria-based species
  * 
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */
@@ -72,13 +72,14 @@ public class BacteriumParam extends LocatedParam
 		Double value;
 		
 		value = getSpeciesParameterDouble("epsMax", aSpeciesRoot, speciesDefaults);
-		epsMax = value.isNaN() ? epsMax : value;
+		epsMax = (value == XMLParser.nullDbl) ? epsMax : value;
 		
 		String colorName = getSpeciesParameterString("epsColor", aSpeciesRoot, speciesDefaults);
-		epsColor = colorName == null ? epsColor : UnitConverter.getColor(colorName);
+		epsColor = (colorName == null) ? epsColor : UnitConverter.getColor(colorName);
   		
-		Boolean boolTemp = getSpeciesParameterBool("distMethod", aSpeciesRoot, speciesDefaults);
-		distMethod = boolTemp.equals(null) ? distMethod : boolTemp;
+		Boolean boolTemp = getSpeciesParameterBool("distMethod",
+											aSpeciesRoot, speciesDefaults);
+		distMethod = (boolTemp == XMLParser.nullBool) ? distMethod : boolTemp;
 		
 	}
 

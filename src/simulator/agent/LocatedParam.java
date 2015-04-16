@@ -10,6 +10,7 @@
 package simulator.agent;
 
 import simulator.Simulator;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -103,12 +104,13 @@ public class LocatedParam extends ActiveParam
 	}
 
 	/**
-	 * \brief Assigns values to each of the location and behavioural specific parameters, reading these from the protocol file
+	 * \brief Assigns values to each of the location and behavioral specific
+	 * parameters, reading these from the protocol file.
 	 * 
-	 * Assigns values to each of the location and behavioural specific parameters, reading these from the protocol file
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param aSpeciesRoot	A Species mark-up within the specified protocol file
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param aSpeciesRoot	A Species mark-up within the specified protocol
+	 * file.
 	 */
 	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults) 
@@ -152,6 +154,12 @@ public class LocatedParam extends ActiveParam
 		// TODO RC - This should be read in as a speed, not as a length!
 		value = getSpeciesParameterLength("cellRunSpeed", aSpeciesRoot, speciesDefaults);
 		cellRunSpeed = value.isNaN() ? cellRunSpeed : value;
+		if ( cellRunSpeed.equals(0.0) &&
+								aSim.attachmentMechanism.equals("selfattach"))
+		{
+			LogFile.writeLogAlways(
+				"Self-attach cells have zero speed! May cause infinite loop");
+		}
 		
 		value = getSpeciesParameterTime("tumbleInt",aSpeciesRoot,speciesDefaults);
 		tumbleInterval = value.isNaN() ? tumbleInterval : value;
@@ -162,11 +170,11 @@ public class LocatedParam extends ActiveParam
 	}
 	
 	/**
-	 * \brief Return the cell run speed. Used in agent self-attachment scenarios
+	 * \brief Return the cell run speed. Used in agent self-attachment
+	 * scenarios.
 	 * 
-	 * Return the cell run speed. Used in agent self-attachment scenarios
-	 * 
-	 * @return	Double value stating the stored cell run speed for this species of agent
+	 * @return	Double value stating the stored cell run speed for this
+	 * species of agent.
 	 */
 	public Double getCellRunSpeed()
 	{
@@ -174,13 +182,16 @@ public class LocatedParam extends ActiveParam
 	}
 	
 	/**
-	 * \brief Return the cell stickiness radius. Used in agent self-attachment scenarios
+	 * \brief Return the cell stickiness radius. Used in agent self-attachment
+	 * scenarios.
 	 * 
-	 * Return the cell stickiness radius. Used in agent self-attachment scenarios. Captures the hypothesis that for some biological 
-	 * bacterial cells such as e-coli, there will be receptors on the outside of the cell that adhere to the biofilm or substratum 
-	 * surface, and thus this needs to be added to the cell radius
+	 * Captures the hypothesis that for some biological bacterial cells such
+	 * as E. coli, there will be receptors on the outside of the cell that
+	 * adhere to the biofilm or substratum surface, and thus this needs to be
+	 * added to the cell radius.
 	 * 
-	 * @return	Double value stating the stored stickiness radius value for agents of this species
+	 * @return	Double value stating the stored stickiness radius value for
+	 * agents of this species.
 	 */
 	public Double getStickinessRadius()
 	{

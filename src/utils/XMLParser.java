@@ -1,10 +1,13 @@
 /**
  * \package utils
- * \brief Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation
+ * \brief Package of classes that perform utility functions in the process of
+ * running an iDynoMiCS Simulation.
  * 
- * Package of classes that perform utility functions in the process of running an iDynoMiCS Simulation. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info".
  */
 package utils;
 
@@ -12,11 +15,10 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-
-import simulator.geometry.DiscreteVector;
 
 /**
  * \brief Class providing methods of parsing the XML simulation protocol file.
@@ -47,12 +49,31 @@ public class XMLParser implements Serializable
 	 * Temporary store of the value read in from the XML file. Used in cases
 	 * where this value needs to be post-processed before returning. 
 	 */
-	private static double value;
+	private static Double value;
 	
 	/**
 	 * The unit of the protocol file parameter being processed.
 	 */
 	private static StringBuffer unit;
+	
+	/**
+	 * The default value to set integers to, if there's a problem.
+	 */
+	public static Integer nullInt = null; 
+	
+	/**
+	 * The default value to set doubles to, if there's a problem.
+	 */
+	public static Double nullDbl = Double.NaN;
+	
+	/**
+	 * The default value to set booleans to, if there's a problem.
+	 */
+	public static Boolean nullBool = null;
+	
+	/*************************************************************************
+	 * Creating the XMLParser
+	 */
 	
 	/**
 	 * \brief Create an XML parser for a given XML local grouping.
@@ -86,11 +107,15 @@ public class XMLParser implements Serializable
 	 * @param activePath	The path to the protocol file to open.
 	 * @param protocolFile	The protocol file to read in.
 	 */
-	public XMLParser(String activePath,String protocolFile) 
+	public XMLParser(String activePath, String protocolFile) 
 	{
-		openXMLDocument(activePath,protocolFile, false);
+		openXMLDocument(activePath, protocolFile, false);
 		_localRoot = document.getRootElement();
 	}
+	
+	/*************************************************************************
+	 * Opening XML documents
+	 */
 	
 	/**
 	 * \brief Creates a DOM document for an XML protocol file of a given name.
@@ -117,470 +142,52 @@ public class XMLParser implements Serializable
 	 * \brief Used to open an XML file in simulation initialisation, where the
 	 * log file has yet to be created.
 	 * 
-	 * This is the case as the simulation log file location is specified in the
-	 * protocol file. If that can't be read then there is a problem.
+	 * This is the case as the simulation log file location is specified in 
+	 * the protocol file. If that can't be read then there is a problem.
 	 * 
 	 * @param activePath	String of path to protocol file being processed.
 	 * @param protocolFile	The protocol file to be read.
-	 * @param testDTD	Boolean stating whether or not schema validation should
-	 * be applied on reading the XML file.
+	 * @param testDTD	Boolean stating whether or not schema validation 
+	 * should be applied on reading the XML file.
 	 */
-	public void openXMLDocument(String activePath, String protocolFile, boolean testDTD) 
+	public void openXMLDocument(String activePath,
+										String protocolFile, Boolean testDTD)
 	{
 		try 
 		{
-			document = (new SAXBuilder(testDTD)).build(new File(activePath+protocolFile));
+			document = (new SAXBuilder(testDTD))
+									.build(new File(activePath+protocolFile));
 		}
 		catch (Exception e) 
 		{
-			InitialisationErrorLog.writeLog("XMLParser.openXMLdocument(): Initialisation of the XML parser failed");
-			InitialisationErrorLog.writeLog("Check your XML files for Errors");
-			InitialisationErrorLog.writeLog("Error: "+e);
+			InitialisationErrorLog.writeLog("XMLParser.openXMLdocument(): "+
+								"Initialisation of the XML parser failed\n"+
+								"Check your XML files for Errors\nError: "+e);
 			InitialisationErrorLog.closeFile();
 			System.exit(-1);
 		}
 	}
-
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Returns a linked list of all XML elements of a given tag name
-	 * 
-	 * Returns a linked list of all XML elements within that protocol file that have a given tag name
-	 * 
-	 * @param childMarkup	The tag name of the elements to put in the list
-	 * @return	A linked list of all the elements of the given tag name
-	 */
-	public LinkedList<Element> buildSetMarkUp(String childMarkup) 
-	{
-		List<Element> childList = _localRoot.getChildren(childMarkup);
-		LinkedList<Element> out = new LinkedList<Element>();
-		for (Object anElement : childList) 
-		{
-			out.add((Element) anElement);
-		}
-		return out;
-	}
-
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Returns a list of XML parsers from combining nodes in the protocol file. Used for boundary conditions
-	 * 
-	 * Returns a list of XML parsers from combining nodes in the protocol file. Used for boundary conditions
-	 * 
-	 * @param childMarkup	The XML tag for which many nodes may exist. boundaryCondition is a good example
-	 * @return	Linked list of XML parsers for each of the nodes of this name that are found in the protocol file
-	 */
-	public LinkedList<XMLParser> buildSetParser(String childMarkup) 
-	{
-		List<Element> childList = _localRoot.getChildren(childMarkup);
-		LinkedList<XMLParser> out = new LinkedList<XMLParser>();
-		for (Object anElement : childList)
-			out.add(new XMLParser((Element) anElement));
-		return out;
-	}
-
-	/* ___________________ TO READ PARAMETERS MARK-UPS _____________________ */
-
-	/**
-	 * \brief Returns the child node for a given XML tag name
-	 * 
-	 * Returns the child node for a given XML tag name
-	 * 
-	 * @param childName	The XML tag name to return
-	 * @return	An XML parser containing the tags relating to this XML child tag
-	 */
-	public XMLParser getChild(String childName) {
-		return new XMLParser(getChildElement(childName));
-	}
-
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Searches the child nodes of a given tag for a particular parameter name. Returns the assigned string value if present
-	 * 
-	 * Searches the child nodes of a given tag for a particular parameter name. Returns the assigned string value if present
-	 * 
-	 * @param paramName	The name of the parameter for which a String value is being sought
-	 * @return	String value assigned to that parameter, if present
-	 */
-	public String getParam(String paramName) 
-	{
-		List<Element> childList = _localRoot.getChildren("param");
-		Element aParam;
-		for (Object aChild : childList) 
-		{
-			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) 
-				return aParam.getText();
-		}
-		return null;
-	}
 	
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Searches the child nodes of a given tag for a particular parameter name. Returns the XML element for that tag if present
-	 * 
-	 * Searches the child nodes of a given tag for a particular parameter name. Returns the XML element for that tag if present
-	 * 
-	 * @param paramName	The name of the parameter for which a String value is being sought
-	 * @return	XML Element contains the tags relating to that parameter, if present
+	/*************************************************************************
+	 * Reading XML Elements: top-level methods
 	 */
-	public Element getParamMarkUp(String paramName) 
-	{
-		List<Element> childList = _localRoot.getChildren("param");
-		Element aParam;
-		for (Object aChild : childList) {
-			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) 
-				return aParam;
-		}
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Searches the child nodes of a given tag for a particular parameter name and a specified unit. Returns the String value of that tag if present
-	 * 
-	 * Searches the child nodes of a given tag for a particular parameter name and a specified unit. Returns the String value of that tag if present
-	 * 
-	 * @param paramName	The name of the parameter for which a String value is being sought
-	 * @param unit	The unit that this parameter should be
-	 * @return	The value assigned to this tag in the protocol file, if present
-	 */
-	public String getParam(String paramName, StringBuffer unit) {
-		List<Element> childList = _localRoot.getChildren("param");
-		Element aParam;
-		for (Object aChild : childList) {
-			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) {
-				unit.append(aParam.getAttributeValue("unit"));
-				return aParam.getText();
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * \brief Returns the double value assigned to an XML tag in the protocol file
-	 * 
-	 * Returns the double value assigned to an XML tag in the protocol file, if the tag is present
-	 * 
-	 * @param paramName	The XML parameter for which the value is required
-	 * @return	Double value assigned to that XML tag
-	 */
-	public Double getParamDbl(String paramName) 
-	{
-		if ( getParam(paramName) == null ) 
-			return Double.NaN;
-		else if ( getParam(paramName) == "" )
-		{
-			LogFile.writeLogAlways("No value given for "+paramName+"!");
-			return Double.NaN;
-		}
-		else
-			return Double.parseDouble(getParam(paramName));
-	}
-
-	/**
-	 * \brief For a given XML tag name, returns the value in the specified unit (if that tag exists)
-	 * 
-	 * For a given XML tag name, returns the value in the specified unit (if that tag exists)
-	 * 
-	 * @param paramName	The name of the XML tag for which a value is required
-	 * @param unit	The unit that this parameter is required to be within
-	 * @return	The double value assigned to that parameter, in the required unit
-	 */
-	public Double getParamDbl(String paramName, StringBuffer unit) 
-	{
-		if (getParam(paramName) == null) 
-		{
-			return Double.NaN;
-		} 
-		else 
-		{
-			return Double.parseDouble(getParam(paramName, unit));
-		}
-	}
-
-	/**
-	 * \brief For a given XML tag name, returns the value it is assigned (if that tag exists)
-	 * 
-	 * For a given XML tag name, returns the value it is assigned (if that tag exists)
-	 * 
-	 * @param paramName	The name of the XML tag for which a value is required
-	 * @return	The int value assigned to that parameter
-	 */
-	public Integer getParamInt(String paramName) 
-	{
-		if ( getParam(paramName) == null ) 
-			return 0;
-		else 
-			return Integer.parseInt(getParam(paramName));
-	}
-
-	/**
-	 * \brief For a given XML tag name, and a given unit of measurement, returns the value the tag is assigned (if that tag exists)
-	 * 
-	 * For a given XML tag name, and a given unit of measurement, returns the value the tag is assigned (if that tag exists)
-	 * 
-	 * @param paramName	The name of the XML tag for which a value is required
-	 * @param unit	The unif of measurement specified for this parameter
-	 * @return	The int value assigned to that parameter
-	 */
-	public Integer getParamInt(String paramName, StringBuffer unit)
-	{
-		if ( getParam(paramName) == null )
-			return 0;
-		else
-			return Integer.parseInt(getParam(paramName, unit));
-	}
-
-	/**
-	 * \brief Returns a length parameter from the XML, converting to the correct unit as required
-	 * 
-	 * Returns a length parameter from the XML, converting to the correct unit as required
-	 * 
-	 * @param paramName	The name of the parameter for which the length value should be returned
-	 * @return	The length value assigned to this parameter in the protocol file
-	 */
-	public Double getParamLength(String paramName)
-	{
-		unit = new StringBuffer("");
-		value = getParamDbl(paramName, unit);
-		value *= utils.UnitConverter.length(unit.toString());
-		return value;
-	}
-
-	/**
-	 * \brief Returns the mass of a specified parameter from the XML, calculating this using the unit of measurement for that parameter
-	 * 
-	 * Returns the mass of a specified parameter from the XML, calculating this using the unit of measurement for that parameter
-	 * 
-	 * @param paramName	The name of the parameter for which the mass should be returned
-	 * @return	The calculated mass of this parameter
-	 */
-	public Double getParamMass(String paramName) {
-		unit = new StringBuffer("");
-		value = getParamDbl(paramName, unit);
-		value *= utils.UnitConverter.mass(unit.toString());
-		return value;
-	}
-
-	/**
-	 * \brief Gets a given parameter from the protocol file and converts into a double representing time
-	 * 
-	 * Gets a given parameter from the protocol file and converts into a double representing time
-	 * 
-	 * @param paramName	The parameter to be retrieved from the XML file
-	 * @return	Double of the value of this parameter converted into a unit of time
-	 */
-	public Double getParamTime(String paramName) {
-		unit = new StringBuffer("");
-		value = getParamDbl(paramName, unit);
-		value *= utils.UnitConverter.time(unit.toString());
-		return value;
-	}
-
-	/**
-	 * \brief Reads a concentration from the protocol file and converts this to the required unit
-	 * 
-	 * Reads a concentration from the protocol file and converts this to the required unit
-	 * 
-	 * @param paramName	The concentration of the parameter to be retrieved from the protocol file
-	 * @return	The calculated concentration level for this simulation parameter
-	 */
-	public Double getParamConc(String paramName) {
-		unit = new StringBuffer("");
-		value = getParamDbl(paramName, unit);
-		value *= utils.UnitConverter.mass(unit.toString());
-		value *= utils.UnitConverter.volume(unit.toString());
-		return value;
-	}
-
-	/**
-	 * \brief Converts coordinates specified in the protocol file into a
-	 * discrete vector.
-	 * 
-	 * Used for boundary conditions and specifications of birth area of agents.
-	 * 
-	 * @param paramName	The protocol file parameter specified as X,Y,and Z coordinated
-	 * @return	A discrete vector containing these three coordinates
-	 */
-	public DiscreteVector getParamXYZ(String paramName)
-	{
-		return new DiscreteVector(getParamMarkUp(paramName));
-	}
 	
 	/**
-	 * \brief Read in boolean value of specified parameter from the XML file
+	 * \brief Return the current XML local root element.
 	 * 
-	 * Reads in boolean value of specified parameter from the XML file
-	 * 
-	 * @param paramName	The parameter to be retrieved from the XML file
-	 * @return	Boolean value assigned to this parameter
+	 * @return	XML Element for the current local root.
 	 */
-	public Boolean getParamBool(String paramName)
+	public Element getElement()
 	{
-		return Boolean.parseBoolean(getParam(paramName));
-	}
-
-	/**
-	 * \brief Read in boolean value and unit of measurement of a specified parameter from the XML file
-	 * 
-	 * Read in boolean value and unit of measurement of a specified parameter from the XML file
-	 * 
-	 * @param paramName	The parameter to be retrieved from the XML file
-	 * @param unit	The unit of measurement specified for this parameter
-	 * @return	Boolean value assigned to this parameter
-	 */
-	public Boolean getParamBool(String paramName, StringBuffer unit) {
-		return Boolean.parseBoolean(getParam(paramName, unit));
-	}
-
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the 
-	 * String value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the 
-	 * String value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @return	The text associated with the specified detail of this tag
-	 */
-	public String getParamSuch(String paramName, String detailName) {
-
-		List<Element> childList = _localRoot.getChildren("param");
-		Element aParam;
-		for (Object aChild : childList) {
-			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) {
-				if (aParam.getAttributeValue("detail").equals(detailName)) return aParam.getText();
-			} else {
-				continue;
-			}
-		}
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name, 
-	 * in a specified unit to find the String value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the 
-	 * value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @param unit	The unit that this parameter should be measured in
-	 * @return	The text associated with the specified detail of this tag
-	 */
-	public String getParamSuch(String paramName, String detailName, StringBuffer unit) {
-		List<Element> childList = _localRoot.getChildren("param");
-		Element aParam;
-		for (Object aChild : childList) {
-			aParam = (Element) aChild;
-			if (aParam.getAttributeValue("name").equals(paramName)) {
-				if (aParam.getAttributeValue("detail").equals(detailName)) {
-					unit.append(aParam.getAttributeValue("unit"));
-					return aParam.getText();
-				}
-			} else {
-				return null;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the Double value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the Double value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @return	The double value associated with the specified detail of this tag
-	 */
-	public Double getParamSuchDbl(String paramName, String detailName) {
-		if (getParamSuch(paramName, detailName)==null) {
-			return Double.NaN;
-		} else {
-			return Double.parseDouble(getParamSuch(paramName, detailName));
-		}
-	}
-
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name to find the boolean value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the boolean value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @return	The boolean value associated with the specified detail of this tag
-	 */
-	public Boolean getParamSuchBool(String paramName, String detailName) {
-		if (getParamSuch(paramName, detailName)==null) {
-			return null;
-		} else {
-			return Boolean.parseBoolean(getParamSuch(paramName, detailName));
-		}
-	}
-
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name, in a specified unit to find the Double value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the Double value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @param unit	The unit that this parameter should be measured in
-	 * @return	The double value associated with the specified detail of this tag
-	 */
-	public double getParamSuchDbl(String paramName, String detailName, StringBuffer unit) {
-		if (getParamSuch(paramName, detailName)==null) {
-			return Double.NaN;
-		} else {
-			return Double.parseDouble(getParamSuch(paramName, detailName, unit));
-		}
-	}
-
-	/**
-	 * \brief Searches through the attributes of the XML tags of a given parameter name, in a specified unit to find the boolean value of a specified detail within that tag
-	 * 
-	 * Searches through the attributes of the XML tags of a given parameter name to find the boolean value of a specified detail within that tag
-	 * 
-	 * @param paramName	The parameter name for which the value is required
-	 * @param detailName	The name of the detail element which is part of that tag, if present
-	 * @param unit	The unit that this parameter should be measured in
-	 * @return	The boolean value associated with the specified detail of this tag
-	 */
-	public Boolean getParamSuchBool(String paramName, String detailName, StringBuffer unit) {
-		if (getParamSuch(paramName, detailName)==null) {
-			return null;
-		} else {
-			return Boolean.parseBoolean(getParamSuch(paramName, detailName, unit));
-		}
-	}
-
-	
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Returns the XML element matching the specified tag name, attribute name, and attribute value. If not find return the local root
-	 * 
-	 * Returns the XML element matching the specified tag name, attribute name, and attribute value. If not find return the local root
-	 * 
-	 * @param childName	The XML tag required
-	 * @param attrName	The name of the attribute within that tag
-	 * @param attrValue	The value of the attribute within that tag
-	 * @return	The XML element that matches these three criteria
-	 */
-	public Element getChildSuchAttribute(String childName, String attrName, String attrValue) {
-		List<Element> childList = _localRoot.getChildren(childName);
-		for (Object aChild : childList) {
-			if (((Element) aChild).getAttributeValue(attrName).equals(attrValue)) { return (Element) aChild; }
-		}
 		return _localRoot;
+	}
+	
+	/**
+	 * @return	String value of the local root.
+	 */
+	public String getValue()
+	{
+		return _localRoot.getValue();
 	}
 	
 	/**
@@ -597,16 +204,310 @@ public class XMLParser implements Serializable
 	}
 	
 	/**
-	 * \brief Return the Double value of an attribute of the current localRoot
-	 * of the XML file.
+	 * \brief Gets the name of this Element.
 	 * 
-	 * @param attributeName	The attribute name for which the value is being
-	 * sought.
-	 * @return	The Double value of that attribute, if present.
+	 * Same as getAttribute("name"). Created as used very often
+	 * 
+	 * @return The name of the Element, as a String.
 	 */
-	public Double getAttributeDbl(String attributeName)
+	public String getName()
 	{
-		return Double.parseDouble(getAttribute(attributeName));
+		return getAttribute("name");
+	}
+	
+	/**
+	 * \brief Returns the XML element of a given child node tag name.
+	 * 
+	 * @param childName	The child tag name for which the XML element is
+	 * required.
+	 * @return	An XML element containing the tags for the specified child
+	 * name.
+	 */
+	public Element getChildElement(String childName)
+	{
+		return _localRoot.getChild(childName);
+	}
+	
+	/**
+	 * \brief Return the string value of a child attribute of the current
+	 * local root of the XML file.
+	 * 
+	 * @param childName	Name of the XML child tag.
+	 * @param attrName	The attribute of that tag for which the value is being
+	 * sought.
+	 * @return	The string value of that attribute, if present.
+	 */
+	public String getChildAttrStr(String childName, String attrName)
+	{
+		try 
+		{
+			return getChildElement(childName).getAttributeValue(attrName);
+		} 
+		catch (Exception e) 
+		{
+			return null;
+		}
+	}
+	
+	/**
+	 * \brief Returns the child node for a given XML tag name.
+	 * 
+	 * @param childName	The XML tag name to return.
+	 * @return	An XML parser containing the tags relating to this XML child
+	 * tag.
+	 */
+	public XMLParser getChildParser(String childName)
+	{
+		return new XMLParser(getChildElement(childName));
+	}
+	
+	/**
+	 * \brief Returns a list of the children of a given XML child mark up.
+	 * 
+	 * @param childMarkup	The name of a child tag in the XML file for which the
+	 * list of children is required.
+	 * @return	List of XML elements containing the children of the specified
+	 * tag mark up.
+	 */
+	@SuppressWarnings("unchecked")
+	public LinkedList<Element> getChildrenElements(String childMarkup)
+	{
+		List<Object> childList = _localRoot.getChildren(childMarkup);
+		LinkedList<Element> out = new LinkedList<Element>();
+		for (Object child : childList)
+		{
+			out.add((Element) child);
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Returns a list of names for the Child Elements with the given
+	 * mark up.
+	 * 
+	 * @param childMarkup
+	 * @return
+	 */
+	public LinkedList<String> getChildrenNames(String childMarkup)
+	{
+		LinkedList<String> out = new LinkedList<String>();
+		for (XMLParser aChild : getChildrenParsers(childMarkup))
+			out.add(aChild.getName());
+		return out;
+	}
+	
+	/**
+	 * \brief Returns a list of XML parsers from combining nodes in the
+	 * protocol file.
+	 * 
+	 * Used for boundary conditions.
+	 * 
+	 * @param childMarkup	The XML tag for which many nodes may exist.
+	 * @return	Linked list of XML parsers for each of the nodes of this name
+	 * that are found in the protocol file.
+	 */
+	public LinkedList<XMLParser> getChildrenParsers(String childMarkup) 
+	{
+		LinkedList<Element> childList = getChildrenElements(childMarkup);
+		LinkedList<XMLParser> out = new LinkedList<XMLParser>();
+		for (Element anElement : childList)
+			out.add(new XMLParser(anElement));
+		return out;
+	}
+	
+	/**
+	 * \brief Checks whether an XML element with the specified tag, attribute
+	 * and value exists among the children
+	 * 
+	 * @param childMarkup
+	 * @param attrName
+	 * @param attrValue
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Boolean isChildSuchGiven(String childMarkup, 
+									String attrName, String attrValue)
+	{
+		List<Element> childList = _localRoot.getChildren(childMarkup);
+		for (Element aChild : childList)
+			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
+				return true;
+		return false;
+	}
+	
+	/**
+	 * \brief Returns the XML element matching the specified tag name,
+	 * attribute name, and attribute value.
+	 * 
+	 * If not found returns the local root.
+	 * 
+	 * @param childMarkup	The XML tag required.
+	 * @param attrName	The name of the attribute within that tag.
+	 * @param attrValue	The value of the attribute within that tag.
+	 * @return	The XML element that matches these three criteria.
+	 */
+	@SuppressWarnings("unchecked")
+	public Element getChildSuchAttribute(String childMarkup, 
+							String attrName, String attrValue)
+	{
+		List<Element> childList = _localRoot.getChildren(childMarkup);
+		for (Element aChild : childList)
+			if ( aChild.getAttributeValue(attrName).equals(attrValue) ) 
+				return (Element) aChild;
+		LogFile.writeLog("Could not find XML child element with name "+
+							childMarkup+" and "+attrName+" = "+attrValue);
+		return null;
+	}
+	
+	/*************************************************************************
+	 * Reading parameters: generic methods
+	 */
+	
+	/**
+	 * TODO
+	 * @param paramName
+	 * @return
+	 */
+	public Boolean isParamGiven(String paramName)
+	{
+		return isChildSuchGiven("param", "name", paramName);
+	}
+	
+	/**
+	 * \brief Searches the child nodes of a given tag for a particular
+	 * parameter name.
+	 * 
+	 * Returns the XML element for that tag if present.
+	 * 
+	 * @param paramName	The name of the parameter for which a String value is
+	 * being sought.
+	 * @return	XML Element contains the tags relating to that parameter, if
+	 * present.
+	 */
+	public Element getParamElement(String paramName) 
+	{
+		return getChildSuchAttribute("param", "name", paramName);
+	}
+	
+	
+	public XMLParser getParamParser(String paramName)
+	{
+		return new XMLParser(getParamElement(paramName));
+	}
+	
+	/**
+	 * \brief Searches the child nodes of a given tag for a particular
+	 * parameter name
+	 * 
+	 * Returns the assigned string value if present.
+	 * 
+	 * @param paramName	The name of the parameter for which a String value is
+	 * being sought.
+	 * @return	String value assigned to that parameter, if present
+	 */
+	public String getParam(String paramName) 
+	{
+		Element aParam = getParamElement(paramName);
+		return ( aParam == null ) ? null : aParam.getText();
+	}
+	
+	/**
+	 * \brief Searches the child nodes of a given tag for a particular
+	 * parameter name and a specified unit.
+	 * 
+	 * Returns the String value of that tag if present. If the parameter is 
+	 * not specified this should not deal with the unit.
+	 * 
+	 * @param paramName	The name of the parameter for which a String value is
+	 * being sought.
+	 * @param unit	The unit that this parameter should be.
+	 * @return	The value assigned to this tag in the protocol file, if
+	 * present.
+	 */
+	public String getParam(String paramName, StringBuffer unit)
+	{
+		Element aParam = getParamElement(paramName);
+		if ( aParam == null )
+			return null;
+		unit.append(aParam.getAttributeValue("unit"));
+		return aParam.getText();
+	}
+	
+	/**
+	 * \brief Searches through the attributes of the XML tags of a given
+	 * parameter name to find the String value of a specified detail within
+	 * that tag.
+	 * 
+	 * @param paramName	The parameter name for which the value is required.
+	 * @param detailName	The name of the detail element which is part of
+	 * that tag, if present.
+	 * @return	The text associated with the specified detail of this tag.
+	 */
+	public String getParamSuch(String paramName, String detailName)
+	{
+		Element aParam = getChildSuchAttribute("param", paramName, detailName);
+		return ( aParam == null ) ? null : aParam.getText();
+	}
+	
+	/**
+	 * \brief Searches through the attributes of the XML tags of a given
+	 * parameter name, in a specified unit to find the String value of a
+	 * specified detail within that tag.
+	 * 
+	 * @param paramName	The parameter name for which the value is required.
+	 * @param detailName	The name of the detail element which is part of
+	 * that tag, if present.
+	 * @param unit	The unit that this parameter should be measured in.
+	 * @return	The text associated with the specified detail of this tag.
+	 */
+	public String getParamSuch(String paramName,
+										String detailName, StringBuffer unit)
+	{
+		Element aParam = getChildSuchAttribute("param", paramName, detailName);
+		if ( aParam == null )
+			return null;
+		unit.append(aParam.getAttributeValue("unit"));
+		return aParam.getText();
+	}
+	
+	/*************************************************************************
+	 * Reading Integer values: if not present, return null
+	 */
+	
+	/**
+	 * \brief Converts the given string to an integer, in a clear and 
+	 * consistent way.
+	 * 
+	 * @param in	String to be converted.
+	 * @return	Integer value of this string, or nullInt if it cannot be.
+	 */
+	private Integer stringToInteger(String in)
+	{
+		if ( in == null || in.equals("") )
+			return nullInt;
+		return Integer.parseInt(in);
+	}
+	
+	/**
+	 * \brief Returns the value assigned to an attribute within a child node.
+	 * 
+	 * Checking computation domain dimension is one example of its use.
+	 * 
+	 * @param childName	The name of the child node of which the attribute value
+	 * is being sought.
+	 * @param attrName	The name of the attribute for which the value is
+	 * required.
+	 * @return	Integer value assigned to that attribute, if present.
+	 */
+	public Integer getChildAttrInt(String childName, String attrName) 
+	{
+		Integer out = stringToInteger(getChildAttrStr(childName, attrName));
+		if ( out == nullInt )
+		{
+			LogFile.writeLogAlways("No value given for "+attrName+
+														" of "+childName+"!");
+		}
+		return out;
 	}
 	
 	/**
@@ -619,140 +520,379 @@ public class XMLParser implements Serializable
 	 */
 	public Integer getAttributeInt(String attributeName)
 	{
-		return Integer.parseInt(getAttribute(attributeName));
+		Integer out = stringToInteger(getAttribute(attributeName));
+		if ( out == nullInt )
+			LogFile.writeLog("No value given for "+attributeName+"!");
+		return out;
 	}
 	
 	/**
-	 * \brief Return the string value of a child attribute of the current localroot of the XML file
+	 * \brief For a given XML tag name, returns the value it is assigned
+	 * (if that tag exists).
 	 * 
-	 * Return the string value of a child attribute of the current localroot of the XML file
-	 * 
-	 * @param childName	Name of the XML child tag
-	 * @param attrName	The attribute of that tag for which the value is being sought
-	 * @return	The string value of that attribute, if present
+	 * @param paramName	The name of the XML tag for which a value is required.
+	 * @return	The int value assigned to that parameter.
 	 */
-	public String getChildAttrStr(String childName, String attrName) {
-		try {
-			return _localRoot.getChild(childName).getAttributeValue(attrName);
-		} catch (Exception e) {
-			return null;
-		}
+	public Integer getParamInt(String paramName) 
+	{
+		Integer out = stringToInteger(getParam(paramName));
+		if ( out == nullInt )
+			LogFile.writeLog("No value given for "+paramName+"!");
+		return out;
 	}
-
+	
+	/*************************************************************************
+	 * Reading Boolean values: if not present, return null
+	 */
+	
 	/**
-	 * \brief Returns the value assigned to an attribute within a child node
+	 * \brief Converts the given string to an boolean, in a clear and 
+	 * consistent way.
 	 * 
-	 * Returns the value assigned to an attribute within a child node. Checking computation domain dimension is one example of its use
+	 * @param in	String to be converted.
+	 * @return	Boolean value of this string, or nullBool if it cannot be.
+	 */
+	private Boolean stringToBoolean(String in)
+	{
+		if ( in == null || in.equals("") )
+			return nullBool;
+		return Boolean.parseBoolean(in);
+	}
+	
+	/**
+	 * \brief Read in boolean value of specified parameter from the XML file.
 	 * 
-	 * @param childName	The name of the child node of which the attribute value is being sought
-	 * @param attrName	The name of the attribute for which the value is required
+	 * @param paramName	The parameter to be retrieved from the XML file.
+	 * @return	Boolean value assigned to this parameter.
+	 */
+	public Boolean getParamBool(String paramName)
+	{
+		Boolean out = stringToBoolean(getParam(paramName));
+		if ( out == nullBool )
+			LogFile.writeLog("No value given for "+paramName+"!");
+		return out;
+	}
+	
+	/**
+	 * \brief Searches through the attributes of the XML tags of a given
+	 * parameter name to find the boolean value of a specified detail within
+	 * that tag.
+	 * 
+	 * @param paramName	The parameter name for which the value is required.
+	 * @param detailName	The name of the detail element which is part of
+	 * that tag, if present.
+	 * @return	The boolean value associated with the specified detail of this
+	 * tag.
+	 */
+	public Boolean getParamSuchBool(String paramName, String detailName)
+	{
+		Boolean out = stringToBoolean(getParamSuch(paramName, detailName));
+		if ( out == nullBool )
+		{
+			LogFile.writeLog("No value given for "+paramName+
+													" with "+detailName+"!");
+		}
+		return out;
+	}
+	
+	/*************************************************************************
+	 * Reading Double values: if not present, return Double.NaN
+	 */
+	
+	/**
+	 * \brief Converts the given string to a double, in a clear and consistent
+	 * way.
+	 * 
+	 * @param in	String to be converted.
+	 * @return	Double value of this string, or nullDbl if it cannot be.
+	 */
+	private Double stringToDouble(String in)
+	{
+		if ( in == null || in.equals("") )
+			return nullDbl;
+		return Double.parseDouble(in);
+	}
+	
+	/**
+	 * \brief Gets the value of this local root as a Double.
+	 * 
+	 * @return	Double value of the local root.
+	 */
+	public Double getValueDbl()
+	{
+		Double out = stringToDouble(getValue());
+		if ( out == nullDbl )
+			LogFile.writeLog("No value given!");
+		return out;
+	}
+	
+	/**
+	 * \brief Return the Double value of an attribute of the current localRoot
+	 * of the XML file.
+	 * 
+	 * @param attributeName	The attribute name for which the value is being
+	 * sought.
+	 * @return	The Double value of that attribute, if present.
+	 */
+	public Double getAttributeDbl(String attributeName)
+	{
+		Double out = stringToDouble(getAttribute(attributeName));
+		if ( out == nullDbl )
+			LogFile.writeLog("No value given for "+attributeName+"!");
+		return out;
+	}
+	
+	/**
+	 * \brief Returns the value assigned to an attribute within a child node.
+	 * 
+	 * Checking computation domain dimension is one example of its use.
+	 * 
+	 * @param childName	The name of the child node of which the attribute
+	 * value is being sought.
+	 * @param attrName	The name of the attribute for which the value is
+	 * required.
 	 * @return	Double value assigned to that attribute, if present
 	 */
 	public Double getChildAttrDbl(String childName, String attrName) 
 	{
-		String value = getChildAttrStr(childName, attrName);
-		if (value==null) return 0.0;
-		else return Double.parseDouble(value);
+		Double out = stringToDouble(getChildAttrStr(childName, attrName));
+		if ( out == nullDbl )
+		{
+			LogFile.writeLog("No value given for "+attrName+
+														" of "+childName+"!");
+		}
+		return out;
 	}
 	
 	/**
-	 * \brief Returns the value assigned to an attribute within a child node
+	 * \brief Returns the double value assigned to an XML tag in the protocol
+	 * file, if the tag is present.
 	 * 
-	 * Returns the value assigned to an attribute within a child node. Checking computation domain dimension is one example of its use
-	 * 
-	 * @param childName	The name of the child node of which the attribute value is being sought
-	 * @param attrName	The name of the attribute for which the value is required
-	 * @return	Double value assigned to that attribute, if present
+	 * @param paramName	The XML parameter for which the value is required
+	 * @return	Double value assigned to that XML tag
 	 */
-	public Integer getChildAttrInt(String childName, String attrName) 
+	public Double getParamDbl(String paramName) 
 	{
-		String value = getChildAttrStr(childName, attrName);
-		if (value==null) return 0;
-		else return Integer.parseInt(value);
-	}
-	
-	@SuppressWarnings("unchecked")
-	/**
-	 * \brief Returns a list of the children of a given XML child tag name.
-	 * 
-	 * @param childName	The name of a child tag in the XML file for which the
-	 * list of children is required.
-	 * @return	List of XML elements containing the children of the specified
-	 * tag name.
-	 */
-	public List<Element> getChildren(String childName)
-	{
-		return (List<Element>) _localRoot.getChildren(childName);
+		Double out = stringToDouble(getParam(paramName));
+		if ( out == nullDbl )
+			LogFile.writeLog("No value given for "+paramName+"!");
+		return out;
 	}
 
 	/**
-	 * \brief Returns the XML element of a given child node tag name.
+	 * \brief For a given XML tag name, returns the value in the specified
+	 * unit (if that tag exists).
 	 * 
-	 * @param childName	The child tag name for which the XML element is required
-	 * @return	An XML element containing the tags for the specified child name
+	 * @param paramName	The name of the XML tag for which a value is required.
+	 * @param unit	The unit that this parameter is required to be within.
+	 * @return	The double value assigned to that parameter, in the required
+	 * unit.
 	 */
-	public Element getChildElement(String childName) {
-		return _localRoot.getChild(childName);
+	public Double getParamDbl(String paramName, StringBuffer unit) 
+	{
+		Double out = stringToDouble(getParam(paramName, unit));
+		if ( out == nullDbl )
+			LogFile.writeLog("No value given for "+paramName+"!");
+		return out;
 	}
 	
 	/**
-	 * \brief Return the current XML local root element
+	 * \brief Searches through the attributes of the XML tags of a given
+	 * parameter name to find the Double value of a specified detail within
+	 * that tag.
 	 * 
-	 * Return the current XML local root element
-	 * 
-	 * @return	XML Element for the current local root
+	 * @param paramName	The parameter name for which the value is required.
+	 * @param detailName	The name of the detail element which is part of
+	 * that tag, if present.
+	 * @return	The double value associated with the specified detail of this
+	 * tag.
 	 */
-	public Element getElement() {
-		return _localRoot;
+	public Double getParamSuchDbl(String paramName, String detailName)
+	{
+		Double out = stringToDouble(getParamSuch(paramName, detailName));
+		if ( out == nullDbl )
+		{
+			LogFile.writeLog("No value given for "+paramName+
+													" with "+detailName+"!");
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Searches through the attributes of the XML tags of a given
+	 * parameter name, in a specified unit to find the Double value of a
+	 * specified detail within that tag.
+	 * 
+	 * @param paramName	The parameter name for which the value is required.
+	 * @param detailName	The name of the detail element which is part of
+	 * that tag, if present.
+	 * @param unit	The unit that this parameter should be measured in.
+	 * @return	The double value associated with the specified detail of this
+	 * tag.
+	 */
+	public Double getParamSuchDbl(String paramName,
+										String detailName, StringBuffer unit)
+	{
+		Double out = stringToDouble(getParamSuch(paramName, detailName, unit));
+		if ( out == nullDbl )
+		{
+			LogFile.writeLog("No value given for "+paramName+
+													" with "+detailName+"!");
+		}
+		return out;
+	}
+	
+	/**
+	 * \brief Used for Epi-Bac scenarios.
+	 * 
+	 * Retrieving list of environments to which this species is
+	 * sensitive to and the correspondent probability of dying if under
+	 * the influence of that environment.
+	 * 
+	 * @param childName	The name of the XML tag that contains the information
+	 * on this parameter.
+	 * @param attrName	The name of the first attribute within that XML tag.
+	 * @param attrValue	The value of the first attribute
+	 * @param attr2Name	The name of the related attribute that is required to
+	 * find this value.
+	 * @return	Double value assigned to this tag.
+	 */
+	public Double getDblAttrOfChildSuchAttribute(String childName,
+						String attrName, String attrValue, String attr2Name)
+	{
+		Double out = stringToDouble(getChildSuchAttribute(childName, 
+						attrName, attrValue).getAttributeValue(attr2Name));
+		if ( out == nullDbl )
+		{
+			LogFile.writeLog("No value given for "+attr2Name+" of "+
+							childName+" with "+attrName+" = "+attrValue+"!");
+		}
+		return out;
+	}
+	
+	/*************************************************************************
+	 * Reading values with units (all Doubles)
+	 */
+	
+	/**
+	 * \brief Returns a length parameter from the XML, converting to the
+	 * correct unit as required.
+	 * 
+	 * @param paramName	The name of the parameter for which the length value
+	 * should be returned.
+	 * @return	The length value assigned to this parameter in the protocol
+	 * file.
+	 */
+	public Double getParamLength(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.length(unit.toString());
+		return value;
 	}
 
 	/**
-	 * \brief Creates an instance of a class using a string containing that class name
+	 * \brief Returns the mass of a specified parameter from the XML,
+	 * calculating this using the unit of measurement for that parameter.
 	 * 
-	 * Creates an instance of a class using a string containing that class name. Useful for a set of boundary conditions, for example
+	 * @param paramName	The name of the parameter for which the mass should be
+	 * returned.
+	 * @return	The calculated mass of this parameter.
+	 */
+	public Double getParamMass(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.mass(unit.toString());
+		return value;
+	}
+
+	/**
+	 * \brief Gets a given parameter from the protocol file and converts into
+	 * a double representing time.
 	 * 
-	 * @param prefix	The class for which a new instance is being created
-	 * @return	An object of the class stated in the prefix string
+	 * @param paramName	The parameter to be retrieved from the XML file.
+	 * @return	Double of the value of this parameter converted into a unit
+	 * of time.
+	 */
+	public Double getParamTime(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.time(unit.toString());
+		return value;
+	}
+
+	/**
+	 * \brief Reads a concentration from the protocol file and converts this
+	 * to the required unit.
+	 * 
+	 * @param paramName	The name of the parameter to be retrieved
+	 * from the protocol file.
+	 * @return	The calculated concentration level for this simulation
+	 * parameter.
+	 */
+	public Double getParamConcn(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.mass(unit.toString());
+		value *= utils.UnitConverter.volume(unit.toString());
+		return value;
+	}
+	
+	/**
+	 * \brief Reads a speed from the protocol file and converts this
+	 * to the required unit.
+	 * 
+	 * @param paramName	The name of the parameter to be retrieved
+	 * from the protocol file.
+	 * @return	The calculated speed for this simulation parameter.
+	 */
+	public Double getParamSpeed(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.length(unit.toString());
+		value *= utils.UnitConverter.time(unit.toString());
+		return value;
+	}
+	
+	
+	public Double getParamDiffusivity(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.time(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		value *= UnitConverter.length(unit.toString());
+		return value;
+	}
+	
+	/*************************************************************************
+	 * Creating instances
+	 */
+		
+	/**
+	 * \brief Creates an instance of a class using a string containing that
+	 * class name.
+	 * 
+	 * Useful for a set of boundary conditions, for example.
+	 * 
+	 * @param prefix	The class for which a new instance is being created.
+	 * @return	An object of the class stated in the prefix string.
 	 */
 	public Object instanceCreator(String prefix) 
 	{
 		prefix += "."+this.getAttribute("class");
-
 		try 
 		{
 			return Class.forName(prefix).newInstance();
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Unable to create class: "+prefix);
+			LogFile.writeLogAlways("Unable to create class: "+prefix);
 			return null;
 		}
 	}
-		
-
-	/**
-	 * \brief Used for Epi-Bac scenarios - retrieving list of environments to which this species 
-	 * is sensitive to and the correspondent probability of dying if under the influence of 
-	 * that environment
-	 * 
-	 * Used for Epi-Bac scenarios - retrieving list of environments to which this species 
-	 * is sensitive to and the correspondent probability of dying if under the influence of 
-	 * that environment
-	 * 
-	 * @param childName	The name of the XML tag that contains the information on this parameter
-	 * @param attrName	The name of the first attribute within that XML tag
-	 * @param attrValue	The value of the first attribute
-	 * @param attr2Name	The name of the related attribute that is required to find this value
-	 * @return	Double value assigned to this tag
-	 */
-	public Double getDblAttrOfChildSuchAttribute(String childName, String attrName,
-	        String attrValue, String attr2Name) {
-		String out = getChildSuchAttribute(childName, attrName, attrValue).getAttributeValue(
-		        attr2Name);
-		return Double.parseDouble(out);
-	}
-
-	
-
-	
 }

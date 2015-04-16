@@ -1,40 +1,45 @@
 /**
  * \package agent
- * \brief Package of utilities that create and manage agents in the simulation and their participation in relevant reactions
+ * \brief Package of utilities that create and manage agents in the simulation
+ * and their participation in relevant reactions.
  * 
- * Package of utilities that create and manage agents in the simulation and their participation in relevant reactions. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info".
  */
 package simulator.agent;
+
 import java.util.List;
-import java.util.Random;
 import java.io.Serializable;
 import java.awt.Color;
-
-import org.jdom.Element;
 
 import simulator.Simulator;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.BoundaryCyclic;
 import utils.LogFile;
 import utils.XMLParser;
 import utils.ExtraMath;
 
 /**
- * \brief Creates and manages the species that are to be included in an iDynoMiCS simulation
+ * \brief Creates and manages the species that are to be included in an
+ * iDynoMiCS simulation.
  * 
- * The Species class creates and manages the species that are to be included in an iDynoMiCS simulation. This includes the creation of 
- * the required number of agents, registering that this agent has been born, and reducing the count of active agents when the agent 
- * dies. The species each exist on their own grid, again initialised here. From version 1.2 of iDynoMiCS, this class also manages agent 
- * input for both one-time and self attachment scenarios.
+ * This includes the creation of the required number of agents, registering
+ * that this agent has been born, and reducing the count of active agents when
+ * the agent dies. The species each exist on their own grid, again initialised
+ * here. From version 1.2 of iDynoMiCS, this class also manages agent input
+ * for both one-time and self attachment scenarios.
  * 
- * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
+ * @author Kieran Alden (k.j.alden@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class Species implements Serializable 
 {
@@ -44,14 +49,16 @@ public class Species implements Serializable
 	private static final long  serialVersionUID = 1L;
 
 	/**
-	 * Local copy of the simulation object that is creating the state specified in the protocol file
+	 * Local copy of the simulation object that is creating the state specified
+	 * in the protocol file.
 	 */
-	public Simulator           currentSimulator;
+	public Simulator	currentSimulator;
 	
 	/**
-	 * Name of the species associated with this object. Specified in the protocol file
+	 * Name of the species associated with this object. Specified in the
+	 * protocol file.
 	 */
-	public String              speciesName;
+	public String	speciesName;
 	
 	/**
 	 * The number of species in the simulation
@@ -69,7 +76,8 @@ public class Species implements Serializable
 	public Domain domain;
 	
 	/**
-	 * Stores the position of agents that are swimming below the boundary until they meet the surface or the biofilm. Used in self-attach
+	 * Stores the position of agents that are swimming below the boundary
+	 * until they meet the surface or the biofilm. Used in self-attach
 	 * simulations
 	 */
 	public ContinuousVector swimmingAgentPosition = new ContinuousVector();
@@ -104,14 +112,15 @@ public class Species implements Serializable
 	public Double injectionOffAttachmentFrequency = 0.0;
 	
 	/**
-	 * Used in self-attachment cases where the number of agents specified in the protocol file leaves a remainder per timestep. When this 
-	 * remainder reaches 1, a new cell is introduced to the simulation
+	 * Used in self-attachment cases where the number of agents specified in
+	 * the protocol file leaves a remainder per timestep. When this remainder
+	 * reaches 1, a new cell is introduced to the simulation.
 	 */
 	public Double newAgentCounter = 0.0;
 	
 	/**
-	 * For self-attaching species, this holds the XY angle the cell is moving. This is global as this may change due to bouncing of 
-	 * boundaries
+	 * For self-attaching species, this holds the XY angle the cell is moving.
+	 * This is global as this may change due to bouncing of boundaries.
 	 */
 	public Double angleOfMovingAgentXY = 0.0;
 	
@@ -142,7 +151,7 @@ public class Species implements Serializable
 	public Species(Simulator aSimulator, XMLParser aSpRoot, XMLParser speciesDefaults) 
 	{
 		// Name of the species as specified in the protocol file
-		speciesName = aSpRoot.getAttribute("name");
+		speciesName = aSpRoot.getName();
 		
 		// colour is used to distinguish agents in POV-Ray output images - read this from the protocol file
 		String colorName = aSpRoot.getParam("color");
@@ -166,7 +175,7 @@ public class Species implements Serializable
 		injectionOnAttachmentFrequency = aSpRoot.getParamDbl("injectionOnAttachmentFrequency");
 		cellInjectionEndHour = aSpRoot.getParamDbl("cellInjectionEndHour");
 		injectionOffAttachmentFrequency = aSpRoot.getParamDbl("injectionOffAttachmentFrequency");
-
+		
 		// Create the progenitor and tune its speciesParam object
 		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
 		// Get parameters for this progenitor object from the protocol file if present
@@ -202,13 +211,12 @@ public class Species implements Serializable
 	 * @param aSimulator	The simulator object being used to create the conditions specified in the protocol file
 	 * @param aSpRoot	XML markup for the species being created. Taken from the protocol file
 	 */
-	public void register(Simulator aSimulator, XMLParser aSpRoot) {
+	public void register(Simulator aSimulator, XMLParser aSpRoot)
+	{
 		currentSimulator = aSimulator;
-		speciesName = aSpRoot.getAttribute("name");
-
+		speciesName = aSpRoot.getName();
 		speciesIndex = aSimulator.speciesList.size();
 		aSimulator.speciesList.add(this);
-
 		domain = aSimulator.world.getDomain(aSpRoot.getAttribute("computationDomain"));
 	}
 
@@ -614,7 +622,7 @@ public class Species implements Serializable
 	{
 		// Cell has passed through the boundary on the left or right hand side
 		// If is cyclic, the point is deemed to reappear at the opposite side
-		if(boundaryCrossed.isCyclic())
+		if ( boundaryCrossed instanceof BoundaryCyclic )
 		{
 			// This will be inside the grid at the amount that the move would
 			// have taken the point outside of the grid.
@@ -645,7 +653,7 @@ public class Species implements Serializable
 	{
 		// Cell has passed through the boundary on the front or back of the grid
 		// If is cyclic, the point is deemed to reappear at the opposite side
-		if(boundaryCrossed.isCyclic())
+		if ( boundaryCrossed instanceof BoundaryCyclic )
 		{
 			// This will be inside the grid at the amount that the move would
 			// have taken the point outside of the grid.
@@ -919,7 +927,7 @@ public class Species implements Serializable
 	 */
 	public ContinuousVector[] defineSquareArea(XMLParser spRoot) 
 	{
-		List<Element> area = spRoot.getChildren("coordinates");
+		List<XMLParser> area = spRoot.getChildrenParsers("coordinates");
 		
 		ContinuousVector[] initArea = new ContinuousVector[2];
 		initArea[0] = new ContinuousVector();

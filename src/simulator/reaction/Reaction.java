@@ -1,20 +1,24 @@
 /**
  * \package reaction
- * \brief Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS
+ * \brief Package of classes used to model stoichiometric and kinetic
+ * reactions in iDynoMiCS.
  * 
- * Package of classes used to model stoichiometric and kinetic reactions in iDynoMiCS. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.reaction;
 
 import java.io.Serializable;
 import java.util.*;
-import Jama.Matrix;
 
+import Jama.Matrix;
 import simulator.*;
 import simulator.agent.*;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -131,6 +135,8 @@ public abstract class Reaction implements Serializable
 
 	/**
 	 * dilution rate from associated bulk (sonia 21-04-10)
+	 * 
+	 * TODO Rob 16Apr2015: I'm not sure Reaction needs to know this...
 	 */
 	public Double Dil;
 
@@ -158,7 +164,7 @@ public abstract class Reaction implements Serializable
 	public void init(Simulator aSim, XMLParser aReactionRoot) 
 	{
 		// Set the name of the reaction
-		reactionName = aReactionRoot.getAttribute("name");
+		reactionName = aReactionRoot.getName();
 
 		// Get the number of solutes that exist in this simulation run
 		nSolute = aSim.soluteList.length;
@@ -192,18 +198,10 @@ public abstract class Reaction implements Serializable
 
 		
 		// Set the boundary conditions if this is a chemostat condition
-		for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-		{
-			if (aBC.hasBulk())
-			{
-				Bulk aBulk = aBC.getBulk();
-				if(aBulk.getName().equals("chemostat"))
-				{
-					Dil = aBulk._D;
-				}
-			}	
-		}
-
+		Bulk bulk = _reacGrid.getDomain().getChemostat();
+		if ( bulk != null )
+			Dil = bulk._D;
+		
 		// Extract the yields for solutes and particulates from the XML file
 		fillParameters(aSim, aReactionRoot);
 	}
@@ -285,78 +283,77 @@ public abstract class Reaction implements Serializable
 	 */
 	public void fillParameters(Simulator aSim, XMLParser xmlRoot) 
 	{
-
-		// Get the factor that is catalysing the reaction
+		// We count the number of non-zero solutes to speed things up later.
+		int nonZeroSolutes = 0;
+		// Temporary holder of non-zero solute indices.
+		int[] _mySoluteIndexMax = new int[_soluteList.length];
+		// Temporary holder for the name of the solute/particle.
+		String name;
+		// Temporary holder for the stoichiometry of the solute/particle.
+		Double stoichiometry;
+		/* Temporary holder for the index of the solute/particle in the
+		 * relevant dictionary (in Simulator).
+		*/
+		int index;
+		// Get the information stored in the yield" tags.
+		// TODO change "yield" to "stoichiometry". 
+		XMLParser yieldRoot = xmlRoot.getChildParser("yield");
+		// Loop through the parameters, assigning stoichiometries as we go.
+		for (XMLParser param : yieldRoot.getChildrenParsers("param"))
+		{
+			name = param.getName();
+			stoichiometry = param.getValueDbl();
+			// Check this read in properly.
+			if ( stoichiometry.equals(XMLParser.nullDbl) )
+			{
+				LogFile.writeLogAlways("Error! Trouble reading in"+
+							"stoichiometry for "+name+": "+param.getValue());
+				System.exit(-1);
+			}
+			// If the stoichiometry is zero, it's effectively absent.
+			if ( stoichiometry.equals(0.0) )
+				continue;
+			// Check if this is a solute.
+			index = aSim.getSoluteIndex(name);
+			if ( index > -1 )
+			{
+				// Add the stoichiometry of this solute to the array.
+				_soluteYield[index] = stoichiometry;
+				// Add to the array of solutes that are non-zero yielding.
+				_mySoluteIndexMax[nonZeroSolutes] = index;
+				// Increase the count of the solutes with a non-zero yield.
+				nonZeroSolutes++;
+				// Move on to the next parameter.
+				continue;
+			}
+			// Check if it is a particle instead.
+			index = aSim.getParticleIndex(name);
+			if ( index > -1 )
+			{
+				// Add the stoichiometry of this yield to the array.
+				_particleYield[index] = stoichiometry;
+				/* Store the name of the particle that is yielded in the
+				 * second array.
+				 */
+				_particleNameYield[index] = name;
+				// Move on to the next parameter.
+				continue;
+			}
+			// It's neither, so throw an error!
+			LogFile.writeLogAlways("Error! XML tag not recognised!\n"+
+							name+" in reaction "+reactionName+"\nExting...");
+			System.exit(-1);
+		}
+		// Now resize the non-zero solutes array
+		_mySoluteIndex = resizeArray(_mySoluteIndexMax, nonZeroSolutes);
+		
+		// Get the factor that catalyses the reaction.
 		String catalystName = xmlRoot.getAttribute("catalyzedBy");
 		_catalystIndex = aSim.particleDic.indexOf(catalystName);
-
-		// Populate yield for solutes
-		Double yield;
-		
-		// Get the yield information from the reaction tag of the protocol file
-		XMLParser parser = new XMLParser(xmlRoot.getChildElement("yield"));
-		
-		// Now determine how much of each declared solute yields from this reaction
-		// KA 28/03/13 - Simplified things here - later there was a loop to count the number of non-zero yielding solutes
-		// stored in jSolute. No real point looping again so I've added that count in here. Then there was a further loop to cycle 
-		// through this again, making an array of non-zero solutes. So I've scrapped this - set an array equal to the number of solutes,
-		// and resized this after population such that it is the size of the number of non-zero yielding solutes.
-		int nonZeroSolutes = 0;
-		int[] _mySoluteIndexMax = new int[_soluteList.length];
-		
-		for (int iSolute = 0; iSolute<_soluteList.length; iSolute++) 
-		{
-			// Get the yield of this solute if present in the protocol file
-			yield = parser.getParamDbl( _soluteList[iSolute].getName());
-			if (!Double.isNaN(yield)) 
-			{
-				// Add the yield of this solute to the array
-				_soluteYield[iSolute] = yield;
-				
-				// KA - Add to the array of solutes that are non-zero yielding
-				_mySoluteIndexMax[nonZeroSolutes] = iSolute;
-						
-				// KA - Increase the count of the solutes with a non-zero yield
-				nonZeroSolutes++;
-				
-			} 
-			else 
-			{
-				// If not present assume a yield of 0
-				_soluteYield[iSolute] = 0.0;
-			}
-		}
-		
-		// Now resize the non-zero solutes array
-		_mySoluteIndex = resizeArray(_mySoluteIndexMax,nonZeroSolutes);
-		
-		
-		
-		// Populate yields for particles from this reaction
-		String particleName;
-		
-		// Go through  each of the particles declared in this simulation and establish if any yield from reaction
-		for (int iParticle = 0; iParticle<aSim.particleDic.size(); iParticle++) 
-		{
-			// Get the yield from the XML file, if present
-			yield = parser.getParamDbl(aSim.particleDic.get(iParticle));
-			
-			// Get the name of the particle from the dictionary
-			particleName = aSim.particleDic.get(iParticle);
-			if (!Double.isNaN(yield)) 
-			{
-				// If there is a yield, store in the particle yield array
-				_particleYield[iParticle] = yield;
-				
-				// Store the name of the particle that is yielded in the second array
-				_particleNameYield[iParticle] = particleName;
-			}
-		}
-		
-		// Determine whether the catalytic particle is affected by the reaction,
-		// and hence whether the reaction is autocatalytic or not.
-		// This is important in ActiveAgent.grow()
-		
+		/* Determine whether the catalytic particle is affected by the
+		 * reaction, and hence whether the reaction is autocatalytic or not.
+		 * This is important in ActiveAgent.grow()
+		 */
 		if (_particleYield[_catalystIndex].equals(0.0))
 		{
 			autocatalytic = false;
@@ -512,7 +509,11 @@ public abstract class Reaction implements Serializable
 	public void fitAgentMassOnGrid(SpatialGrid aSpG)
 	{
 		for (ActiveAgent anActiveAgent : _guild)
+		{
+			if ( anActiveAgent.isDead )
+				continue;
 			anActiveAgent.fitMassOnGrid(aSpG, this._catalystIndex);
+		}
 	}
 
 	/**
@@ -531,20 +532,9 @@ public abstract class Reaction implements Serializable
 		//the concentration read by the agents is the one stored in the bulk (which has been previously updated)
 		if (Simulator.isChemostat)
 		{
-			for (int index =0; index<_soluteList.length; index++)
-			{
-				for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-				{
-					if (aBC.hasBulk())
-					{
-						Bulk aBulk = aBC.getBulk();
-						if(aBulk.getName().equals("chemostat"))
-						{
-							out[index] = aBulk.getValue(_soluteList[index].soluteIndex);
-						}
-					}	
-				}
-			}
+			Bulk bulk = _reacGrid.getDomain().getChemostat();
+			for ( int index = 0; index < _soluteList.length; index++ )
+				out[index] = bulk.getValue(_soluteList[index].soluteIndex);
 		}
 		else
 		{
@@ -553,7 +543,8 @@ public abstract class Reaction implements Serializable
 				// The agent is a located agent, use the local concentration
 				for (int iGrid = 0; iGrid<_soluteList.length; iGrid++)
 				{
-					out[iGrid] = _soluteList[iGrid].getValueAround(((LocatedAgent) anAgent));
+					out[iGrid] = _soluteList[iGrid].getValueAround(
+													(LocatedAgent) anAgent);
 				}
 			} 
 			else 
@@ -563,7 +554,6 @@ public abstract class Reaction implements Serializable
 					out[iGrid] = _soluteList[iGrid].getAverage();
 			}
 		}
-
 		return out;
 	}
 	
@@ -610,6 +600,8 @@ public abstract class Reaction implements Serializable
 		_reacGrid.resetToZero();
 		for (ActiveAgent anAgent : _guild)
 		{
+			if ( anAgent.isDead )
+				continue;
 			// Sum mass of catalyser compartments on each grid cell
 			anAgent.fitMassOnGrid(_guildGrid, _catalystIndex);
 			// Apparent reaction rate on each grid cell

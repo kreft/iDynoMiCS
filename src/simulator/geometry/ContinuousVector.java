@@ -1,21 +1,23 @@
 /**
  * \package simulator.geometry
- * \brief Package of boundary utilities that aid the creation of the environment being simulated
+ * \brief Package of boundary utilities that aid the creation of the
+ * environment being simulated.
  * 
- * Package of boundary utilities that aid the creation of the environment being simulated. This package is 
- * part of iDynoMiCS v1.2, governed by the CeCILL license under French law and abides by the rules of distribution of free software.  
- * You can use, modify and/ or redistribute iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at 
- * the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator.geometry;
 
-import java.io.Serializable;
-import org.jdom.*;
 import utils.ExtraMath;
+import utils.XMLParser;
 
 /**
  * \brief Implements 3D vector of continuous spatial coordinates.
  * 
+ * Cartesian (x, y, z) coordinates obligatory.
  * Can be used to store Continuous coordinates or Movement vectors.
  * 
  * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
@@ -25,13 +27,8 @@ import utils.ExtraMath;
  * Center (NY, USA).
  *
  */
-public class ContinuousVector implements Cloneable, Serializable, Comparable<ContinuousVector>
+public class ContinuousVector implements Cloneable
 {
-	/**
-	 * Serial version used for the serialisation of the class
-	 */
-	private static final long serialVersionUID = 1L;
-	
 	/**
 	 * X coordinate of the point contained in this vector
 	 */
@@ -65,30 +62,18 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	{
 		set(aCC);
 	}
-
-	/**
-	 * \brief Constructs a continuous vector with points specified from XML tags
-	 * 
-	 * @param xmlRoot Set of XML tags containing an X,Y,and Z coordinate
-	 */
-	public ContinuousVector(Element xmlRoot)
-	{
-		set( Double.parseDouble(xmlRoot.getAttributeValue("x")),
-			 Double.parseDouble(xmlRoot.getAttributeValue("y")),
-			 Double.parseDouble(xmlRoot.getAttributeValue("z")));
-	}
 	
 	/**
-	 * \brief Translate a discrete coordinates expressed on a discrete spatial
-	 * grid with the resolution res to form continuous vector.
+	 * \brief Constructs a continuous vector with points specified from an
+	 * XMLParser.
 	 * 
-	 * @param dC Discrete vector containing points on a grid.
-	 * @param res The resolution of this grid, to use to transform these points.
+	 * @param coordinatesRoot	An XMLParser containing x, y and z coordinates.
 	 */
-	public ContinuousVector(DiscreteVector dC, Double res)
+	public ContinuousVector(XMLParser coordinatesRoot)
 	{
-		set(dC.i + 0.5, dC.j + 0.5, dC.k + 0.5);
-		times(res);
+		x = coordinatesRoot.getAttributeDbl("x");
+		y = coordinatesRoot.getAttributeDbl("y");
+		z = coordinatesRoot.getAttributeDbl("z");
 	}
 	
 	/**
@@ -127,7 +112,40 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 		this.y = y;
 		this.z = z;
 	}
-
+	
+	/**
+	 * 
+	 * TODO Rob 13Mar2015: Check padding.
+	 * Compare Agentcontainer.getGridLocation(int index)
+	 * 
+	 * @param dC
+	 * @param res
+	 */
+	public void setToVoxelCenter(DiscreteVector dC, Double res)
+	{
+		set(dC.i + 0.5, dC.j + 0.5, dC.k + 0.5);
+		times(res);
+	}
+	
+	/**
+	 * 
+	 * @param dC
+	 */
+	public void set(DiscreteVector dC)
+	{
+		set(dC.i + 0.0, dC.j + 0.0, dC.k + 0.0);
+	}
+	
+	/**
+	 * 
+	 * @param dC
+	 * @param res
+	 */
+	public void set(DiscreteVector dC, Double res)
+	{
+		set(dC);
+		times(res);
+	}
 	
 	/**
 	 * \brief Set all points in the vector to zero.
@@ -156,21 +174,32 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 */
 	public void turnAround()
 	{
-		set(-x, -y, -z);
+		times(-1.0);
 	}
 
 	/**
-	 * \brief Determine if this vector is in the location giving by the points X,Y,Z
+	 * \brief Determine if this vector is in the given location.
 	 * 
 	 * @param x	X coordinate.
 	 * @param y Y coordinate.
 	 * @param z	Z coordinate.
-	 * @return Booloean stating whether the vector position and coordinate
+	 * @return Boolean stating whether the vector position and coordinate
 	 * (x,y,z) is identical.
 	 */
 	public Boolean equals(Double x, Double y, Double z)
 	{
 		return (this.x.equals(x) && this.y.equals(y) && this.z.equals(z));
+	}
+	
+	/**
+	 * \brief Check if this vector is the same as another.
+	 *  
+	 * @param other
+	 * @return
+	 */
+	public Boolean equals(ContinuousVector other)
+	{
+		return equals(other.x, other.y, other.z);
 	}
 	
 	/**
@@ -191,8 +220,9 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	@Override
 	public String toString()
 	{
-		return ExtraMath.toString(x, false)+",\t"+ExtraMath.toString(y, false)+
-											",\t"+ExtraMath.toString(z, false);
+		return "("+ExtraMath.toString(x, false)
+				+", "+ExtraMath.toString(y, false)
+				+", "+ExtraMath.toString(z, false)+")";
 	}
 	
 	/**
@@ -242,17 +272,18 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	}
 
 	/**
-	 * \brief Store in this vector the subtraction of two other continuous vectors
+	 * \brief Store in this vector the difference of two other continuous
+	 * vectors.
 	 * 
-	 * @param a	First continuous vector
-	 * @param b	Continuous vector to subtract from the first
+	 * @param a	First continuous vector.
+	 * @param b	Continuous vector to subtract from the first.
 	 */
 	public void sendDiff(ContinuousVector a, ContinuousVector b)
 	{
 		set(a);
 		subtract(b);
 	}
-
+	
 	/**
 	 * \brief Calculate scalar product (dot product) of this vector with vector
 	 * cc supplied.
@@ -296,10 +327,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	 */
 	public void normalizeVector()
 	{
-		Double norm = this.norm();
-		if ( ! norm.equals(0.0) )
-			this.times(1/norm);
-
+		normalizeVector(1.0);
 	}
 
 	/**
@@ -310,7 +338,7 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	public void normalizeVector(Double newLength)
 	{
 		Double norm = this.norm();
-		if (!norm.equals(0.0))
+		if ( ! norm.equals(0.0) )
 			this.times(newLength/norm);
 	}
 
@@ -335,17 +363,34 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 	{
 		return ExtraMath.hypotenuse(x, y, z);
 	}
-
+	
 	/**
-	 * \brief Calculate cosine of the angle to vector cc.
+	 * \brief Calculate cosine of the angle to a given vector.
 	 * 
-	 * @param cc ContinuousVector for which cosine of the angle to this one
+	 * @param v ContinuousVector for which cosine of the angle to this one
 	 * should be calculated.
-	 * @return	Cosine of the angle to vector cc.
+	 * @return	Cosine of the angle to vector given.
 	 */
-	public double cosAngle(ContinuousVector cc)
+	public Double cosAngle(ContinuousVector v)
 	{
-		return prodScalar(cc)/(this.norm() * cc.norm());
+		/*
+		 * Returning 0.0 if the dot product is 0.0 removes the danger of
+		 * dividing 0.0/0.0 and also speeds things up slightly if the vectors
+		 * are orthogonal.
+		 */
+		Double dotProd = prodScalar(v);
+		return ( dotProd == 0.0 ) ? 0.0 : dotProd/(this.norm() * v.norm());
+	}
+	
+	/**
+	 * \brief Calculate the angle to another vector.
+	 * 
+	 * @param v	Another vector
+	 * @return Angle between this vector and that given.
+	 */
+	public Double angle(ContinuousVector v)
+	{
+		return Math.acos(cosAngle(v));
 	}
 	
 	/**
@@ -359,21 +404,32 @@ public class ContinuousVector implements Cloneable, Serializable, Comparable<Con
 		return super.clone();
 	}
 	
+	public Boolean isOrthogonal(ContinuousVector other)
+	{
+		return ( prodScalar(other) == 0.0 );
+	}
+	
+	public Boolean isParallel(ContinuousVector other)
+	{
+		return ( Math.abs(cosAngle(other)) == 1.0 );
+	}
+	
+	
 	/**
-	 * \brief Compares the values of two continuous vectors.
+	 * \brief Returns the cross product of this vector with another.
 	 * 
-	 * Used in the creation of the epithelium for eGUT.
+	 * Note that the resulting vector is orthogonal to both this vector and
+	 * the one given.
 	 * 
-	 * @param other	ContinuousVector to compare this continuous vector object to.
+	 * @param other
+	 * @return
 	 */
-	@Override
-	public int compareTo(ContinuousVector other) 
-    {
-		int valueComparison = this.x.compareTo(other.x);
-    	if (valueComparison == 0)
-    		valueComparison = this.y.compareTo(other.y);
-    	if (valueComparison == 0)
-    		valueComparison = this.z.compareTo(other.z);
-    	return valueComparison;
-    }
+	public ContinuousVector crossProduct(ContinuousVector other)
+	{
+		ContinuousVector out = new ContinuousVector();
+		out.x = this.y*other.z - this.z*other.y;
+		out.y = this.z*other.x - this.x*other.z;
+		out.z = this.x*other.y - this.y*other.x;
+		return out;
+	}
 }

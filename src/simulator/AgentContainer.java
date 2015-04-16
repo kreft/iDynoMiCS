@@ -1,25 +1,27 @@
 /**
  * \package simulator
- * \brief Package of classes that create a simulator object and capture simulation time.
+ * \brief Package of classes that create a simulator object and capture
+ * simulation time.
  * 
- * Package of classes that create a simulator object and capture simulation time. This package is part of iDynoMiCS v1.2, governed by the 
- * CeCILL license under French law and abides by the rules of distribution of free software.  You can use, modify and/ or redistribute 
- * iDynoMiCS under the terms of the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL  "http://www.cecill.info".
+ * This package is part of iDynoMiCS v1.2, governed by the CeCILL license
+ * under French law and abides by the rules of distribution of free software.  
+ * You can use, modify and/ or redistribute iDynoMiCS under the terms of the
+ * CeCILL license as circulated by CEA, CNRS and INRIA at the following URL 
+ * "http://www.cecill.info".
  */
 package simulator;
 
-import idyno.Idynomics;
-import idyno.SimTimer;
-
 import java.util.*;
 
+import idyno.SimTimer;
 import simulator.agent.*;
 import simulator.agent.zoo.MultiEpiBac;
 import simulator.agent.zoo.MultiEpisome;
 import simulator.detachment.*;
+import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
-import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SpatialGrid;
 import utils.ResultFile;
 import utils.XMLParser;
@@ -27,25 +29,25 @@ import utils.LogFile;
 import utils.ExtraMath;
 
 /**
- * \brief Class to store all the agents, call them, and manage shoving/erosion of located agents
+ * \brief Class to store all the agents, call them, and manage shoving/erosion
+ * of located agents.
  * 
- * Class to store all the agents, call them, and manage shoving/erosion of located agents
- * 
- * @author Andreas Doetsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sonia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
- *
+ * @author Sónia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  */
 public class AgentContainer 
 {
-
 	/**
 	 * Computational domain to which this grid is assigned
 	 */ 
 	public Domain domain;
 	
 	/**
-	 * Local copy of the simulation object used to create the conditions specified in the protocol file
+	 * Local copy of the simulation object used to create the conditions
+	 * specified in the protocol file.
 	 */
 	public Simulator mySim;
 
@@ -55,14 +57,12 @@ public class AgentContainer
 	public LinkedList<SpecialisedAgent> agentList;
 	
 	/**
-	 * Iterator for all agents in this grid
+	 * Temporary containers used to store agents who will be added or removed.
+	 * Visibility public so that it can be accessed from LocatedGroup in
+	 * killAll().
 	 */
-	public ListIterator<SpecialisedAgent> agentIter;
-
-	/**
-	 * Temporary containers used to store agents who will be added or removed.  Visibility public so that it can be accessed from LocatedGroup in killAll()
-	 */
-	public LinkedList<SpecialisedAgent> _agentToKill = new LinkedList<SpecialisedAgent>();
+	public LinkedList<SpecialisedAgent> _agentToKill = 
+										new LinkedList<SpecialisedAgent>();
 
 	/**
 	 * Array of SpatialGrids - one for each species in the simulation
@@ -90,20 +90,21 @@ public class AgentContainer
 	private int _nTotal;
 	
 	/**
-	 * Resolution of the grid. Specified in the XML protocol file
+	 * Resolution of the grid. Specified in the XML protocol file.
 	 */
-	private double _res;
+	private Double _res;
 	
 	
 	/**
-	 *	Grid to hold the agents in this container. This grid holds groups of agents, within a LocatedGroup object 
+	 *	Grid to hold the agents in this container. This grid holds groups of
+	 *agents, within a LocatedGroup object. 
 	 */
 	private LocatedGroup[] _grid;
 	
 	/**
 	 * 3D array that captures erosion in the agent grid
 	 */
-	protected double[][][] _erosionGrid;
+	protected Double[][][] _erosionGrid;
 	
 	/**
 	 * Boolean noting whether the grid is 3D or 2D
@@ -111,14 +112,16 @@ public class AgentContainer
 	public boolean is3D;
 	
 	/**
-	 * Sets the allowed cut off for moving agents
+	 * Sets the allowed cut off for shoving agents. When less that this
+	 * fraction of agents are still moving due to shoving, stop. 
 	 */
-	private final double SHOV_FRACTION;
+	private final Double SHOVEFRACTION;
 
 	/**
-	 * Allows you to define a smaller timestep for agent behaviors and interactions. Read in by Simulator class. This is a local copy 
+	 * Allows you to define a smaller timestep for agent behaviors and
+	 * interactions. Read in by Simulator class. This is a local copy. 
 	 */
-	public final double AGENTTIMESTEP;
+	public final Double AGENTTIMESTEP;
 	
 	/**
 	 * Sets the maximal number of iterations allowed to reach the final agent positions
@@ -171,21 +174,6 @@ public class AgentContainer
 	int maxShoveIter; 
 	
 	/**
-	 * Number of agents that have been moved due to shoving
-	 */
-	int nMoved;
-	
-	/**
-	 * Number of cells that perform a 'relative' move under shoving
-	 */
-	double tMoved; 
-	
-	/**
-	 * Calculation of a move that is to be performed due to influence of pressure 
-	 */
-	double deltaMove;
-
-	/**
 	 * Solver used for modelling detachment
 	 */
 	public LevelSet _levelset;
@@ -209,7 +197,7 @@ public class AgentContainer
 	public AgentContainer(Simulator aSimulator, XMLParser root, double agentTimeStep) throws Exception 
 	{
 		// Read FINAL fields
-		SHOV_FRACTION = root.getParamDbl("shovingFraction");
+		SHOVEFRACTION = root.getParamDbl("shovingFraction");
 		MAXITER = root.getParamInt("shovingMaxIter");
 		MUTUAL = root.getParamBool("shovingMutual");
 
@@ -256,7 +244,6 @@ public class AgentContainer
 		mySim = aSimulator;
 		
 		agentList = new LinkedList<SpecialisedAgent>();
-		agentIter = agentList.listIterator();
 		// Optimised the resolution of the grid used to sort located agents
 		checkGridSize(aSimulator, root);
 
@@ -277,7 +264,7 @@ public class AgentContainer
 				_pressure = ((Solver_pressure) aSimulator.getSolver("pressure")).getPressureGrid();
 
 			// Initialise the levelset solver used for detachment
-			_levelset = LevelSet.staticBuilder(root.getChild("detachment"), this);
+			_levelset = LevelSet.staticBuilder(root.getChildParser("detachment"), this);
 
 			LogFile.writeLog(" " + _nTotal + " grid elements, resolution: " + _res
 					+ " micrometers");
@@ -298,7 +285,6 @@ public class AgentContainer
 	public void step(Simulator aSim)
 	{
 		SpecialisedAgent anAgent;
-		
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
 		Collections.shuffle(agentList, ExtraMath.random);
@@ -334,12 +320,16 @@ public class AgentContainer
 			if ( ! Simulator.isChemostat )
 				followPressure();
 			
-			for (agentIter = agentList.listIterator(); agentIter.hasNext(); )
-			{
-				anAgent = agentIter.next();
-				anAgent.step();
-			}
-
+			for ( int i = 0; i < agentList.size(); i++ )
+				agentList.get(i).step();
+			/*
+			 * TODO Rob 16Apr2015: Java is complaining about
+			 * "java.util.ConcurrentModificationException"
+			 * here, so using a basic for loop until I work out what's wrong. 
+			for ( SpecialisedAgent agent : agentList )
+				agent.step();
+			*/
+			
 			Collections.shuffle(agentList, ExtraMath.random);
 
 			if ( Simulator.isChemostat )
@@ -372,8 +362,8 @@ public class AgentContainer
 			}
 			
 			// Apply moderate overlap relaxation, unless this is a chemostat.
-			if( !Simulator.isChemostat )
-				shoveAllLocated(false, true, 15, 1, 1);
+			if( ! Simulator.isChemostat )
+				shoveAllLocated(15);
 			
 		}
 
@@ -385,29 +375,30 @@ public class AgentContainer
 				
 		/* MECHANICAL INTERACTIONS _____________________________________ */
 		
-		if( !Simulator.isChemostat )
+		if( ! Simulator.isChemostat )
 		{
 			//sonia 26.04.2010
 			//care as been take so that the death agents are removed from the 
 			// _agentList preventing their participation in the shoving process 			
 			// spring and then shove only particles
-			shoveAllLocated(false, true, MAXITER, 1, 1);
-			LogFile.writeLog(nMoved + "/" + agentList.size() + " after " + shovIter
-					+ " shove iterations");
-
-
-
+			LogFile.chronoMessageIn("Shoving");
+			shoveAllLocated(MAXITER);
+			LogFile.chronoMessageOut("Shoving done");
+			
+			
 			// EROSION & DETACHMENT _________________________________________ */
 			// Refresh the space occupation map (-1:outside, 0:carrier,1:biofilm, 2:liquid, 3:bulk)
+			LogFile.chronoMessageIn("Detachment/erosion");
 			refreshGroupStatus();
-
-			// Rebuild the border of the biofilm and compute erosion-time for the
-			// whole biofilm
-
+			/*
+			 * Rebuild the border of the biofilm and compute erosion-time for
+			 * the whole biofilm
+			 */
 			_levelset.refreshBorder(true, mySim);
 			_levelset.computeLevelSet(mySim);
-
-			// On grid elements on the border apply a probabilistic erosion
+			/*
+			 * On grid elements on the border apply a probabilistic erosion
+			 */
 			// Rob Feb 2011: added borderErosion(), an alternative to erodeBorder(), which
 			// removes whole agents in a deterministic way
 			if (EROSIONMETHOD)
@@ -415,13 +406,16 @@ public class AgentContainer
 			else
 				// KA - Check added after self-attachment, as it is possible that if the timestep is much less than the input rate, 
 				// the grid may contain no cells for the first few steps
-				if(this.agentIter.hasNext())
+				if ( ! this.agentList.isEmpty() )
 				{
-					try {
+					try
+					{
+						LogFile.writeLogAlways("Trying to removeOnBorder");
 						removeOnBorder(this);
-					} catch (Exception e) {
-						System.out.println("At AgentContainer:removeOnBorder error met :" + e);
-						e.printStackTrace();
+					}
+					catch (Exception e)
+					{
+						LogFile.writeError(e, "AgentContainer.removeOnBorder()");
 						System.exit(-1);
 					}
 					// mark biomass connected to the carrier and remove any non-connected portions
@@ -431,7 +425,7 @@ public class AgentContainer
 					}
 				}
 
-			LogFile.chronoMessageOut("Detachment");
+			LogFile.chronoMessageOut("Detachment/erosion done");
 			
 				
 		}
@@ -448,113 +442,102 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Compute pressure field and apply resulting advection movement to affected agents
-	 * 
-	 * Compute pressure field and apply resulting advection movement to affected agents
+	 * \brief Compute pressure field and apply resulting advection movement to
+	 * affected agents.
 	 */
-	public double followPressure() 
+	public void followPressure() 
 	{
-		double moveMax;
-
+		DiffusionSolver solver = mySim.getSolver("pressure");
+		
 		// Find a solver for pressure field and use it
-		if (mySim.getSolver("pressure")==null) return 0;
-
 		// don't use the pressure if it's not active
-		if (!mySim.getSolver("pressure").isActive()) return 0;
-
+		if ( solver == null || ! solver.isActive() )
+			return;
+		
 		LogFile.writeLog("Doing pressure calculations.");
-
-
+		
 		// get local timestep (which was set in the step() routine calling this one)
-		double dt = SimTimer.getCurrentTimeStep();
-
-
+		Double dt = SimTimer.getCurrentTimeStep();
+		
 		// Solve for pressure field
-		mySim.getSolver("pressure").initAndSolve();
-		_pressure = ((Solver_pressure) mySim.getSolver("pressure")).getPressureGrid();
-
-
+		solver.initAndSolve();
+		_pressure = ((Solver_pressure) solver).getPressureGrid();
+		
 		// copy calculated pressure field to the solute list
 		// (allows easy output of pressure field)
 		mySim.getSolute("pressure").setGrid(_pressure.getGrid());
 
 		// Determine local advection speed
-		moveMax = 0;
+		Double maxSpeed = 0.0;
 		for (LocatedGroup aGroup : _grid)
-			moveMax = Math.max(moveMax, aGroup.computeMove(_pressure,AGENTTIMESTEP));
-
+		{
+			maxSpeed = Math.max(maxSpeed,
+								aGroup.computeMove(_pressure, AGENTTIMESTEP));
+		}
+		
 		// bvm 04.03.09: new method to address any high velocities:
 		// use smaller local timesteps to keep the movement under control
-		double dtlocal = dt;
+		Double dtlocal = dt;
 		int itlocal = 1;
-		while (dtlocal > this._res/moveMax) {
+		
+		while ( maxSpeed > this._res/dtlocal )
+		{
 			// if the move takes an agent farther than one grid element,
 			// apply scaling factor until move is within limit
-			dtlocal /= 10.;
+			dtlocal /= 10.0;
 			itlocal *= 10;
 		}
-		if (itlocal > 1) {
+		
+		if (itlocal > 1)
+		{
 			LogFile.writeLog("PRESSURE MOVEMENT HAS LOCAL TIMESTEP "
 					+dtlocal+" ("+itlocal+" iterations)");
 		}
-
+		
 		// scale movement vectors based on new, smaller timestep and apply
 		// the movement to each agent in each group
-		double alpha = dtlocal/dt;
+		Double alpha = dtlocal/dt;
 		for (LocatedGroup aGroup : _grid)
 			aGroup.addMoveToAgents(alpha);
-
+		
 		// now apply the scaled agent movements to each agent
-		deltaMove = 0;
-		for (int i=0; i<itlocal; ++i) {
-			agentIter = agentList.listIterator();
-			while (agentIter.hasNext())
-				deltaMove += agentIter.next().move();
-		}
-
-		return deltaMove;
+		for (int i = 0; i < itlocal; ++i)
+			for ( SpecialisedAgent anAgent : agentList )
+				anAgent.move();
 	}	
 
 
 	/**
-	 * \brief Solve spatial spreading through application of shoving (acts only on located agents)
+	 * \brief Solve spatial spreading through application of shoving (acts
+	 * only on located agents).
 	 * 
-	 * Solve spatial spreading through application of shoving (acts only on located agents)
-	 * 
-	 * @param fullRelax	Boolean noting whether a full relax of the grid is applied
-	 * @param shoveOnly	Boolean noting whether to apply shoving only or to also apply agent pushing
-	 * @param maxShoveIter	The maximum number of shoving iterations that should be applied to find a new position
-	 * @param gainMin	Specified minimum amount of gain to be found
-	 * @param gainMax	Specified maximum amount of gain to be found
+	 * @param maxShoveIter	The maximum number of shoving iterations that
+	 * should be applied to find a new position.
 	 */
-	public void shoveAllLocated(boolean fullRelax, boolean shoveOnly,
-			double maxShoveIter, double gainMin, double gainMax) {
-
-		if (fullRelax)
-			maxShoveIter = MAXITER * 5;
-
-		nMoved = shovLimit = Math.max(1,
-				(int) (agentList.size() * SHOV_FRACTION));
+	public void shoveAllLocated(int maxShoveIter)
+	{
+		int nMoved;
+		shovLimit = Math.max(1, (int) (agentList.size() * SHOVEFRACTION));
 		shovIter = 0;
-		while ((nMoved >= shovLimit) & (shovIter++ < maxShoveIter)) {
-			performMove(shoveOnly, false, 1);
-		}
+		do 
+		{
+			nMoved = performMove();
+		} while ((shovIter++ < maxShoveIter) && (nMoved >= shovLimit));
+		LogFile.writeLog(nMoved + "/" + agentList.size() + " after " + shovIter
+				+ " shove iterations");
 	}
 
 	/**
-	 * \brief Used during initialisation to start from a coherent state
+	 * \brief Used during initialization to start from a coherent state.
 	 * 
-	 * Used during initialisation to start from a coherent state
+	 * TODO Rob 13Mar2015: Why are we doing this five times the "maximum"?
 	 */
 	public void relaxGrid() 
 	{
-
-		//sonia:chemostat
-		if(!Simulator.isChemostat)
+		if( ! Simulator.isChemostat )
 		{
 			Collections.shuffle(agentList, ExtraMath.random);
-			shoveAllLocated(true, true, MAXITER / 2, 0.1, 0.25);
-			shoveAllLocated(true, true, MAXITER / 2, 0.1, 1);
+			shoveAllLocated(5 * MAXITER);
 		}
 	}
 
@@ -562,66 +545,38 @@ public class AgentContainer
 	/**
 	 * \brief Moves an agent as a result of shoving or pushing due to growth
 	 *
-	 * Moves an agent as a result of shoving or pushing due to growth
-	 * 
-	 * @param pushOnly	Boolean noting whether to apply shoving only or to also apply agent pushing
 	 * @param isSynchro
-	 * @param gain
 	 */
-	protected double performMove(boolean pushOnly, boolean isSynchro,
-			double gain) {
-		SpecialisedAgent anAgent;
-		nMoved = 0;
-		tMoved = 0;
-		double nMoved2 = 0;
-
-		for (agentIter = agentList.listIterator(); agentIter.hasNext();) {
-			// Compute movement, deltaMove is relative movement
-			anAgent = agentIter.next();
-			deltaMove = anAgent.interact(MUTUAL, pushOnly, !isSynchro, gain);
-
-			tMoved += deltaMove;
-			nMoved += (deltaMove >= 0.1 * gain ? 1 : 0);
-			nMoved2 += (deltaMove >= 0.1 ? 1 : 0);
+	protected int performMove()
+	{
+		int nMoved = 0;
+		Double deltaMove;
+		/*
+		 * Compute movement, deltaMove is relative movement.
+		 */
+		for ( SpecialisedAgent agent : agentList )
+		{
+			deltaMove = agent.interact(MUTUAL);
+			nMoved += (deltaMove >= 0.1  ? 1 : 0);
 		}
-
-
-		if (!isSynchro)
-			return nMoved2;
-
-		for (agentIter = agentList.listIterator(); agentIter.hasNext();) {
-			// Compute movement, deltaMove is relative movement
-			anAgent = agentIter.next();
-			deltaMove = anAgent.move();
-
-			tMoved += deltaMove;
-			nMoved += (deltaMove >= 0.1 * gain ? 1 : 0);
-			nMoved2 += (deltaMove >= 0.1 ? 1 : 0);
-
-			if (anAgent.isDead){
-				anAgent.death = "invalidMove";
-				//_agentToKill.add(anAgent);
-				//sonia 26.04.2010
-				//added agentList.remove(anAgent);
-				//agentList.remove(anAgent);
-			}
-		}
-		//sonia 26.04.2010
-		//commented out removeAllDead()
-		//removeAllDead();
-		return nMoved2;
+		return nMoved;
 	}
 
 
 	/**
 	 * \brief Refresh the space occupation map as agents may have moved
 	 * 
-	 * Refresh the space occupation map as agents may have moved. Each grid square has a status: -1:outside, 0:carrier,1:biofilm, 
-	 * 2:liquid, 3:bulk
+	 * Each grid square has a status:
+	 * -1 outside
+	 * 0  carrier
+	 * 1  biofilm 
+	 * 2  liquid 
+	 * 3  bulk
 	 */
-	protected void refreshGroupStatus() {
-		for (int index = 0; index < _nTotal; index++)
-			_grid[index].refreshElement();
+	protected void refreshGroupStatus()
+	{
+		for ( LocatedGroup aLG : _grid )
+			aLG.refreshElement();
 	}
 
 	/**
@@ -634,32 +589,34 @@ public class AgentContainer
 	 * @param range	maximal range to screen for shoving agents
 	 * @param nbList: the list of located agents
 	 */
-	public void getPotentialShovers(int index, double range,
-			LinkedList<LocatedAgent> nbList) {
+	public void getPotentialShovers(int index, Double range,
+											LinkedList<LocatedAgent> nbList)
+	{
 		LocatedGroup aGroup;
 		int radius = Math.max(1, (int) Math.floor(range / this._res));
-
 		nbList.clear();
-
-		for (int i = -radius; i <= radius; i++) {
-			if (_grid[index].moveX(i) == null)
+		for (int i = -radius; i <= radius; i++)
+		{
+			if ( _grid[index].moveX(i) == null )
 				continue;
-			for (int j = -radius; j <= radius; j++) {
-
-				if (!is3D) {
-					aGroup = _grid[index].moveX(i).moveY(j);
-
-					if (aGroup != null)
-						nbList.addAll(aGroup.group);
-
-				} else {
+			for (int j = -radius; j <= radius; j++)
+			{
+				if ( is3D )
+				{
 					if (_grid[index].moveX(i).moveY(j) == null)
 						continue;
-					for (int k = -radius; k <= radius; k++) {
+					for (int k = -radius; k <= radius; k++)
+					{
 						aGroup = _grid[index].moveX(i).moveY(j).moveZ(k);
-						if (aGroup != null)
+						if ( aGroup != null )
 							nbList.addAll(aGroup.group);
 					}
+				}
+				else
+				{
+					aGroup = _grid[index].moveX(i).moveY(j);
+					if ( aGroup != null )
+						nbList.addAll(aGroup.group);
 				}
 			}
 		}
@@ -668,227 +625,222 @@ public class AgentContainer
 	/* ________________ TOOLS:GRID, MAP & TREE MANAGEMENT __________________ */
 
 	/**
-	 * \brief Registers the birth of an agent and adds this to the agent grid
+	 * \brief Registers the birth of an agent and adds this to the agent grid.
 	 * 
-	 * Registers the birth of an agent and adds this to the agent grid
-	 * 
-	 * @param anAgent	New agent to add to the agent grid
+	 * @param anAgent	New agent to add to the agent grid.
 	 */
 	public void registerBirth(SpecialisedAgent anAgent) 
 	{
 		// Add the agent to agentList
-		agentIter.add(anAgent);
+		agentList.add(anAgent);
 
 		// Add the agent on the grid
-		if (anAgent instanceof LocatedAgent) {
+		if (anAgent instanceof LocatedAgent)
+		{
 			LocatedAgent aLoc = (LocatedAgent) anAgent;
-			try {
-				if(Simulator.isChemostat){
+			try
+			{
+				if ( Simulator.isChemostat )
 					_grid[0].add(aLoc);
-				}else{
-					int index = getIndexedPosition(aLoc.getLocation());
-					if (!Double.isNaN(index))
-						_grid[index].add(aLoc);
-				}
-			} catch (Exception e) {
-				LogFile.writeLog("Error:Failed to add an agent on the grid");
+				else
+					_grid[getIndexedPosition(aLoc.getLocation())].add(aLoc);
+			}
+			catch (Exception e)
+			{
+				LogFile.writeError(e, "AgentContainer.registerBirth()");
 			}
 		}
 
 	}
 
 	/**
-	 * \brief Register the death of an agent, by adding it to a list of agents that will be removed from the simulation
+	 * \brief Register the death of an agent, by adding it to a list of agents
+	 * that will be removed from the simulation.
 	 * 
-	 * Register the death of an agent, by adding it to a list of agents that will be removed from the simulation
-	 * 
-	 * @param anAgent	SpecialisedAgent object that will be removed from the simulation
+	 * @param anAgent	SpecialisedAgent object that will be removed from the
+	 * simulation.
 	 */
 	public void registerDeath(SpecialisedAgent anAgent) 
 	{
-		if(!_agentToKill.contains(anAgent))
+		if ( ! _agentToKill.contains(anAgent) )
 			_agentToKill.add(anAgent);
-
 	}
 
 	/**
-	 * \brief Iterates through the _agentToKill list and removes these agents from the grid. Returns the number of dead cells removed
+	 * \brief Iterates through the _agentToKill list and removes these agents
+	 * from the grid. 
 	 * 
-	 * Iterates through the _agentToKill list and removes these agents from the grid. These cells should be assumed to be dead
+	 * These cells should be assumed to be dead. Returns the number of dead
+	 * cells removed.
 	 * 
-	 * @return	Number of dead cells removed from the simulation
+	 * @return	Number of dead cells removed from the simulation.
 	 */
-	public int removeAllDead() {
+	public int removeAllDead()
+	{
 		int nDead = 0;
-
 		ListIterator<SpecialisedAgent> iter = _agentToKill.listIterator();
 		SpecialisedAgent anAgent;
 
-		while (iter.hasNext()) {
+		while (iter.hasNext())
+		{
 			anAgent = iter.next();
-			if (anAgent.isDead) {
+			if (anAgent.isDead)
+			{
 				nDead++;
 				iter.remove();
 				agentList.remove(anAgent);
 				removeLocated(anAgent);
 			}
 		}
-
+		
+		/* TODO Rob 13Mar2015: Started tidying up this.
+		for ( SpecialisedAgent aSA : _agentToKill )
+		{
+			if ( ! aSA.isDead )
+			{
+				_agentToKill.remove(aSA);
+				continue;
+			}
+			removeLocated(aSA);
+		}
+		
+		nDead = _agentToKill.size();
+		agentList.removeAll(_agentToKill);
+		*/
+		
 		_agentToKill.clear();
 		return nDead;
 	}
 
 	/**
-	 * \brief Removes a number of agents from the system according to the dilution set for the chemostat.
+	 * \brief Removes a number of agents from the system according to the
+	 * dilution set for the chemostat.
 	 * 
-	 * Removes a number of agents from the system according to the dilution set for the chemostat. The global time step should be set 
-	 * to 0.10*(1/D) so that around 10% of the agents will be removed from the system in each iteration. Remember, agents stand for all 
-	 * type of particles that can be removed (aka deleted) from the system, from bacteria to eps.
+	 * The global time step should be set to 0.10*(1/D) so that around 10% of
+	 * the agents will be removed from the system in each iteration. Remember,
+	 * agents stand for all type of particles that can be removed (i.e.
+	 * deleted) from the system, from bacteria to EPS.
 	 *
-	 * @param agentTimeStep - this should be the same as the global timeStep or lower
+	 * @param agentTimeStep - this should be the same as the global timeStep
+	 * or lower.
 	 */
-	public void agentFlushedAway(double agentTimeStep){
-
-		// after having shuffled the list (during the step()) with all the agents we are now ready to kill
-		// agents according to the dilution value read from the Bulk class
-
-		//sonia:2.03.2010 Just in case, let's do it again
-		Collections.shuffle(agentList, ExtraMath.random);
-
-		//double randNum;
-
-		for (AllBC aBC : domain.getAllBoundaries()){
-			if (aBC.hasBulk()){
-				Bulk aBulk = aBC.getBulk();
-				if(aBulk.getName().equals("chemostat")){
-					Dfactor = aBulk._D;
-				}
-			}
-		}
+	public void agentFlushedAway(Double agentTimeStep)
+	{
+		/*
+		 * After having shuffled the list (during the step()) with all the
+		 * agents we are now ready to kill agents according to the dilution
+		 * value read from the Bulk class.
+		 */
+		Dfactor = domain.getChemostat()._D;
 		
-		// Rob 9/6/11: simplified and removed any effects which might be caused by rounding
-		// agentsToDilute =  Math.round(Dfactor*(agentTimeStep)* agentList.size());
-		// pDying = agentsToDilute / agentList.size();
-		// pDying = Dfactor*agentTimeStep;
-		//
-		// for ( int i=0; i< agentList.size(); i++){
-		// 		randNum = ExtraMath.getUniRand();
-		// 		if(randNum < pDying){
-		// 			agentList.get(i).isDead = true;
-		// 			agentList.get(i).death = "dilution";
-		// 			agentList.get(i).die(false);
-		// 			dead ++;
-		// 		}
-		// }
 		int agentsToDilute = 0;
-		if (EROSIONMETHOD){
-			// agentsToDilute = (int) Math.round(Dfactor*agentTimeStep*agentList.size());
-			// Rob 08/02/2012: Instead of simply rounding, we now use the non-integer part in a
-			// stochastic way. This means that washout of populations is possible when using a
-			// rate and an agent time-step whose product is less than 0.5
-			// double temp = Dfactor*agentTimeStep*agentList.size();
-			// if (Math.floor(temp) + Math.random() < temp)
-			// agentsToDilute = (int) Math.floor(temp);
-			// else
-			// agentsToDilute = (int) Math.ceil(temp);			
-			// Rob 13/09/2012: this method is now changed t@param aSim	The simulation object used to simulate the conditions specified in the protocol fileo include a running tally of the non-integer
-			// remainder (as in removeOnBorder in biofilms)
-			double temp = Dfactor*agentTimeStep*agentList.size() + tallyVariable;
-			agentsToDilute = (int) Math.floor(temp);
-			tallyVariable = temp%1;
-			
-		} else{
-			// Rob 28/11/2011: Added this so we can keep the population at or below 1000
-			// EROSIONMETHOD is normally used to decide between biofilm functions so this shouldn't be a problem
+		if (EROSIONMETHOD)
+		{
+			Double temp = Dfactor*agentTimeStep*agentList.size() + tallyVariable;
+			agentsToDilute = temp.intValue();
+			tallyVariable = temp % 1;
+		}
+		else
+		{
+			/*
+			 * Rob 28/11/2011: Added this so we can keep the population at or
+			 * below 1000. EROSIONMETHOD is normally used to decide between
+			 * biofilm functions so this shouldn't be a problem.
+			 * 
+			 * TODO Rob 16Mar2015: Make more robust.
+			 */
 			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
 		
-		for (int i=0; i<agentsToDilute; i++){
-			agentList.get(i).isDead = true;
-			agentList.get(i).death = "dilution";
-			agentList.get(i).die(false);
+		for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
+		{
+			anAgent.isDead = true;
+			anAgent.death = "dilution";
+			anAgent.die(false);
 		}
-
-		SpecialisedAgent anAgent;
-		agentIter = agentList.listIterator();
-
-		while(agentIter.hasNext()){
-			anAgent = agentIter.next();
-			if(anAgent.isDead){
-				agentIter.remove();
+		
+		// TODO Rob 13Mar2015: Simplify? agentList.removeAll(_agentToKill);
+		for ( SpecialisedAgent anAgent : agentList )
+			if ( anAgent.isDead )
 				agentList.remove(anAgent);
-			}
-		}
-
-
 	}
-
+	
 	/**
-	 * \brief Remove an agent from the grid
+	 * \brief Remove an agent from the grid.
 	 * 
-	 * Remove an agent from the grid
-	 * 
-	 * @param anAgent	Agent to be removed from the grid
+	 * @param anAgent	Agent to be removed from the grid.
 	 */
-	public void removeLocated(SpecialisedAgent anAgent) {
-		if (anAgent instanceof LocatedAgent) {
+	public void removeLocated(SpecialisedAgent anAgent)
+	{
+		if (anAgent instanceof LocatedAgent)
+		{
 			LocatedAgent aLoc = (LocatedAgent) anAgent;
 			int index = getIndexedPosition(aLoc.getLocation());
-			if (!Double.isNaN(index))
+			if ( ! Double.isNaN(index) )
 				_grid[index].remove(aLoc);
 		}
 	}
-
+	
 	/**
-	 * \brief Update the position of the agent on the agent grid
+	 * \brief Update the position of the agent on the agent grid.
 	 * 
-	 * Update the position of the agent on the agent grid. The agent may have moved due to shoving, pushing, or growth
+	 * The agent may have moved due to shoving, pushing, or growth.
 	 * 
-	 * @param anAgent	Agent that has moved and needs the location updated
+	 * @param anAgent	Agent that has moved and needs the location updated.
 	 */
-	public void registerMove(LocatedAgent anAgent) {
-		// Compute the theoretical index on the agentGrid
+	public void registerMove(LocatedAgent anAgent)
+	{
+		/*
+		 * Compute the theoretical index on the agentGrid
+		 */
 		int newIndex = getIndexedPosition(anAgent.getLocation());
 		int oldIndex = anAgent.getGridIndex();
-
-		// If gridIndex has changed, update the references
-		if (isValid(anAgent.getLocation())) {
-			if (newIndex != oldIndex) {
+		/*
+		 * If gridIndex has changed, update the references.
+		 */
+		LogFile.writeLogDebug("Debugging AgentContainer.registerMove()");
+		if ( isValid(anAgent.getLocation()) )
+		{
+			LogFile.writeLogDebug("Agent location "+
+								anAgent.getLocation().toString()+"is valid");
+			if ( newIndex != oldIndex )
+			{
 				_grid[oldIndex].remove(anAgent);
 				_grid[newIndex].add(anAgent);
 				anAgent.setGridIndex(newIndex);
 			}
-		} else {
-			utils.LogFile.writeLog("Agent location is not valid -> Killed");
+		}
+		else
+		{
+			LogFile.writeLogDebug("Agent location "+
+				anAgent.getLocation().toString()+" is not valid -> Killed");
 			//anAgent.death = "overBoard";
 			anAgent.die(false);
 		}
 	}
-
+	
 	/**
-	 * \brief Iterates through each square of the agent grid to calculate total biomass in that grid space, storing this on the supplied biomass grid
+	 * \brief Iterates through each square of the agent grid to calculate
+	 * total biomass in that grid space, storing this on the supplied biomass
+	 * grid.
 	 * 
-	 * Iterates through each square of the agent grid to calculate total biomass in that grid space, storing this on the supplied biomass grid
-	 * 
-	 * @param biomassGrid	The biomass grid that will contain the total biomass in each grid square of the agent grid
+	 * @param biomassGrid	The biomass grid that will contain the total
+	 * biomass in each grid square of the agent grid.
 	 */
 	public void fitAgentMassOnGrid(SpatialGrid biomassGrid) 
 	{
-		for (int i = 0; i < _nTotal; i++) 
-		{
-			for (LocatedAgent aLoc : _grid[i].group) 
-			{
+		for ( LocatedGroup aSquare : _grid )
+			for ( LocatedAgent aLoc : aSquare.group )
 				aLoc.fitMassOnGrid(biomassGrid);
-			}
-		}
 	}
 
 	/**
-	 * \brief Iterates through each square of the agent grid to calculate total volume in that grid space, storing this on the supplied biomass grid
+	 * \brief Iterates through each square of the agent grid to calculate
+	 * total volume in that grid space, storing this on the supplied biomass
+	 * grid.
 	 * 
-	 * Iterates through each square of the agent grid to calculate total volume in that grid space, storing this on the supplied biomass grid
-	 * 
-	 * @param biomassGrid	The biomass grid that will contain the total volume in each grid square of the agent grid
+	 * @param biomassGrid	The biomass grid that will contain the total
+	 * volume in each grid square of the agent grid.
 	 */
 	public void fitAgentVolumeRateOnGrid(SpatialGrid biomassGrid)
 	{
@@ -903,14 +855,15 @@ public class AgentContainer
 	/* ____________________ REPORT FILE EDITION__________________________ */
 
 	/**
-	 * \brief Summarise the agents in this container in simulation output, the form of a total biomass grid
+	 * \brief Summarize the agents in this container in simulation output, the
+	 * form of a total biomass grid.
 	 * 
-	 * Summarise the agents in this container in simulation output, the form of a total biomass grid
-	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferState	The agent_state result file output buffer
-	 * @param bufferSum	The agent_sum result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferState	The agent_state result file output buffer.
+	 * @param bufferSum	The agent_sum result file output buffer.
+	 * @throws Exception	Exception thrown if there are issues writing to
+	 * these buffers.
 	 */
 	public void writeGrids(Simulator aSim, ResultFile bufferState,
 									ResultFile bufferSum) throws Exception
@@ -923,22 +876,20 @@ public class AgentContainer
 		// Refresh the space occupation map (0:carrier,1:biofilm or 2:liquid)
 		for (LocatedGroup aGroup : _grid)
 			aGroup.refreshElement();
-
-
+		
 		/* Build a grid of biomass concentration */
-
+		
 		// Set existing grid to zero
 		for (SpatialGrid aSpeciesGrid : _speciesGrid)
 			aSpeciesGrid.resetToZero();
-
+		
 		// Sum biomass concentrations
-		for (SpecialisedAgent anA : agentList) {
-			if (anA instanceof LocatedAgent) {
+		for (SpecialisedAgent anA : agentList)
+			if (anA instanceof LocatedAgent)
+			{
 				aLoc = (LocatedAgent) anA;
 				aLoc.fitMassOnGrid(_speciesGrid[aLoc.speciesIndex]);
-
 			}
-		}
 
 		// now output the biomass values
 		for (SpatialGrid aSpeciesGrid : _speciesGrid)
@@ -946,56 +897,76 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Write simulation output to XML files, summarising information for each species and plasmid on the agent grid
+	 * \brief Write simulation output to XML files, summarizing information
+	 * for each species and plasmid on the agent grid.
 	 * 
-	 * Write simulation output to XML files, summarising information for each species and plasmid on the agent grid. These files are 
-	 * written out as agent_state([simulation step number]).XML and agent_sum([simulation step number]).XML
+	 * These files are written out as
+	 * agent_state([simulation step number]).xml and
+	 * agent_sum([simulation step number]).xml
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferState	The agent_state result file output buffer
-	 * @param bufferSum	The agent_sum result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferState	The agent_state result file output buffer.
+	 * @param bufferSum	The agent_sum result file output buffer.
+	 * @throws Exception	Exception thrown if there are issues writing to
+	 * these buffers.
 	 */
 	public void writeReport(Simulator aSim, ResultFile bufferState,
-													ResultFile bufferSum) throws Exception
+										ResultFile bufferSum) throws Exception
 	{
-		// This will be our general-purpose buffer.
+		/*
+		 * This will be our general-purpose buffer.
+		 */
 		StringBuffer textBuffer = new StringBuffer();
-		
-		// Get the number of species in this simulation.
+		/*
+		 * Get the number of species in this simulation.
+		 */
 		int nSpecies = aSim.speciesList.size();
-		// Set up a buffer to hold information for each agent of these species.
+		/*
+		 * Set up a buffer to hold information for each agent of these
+		 * species.
+		 */
 		StringBuffer[] speciesBuffer = new StringBuffer[nSpecies];
-		
-		// Include information about the shoving grid.
+		/*
+		 * Include information about the shoving grid.
+		 */
 		textBuffer = writeGridInformation(textBuffer);
-		
-		// Include the information about the environment status at the
-		// beginning of the agent_State and agent_Sum files.
-		if (Simulator.isFluctEnv)
+		/*
+		 * Include the information about the environment status at the
+		 * beginning of the agent_State and agent_Sum files.
+		 */
+		if ( Simulator.isFluctEnv )
 			textBuffer = writeFluctEnvInformation(textBuffer);
-		
-		// Write the header to the agent_State and agent_Sum buffers.
+		/*
+		 * Write the header to the agent_State and agent_Sum buffers.
+		 */
 		bufferState.write(textBuffer);
 		bufferSum.write(textBuffer);
-		
-		// Initialise a Species markup for each present species
+		/*
+		 * Initialise a Species markup for each present species
+		 */
 		for (Species aSpec : aSim.speciesList)
 		{
 			textBuffer  = new StringBuffer();
-			// First part, the species name.
+			/*
+			 * First part, the species name.
+			 */
 			textBuffer.append("<species name=\"");
 			textBuffer.append(aSpec.speciesName);
-			// Now create the header. Note that this information comes from the
-			// species itself - its part of the agent and the inherited classes.
-			// So if we are going to change that, it gets changed there.
+			/*
+			 * Now create the header. Note that this information comes from
+			 * the species itself - its part of the agent and the inherited
+			 * classes. So if we are going to change that, it gets changed
+			 * there.
+			 */
 			textBuffer.append("\" header=\"");
 			textBuffer.append(aSpec.getProgenitor().sendHeader());
 			textBuffer.append("\" >\n");
 			speciesBuffer[aSpec.speciesIndex] = textBuffer;
 		}
-		
-		// Initialise statistics (population total mass, growth-rate)
+		/*
+		 *  Initialise statistics (population total mass, growth-rate).
+		 */
 		int[] spPop = new int[nSpecies];
 		Double[] spMass = ExtraMath.newDoubleArray(nSpecies);
 		Double[] spGrowth = ExtraMath.newDoubleArray(nSpecies);
@@ -1084,7 +1055,7 @@ public class AgentContainer
  			
  			textBuffer.append(spPop[spIndex]).append(",");
  			textBuffer.append(spMass[spIndex]).append(",");
- 			textBuffer.append(spGrowth[spIndex]).append(",");
+ 			textBuffer.append(spGrowth[spIndex]);
  			
  			/*<----HGT Sonia begin---->*/
  			if(Simulator.multiEpi)
@@ -1104,65 +1075,87 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Output information on agents that have been removed from the simulation. Will enable investigators to find out why this is the case
+	 * \brief Output information on agents that have been removed from the
+	 * simulation.
 	 * 
-	 * Output information on agents that have been removed from the simulation. Will enable investigators to find out why this is the case
+	 * Will enable investigators to find out why this is the case.
 	 * 
-	 * @param aSim	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param bufferStateDeath	The agent_state_death result file output buffer
-	 * @param bufferSumDeath	The agent_sum_death result file output buffer
-	 * @throws Exception	Exception thrown if there are issues writing to these buffers
+	 * @param aSim	The simulation object used to simulate the conditions
+	 * specified in the protocol file.
+	 * @param bufferStateDeath	The agent_state_death result file output
+	 * buffer.
+	 * @param bufferSumDeath	The agent_sum_death result file output buffer.
+	 * @throws Exception	Exception thrown if there are issues writing to
+	 * these buffers.
 	 */
 	public void writeReportDeath(Simulator aSim, ResultFile bufferStateDeath,
-										ResultFile bufferSumDeath) throws Exception 
+								ResultFile bufferSumDeath) throws Exception
 	{
-		// Status message to screen (not in quiet mode)
-		if ( !Idynomics.quietMode )
-			System.out.println("size of agentToKill list at beginning of the writeReportDeath: "
-														+ _agentToKill.size());
-		
-		// This will be our general-purpose buffer.
+		/*
+		 * Status message to screen (not in quiet mode)
+		 */
+		LogFile.writeLog("size of agentToKill list at beginning of the"+
+								"writeReportDeath: "+ _agentToKill.size());
+		/*
+		 * This will be our general-purpose buffer.
+		 */
 		StringBuffer textBuffer = new StringBuffer();
-		
-		// Get the number of species in this simulation.
+		/*
+		 * Get the number of species in this simulation.
+		 */
 		int nSpecies = aSim.speciesList.size();
-		// Set up a buffer to hold information for each agent of these species.
+		/*
+		 * Set up a buffer to hold information for each agent of these
+		 * species.
+		 */
 		StringBuffer[] speciesBuffer = new StringBuffer[nSpecies];
-		
-		
-		// Include information about the shoving grid.
+		/*
+		 *  Include information about the shoving grid.
+		 */
 		textBuffer = writeGridInformation(textBuffer);
-		
-		// Include the information about the environment status at the
-		// beginning of the agent_StateDeath and agent_SumDeath files.
-		if (Simulator.isFluctEnv)
+		/*
+		 * Include the information about the environment status at the
+		 * beginning of the agent_StateDeath and agent_SumDeath files.
+		 */
+		if ( Simulator.isFluctEnv )
 			textBuffer = writeFluctEnvInformation(textBuffer);
-		
-		// Write the header to the agent_StateDeath and agent_SumDeath buffers.
+		/*
+		 * Write the header to the agent_StateDeath and agent_SumDeath
+		 * buffers.
+		 */
 		bufferStateDeath.write(textBuffer);
 		bufferSumDeath.write(textBuffer);
-		
-		// Initialise a Species markup for each present species
+		/*
+		 * Initialise a Species markup for each present species
+		 */
 		for (Species aSpec : aSim.speciesList)
 		{
 			textBuffer  = new StringBuffer();
-			// First part, the species name.
+			/*
+			 * First part, the species name.
+			 */
 			textBuffer.append("<species name=\"");
 			textBuffer.append(aSpec.speciesName);
-			// Now create the header. Note that this information comes from the
-			// species itself - its part of the agent and the inherited classes.
-			// So if we are going to change that, it gets changed there.
+			/*
+			 * Now create the header. Note that this information comes from
+			 * the species itself - its part of the agent and the inherited
+			 * classes. So if we are going to change that, it gets changed
+			 * there.
+			 */
 			textBuffer.append("\" header=\"");
 			textBuffer.append(aSpec.getProgenitor().sendHeader());
-			// Now we can add additional fields if these are not declared by
-			// the agent itself. In this case, we're going to add a reason
-			// for the agent's death.
+			/*
+			 * Now we can add additional fields if these are not declared by
+			 * the agent itself. In this case, we're going to add a reason
+			 * for the agent's death.
+			 */
 			textBuffer.append(",death");
 			textBuffer.append("\" >\n");
 			speciesBuffer[aSpec.speciesIndex] = textBuffer;
 		}
-		
-		// Initialise statistics (population total mass, growth-rate)
+		/*
+		 * Initialise statistics (population total mass, growth-rate).
+		 */
 		int[] spPop = new int[nSpecies];
 		Double[] spMass = ExtraMath.newDoubleArray(nSpecies);
 		Double[] spGrowth = ExtraMath.newDoubleArray(nSpecies);
@@ -1175,11 +1168,11 @@ public class AgentContainer
 		int[] spConjugEvents = new int[nSpecies];
 		int[][] spPlasmidTypes = new int [nSpecies][plasmidListSize];
 		/* <----- HGT Stats End ----> */
-		
-		// Collate the information for the agent_StateDeath file.
+		/*
+		 * Collate the information for the agent_StateDeath file.
+		 */
 		LocatedAgent aLoc;
   		MultiEpiBac anEpiBac;
-  		
   		int spIndex;
   		for (SpecialisedAgent anAgent : _agentToKill)
   		{
@@ -1264,12 +1257,12 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Writes information on the shoving grid to the output string specified
+	 * \brief Writes information on the shoving grid to the output string
+	 * specified.
 	 * 
-	 * Writes information on the shoving grid to the output string specified
-	 * 
-	 * @param outputString	String that will be output in the result file
-	 * @return	String with information about the grid (resolution and size in I,J,K directions)
+	 * @param outputString	String that will be output in the result file.
+	 * @return	String with information about the grid (resolution and size in
+	 * I, J, K directions).
 	 */
 	public StringBuffer writeGridInformation(StringBuffer outputString)
 	{
@@ -1284,11 +1277,11 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Writes information on the environment to the result files if this is a fluctenv simulation
+	 * \brief Writes information on the environment to the result files if
+	 * this is a fluctenv simulation.
 	 * 
-	 * Writes information on the environment to the result files if this is a fluctenv simulation
-	 * 
-	 * @return	Stringbuffer with information about the environment for writing to the output file
+	 * @return	StringBuffer with information about the environment for
+	 * writing to the output file.
 	 */
 	public StringBuffer writeFluctEnvInformation(StringBuffer outputString)
 	{
@@ -1299,21 +1292,22 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Checks the grid size, dependent on whether this is a biofilm or chemostat simulation, and sets suitable dimensions
+	 * \brief Checks the grid size, dependent on whether this is a biofilm or
+	 * chemostat simulation, and sets suitable dimensions.
 	 * 
-	 * Checks the grid size, dependent on whether this is a biofilm or chemostat simulation, and sets suitable dimensions
-	 * 
-	 * @param aSimulator	The simulation object used to simulate the conditions specified in the protocol file
-	 * @param root	The agentGrid markup from the XML file
+	 * @param aSimulator	The simulation object used to simulate the
+	 * conditions specified in the protocol file.
+	 * @param root	The agentGrid markup from the XML file.
 	 */
 	public void checkGridSize(Simulator aSimulator, XMLParser root) 
 	{
-		// Read in the grid resolution from the XML protocol file
-		// TODO RC - Why are we reading in the resolution from the xml root,
-		// only to overwrite it with info from the domain?!
+		/*
+		 * Read in the grid resolution from the XML protocol file.
+		 * TODO RC - Why are we reading in the resolution from the xml root,
+		 * only to overwrite it with info from the domain?!
+		 */
 		_res = root.getParamDbl("resolution");
-
-		if(Simulator.isChemostat)
+		if ( Simulator.isChemostat )
 		{
 			//set the resolution to the resolution of the domain
 			_res = domain._resolution;
@@ -1330,7 +1324,7 @@ public class AgentContainer
 			_nJ = (int) Math.ceil(domain.length_Y / _res);
 			
 			// Now determine if dealing with a 3D environment
-			if (domain.is3D()) 
+			if ( domain.is3D() ) 
 			{
 				_nK = (int) Math.ceil(domain.length_Z / _res);
 				is3D = true;
@@ -1360,45 +1354,49 @@ public class AgentContainer
 				// Code for grid without padding - turn on again when this is investigated further
 				// Now work out _Total without the addition of padding in the Z, which is not necessary and should save space
 				//_nTotal  = (_nI + 2) * (_nJ + 2);
-				
-				
 			}
 		}
-
-		
 	}
 
 	/**
-	 * \brief Creates the shoving grid, padded of LocatedGroups
+	 * \brief Creates the shoving grid, padded of LocatedGroups.
 	 * 
-	 * Create a vectorized array of spatial groups, build their neighbourhood and store it 
-	 * Note :Shoving grid is a padded of LocatedGroups
+	 * Create a vectorized array of spatial groups, build their neighbourhood
+	 * and store it. Note: Shoving grid is a padded of LocatedGroups.
 	 * 
-	 * @param aSimulator	The current simulation object that is recreating the conditions specified in the protocol file
+	 * @param aSimulator	The current simulation object that is recreating
+	 * the conditions specified in the protocol file.
 	 */
 	public void createShovGrid(Simulator aSimulator) 
 	{
 		_grid = new LocatedGroup[_nTotal];	
 		for (int index = 0; index < _nTotal; index++)
 			_grid[index] = new LocatedGroup(index, this, aSimulator);
-
-		for (int index = 0; index < _nTotal; index++){
-			_grid[index].init();}
+		for ( LocatedGroup lg : _grid )
+			lg.init();
+		/*
+		LogFile.writeLogDebug("Debugging Agentcontainer.createShovGrid");
+		for ( LocatedGroup lg : _grid )
+			lg.countNullNeighbours();
+		*/
 	}
 
 	/**
-	 * \brief Creates the output species and erosion grids
+	 * \brief Creates the output species and erosion grids.
 	 * 
-	 * Creates the output species and erosion grids. There is one erosion grid, but one grid for each species in the simulation
+	 * There is one erosion grid, but one grid for each species in the
+	 * simulation.
 	 * 
-	 * @param aSim	The current simulation object that is recreating the conditions specified in the protocol file
+	 * @param aSim	The current simulation object that is recreating the
+	 * conditions specified in the protocol file.
 	 */
 	public void createOutputGrid(Simulator aSim) 
 	{
-		_erosionGrid = new double[_nI + 2][_nJ + 2][_nK + 2];
+		_erosionGrid = ExtraMath.newDoubleArray(_nI + 2, _nJ + 2, _nK + 2);
 		_speciesGrid = new SpatialGrid[aSim.speciesList.size()];
-		
-		// Create a grid for each species in the simulation
+		/*
+		 * Create a grid for each species in the simulation
+		 */
 		for (Species aSpecies : aSim.speciesList)
 		{
 			_speciesGrid[aSpecies.speciesIndex] =
@@ -1406,30 +1404,30 @@ public class AgentContainer
 		}
 	}
 
-	/* _____________________ EROSION & DETACHMENT ___________________________ */
+	/* ____________________ EROSION & DETACHMENT __________________________ */
 
 	/**
-	 * \brief Perform connected volume filtration (connected to bottom) to determine which agents should be marked for sloughing
-	 * 
-	 *  Perform connected volume filtration (connected to bottom) to determine which agents should be marked for sloughing
+	 * \brief Perform connected volume filtration (connected to bottom) to
+	 * determine which agents should be marked for sloughing.
 	 */
 	protected void markForSloughing()
 	{ 
-		// (cvf is true for connected elements, and false for non-connected)
-		boolean[] cvf = (new ConnectedVolume(_nI, _nJ, _nK)).computeCvf(_grid);
-
+		/*
+		 * cvf is true for connected elements, and false for non-connected.
+		 */
+		Boolean[] cvf = (new ConnectedVolume(_nI, _nJ, _nK)).computeCvf(_grid);
 		int numRemoved = 0;
 		Double massRemoved = 0.0;
-
-
-		// Mark as detachable all particles in non-valid map positions.
+		/*
+		 * Mark as detachable all particles in non-valid map positions.
+		 */
 		for (int index = 0; index < _nTotal; index++)
 			// If it's not connected, remove the agents.
 			if ( ! cvf[index] && _grid[index].totalMass > 0 )
 			{
 				numRemoved += _grid[index].group.size();
 				massRemoved += _grid[index].totalMass;
-				_grid[index].killAll();
+				_grid[index].killAll("detachment");
 			}
 
 		LogFile.writeLog("Sloughing " + numRemoved + " ("
@@ -1492,7 +1490,8 @@ public class AgentContainer
 	 * @param location
 	 * @return
 	 */
-	private double detFunction(double i, double location) {
+	private Double detFunction(double i, double location)
+	{
 		if (i < 1.0)
 			return ExtraMath.sq(_res - (location % _res));
 		else
@@ -1500,63 +1499,75 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Performs the discrete removal of agents over the whole _close group together, instead of considering each Located Group seperately. 
+	 * \brief Performs the discrete removal of agents over the whole _close
+	 * group together, instead of considering each Located Group separately. 
 	 * 
-	 * Performs the discrete removal of agents over the whole _close group together, instead of considering each Located Group 
-	 * seperately. Note also that here tallyVariable is cumulative: whatever remains rolls over to the next time-step. This eliminates 
-	 * any timestep issues.
+	 * Note also that here tallyVariable is cumulative: whatever remains rolls
+	 * over to the next time-step. This eliminates time-step issues.
 	 * 
-	 * @param agentGrid	The agent grid
+	 * @param agentGrid	The agent grid.
 	 */
 	public void removeOnBorder(AgentContainer agentGrid) 
 	{
-		// Find the border points (erosion and sloughing have changed the
-		// configuration)
+		/*
+		 * Find the border points (erosion and sloughing may have changed the
+		 * configuration).
+		 */
 		_levelset.refreshBorder(true, mySim);
-
-		double mass = 0; // counter of mass so far removed
-		int nDetach = 0; // counter of agents removed
-		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>(); // List of agents to consider for removal
-		LocatedAgent detLoc; // the member of detGroup with the highest detPriority
-
-		// For groups on _close list
-		for (LocatedGroup aBorderElement : _levelset.getBorder()) {
-
-			// tally up tallyVariable, the approximate amount of mass to remove, by the ratio variable of each border element
-			aBorderElement.ratio = SimTimer.getCurrentTimeStep() / _grid[aBorderElement.gridIndex].erosionTime;
-			// i.e. ratio = (currentTimeStep * detachmentSpeed * numberFreeNeighbours)/(resolution)
-			aBorderElement.ratio = Math.min(aBorderElement.ratio, 1);
-			tallyVariable += aBorderElement.totalMass*aBorderElement.ratio;
-
-			// and add them to detGroup
-			for (LocatedAgent aLoc:aBorderElement.group) detGroup.add(aLoc);
-
+		// List of agents to consider for removal.
+		LinkedList<LocatedAgent> detGroup = new LinkedList<LocatedAgent>();
+		// For groups on _close list:
+		for (LocatedGroup borderElem : _levelset.getBorder())
+		{
+			/*
+			 * Tally up tallyVariable, the approximate amount of mass to
+			 * remove, by the ratio variable of each border element.
+			 */
+			borderElem.erosionRatio = SimTimer.getCurrentTimeStep() /
+								_grid[borderElem.gridIndex].erosionTime;
+			/*
+			 *  i.e. ratio =
+			 *  (currentTimeStep * detachmentSpeed * numberFreeNeighbours)/
+			 *  	(resolution)
+			 */
+			borderElem.erosionRatio = Math.min(borderElem.erosionRatio, 1.0);
+			tallyVariable += borderElem.totalMass * borderElem.erosionRatio;
+			// Add them to detGroup.
+			for ( LocatedAgent aLoc : borderElem.group )
+				detGroup.add(aLoc);
 		} // end of: for (LocatedGroup aBorderElement : _levelset.getBorder())
-
-		if (tallyVariable>Collections.min(detGroup, new LocatedAgent.totalMassComparator()).getTotalMass())  {
-
-			// For groups on _close list
-			for (LocatedGroup aBorderElement : _levelset.getBorder()) {
-				// calculate detPriority for all agents in the _close list
-				calcDetPriority(agentGrid, aBorderElement, aBorderElement.ratio);
-			}
-			
-			detLoc = Collections.max(detGroup, new LocatedAgent.detPriorityComparator());
-			while (detLoc.getTotalMass()<tallyVariable && detGroup.size()>0) {
-				// Remove agents one by one, in order of decreasing detPriority
-
-				detLoc = Collections.max(detGroup, new LocatedAgent.detPriorityComparator());
-				mass += detLoc.getTotalMass();
-				tallyVariable -= detLoc.getTotalMass();
-				detLoc.die(false);
-				detLoc.death = "detachment";
-				nDetach++;
-				detGroup.remove(detLoc);
-
-
-			} // end of if (2*tallyVariable>Collections.min(aBorderElement.group, new LocatedAgent....)
+		
+		/*
+		 * If the tally is smaller than the smallest agent, no point
+		 * calculating detachment priorities.
+		 */
+		Comparator<Object> comp = new LocatedAgent.totalMassComparator();
+		LocatedAgent aLoc = Collections.min(detGroup, comp);
+		if ( tallyVariable < aLoc.getTotalMass() )
+			return;
+		
+		// Counter of mass so far removed.
+		Double mass = 0.0;
+		// Counter of agents removed.
+		int nDetach = 0;
+		// Calculate detPriority for all agents in the _close list.
+		comp = new LocatedAgent.detPriorityComparator();
+		for (LocatedGroup borderElem : _levelset.getBorder() )
+			calcDetPriority(agentGrid, borderElem, borderElem.erosionRatio);
+		// aLoc is the most exposed cell.
+		aLoc = Collections.max(detGroup, comp);
+		while ( aLoc.getTotalMass() < tallyVariable && 
+				! detGroup.isEmpty())
+		{
+			// Remove agents 1 by 1, in order of decreasing detPriority.
+			aLoc = Collections.max(detGroup, comp);
+			mass += aLoc.getTotalMass();
+			tallyVariable -= aLoc.getTotalMass();
+			aLoc.die(false);
+			aLoc.death = "detachment";
+			nDetach++;
+			detGroup.remove(aLoc);
 		}
-
 		System.out.println("******************************REMOVE ON BORDER**************************************");
 		LogFile.writeLog("Eroding " + nDetach + " ("
 				+ ExtraMath.toString(mass, true) + "/"
@@ -1566,26 +1577,27 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Calculate detachment priorties
+	 * \brief Calculate detachment priorities.
 	 * 
-	 * Calculate detachment priorties
-	 * 
-	 * @param agentGrid	This agent grid of located agents
-	 * @param aBorderElement	Group of located agents that are on the border
-	 * @param ratio	Ratio value set for that LocatedGroup
+	 * @param agentGrid	This agent grid of located agents.
+	 * @param aBorderElement	Group of located agents that are on the border.
+	 * @param ratio	Ratio value set for that LocatedGroup.
 	 */
-	public void calcDetPriority(AgentContainer agentGrid, LocatedGroup aBorderElement, double ratio)
+	public void calcDetPriority(AgentContainer agentGrid,
+									LocatedGroup aBorderElement, Double ratio)
 	{
 		int i = 0;
-
 		// Reset all detPriority values to zero
 		for (LocatedAgent aLoc:aBorderElement.group)
 			aLoc.detPriority = 0.0;
-
-		// For each free neighbour run through the agents in our border element, 
-		// adding the square of the agent's proximity to that neighbour
-		// (i.e. distance from opposite neighbour) to its detPriority variable
-		for (i=0;i<3;i+=2){
+		/*
+		 * For each free neighbour run through the agents in our border
+		 * element, adding the square of the agent's proximity to that
+		 * neighbour (i.e. distance from opposite neighbour) to its
+		 * detPriority variable.
+		 */
+		for ( i=0; i < 3; i += 2)
+		{
 			// x-side
 			if (aBorderElement.nbhGroup[i][1][1].status==2) {
 				// LogFile.writeLog(aBorderElement.nbhGroup[i][1][1].dc+"is free");
@@ -1643,125 +1655,129 @@ public class AgentContainer
 	}
 
 	/**
-	 * \brief Check that the coordinates expressed in a ContinuousVector are defined on this grid (the grid is padded but dc uses shifted coordinates)
+	 * \brief Check that the coordinates expressed in a ContinuousVector are
+	 * defined on this grid.
 	 * 
-	 * Check that these coordinates expressed in a ContinuousVector are defined on this grid (the grid is padded but dc uses shifted coordinates)
+	 * The grid is padded but dc uses shifted coordinates.
 	 * 
-	 * @return Boolean stating whether or not the ContinuousVector are valid
+	 * @return Boolean stating whether or not the ContinuousVector are valid.
 	 */
-	public boolean isValid(ContinuousVector cC) {
+	public Boolean isValid(ContinuousVector cC)
+	{
 		return isValid(getGridPosition(cC));
 	}
 
 
 
 	/**
-	 * \brief Find the voxel a continuous coordinate lies in and return the index
+	 * \brief Find the voxel a continuous coordinate lies in and return the
+	 * index.
 	 * 
-	 * Find the voxel a continuous coordinate lies in and return the index
-	 * 
-	 * @param cc	the continuous coordinate to find the index for
-	 * @return index on the 1D (vectorized) array
+	 * @param position	The continuous coordinate to find the index for.
+	 * @return Index on the 1D (vectorized) array.
 	 */
-	public int getIndexedPosition(ContinuousVector cc) 
+	public int getIndexedPosition(ContinuousVector position) 
 	{
-
-		//sonia:chemostat
-		// to guarantee that the agents are effectively removed
-		if(Simulator.isChemostat){
+		if ( Simulator.isChemostat )
 			return 0;
-
-		}
 		else
 		{
-			// KA 050613 - changed when examining why Z was created with padding when using 2D - now calculates dependent on dimension
-			int i = (int) Math.floor(cc.x / _res) + 1;
-			int j = (int) Math.floor(cc.y / _res) + 1;
-			//System.out.println("I: "+i+" J: "+j+" _nI "+_nI+" NJ"+_nJ);
-			
-			// KA 260713 - to check for differences between 1.1 and 1.2, have put padding back into 2D sim
-			int k = (int) Math.floor(cc.z / _res) + 1;
+			//TODO Rob 13Mar2015: Check padding is being dealt with properly.
+			int i = (int) Math.floor(position.x / _res) + 1;
+			int j = (int) Math.floor(position.y / _res) + 1;
+			int k = (int) Math.floor(position.z / _res) + 1;
 			return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
+			/*
+			TODO Rob: started to unify all the ways of converting continuous
+			to discrete coordinates but ran into difficulties when values = 0
 			
-			// WITH BUG BETWEEN 1.1 AND 1.2 SUGGESTING THIS NEEDS FURTHER EXAMINING, PADDING PUT BACK IN TO 2D SIMULATIONS
-			// THIS CODE CAN BE RESTORED LATER WHEN THIS IS REEXAMINED
-			//if(is3D)
-			//{	
-				//int k = (int) Math.floor(cc.z / _res) + 1;
-				//return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
-			//}
-			//else
-			//{
-				//return i + j * (_nI + 2) + (_nI + 2);
-			//}
+			DiscreteVector dV = new DiscreteVector(position, _res);
+			return dV.i + dV.j*(_nI+2) + dV.k*(_nI+2)*(_nJ+2);
+			*/
 		}
 	}
 
 	/**
-	 * \brief Find the voxel a discrete vector coordinate lies in and return the index
+	 * \brief Find the voxel a discrete vector coordinate lies in and return
+	 * the index.
 	 * 
-	 * Find the voxel a discrete vector coordinate lies in and return the index
-	 * 
-	 * @param dc	the discrete vector coordinate to find the index for
-	 * @return index on the 1D (vectorized) array
+	 * @param coord	The discrete vector coordinate to find the index for.
+	 * @return Index on the 1D (vectorized) array.
 	 */
-	public int getIndexedPosition(DiscreteVector dc) {
-		int i = dc.i + 1;
-		int j = dc.j + 1;
-		int k = dc.k + 1;
+	public int getIndexedPosition(DiscreteVector coord)
+	{
+		int i = coord.i + 1;
+		int j = coord.j + 1;
+		int k = coord.k + 1;
 
 		return i + j * (_nI + 2) + k * (_nI + 2) * (_nJ + 2);
 	}
 
 	/**
-	 * \brief Takes a ContinuousVector as input (in microns) and returns a DiscreteVector expressing its location on the grid (in voxels) 
+	 * \brief Takes a ContinuousVector as input (in microns) and returns a
+	 * DiscreteVector expressing its location on the grid (in voxels). 
 	 * 
-	 * Takes a ContinuousVector as input (in microns) and returns a DiscreteVector expressing its location on the grid (in voxels)
+	 * TODO Rob 13Mar2015: Compare Spatialgrid.getDiscreteCoordinates()
 	 * 
-	 * @param cC	ContinuousVector that expresses an agent location (in microns)
-	 * @return	A discrete vector expressing the agents position in terms of the agent grid (voxels)
+	 * @param position	ContinuousVector that expresses an agent location.
+	 * @return	DiscreteVector expressing the agents position in terms of the
+	 * agent grid.
 	 */
-	public DiscreteVector getGridPosition(ContinuousVector cC) {
-		int i = (int) Math.floor(cC.x / _res);
-		int j = (int) Math.floor(cC.y / _res);
-		int k = (int) Math.floor(cC.z / _res);
+	public DiscreteVector getGridPosition(ContinuousVector position)
+	{
+		int i = (int) Math.floor(position.x / _res);
+		int j = (int) Math.floor(position.y / _res);
+		int k = (int) Math.floor(position.z / _res);
 
 		return new DiscreteVector(i, j, k);
 	}
 
 	/**
-	 * \brief Takes an voxel integer index and returns a DiscreteVector containing the X,Y, and Z coordinates of that voxel
-	 * 
-	 * Takes an voxel integer index and returns a DiscreteVector containing the X,Y, and Z coordinates of that voxel
+	 * \brief Takes an voxel integer index and returns a DiscreteVector
+	 * containing the X,Y, and Z coordinates of that voxel.
 	 *  
-	 * @param index	Integer index specifying a voxel grid space on the agent grid
-	 * @return	A discrete vector of the coordinates of this grid
+	 * @param index	Integer index specifying a voxel grid space on the agent
+	 * grid.
+	 * @return	A discrete vector of the coordinates of this grid.
 	 */
-	public DiscreteVector getGridPosition(int index) {
-		int k = (int) Math.floor(index / (_nI + 2) / (_nJ + 2));
-		int j = (int) Math.floor((index - k * ((_nI + 2) * (_nJ + 2)))
-				/ (_nI + 2));
-		int i = (int) Math.floor((index - (k * (_nI + 2) * (_nJ + 2)) - j
-				* (_nI + 2)));
-
-		return new DiscreteVector(i - 1, j - 1, k - 1);
+	public DiscreteVector getGridPosition(int index)
+	{
+		//LogFile.writeLogDebug("Debugging AgentContainer.getGridPosition");
+		// Remember here that "/" means integer division.
+		int i, j, k, num, div;
+		num = index;
+		div = (_nI + 2) * (_nJ + 2);
+		k = num / div;
+		num = num % div;
+		div = (_nI + 2);
+		j = num / div;
+		i = num % div;
+		// TODO Rob 13Mar2015: Check padding.
+		DiscreteVector out = new DiscreteVector(i - 1, j - 1, k - 1);
+		//LogFile.writeLogDebug("\tIndex "+index+" -> "+out.toString());
+		return out;
 	}
 
 	/**
-	 * \brief Takes an voxel integer index and returns a ContinuousVector containing the X,Y, and Z coordinates of the centre of that voxel
+	 * \brief Takes an voxel integer index and returns a ContinuousVector
+	 * containing the X, Y, and Z coordinates of the centre of that voxel.
 	 * 
-	 * Takes an voxel integer index and returns a ContinuousVector containing the X,Y, and Z coordinates of the centre of that voxel
-	 *  
-	 * @param index	Integer index specifying a voxel grid space on the agent grid
-	 * @return	A continuous vector of the coordinates of this grid
+	 * @param index	Integer index specifying a voxel grid space on the agent
+	 * grid.
+	 * @return	A continuous vector of the coordinates of this grid.
 	 */
-	public ContinuousVector getGridLocation(int index) {
-		int k = (int) Math.floor(index / (_nI + 2) / (_nJ + 2));
-		int j = (int) Math.floor((index - k * ((_nI + 2) * (_nJ + 2)))
-				/ (_nI + 2));
-		int i = (int) Math.floor((index - (k * (_nI + 2) * (_nJ + 2)) - j
-				* (_nI + 2)));
-
+	public ContinuousVector getGridLocation(int index)
+	{
+		// Remember here that "/" means integer division.
+		int i, j, k, num, div;
+		num = index;
+		div = (_nI + 2) * (_nJ + 2);
+		k = num / div;
+		num = num % div;
+		div = (_nI + 2);
+		j = num / div;
+		i = num % div;
+		// TODO Rob 13Mar2015: Compare ContinuousVector.setToVoxelCenter()
 		return new ContinuousVector((i + .5 - 1) * _res, (j + .5 - 1) * _res,
 				(k + .5 - 1) * _res);
 	}
@@ -1769,45 +1785,40 @@ public class AgentContainer
 
 
 	/**
-	 * \brief Return the agent time step
+	 * \brief Return the agent time step.
 	 * 
-	 * Return the agent time step
-	 * 
-	 * @return	Double value stating the agent time step
+	 * @return	Double value stating the agent time step.
 	 */
-	public double getAgentTimeStep() {
+	public Double getAgentTimeStep()
+	{
 		return AGENTTIMESTEP;
 	}
 
 	/**
-	 * \brief Return the resolution of the grid
+	 * \brief Return the resolution of the grid.
 	 * 
-	 * Return the resolution of the grid
-	 * 
-	 * @return	Resolution of the agent grid
+	 * @return	Resolution of the agent grid.
 	 */
-	public double getResolution() {
+	public Double getResolution()
+	{
 		return _res;
 	}
-
+	
 	/**
-	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array
+	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array.
 	 * 
-	 * Return the dimensions of the grid (nI,nJ,nK) as an array
-	 * 
-	 * @return	An array containing the dimensions of the grid
+	 * @return	An array containing the dimensions of the grid.
 	 */
-	public int[] getGridDescription() {
+	public int[] getGridDescription()
+	{
 		int[] out = { _nI, _nJ, _nK };
 		return out;
 	}
 	
 	/**
-	 * \brief Return the number of grid cells in the J direction
+	 * \brief Return the number of grid cells in the J direction.
 	 * 
-	 * Return the number of grid cells in the J direction
-	 * 
-	 * @return	Number of grid cells in the J direction
+	 * @return	Number of grid cells in the J direction.
 	 */
 	public int get_nJ()
 	{
@@ -1815,47 +1826,42 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Return the number of grid cells in the K direction
+	 * \brief Return the number of grid cells in the K direction.
 	 * 
-	 * Return the number of grid cells in the K direction
-	 * 
-	 * @return	Number of grid cells in the K direction
+	 * @return	Number of grid cells in the K direction.
 	 */
 	public int get_nK()
 	{
 		return _nK;
 	}
-
+	
 	/**
-	 * \brief Return the shoving grid
+	 * \brief Return the shoving grid.
 	 * 
-	 * Return the shoving grid
-	 * 
-	 * @return	LocatedGroup containing the calculated shoving information
+	 * @return	LocatedGroup containing the calculated shoving information.
 	 */
 	
-	public LocatedGroup[] getShovingGrid() {
+	public LocatedGroup[] getShovingGrid()
+	{
 		return _grid;
 	}
-
+	
 	/**
-	 * \brief Return the levelset used for modelling detachment
+	 * \brief Return the levelset used for modelling detachment.
 	 * 
-	 * Return the levelset used for modelling detachment
-	 * 
-	 * @return	Levelset used for modelling detachment
+	 * @return	Levelset used for modelling detachment.
 	 */
-	public LevelSet getLevelSet() {
+	public LevelSet getLevelSet()
+	{
 		return _levelset;
 	}
 	
 	/**
-	 * \brief Return the status of a given grid voxel, to determine if the voxel is within a biofilm or not
+	 * \brief Return the status of a given grid voxel, to determine if the
+	 * voxel is within a biofilm or not.
 	 * 
-	 * Return the status of a given grid voxel, to determine if the voxel is within a biofilm or not
-	 * 
-	 * @param gridVoxel	Integer of the grid voxel whos status is being queried
-	 * @return	Integer showing the status of that grid voxel
+	 * @param gridVoxel	Index of the grid voxel whose status is being queried.
+	 * @return	Integer showing the status of that grid voxel.
 	 */
 	public int getVoxelStatus(int gridVoxel)
 	{
@@ -1863,14 +1869,14 @@ public class AgentContainer
 	}
 	
 	/**
-	 * \brief Return the located group of agents in an agent grid voxel
+	 * \brief Return the located group of agents in an agent grid voxel.
 	 * 
-	 * @param gridVoxel	Integer of the grid voxel for which the located group is to be returned
-	 * @return	LocatedGroup containing the agents within that grid voxel
+	 * @param gridVoxel	Integer of the grid voxel for which the located group
+	 * is to be returned.
+	 * @return	LocatedGroup containing the agents within that grid voxel.
 	 */
 	public LocatedGroup returnGroupInVoxel(int gridVoxel)
 	{
 		return _grid[gridVoxel];
 	}
-
 }

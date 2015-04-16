@@ -14,6 +14,8 @@ import java.io.Serializable;
 import org.jdom.Element;
 
 import utils.ExtraMath;
+import utils.LogFile;
+import utils.XMLParser;
 
 /**
  * \brief Implements 3D vector of discrete spatial coordinates.
@@ -42,7 +44,7 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * K Location on a grid.
 	 */
 	public int k;
-
+	
 	/**
      * \brief Creates a discrete vector initialised at the origin.
      */
@@ -52,28 +54,37 @@ public class DiscreteVector implements Cloneable, Serializable
 	}
 	
 	/**
-	 * \brief Constructs a discrete vector with points specified from XML tags.
 	 * 
-	 * TODO Rob Clegg (20 Jan 14): This is potentially rather confusing! We
-	 * should keep i, j, k for discrete coordinates and x, y, z for continuous
-	 * coordinates. 
-	 * 
-	 * @param coordinatesRoot Set of XML tags containing an X, Y, and Z
-	 * coordinates.
+	 * @param dV
 	 */
-	public DiscreteVector(Element coordinatesRoot)
+	public DiscreteVector(DiscreteVector dV)
+	{
+		set(dV);
+	}
+	
+	/**
+	 * \brief Constructs a discrete vector with points specified from an
+	 * XMLParser.
+	 * 
+	 * @param coordinatesRoot	An XMLParser containing i, j and k coordinates.
+	 */
+	public DiscreteVector(XMLParser coordinatesRoot)
 	{
 		try
 		{
-			i = Integer.parseInt(coordinatesRoot.getAttributeValue("i"));
-			j = Integer.parseInt(coordinatesRoot.getAttributeValue("j"));
-			k = Integer.parseInt(coordinatesRoot.getAttributeValue("k"));
+			i = coordinatesRoot.getAttributeInt("i");
+			j = coordinatesRoot.getAttributeInt("j");
+			k = coordinatesRoot.getAttributeInt("k");
 		}
 		catch (Exception e)
 		{
-			i = Integer.parseInt(coordinatesRoot.getAttributeValue("x"));
-			j = Integer.parseInt(coordinatesRoot.getAttributeValue("y"));
-			k = Integer.parseInt(coordinatesRoot.getAttributeValue("z"));
+			i = Integer.parseInt(coordinatesRoot.getAttribute("x"));
+			j = Integer.parseInt(coordinatesRoot.getAttribute("y"));
+			k = Integer.parseInt(coordinatesRoot.getAttribute("z"));
+			LogFile.writeLogAlways("----------------------------------------");
+			LogFile.writeLogAlways("Please give discrete vectors as i, j, k!");
+			LogFile.writeLogAlways("x, y, z should be for continuous vectors");
+			LogFile.writeLogAlways("----------------------------------------");
 		}
 	}
 	
@@ -201,9 +212,22 @@ public class DiscreteVector implements Cloneable, Serializable
 	 * 
 	 * @param dV DiscreteVector to subtract from this vector.
 	 */
-	public void diff(DiscreteVector dV) 
+	public void subtract(DiscreteVector dV) 
 	{
 		add( -dV.i, -dV.j, -dV.k );
+	}
+	
+	/**
+	 * \brief Store in this vector the difference of two other discrete
+	 * vectors.
+	 * 
+	 * @param a	First discrete vector.
+	 * @param b	Discrete vector to subtract from the first.
+	 */
+	public void sendDiff(DiscreteVector a, DiscreteVector b)
+	{
+		set(a);
+		subtract(b);
 	}
 	
 	/**
@@ -239,6 +263,29 @@ public class DiscreteVector implements Cloneable, Serializable
 	}
 	
 	/**
+	 * \brief Calculate cosine of the angle to a given vector.
+	 * 
+	 * @param v DiscreteVector for which cosine of the angle to this one
+	 * should be calculated.
+	 * @return	Cosine of the angle to vector given.
+	 */
+	public Double cosAngle(DiscreteVector v)
+	{
+		/*
+		 * Returning 0 if the dot product is 0 removes the danger of
+		 * dividing 0/0.0 and also speeds things up slightly if the vectors
+		 * are orthogonal.
+		 */
+		int dotProd = prodScalar(v);
+		return (dotProd == 0 ) ? 0 : dotProd/(this.norm() * v.norm());
+	}
+	
+	public Boolean isParallel(DiscreteVector other)
+	{
+		return ( Math.abs(cosAngle(other)) == 1.0 );
+	}
+	
+	/**
 	 * \brief Determine if this vector equals the points given in the provided
 	 * vector.
 	 * 
@@ -247,9 +294,30 @@ public class DiscreteVector implements Cloneable, Serializable
 	 */
 	public Boolean equals(DiscreteVector dc)
 	{
-		return ( (dc.i == this.i) && (dc.j == this.j) && (dc.k == this.k));
+		return equals(dc.i, dc.j, dc.k);
 	}
-
+	
+	/**
+	 * 
+	 * @param i
+	 * @param j
+	 * @param k
+	 * @return
+	 */
+	public Boolean equals(int i, int j, int k)
+	{
+		return ( (i == this.i) && (j == this.j) && (k == this.k));
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Boolean isZero()
+	{
+		return equals(0, 0, 0);
+	}
+	
 	/**
 	 * \brief Calculate scalar product (dot product) of this vector with the
 	 * discrete vector dV supplied.
@@ -298,6 +366,6 @@ public class DiscreteVector implements Cloneable, Serializable
 	@Override
 	public String toString()
 	{
-		return "("+i+"-"+j+"-"+k+")";
+		return "("+i+","+j+","+k+")";
 	}
 }

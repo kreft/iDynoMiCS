@@ -21,12 +21,12 @@ import utils.UnitConverter;
 import utils.XMLParser;
 
 /**
- * \brief Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factors (one factor by solute)
- * 
- * Allows creation of a Reaction object whose the reaction rate can be decomposed in several kinetic factors (one factor by solute)
+ * \brief Allows creation of a Reaction object whose the reaction rate can be
+ * decomposed in several kinetic factors (one factor by solute).
  * 
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
- * @author Sõnia Martins (SCM808@bham.ac.uk), Centre for Systems Biology, University of Birmingham (UK)
+ * @author S�nia Martins (SCM808@bham.ac.uk), Centre for Systems Biology,
+ * University of Birmingham (UK)
  *
  */
 public class ReactionFactor extends Reaction 
@@ -98,7 +98,7 @@ public class ReactionFactor extends Reaction
 		
 		// Create the kinetic factors __________________________________________
 		// Build the array of different multiplicative limiting expressions
-		_kineticFactor = new IsKineticFactor[xmlRoot.getChildren("kineticFactor").size()];
+		_kineticFactor = new IsKineticFactor[xmlRoot.getChildrenElements("kineticFactor").size()];
 		// one solute factor per kinetic factor
 		_soluteFactor = new int[_kineticFactor.length];
 		marginalMu = ExtraMath.newDoubleArray(_kineticFactor.length);
@@ -113,7 +113,7 @@ public class ReactionFactor extends Reaction
 		try
 		{
 			// Create and initialise the instance
-			for (Element aChild : xmlRoot.getChildren("kineticFactor"))
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor"))
 			{
 				_kineticFactor[iFactor] = (IsKineticFactor) (new XMLParser(aChild))
 									.instanceCreator("simulator.reaction.kinetic");
@@ -127,7 +127,7 @@ public class ReactionFactor extends Reaction
 			// reaction term.
 			paramIndex = 1;
 			iFactor = 0;
-			for (Element aChild : xmlRoot.getChildren("kineticFactor"))
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor"))
 			{
 				_kineticFactor[iFactor].initFromAgent(aChild, _kineticParam, paramIndex);
 				paramIndex += _kineticFactor[iFactor].nParam;
@@ -165,7 +165,7 @@ public class ReactionFactor extends Reaction
 		anAgent.reactionKinetic[reactionIndex][0] = muMax;
 		// Set parameters for each kinetic factor
 		paramIndex = 1;
-		for (Element aChild : aReactionRoot.getChildren("kineticFactor"))
+		for (Element aChild : aReactionRoot.getChildrenElements("kineticFactor"))
 		{
 			int iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 			_kineticFactor[iSolute].initFromAgent(aChild,

@@ -108,14 +108,35 @@ public class LogFile
      * 
      * @param message	The message that should be appended to the log file
      */
-	public static void writeLog(String message) {
+	public static void writeLog(String message)
+	{
 		try {
-			if (!Idynomics.quietMode){
+			if (!Idynomics.quietMode)
+			{
 				System.out.println(message);
 				log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
 				log.write((" : "+message+"\n").getBytes());
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed to write into the log file");
+		}
+	}
+	
+	public static void writeLogDebug(String message)
+	{
+		Boolean debug = false;
+		if ( ! debug )
+			return;
+		try 
+		{
+				System.out.println(message);
+				log.write(dateFormat.format(Calendar.getInstance().getTime()).getBytes());
+				log.write((" : "+message+"\n").getBytes());
+		}
+		catch (Exception e)
+		{
 			System.out.println("Failed to write into the log file");
 		}
 	}
@@ -163,6 +184,7 @@ public class LogFile
 			for (StackTraceElement line : exception.getStackTrace())
 				message += "\t"+line.toString()+"\n";
 			writeLogAlways(message);
+			exception.printStackTrace();
 		}
 		catch (Exception e)
 		{
@@ -187,10 +209,12 @@ public class LogFile
 
 	
 	/**
-	 * \brief Closes and reopens the log file in append mode to ensure log file updates are kept when disk is not writeable
+	 * \brief Closes and reopens the log file in append mode to ensure log
+	 * file updates are kept when disk is not writeable.
 	 * 
-	 * Added by bvm added 03.09.09. Method to close and reopen the log file in append mode, to try and keep logfile updates even 
-	 * when disk location is not writeable
+	 * Added by bvm added 03.09.09. Method to close and reopen the log file in
+	 * append mode, to try and keep logfile updates even when disk location is
+	 * not writeable.
 	 */
 	public static void reopenFile() 
 	{
@@ -205,83 +229,73 @@ public class LogFile
 	}
 
 	/**
-	 * \brief Output a log message with the current time
+	 * \brief Output a log message and start the clock on this action.
 	 * 
-	 * Output a log message with the current time
-	 * 
-	 * @param message	Message to be appended into the log file
+	 * @param message	Message to be appended into the log file.
 	 */
-	public static void chronoMessageIn(String message) {
-		anInstant = System.currentTimeMillis();
-		System.out.println(message);
+	public static void chronoMessageIn(String message)
+	{
+		writeLog(message+"...");
+		chronoMessageIn();
 	}
 
 	/**
 	 * \brief Determine the current time.
-	 * 
-	 * Determine the current time.
 	 */
-	public static void chronoMessageIn() {
+	public static void chronoMessageIn()
+	{
 		anInstant = System.currentTimeMillis();
 	}
 
 	/**
-	 * \brief Writes a message into the log file with the time taken to perform an action
+	 * \brief Writes a message into the log file with the time taken to
+	 * perform an action.
 	 * 
-	 * Writes a message into the log file with the time taken to perform an action
-	 * 
-	 * @param message	The message to be appended into the log file
-	 * @return	The amount of time taken to perform an action
+	 * @param message	The message to be appended into the log file.
+	 * @return	The amount of time taken to perform an action.
 	 */
-	public static long chronoMessageOut(String message) 
+	public static void chronoMessageOut(String message) 
 	{
 		long value = anInstant;
 		anInstant = System.currentTimeMillis();
-		value = anInstant-value;
-
-		//System.out.println("\t "+message+" done in "+value/1000+" sec");
-		writeLog(message+" done in "+value/1000+" sec");
-		return value;
-	}
-
-	/**
-	 * \brief Determine the amount of time that has passed between two timepoints and return
-	 * 
-	 * Determine the amount of time that has passed between two timepoints and return
-	 * 
-	 * @return	Long value noting the milliseconds difference between two timepoints
-	 */
-	public static long chronoMessageOut() {
-		long value = anInstant;
-		anInstant = System.currentTimeMillis();
-		return anInstant-value;
-	}
-
-	/**
-	 * \brief Writes log message at the end of the step summarising the computational time taken in this step
-	 * 
-	 * Writes log message at the end of the step summarising the computational time taken in this step
-	 * 
-	 * @param length	Length of time in hours that it has taken to perform this step
-	 */
-	public static void writeEndOfStep(double length) {
-		// Simulation started for xxx minutes
-		double simTime = (System.currentTimeMillis()-Idynomics.begin)/1000/60;
-		if (!Idynomics.quietMode) System.out.println("");
-
-		LogFile.writeLog("Computation time :"+myformat.format(simTime)+" minute(s) \n \t -> Iter "
-		        +SimTimer.getCurrentIter()+", Time: "+SimTimer.getCurrentTime()+" achieved in "
-		        +myformat.format(length/1000)+" sec \n");
+		value = anInstant - value;
+		writeLog("\t"+message+" in "+myformat.format(value/1000.0)+" sec");
 	}
 	
 	/**
-	 * \brief Returns the date and time as a string for use in constructing the log file title
+	 * \brief Writes log message at the end of the step summarizing the
+	 * computational time taken in this step.
 	 * 
-	 * Returns the date and time as a string for use in constructing the log file title
-	 * 
-	 * @return	String containing the year,month,day,underscore,hour, and minute, for appending to the log file name
+	 * @param length	Length of time in milliseconds that it has taken to
+	 * perform this step.
 	 */
-	public static String getDateFileName(){
+	public static void writeEndOfStep(long length)
+	{
+		// Simulation started for xxx minutes
+		Double simTime = new Double(
+								System.currentTimeMillis() - Idynomics.begin);
+		// Convert to seconds.
+		simTime /= 1000.0;
+		// Convert to minutes.
+		simTime /= 60.0;
+		/*
+		 * Write the message if quietMode is off.
+		 */
+		LogFile.writeLog("\nComputation time :"+myformat.format(simTime)+
+				" minute(s) \n \t -> Iter "+SimTimer.getCurrentIter()+
+				", Time: "+SimTimer.getCurrentTime()+" achieved in "
+		        +myformat.format(length/1000.0)+" sec \n");
+	}
+	
+	/**
+	 * \brief Returns the date and time as a string for use in constructing
+	 * the log file title.
+	 * 
+	 * @return	String containing the year, month, day, underscore, hour, and
+	 * minute, for appending to the log file name
+	 */
+	public static String getDateFileName()
+	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
 		return dateFormat.format(Calendar.getInstance().getTime());		
 	}

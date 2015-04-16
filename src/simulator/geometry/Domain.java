@@ -163,9 +163,9 @@ public class Domain implements IsComputationDomain
 	 */
 	protected double _biofilmDiffusivity = 1.0;
 	
-	/*************************************************************************************************************************
+	/*************************************************************************
 	 * CLASS METHODS 
-	 ************************************************************************************************************************/
+	 ************************************************************************/
 	
 	/**
 	 * \brief Creates a computation domain compartment object with attributes
@@ -182,7 +182,7 @@ public class Domain implements IsComputationDomain
 	 */
 	public Domain(Simulator aSim, XMLParser cdRoot) 
 	{
-		domainName = cdRoot.getAttribute("name");
+		domainName = cdRoot.getName();
 		currentSim = aSim;
 		
 		// Now determine if this computation domain is 2D or 3D
@@ -241,7 +241,7 @@ public class Domain implements IsComputationDomain
 		// includes a <shape> mark-up to define the shape of the boundary.
 		// The below call combines all boundary conditions in the XML file,
 		// then processes each.
-		for (XMLParser aBCMarkUp : cdRoot.buildSetParser("boundaryCondition"))
+		for (XMLParser aBCMarkUp : cdRoot.getChildrenParsers("boundaryCondition"))
 			AllBC.staticBuilder(aBCMarkUp, aSim, this);
 		
 		
@@ -318,13 +318,13 @@ public class Domain implements IsComputationDomain
 						// Test if this grid cell is seen outside
 						if ( aBC.isOutside(dC, _domainGrid) )
 						{
-							_domainGrid.setValueAt(-1, i, j, k);
+							_domainGrid.setValueAt(-1.0, i, j, k);
 							continue loop;
 						}
 						// label carrier part of the domain
 						if ( aBC.isSupport() &&
 											aBC.getDistance(cC) < _resolution )
-							_domainGrid.setValueAt(0, i, j, k);
+							_domainGrid.setValueAt(0.0, i, j, k);
 					}
 				}
 	}
@@ -350,7 +350,13 @@ public class Domain implements IsComputationDomain
 		// Find the first of the boundaries which has been crossed
 		for (AllBC aBoundary : _boundaryList)
 			if (aBoundary.isOutside(newLoc))
+			{
+				/*
+				System.out.println("agent at "+newLoc.toString()+
+								" crossed boundary "+aBoundary.getSide());
+				*/
 				return aBoundary;
+			}
 		
 		// If you are here, it means that no boundary is being crossed.
 		return null;
@@ -401,15 +407,40 @@ public class Domain implements IsComputationDomain
 		_boundaryList.add(aBC);
 	}
 	
-	/**
-	 * \brief Return all the boundary conditions applicable to this domain.
-	 * 
-	 * @return LinkedList of boundary conditions for this domain.
-	 */
-	@Override
 	public LinkedList<AllBC> getAllBoundaries() 
 	{
 		return _boundaryList;
+	}
+	
+	public LinkedList<AllBC> getAllSupportBoundaries()
+	{
+		LinkedList<AllBC> out = new LinkedList<AllBC>();
+		for ( AllBC aBC : _boundaryList )
+			if ( aBC.isSupport() )
+				out.add(aBC);
+		return out;
+	}
+	
+	public LinkedList<ConnectedBoundary> getAllConnectedBoundaries()
+	{
+		LinkedList<ConnectedBoundary> out = 
+										new LinkedList<ConnectedBoundary>();
+		for ( AllBC aBC : _boundaryList )
+			if ( aBC instanceof ConnectedBoundary )
+				out.add((ConnectedBoundary) aBC);
+		return out;
+	}
+	
+	public Bulk getChemostat()
+	{
+		Bulk aBulk;
+		for (ConnectedBoundary aBC : getAllConnectedBoundaries())
+		{
+			aBulk = aBC.getBulk();
+			if( aBulk != null && aBulk.nameEquals("chemostat") )
+				return aBulk;
+		}
+		return null;
 	}
 	
 	/**
@@ -471,36 +502,39 @@ public class Domain implements IsComputationDomain
 	}
 	
 	/**
-	 * \brief Calculates the diffusivity and boundary layer grid levels
+	 * \brief Calculates the diffusivity and boundary layer grid levels.
 	 * 
-	 * Calculates the diffusivity and boundary layer grid levels. In previous versions of iDynoMiCS this method could 
-	 * be found within refreshBioFilmGrids. This has been moved here as, with the addition of self attachment, this method needs to be 
-	 * called before agent initialisation. KA May 2013
+	 * In previous versions of iDynoMiCS this method could be found within
+	 * refreshBioFilmGrids. This has been moved here as, with the addition of
+	 * self attachment, this method needs to be called before agent
+	 * initialisation. KA May 2013.
 	 */
 	public void calculateComputationDomainGrids()
 	{
-		for (int i = 1; i < _nI+1; i++) 
-			for (int j = 1; j < _nJ+1; j++) 
-				for (int k = 1; k < _nK+1; k++) 
-				{
-					if (_biomassGrid.grid[i][j][k] > 0)
+		for (int i = 1; i <= _nI; i++) 
+			for (int j = 1; j <= _nJ; j++) 
+				for (int k = 1; k <= _nK; k++)
+					if ( _biomassGrid.grid[i][j][k] > 0.0 )
 					{
-						// if this is biomass,
+						/*
+						 * This is biomass.
+						 */
 						_boundaryLayer.grid[i][j][k] = 1.0;
 						_diffusivityGrid.grid[i][j][k] = _biofilmDiffusivity;
 					}
 					else
 					{
-						// if liquid, check dilation sphere for biomass
-						// (checkDilationRadius will set the value to 1 if it is
-						//  within the boundary layer)
+						/*
+						 * This is liquid, check dilation sphere for biomass:
+						 * checkDilationRadius will set the value to 1 if it is
+						 * within the boundary layer.
+						 */
 						_boundaryLayer.grid[i][j][k] = checkDilationRadius(i, j, k);
-						if (_domainGrid.grid[i][j][k].equals(-1.0))
+						if ( _domainGrid.grid[i][j][k] == -1.0 )
 							_diffusivityGrid.grid[i][j][k] = Double.MIN_VALUE;
 						else
-							_diffusivityGrid.grid[i][j][k] = 1.0d;
+							_diffusivityGrid.grid[i][j][k] = 1.0;
 					}
-				}
 	}
 
 	
@@ -545,18 +579,23 @@ public class Domain implements IsComputationDomain
 	{
 		currentSim.agentGrid.getLevelSet().refreshBorder(false, currentSim);
 		LinkedList<LocatedGroup> border =
-				currentSim.agentGrid.getLevelSet().getBorder();
-		
-		// Catch if there is no biomass for some reason; in that case return zero height
-		if (border.size() == 0)	return ExtraMath.newDoubleArray(1);
-		
-		// Now copy to regular array, but watch for infinite distances
-		Double [] borderarray = ExtraMath.newDoubleArray(border.size());
-		for (int i = 0; i < border.size(); i++)
-			if (border.get(i).distanceFromCarrier < Double.MAX_VALUE)
-				borderarray[i] = border.get(i).distanceFromCarrier;
-		
-		return borderarray;
+							currentSim.agentGrid.getLevelSet().getBorder();
+		/* 
+		 * Catch if there is no biomass for some reason; in that case return
+		 * zero height.
+		 */
+		if ( border.isEmpty() )
+			return ExtraMath.newDoubleArray(1);
+		// Now copy to regular array, but watch for infinite distances.
+		ListIterator<LocatedGroup> iter = border.listIterator();
+		Double [] out = new Double[border.size()];
+		while ( iter.hasNext() )
+		{
+			out[iter.nextIndex()] = iter.next().distanceFromCarrier;
+			if ( out[iter.previousIndex()] == Double.MAX_VALUE )
+				out[iter.previousIndex()] = 0.0;
+		}
+		return out;
 	}
 	
 	/**
@@ -564,13 +603,13 @@ public class Domain implements IsComputationDomain
 	 * neighbours.
 	 * 
 	 * @author BVM 161208
-	 * @return	Boolean noting whether the elements in the boundary layerhave free neighbours
+	 * @return	Boolean noting whether the elements in the boundary layer have
+	 * free neighbours.
 	 */
 	private Boolean bdryHasFreeNbh()
 	{
-		if (is3D())
+		if ( is3D() )
 		{
-			// 3D grid
 			for (int i = -1; i < 2; i++)
 				for (int j = -1; j < 2; j++)
 					for (int k = -1; k < 2; k++)
@@ -580,7 +619,6 @@ public class Domain implements IsComputationDomain
 		}
 		else
 		{
-			// 2D grid
 			for (int i = -1; i < 2; i++)
 				for (int j = -1; j < 2; j++)
 					if (_boundaryLayer.grid[_i+i][_j+j][1].equals(0.0))
@@ -604,80 +642,66 @@ public class Domain implements IsComputationDomain
 	 */
 	protected Double checkDilationRadius(int n, int m, int l)
 	{
-		// for no boundary layer, liquid means it's outside the boundary
-		// (and this routine only checks the status of non-biomass elements)
+		/*
+		 * For no boundary layer, liquid means it's outside the boundary
+		 * (and this routine only checks the status of non-biomass elements).
+		 */
 		if ( _dilationBand == 0.0 )
 			return 0.0;
+		int iInterval = (int) Math.floor(_dilationBand/_resolution);
+		int jInterval, kInterval;
+		DiscreteVector coord = new DiscreteVector();
+		Double deltaI, deltaJ, dilationRadiusJ, dilationRadiusK;
 		
-		int nInterval, mInterval, lInterval;
-		int jIndex, kIndex;
-		Double deltaN, deltaM;
-		Double dilationRadiusM, dilationRadiusL;
-		
-		nInterval = (int) Math.floor(_dilationBand/_resolution);
-		
-		for (int i = -nInterval; i <= nInterval; i++)
+		for ( int i = -iInterval; i <= iInterval; i++ )
 		{
-			// only proceed if neighbour is within computational
-			// volume top and bottom boundaries
-			if ( (n+i >= 0) && (n+i < _nI) )
+			deltaI = i * _resolution;
+			dilationRadiusJ = ExtraMath.triangleSide(_dilationBand, deltaI);
+			jInterval = (int) Math.floor(dilationRadiusJ / _resolution);
+			for ( int j = -jInterval; j <= jInterval; j++ )
 			{
-				deltaN = i*_resolution;
-				// This calculates the range in the j direction based on a right triangle
-				// with hypotenuse equal to the sphere's radius, so that the total area
-				// checked is a sphere
-				dilationRadiusM = ExtraMath.triangleSide(_dilationBand, deltaN);
-				mInterval = (int) Math.floor(dilationRadiusM/_resolution);
-				
-				for (int j = -mInterval; j <= mInterval; j++) {
-					if (_nK == 1)
+				if ( _nK == 1)
+				{
+					coord.set(n, m, 0);
+					coord.add(i, j, 0);
+					if ( checkDilationCoord(coord) )
+						return 1.0;
+				}
+				else
+				{
+					deltaJ = j * _resolution;
+					dilationRadiusK = 
+						ExtraMath.triangleSide(_dilationBand, deltaI, deltaJ);
+					kInterval = (int) Math.floor(dilationRadiusK/_resolution);
+					for ( int k = -jInterval; k <= kInterval; k++ )
 					{
-						// 2D case
-						jIndex = cyclicIndex(m+j,_nJ+2);
-						if (_biomassGrid.grid[n+i][jIndex][1] > 0.0) 
+						coord.set(i, j, k);
+						if ( coord.isZero() )
+							continue;
+						coord.add(n, m, l);
+						if ( checkDilationCoord(coord) )
 							return 1.0;
-						if (_domainGrid.grid[n+i][jIndex][1] == 0.0)
-							return 1.0;
-					}
-					else
-					{
-						// 3D case
-						deltaM = j*_resolution;
-						// This calculates the range in the k direction based on
-						// a right triangle with hypotenuse equal to the sphere's
-						// radius, so that the total area checked is a sphere
-						dilationRadiusL = ExtraMath.triangleSide(_dilationBand, deltaN, deltaM);
-						lInterval = (int) Math.floor(dilationRadiusL/_resolution);
-
-						for (int k = -lInterval; k <= lInterval; k++)
-							if ( (i != 0) || (j != 0) || (k != 0) )
-							{
-								jIndex = cyclicIndex(m+j, _nJ+2);
-								kIndex = cyclicIndex(l+k, _nK+2);
-								if (_biomassGrid.grid[n+i][jIndex][kIndex] > 0.0)
-									return 1.0;
-								if (_domainGrid.grid[n+i][jIndex][kIndex] == 0.0)
-									return 1.0;
-							}
 					}
 				}
 			}
 		}
 		return 0.0;
 	}
-
+	
 	/**
-	 * \brief For cyclic boundaries, returns the index of the grid space on the
-	 * opposite side of the boundary.
 	 * 
-	 * @param val	The integer grid spqce to check.
-	 * @param limit	The limit of the grid.
-	 * @return	The integer of the grid square the opposite side of the
-	 * boundary.
+	 * @param coord
+	 * @return
 	 */
-	protected final int cyclicIndex(int val, int limit)
+	protected Boolean checkDilationCoord(DiscreteVector coord)
 	{
-		return (val<0 ? limit+val : (val>=limit ? val-limit : val));
+		for (AllBC aBC : _boundaryList )
+			aBC.applyBoundary(coord);
+		/*
+		 * Return true if this is biomass or substratum.
+		 */
+		return ( _biomassGrid.getValueAt(coord) > 0.0 ) ||
+				( _domainGrid.getValueAt(coord) == 0.0 );
 	}
 	
 	/**

@@ -105,7 +105,7 @@ public class ReactionGrowthFitness extends Reaction{
 		// Create the kinetic factors __________________________________________
 
 		// Build the array of different multiplicative limiting expressions
-		_kineticFactor = new IsKineticFactor[xmlRoot.getChildren("kineticFactor").size()];
+		_kineticFactor = new IsKineticFactor[xmlRoot.getChildrenElements("kineticFactor").size()];
 		_soluteFactor = new int[_kineticFactor.length];
 		marginalMu = new double[_kineticFactor.length];
 		marginalDiffMu = ExtraMath.newDoubleArray(_kineticFactor.length);
@@ -119,7 +119,7 @@ public class ReactionGrowthFitness extends Reaction{
 		int iSolute;
 		try
 		{
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor")) {
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 
 				// Create and initialise the instance
@@ -135,7 +135,7 @@ public class ReactionGrowthFitness extends Reaction{
 
 			paramIndex = 1;
 			iFactor = 0;
-			for (Element aChild : xmlRoot.getChildren("kineticFactor")) {
+			for (Element aChild : xmlRoot.getChildrenElements("kineticFactor")) {
 				iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 
 				// Populate the table collecting all kinetic parameters of this
@@ -176,7 +176,7 @@ public class ReactionGrowthFitness extends Reaction{
 
 		// Set parameters for each kinetic factor
 		paramIndex = 1;
-		for (Element aChild : aReactionRoot.getChildren("kineticFactor")) {
+		for (Element aChild : aReactionRoot.getChildrenElements("kineticFactor")) {
 			int iSolute = aSim.getSoluteIndex(aChild.getAttributeValue("solute"));
 			_kineticFactor[iSolute].initFromAgent(aChild, anAgent.reactionKinetic[reactionIndex],
 					paramIndex);
@@ -547,7 +547,8 @@ public class ReactionGrowthFitness extends Reaction{
 
 	public ArrayList<Double> setYield(ActiveAgent anAgent)
 	{
-		Double plCopyNum, initialCost, rateDec, basalCost, plCost, timeSpentInHost;
+		Double initialCost, rateDec, basalCost, plCost, timeSpentInHost;
+		int plCopyNum;
 		ArrayList<Double> plTotalCosts = new ArrayList<Double>();
 		
 		if(anAgent instanceof MultiEpiBac)
@@ -563,7 +564,7 @@ public class ReactionGrowthFitness extends Reaction{
 					//System.out.println("plasmidCost is " + initialCost);
 					rateDec = plParam.rateDec;
 					basalCost = plParam.basalCost;
-					plCopyNum = anEpiBac.plasmidHosted.get(pl)._nCopy;
+					plCopyNum = anEpiBac.plasmidHosted.get(pl).getCopyNumber();
 					timeSpentInHost = SimTimer.getCurrentTime()-anEpiBac.plasmidHosted.get(pl).timeSpentInHost;
 					//sonia: the cost of a plasmid increases additively as its copy number goes up
 					plCost = (initialCost*(Math.exp((-(rateDec*timeSpentInHost))))+ basalCost)*plCopyNum;

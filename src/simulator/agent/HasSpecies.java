@@ -60,11 +60,4 @@ public interface HasSpecies
 	 * @return Object of BacteriumParam that stores the parameters associated with this species
 	 */
 	public SpeciesParam getSpeciesParam();
-
-	/**
-	 * \brief Mutates inherited parameters and distributes particle mass - either exponentially or normally, dependent on value of distMethod
-	 * 
-	 *  Mutates inherited parameters and distributes particle mass - either exponentially or normally, dependent on value of distMethod
-	 */
-	public void mutatePop();
 }

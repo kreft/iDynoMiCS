@@ -17,9 +17,10 @@ import utils.XMLParser;
 /**
  * \brief Model a reaction using Haldane Kinetics
  * 
- *  Model a reaction using Haldane Kinetics. From Wikipedia: Haldane Kinetics was of the same algebraic form as Micahallis-Menten equation (Monod), but their derivation is 
- *  based on the quasi steady state approximation, that is the concentration of intermediate complex (or complexes) does not change.
- *
+ *  Model a reaction using Haldane Kinetics. From Wikipedia: Haldane Kinetics
+ *  was of the same algebraic form as Micahalis-Menten equation (Monod), but
+ *  their derivation is based on the quasi steady state approximation, that is
+ *  the concentration of intermediate complex (or complexes) does not change.
  */
 public class HaldaneKinetic extends IsKineticFactor 
 {

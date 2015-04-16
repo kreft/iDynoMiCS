@@ -10,6 +10,7 @@
 package simulator.diffusionSolver;
 
 import Jama.Matrix;
+
 import java.util.ArrayList;
 
 import idyno.Idynomics;
@@ -18,6 +19,7 @@ import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.Simulator;
 import simulator.SoluteGrid;
 import simulator.geometry.boundaryConditions.AllBC;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
 import simulator.geometry.Domain;
 import utils.ExtraMath;
@@ -48,11 +50,6 @@ public class Solver_chemostat extends DiffusionSolver
 	 * The solute grid of reaction rates for each solute. 
 	 * */
 	protected  SoluteGrid[] 		allReac;
-	
-	/**
-	 * Computational domain that this solver is associated with
-	 */
-	protected Domain                _domain;
 	
 	/**
 	 * Array of reactive biomasses
@@ -90,7 +87,8 @@ public class Solver_chemostat extends DiffusionSolver
 	protected double EPS = 2.22e-16;
 	
 	/**
-	 * The chemostat dilution rate. This will be set when init() calls setDilutionAndY0() 
+	 * The chemostat dilution rate. This will be set when init() calls
+	 * setDilutionAndY0() 
 	 */
 	protected double Dilution; 
 
@@ -141,9 +139,6 @@ public class Solver_chemostat extends DiffusionSolver
 		allSolute = new SoluteGrid[nSolute];
 		allReac = new SoluteGrid[nSolute];
 
-		// We read in the domain from the protocol file
-		_domain = aSimulator.world.getDomain(xmlRoot.getAttribute("domain"));
-
 		// Initialise variables used by the ODE solvers
 		hmax = xmlRoot.getParamDbl("hmax");
 		rtol = xmlRoot.getParamDbl("rtol");
@@ -162,85 +157,104 @@ public class Solver_chemostat extends DiffusionSolver
 			LogFile.writeError(e,
 					  "Solver_chemostat.init() while creating solute yields");
 		}
-		// Initialize array of reactive biomasses
+		/*
+		 * Initialize array of reactive biomasses.
+		 */
 		_reactiveBiomass = new MultigridSolute[nReaction];
-		try{
-			for (int i = 0; i<nReaction; i++) {
-				_reactiveBiomass[i] = new MultigridSolute(_soluteList[0], _reactions.get(i).reactionName);
-				_reactiveBiomass[i]._conc[0].setAllValueAt(0);
-				if (!Idynomics.quietMode)
-					System.out.println("biomass conc is ----->>>   " + _reactiveBiomass[i]._conc[0].grid[0][0][0]);
+		try
+		{
+			for (int i = 0; i<nReaction; i++) 
+			{
+				_reactiveBiomass[i] = new MultigridSolute(_soluteList[0], 
+											_reactions.get(i).reactionName);
+				_reactiveBiomass[i]._conc[0].resetToZero();
+				LogFile.writeLog("biomass conc is ----->>>   " + 
+								_reactiveBiomass[i]._conc[0].grid[0][0][0]);
 			}
-		}catch(Exception e){LogFile.writeLogAlways("Error creating reaction fields in Solver_chemostat.init()");}
+		}
+		catch(Exception e)
+		{
+			LogFile.writeError(e,
+					"Solver_chemostat.init() while creating reaction fields");
+		}
 	}
 
 	/**
-	 * \brief Set the dilution rate and the initial substrate concentration to those specified in the bulk compartment
+	 * \brief Set the dilution rate and the initial substrate concentration to
+	 * those specified in the bulk compartment.
 	 * 
-	 * Set the dilution rate and the initial substrate concentration to those specified in the bulk compartment 
+	 * Set the dilution rate and the initial substrate concentration to those
+	 * specified in the bulk compartment.
+	 *  
 	 * [Rob: one assumption here is that the dilution rate is constant].
 	 */
-	public void setDilutionAndY0() {
-		try {
-			for (AllBC aBC : _domain.getAllBoundaries()){
-				if (aBC.hasBulk()){
-					Bulk aBulk = aBC.getBulk();
-					if(aBulk.getName().equals("chemostat")){
-						Dilution = aBulk._D;
-						for (int i = 0; i < nSolute; i++) {
-							allSolute[i] = mySim.soluteList[i];
-							allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
-							//LogFile.writeLog(" allSolute["+i+"] = "+allSolute[i].grid[0][0][0]);
-							allReac[i] = new SoluteGrid (1,1,1, _domain._resolution,
-									mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
-							allReac[i].setAllValueAt(0);
-						}
-					}
-					isConstSol = aBulk._isConstant;
-				}
-				//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
+	public void setDilutionAndY0()
+	{
+		try
+		{
+			Bulk aBulk = myDomain.getChemostat();
+			Dilution = aBulk._D;
+			for (int i = 0; i < nSolute; i++) 
+			{
+				allSolute[i] = mySim.soluteList[i];
+				allSolute[i].setAllValueAt(aBulk._bulkValue[i]);
+				// TODO Could we use myDomain as the last argument here?
+				allReac[i] = new SoluteGrid (1,1,1, myDomain._resolution,
+						mySim.soluteList[i].gridName, mySim.soluteList[i].getDomain());
+				allReac[i].resetToZero();
 			}
-		} catch (Exception e) {
-			LogFile.writeLogAlways("Error in Solver_chemostat.updateReacRateAndDiffRate() : " + e);}
+			isConstSol = aBulk._isConstant;
+		} 
+		catch (Exception e) 
+		{
+			LogFile.writeError(e, 
+							"Solver_chemostat.updateReacRateAndDiffRate()");
+		}
 	}
 
 	/**
-	 * \brief Initialise the concentration fields within the chemostat, getting concentration of any catalysts and storing this on a grid
-	 * 
-	 * Initialise the concentration fields within the chemostat, getting concentration of any catalysts and storing this on a grid
+	 * \brief Initialise the concentration fields within the chemostat, 
+	 * getting concentration of any catalysts and storing this on a grid.
 	 */
 	@Override
-	public void initializeConcentrationFields() {
-		try {
-			//reset biomass concentration in the grid
-			for (int i = 0; i<nReaction; i++) {
-				_reactiveBiomass[i]._conc[0].setAllValueAt(0);
+	public void initializeConcentrationFields()
+	{
+		try
+		{
+			/*
+			 * Reset biomass concentration in the grid.
+			 */
+			for ( MultigridSolute biomass : _reactiveBiomass )
+				biomass._conc[0].resetToZero();
+			/*
+			 * Get the catalyst (biomass and other particulates) CONCENTRATION.
+			 */
+			for ( int i = 0; i < nReaction; i++ )
+			{
+				_reactions.get(i).fitAgentMassOnGrid(
+											_reactiveBiomass[i].getGrid());
+				LogFile.writeLog("biomass conc is ----->>>   " + 
+						_reactiveBiomass[i]._conc[0].grid[0][0][0]);
 			}
-
-			// Get the catalyst (biomass and other particulates) CONCENTRATION
-			for (int i = 0; i<nReaction; i++) {
-				_reactions.get(i).fitAgentMassOnGrid(_reactiveBiomass[i].getGrid());
-				if (!Idynomics.quietMode)
-					System.out.println("biomass conc is ----->>>   " + _reactiveBiomass[i]._conc[0].grid[0][0][0]);
-			}
-		} catch (Exception e) {
-			LogFile.writeLogAlways("Error in Solver_chemostat.initializeConcentrationFields() : " + e);}
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, 
+						"Solver_chemostat.initializeConcentrationFields()");
+		}
 	}
 
 	/**
-	 * \brief Use the ODE solver to solve the diffusion reaction and update the bulk 
-	 * 
-	 * Use the ODE solver to solve the diffusion reaction and update the bulk
-	 * 
+	 * \brief Use the ODE solver to solve the diffusion reaction and update
+	 * the bulk .
 	 */
 	@Override
 	public void solveDiffusionReaction() 
 	{
-		//LogFile.writeLog("S = "+allSolute[0].grid[0][0][0]+" X = "+allSolute[1].grid[0][0][0]);
 		odeSolver(SimTimer.getCurrentTime(), rtol, hmax);
 		updateBulk();
 	}
-
+	
 	/**
 	 * \brief ODE solver for calculating the diffusion reactions.
 	 * 
@@ -361,7 +375,9 @@ public class Solver_chemostat extends DiffusionSolver
 					f2 = calcdYdT(ynext, sInflow, f2);
 					
 					// k3 = invW * ( f2 - e32*(k2-f1) - 2*(k1-y) + h*d*dFdT )
-					// Setting kaux as expression inside brackets
+					/*
+					 * Setting kaux as expression inside brackets.
+					 */
 					k3.timesEquals(0);
 					kaux.timesEquals(0);
 					kaux = f2.copy();
@@ -370,33 +386,44 @@ public class Solver_chemostat extends DiffusionSolver
 					kaux.plusEquals( dFdT.times(h*d));
 					k3 = invW.times(kaux);
 					// error = (h/6) * (k1 - 2*k2 + k3)/y
-					kaux.timesEquals(0);
-					
-					// We now use kaux to estimate the error of this step
+					kaux.timesEquals(0.0);
+					/*
+					 * We now use kaux to estimate the error of this step.
+					 */
 					for (int i = 0; i < nSolute; i++)
 						kaux.set(i,0, 1/Math.min(y.get(i,0),ynext.get(i,0)));
 					kaux.arrayTimesEquals( k1.minus( k2.times(2) ).plus(k3).times(h/6) );
-					//kaux = k1.minus( k2.times(2) ).plus(k3).times(h/6);
-					// We now calculate the error
-					error = 0;
+					/*
+					 * We now calculate the error
+					 */
+					error = 0.0;
 					for (int i = 0; i < nSolute; i++)
 						error = Math.max(error, kaux.get(i,0));
 				}
 				catch (Exception e)
 				{
-					LogFile.writeError(e, "Solver_chemostat.ODEsolver() Rosenbrock step");
+					LogFile.writeError(e,
+							"Solver_chemostat.ODEsolver() Rosenbrock step");
 				}
-				
-				// The solution is accepted if the weighted error is less than
-				// the relative tolerance rtol.
-				// If the step fails, calculate a new h based on thestandard rule for 
-				// selecting a step size in numerical integration of initial value problems:
-				// hn+1 = (rtol / error) ^ (1/order of method,in our case is 3) * hn;
-				// 90% of this estimated value is then used in the next step to
-				// decrease the probability of further failures.
-				// Reference: GEAR, C. W. 1971. Numerical Initial Value Problems in 
-				// Ordinary Differential Equations. Prentice-Hall, Englewood Cliffs, N.J.
-				if(error > rtol)
+				/*
+				 * The solution is accepted if the weighted error is less than
+				 * the relative tolerance rtol.
+				 * 
+				 * If the step fails, calculate a new h based on the standard
+				 * rule for selecting a step size in numerical integration of
+				 * initial value problems:
+				 * hn+1 = (rtol / error) ^ (1/order of method) * hn;
+				 * 
+				 * In our case, the order is 3.
+				 * 
+				 * 90% of this estimated value is then used in the next step
+				 * to decrease the probability of further failures.
+				 * 
+				 * Reference: GEAR, C. W. 1971. Numerical Initial Value
+				 * Problems in Ordinary Differential Equations. Prentice-Hall,
+				 * Englewood Cliffs, N.J.
+				 */
+				if ( error > rtol )
 				{ 
 					noFailed = false;
 					lastStep = false;
@@ -413,30 +440,32 @@ public class Solver_chemostat extends DiffusionSolver
 				else
 					break;
 				LogFile.writeLog("error = "+error+", rtol = "+rtol+", h = "+h);
-			}// End of while(true)
-			
-			// If there were no failures compute a new h. We use the same
-			// formula as before to compute a new step, h. But in addition, we
-			// adjust the next time step depending on how stiff the problem is.
-			// If the system is extremely stiff, the increase is limited to 1.2.
-			// Otherwise, the increase is set to a factor of 5.
-			// Reference: Shampine LF. 1982. Implementation of Rosenbrock
-			// Methods. ACM Transactions on Mathematical Software. 8: 93-113.
-			if(noFailed)
+			}// End of while(true) 
+			/*
+			 * If there were no failures compute a new h. We use the same
+			 * formula as before to compute a new step, h. But in addition, we
+			 * adjust the next time step depending on how stiff the problem is.
+			 * 
+			 * If the system is extremely stiff, the increase is limited to
+			 * 1.2; otherwise, the increase is set to a factor of 5.
+			 * 
+			 * Reference: Shampine LF. 1982. Implementation of Rosenbrock
+			 * Methods. ACM Transactions on Mathematical Software. 8: 93-113.
+			 */
+			if ( noFailed )
 			{
-				double test = Math.pow((rtol/error), power);
-				if ( test < 1.2 )
-					h *= test;
-				else
-					h *= 5;
+				Double test = Math.pow((rtol/error), power);
+				h *= ( test < 1.2 ) ? test : 5.0;
 			}
-			
-			// Update the time and the substrate concentration
+			/*
+			 * Update the time and the substrate concentration
+			 */
 			t = tnext;
-			
-			// For each solute we check first whether its concentration should
-			// remain constant. We then see if its concentration has gone
-			// negative (this is a problem!)
+			/*
+			 * For each solute we check first whether its concentration should
+			 * remain constant. We then see if its concentration has gone
+			 * negative (this would be a problem!)
+			 */
 			for (int iSol = 0; iSol < nSolute; iSol++)
 				if ( ! isConstSol[iSol] )
 				{
@@ -451,8 +480,10 @@ public class Solver_chemostat extends DiffusionSolver
 			// End of for(int iSol=0; iSol<nSolute; iSol++)
 			dYdT = f2.copy();
 		}// End of while(!lastStep)
-		
-		// Assuming all is well, we then update allSolute to the appropriate value
+		/*
+		 * Assuming all is well, we then update allSolute to the appropriate
+		 * value.
+		 */
 		for (int iSol = 0; iSol < nSolute; iSol++)
 			allSolute[iSol].setAllValueAt(y.get(iSol,0));
 	}
@@ -542,7 +573,7 @@ public class Solver_chemostat extends DiffusionSolver
 	 */
 	public Matrix calcJacobian(Matrix S, Matrix dFdY)
 	{
-		double biomass = 0.0;
+		Double biomass = 0.0;
 		dFdY = Matrix.identity(nSolute,nSolute).times(-Dilution);
 		
 		for (int iReac = 0; iReac < nReaction; iReac++)
@@ -562,9 +593,8 @@ public class Solver_chemostat extends DiffusionSolver
 	{
 		try
 		{
-			for (AllBC aBC : myDomain.getAllBoundaries())
-				if (aBC.hasBulk())
-					aBC.updateBulk(allSolute, allReac, 0.0);
+			for (ConnectedBoundary aBC : myDomain.getAllConnectedBoundaries())
+				aBC.updateBulk(allSolute, allReac, internTimeStep);
 		}
 		catch (Exception e)
 		{
@@ -582,14 +612,9 @@ public class Solver_chemostat extends DiffusionSolver
 	{
 		try
 		{
-			for (AllBC aBC : _domain.getAllBoundaries())
-				if ( aBC.hasBulk() )
-				{
-					Bulk aBulk = aBC.getBulk();
-					if ( aBulk.getName().equals("chemostat") )
-						for (int i = 0; i < nSolute; i++)
-							sInflow.set(i, 0, aBulk._sIn[i]);
-				}
+			Bulk aBulk = myDomain.getChemostat();
+			for (int i = 0; i < nSolute; i++)
+				sInflow.set(i, 0, aBulk._sIn[i]);
 		}
 		catch (Exception e)
 		{

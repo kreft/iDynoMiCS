@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.Math;
 import java.util.*;
+
 import org.jdom.Element;
 
 import idyno.SimTimer;
@@ -24,6 +25,7 @@ import simulator.agent.*;
 import simulator.geometry.ContinuousVector;
 import simulator.Simulator;
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
 
 public class MultiEpiBac extends BactEPS
@@ -58,7 +60,7 @@ public class MultiEpiBac extends BactEPS
 
 	//sonia 8-12-2010
 	//distance based probability ordering management
-	public Map<Double, LocatedAgent> teste = new HashMap <Double, LocatedAgent> ();
+	public Map<Double, LocatedAgent> test = new HashMap <Double, LocatedAgent> ();
 	/* _________________________ CONSTRUCTOR _____________________________ */
 	/**
 	 * Empty constructor ; called to build a progenitor ; the speciesParameter
@@ -94,9 +96,8 @@ public class MultiEpiBac extends BactEPS
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 
 		// Create hosted plasmids
-		for (Element aSpeciesMarkUp : aSpeciesRoot.buildSetMarkUp("plasmid")) {
-			addPlasmid(aSpeciesMarkUp.getAttributeValue("name"));		
-		}
+		for (String aSpeciesName : aSpeciesRoot.getChildrenNames("plasmid"))
+			addPlasmid(aSpeciesName);
 
 		// Genealogy and size management
 		init();
@@ -140,7 +141,7 @@ public class MultiEpiBac extends BactEPS
 		try {
 			// Clone the agent
 			MultiEpiBac baby = sendNewAgent();
-			baby.mutatePop();
+			baby.randomiseMass();
 			baby.setLocation(position);
 			baby.giveName();
 			baby.updateSize();
@@ -151,102 +152,64 @@ public class MultiEpiBac extends BactEPS
 			System.out.println("at createNewAgent in EpiBac error " + e);
 		}
 	}
-
-	@Override
-	public void mutatePop() {
-		// Mutate inherited parameters
-		super.mutatePop();
-		// Now mutate your parameters
-	}
-
+	
 	/* ______________________ CELL DIVISION ___________________ */
 
 	@Override
-	public void mutateAgent() {
-		// Mutate inherited parameters
-		super.mutateAgent();
-
-
-		// Now mutate your parameters
-	}
-
-	@Override
-	public void makeKid() throws CloneNotSupportedException {
-		// Create the new instance
+	public void makeKid() throws CloneNotSupportedException 
+	{
+		/*
+		 * Create the new instance.
+		 */
 		MultiEpiBac baby = sendNewAgent();
-		baby.mutateAgent();
-
-		// Update the lineage
+		/*
+		 * Update the lineage.
+		 */
 		recordGenealogy(baby);
-
-		// Share mass of all compounds between two daughter cells and compute
-		// new size
+		/*
+		 * Share mass of all compounds between two daughter cells and compute
+		 * new size.
+		 */
 		divideCompounds(baby, getBabyMassFrac());
-
-		if(Simulator.isChemostat){
-
-		}else{
-			// Compute movement to apply to both cells
+		/*
+		 * Compute and apply movement to both cells.
+		 */
+		if ( ! Simulator.isChemostat )
+		{
 			setDivisionDirection(getInteractDistance(baby)/2);
-
-			// move both daughter cells
 			baby._movement.subtract(_divisionDirection);
 			_movement.add(_divisionDirection);
 		}
-
-		// Now register the agent inside the guilds and the agent grid
+		/*
+		 * Now register the agent inside the guilds and the agent grid.
+		 */
 		baby.registerBirth();
-
-		//sonia 6/10/09
-		//for now the newborns' plasmids will be given the fixed copy number,
-		// that is they'll have the same copy number as their progenitors
-
-		// Both daughters cells have cloned plasmids ; apply the segregation
-		for (int i = 0; i<plasmidHosted.size(); i++) {
+		/*
+		 * For now the newborns' plasmids will be given the fixed copy number,
+		 * that is they'll have the same copy number as their progenitor.
+		 * Both daughters cells have cloned plasmids ; apply the segregation
+		 */
+		for ( int i = 0; i<plasmidHosted.size(); i++ )
 			plasmidHosted.get(i).segregation(baby.plasmidHosted.get(i));
-
-		}
-
 	}
 
 	/* _____________________________ STEP __________________________________ */
+	
 	/**
 	 * Method called by the STEP method (cf. the Agent class)
 	 */
 	@Override
-	public void internalStep() {
-
-		// Check if some plasmid has a null copy number and remove it if
-		// necessary
+	public void internalStep()
+	{
+		/*
+		 * Check if some plasmid has a null copy number and remove it if
+		 * necessary.
+		 */
 		checkMissingPlasmid();
-
-		// Compute mass growth over all compartments
-		grow();
-
-
-		//sonia 11.10.2010 the hgt will be carried out in a separate function
-
-		/*conjugate();
-
-		conjResult = false;
-		plasmidVector.clear();
-		partnerVector.clear();*/
-
-		// test if the EPS capsule has to be excreted
-		updateSize();	
-
-		manageEPS();
-
-		// Apply this mass growth of all compounds on global radius and mass
-
-		// Divide if you have to
-		if (willDivide()) divide();
-
-		// Die if you have to
-
-		if (willDie()) die(true);
-
-
+		/*
+		 * Everything else is the same as in Bacterium.
+		 */
+		super.internalStep();
 	}
 
 
@@ -400,17 +363,6 @@ public class MultiEpiBac extends BactEPS
 
 	}
 
-	/**
-	 * Remove agent and all references from the system
-	 * 
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void die(Boolean isStarving)
-	{
-		super.die(isStarving);
-	}
-
 	/* __________________ CONJUGATION ___________________________ */
 
 	/**
@@ -477,379 +429,193 @@ public class MultiEpiBac extends BactEPS
 
 
 	/**
-	 * Initiate the search for a recipient cell in the neighbourhood.
+	 * \brief Initiate the search for a recipient cell in the neighbourhood.
+	 * 
 	 * @param aPlasmid
 	 */
-	public synchronized boolean searchConjugation(MultiEpisome aPlasmid) {
-
-		//	int cellExamined = 0;
-		LocatedAgent aLoc = null;
-		// Search a compatible recipient in your neighbourhood
-		Boolean test = false;
-
-
-		//sonia 21.10.09
-		// the scan speed should be multiplied by the agent time step, otherwise the cell is
-		// screening more agents than  it should per unit of time; if the time step is higher than 1h,
-		// then we also have to account for that by adjusting the number of screened individuals
-		// per agentTimestep per hour of the global time step
-
-		/*		double maxTest = 0;
-
-		if(SimTimer.getCurrentTimeStep()>1){
-			maxTest = (this.getSpeciesParam().scanSpeed * _agentGrid.AGENTTIMESTEP)/SimTimer.getCurrentTimeStep();
-		}else{
-			maxTest = this.getSpeciesParam().scanSpeed * _agentGrid.AGENTTIMESTEP;
-		}*/
-
-		if(Simulator.isChemostat){
-
-			Collections.shuffle(_agentGrid.agentList, ExtraMath.random);
-				Agent anAgent = _agentGrid.agentList.getFirst();
-			
-				//for(Agent anAgent: _agentGrid.agentList){
-				//if (aPlasmid.isReadyToConjugate()){ //sonia 11.10.2010 no need to check this because
-													  // only one agent can be infected during one HGT step
-							
-					//if(anAgent instanceof Bacterium){ 
-					//if (cellExamined>maxTest) break;
-				
-						if (anAgent instanceof MultiEpiBac) {
-							if (anAgent != this){
-								_partner = (MultiEpiBac) anAgent;
-								test = isCompatible(aPlasmid, _partner);
-								test &= acceptConjugation(aPlasmid, _partner,1);
-/*								if (test){
-								sendPlasmid(aPlasmid, _partner, elapsedHGTtime);	
-								}*/
-							}
-						}
-					
-			return false;
-
-		}else{ //Biofilm
-
-/*			if(elapsedHGTtime == SimTimer.getCurrentTime()){
-				aPlasmid.nbhList.clear();
-			}*/
-
-
-			if (aPlasmid.nbhList.isEmpty()){
-				// Build your neighbourhood
-				buildNbh(aPlasmid.getPilusLength(), aPlasmid);
+	public synchronized void searchConjugation(MultiEpisome aPlasmid)
+	{
+		if ( Simulator.isChemostat )
+		{
+			int i = ExtraMath.getUniRandInt(_agentGrid.agentList.size());
+			SpecialisedAgent anAgent = _agentGrid.agentList.get(i);			
+			if ( anAgent != this && anAgent instanceof MultiEpiBac)
+			{
+				_partner = (MultiEpiBac) anAgent;
+				if ( isCompatible(aPlasmid, _partner) )
+					acceptConjugation(aPlasmid, _partner, 1);
 			}
-
-
-			//if(_myNeighbors.isEmpty()) return false;
-			if(aPlasmid.nbhList.isEmpty()) return false;
-
-
-			//sonia 8-12-2010
-			// First test whether the plasmid will be transferred and then proceed with the 
-			// distance-based probability of transfer to a nearest recipient
-
-			if(testDonorTransfer(aPlasmid)){
-
-
-				double cumProbSum=0;
-
-				for (int i=0; i< aPlasmid.nbhList.size(); i++){
-
+		}
+		else
+		{
+			/*
+			 * Build your neighbourhood. If it's empty, nothing more to do.
+			 */
+			if ( aPlasmid.nbhList.isEmpty() ) 
+				buildNbh(aPlasmid.getPilusLength(), aPlasmid);
+			if ( aPlasmid.nbhList.isEmpty() )
+				return;
+			/*
+			 * First test whether the plasmid will be transferred and then
+			 * proceed with the distance-based probability of transfer to a
+			 * nearest recipient.
+			 */
+			if ( testDonorTransfer(aPlasmid) )
+			{
+				Double cumProbSum = 0.0;
+				for ( LocatedAgent agent : aPlasmid.nbhList )
+					cumProbSum += agent._distCumProb;
+				Double normRand = ExtraMath.getUniRandDbl()*cumProbSum;
+				/*
+				 * Find a neighbour to try conjugation with.
+				 */
+				LocatedAgent aLoc = null;
+				for (int i = 0; i< aPlasmid.nbhList.size(); i++)
+				{
 					aLoc =	aPlasmid.nbhList.get(i);
-					cumProbSum += aLoc._distCumProb;
-				}
-
-				double random = 0;
-				double normRand =0;
-				random = ExtraMath.getUniRandDbl();
-				normRand = random*cumProbSum;
-
-				int pos=0;
-				for (int i=0; i< aPlasmid.nbhList.size(); i++){
-
-					aLoc =	aPlasmid.nbhList.get(i);
-
-					if(aLoc._distCumProb<normRand){
+					if( aLoc._distCumProb < normRand )
+					{
 						aLoc = aPlasmid.nbhList.remove(i);
-						pos=i;
 						break;
 					}
 				}
-
-
-				//if (aPlasmid.isReadyToConjugate()){				
-				//	if (aLoc instanceof Bacterium) cellExamined++;
-				//	if (cellExamined>maxTest) break;
-
-				// aLoc = aPlasmid.nbhList.remove(pos);
-				if (aLoc instanceof MultiEpiBac) {
-					if(aLoc != this){
-						_partner = (MultiEpiBac) aLoc;
-						test = isCompatible(aPlasmid, _partner);
-						test &= acceptConjugation(aPlasmid, _partner, normRand);
-
-//						if (test) sendPlasmid(aPlasmid, _partner, elapsedHGTtime);
-					}
-
+				if ( aLoc != this && aLoc instanceof MultiEpiBac )
+				{
+					_partner = (MultiEpiBac) aLoc;
+					if ( isCompatible(aPlasmid, _partner) )
+						acceptConjugation(aPlasmid, _partner, 1);
 				}
 			}
-
-			return false;
 		}
-
-
-
 	}
-
+	
 	/**
 	 * List all cells in a given neighbourhood : at the end of the method, the field
 	 * listNbh contains all locatedAgents located in the neighbourhood
 	 * @param nbhRadius
 	 */
-	public void buildNbh(double nbhRadius, MultiEpisome aPlasmid) {
-
-		double dist=0;
-		double dRadius=0;
-		double rRadius=0;		
-		double distProb=0;
-
-		int radius = (int) Math.ceil(nbhRadius/_agentGrid.getResolution());
+	public void buildNbh(Double nbhRadius, MultiEpisome aPlasmid)
+	{
+		/*
+		 * Distance between cell surfaces.
+		 */
+		Double dist = 0.0;
+		/*
+		 * Radii of donor and recipient.
+		 */
+		Double donorRadius, recipRadius;
+		/*
+		 * Probability of conjugation success.
+		 */
+		Double distProb = 0.0;
+		/*
+		 * Search for potential recipients.
+		 */
+		Double radius = Math.ceil(nbhRadius/_agentGrid.getResolution());
 		_agentGrid.getPotentialShovers(_agentGridIndex, radius, _myNeighbors);
-
-
-		// Now remove too far agents (apply circular perimeter)
-		for (int iter = 0; iter<_myNeighbors.size(); iter++) {
-
-			LocatedAgent aLocAgent = _myNeighbors.removeFirst();
-			dist = this.getDistance(aLocAgent);
-
-			//sonia 4/10/2010
-			// the distance between two cells is measured from their surface and not from the centre of their mass
-			dRadius=this.getRadius(false);
-			rRadius = aLocAgent.getRadius(false);
-			dist = dist - dRadius - rRadius;
-
-			if(dist<nbhRadius){
-
-				aLocAgent._distProb = (dRadius*dRadius)/ ((dRadius + dist) * (dRadius + dist));
-				distProb = aLocAgent._distProb ;
-
-				//aPlasmid.nbhList.addLast(aLocAgent);
-				//_myNeighbors.addLast(aLocAgent);
-				teste.put(distProb, aLocAgent);	
+		/*
+		 * Now remove any agents that are too far (apply circular perimeter).
+		 */
+		for ( LocatedAgent aLocAgent : _myNeighbors )
+		{
+			if ( aLocAgent == this )
+				continue;
+			/*
+			 * The distance between two cells is measured from their surface
+			 * and not from the center of their mass.
+			 */
+			donorRadius = this.getRadius(false);
+			recipRadius = aLocAgent.getRadius(false);
+			dist = this.getDistance(aLocAgent) - donorRadius - recipRadius;
+			if ( dist < nbhRadius )
+			{
+				distProb = ExtraMath.sq(donorRadius/(donorRadius+dist));
+				aLocAgent._distProb = distProb;
+				test.put(distProb, aLocAgent);	
 			}	
 		}
-
-		//sonia 10.2010 code for ordering the recipients according to their distance to the donor cell
-
-		for (Iterator<Double> iter1 = teste.keySet().iterator(); iter1.hasNext();) {
-
-			double reach = iter1.next();
-			//System.out.println("porbability based distance is " + reach);
-			if (reach<nbhRadius){
-				aPlasmid.nbhList.addLast(teste.get(reach));
-			}
+		_myNeighbors.clear();
+		/*
+		 * Order the recipients according to their distance to the donor cell.
+		 */
+		for ( Double reach : test.keySet() )
+			if ( reach < nbhRadius )
+				aPlasmid.nbhList.addLast(test.get(reach));
+		/*
+		 * Calculate and apply the cumulative probabilities.
+		 */
+		Double cumulative = 0.0;
+		for ( LocatedAgent aLoc : aPlasmid.nbhList )
+		{
+			cumulative += aLoc._distProb;
+			aLoc._distCumProb = cumulative;
 		}
-		//System.out.println("nbhList with close enough recipients size is " + aPlasmid.nbhList.size());
-
-		double previousVal=0;
-		double newVal=0;
-		int counter =1;
-
-		for (int i = 0; i< aPlasmid.nbhList.size(); i++){
-
-			if (counter ==1){
-				LocatedAgent aLocAgentNew = aPlasmid.nbhList.get(i);
-
-				newVal = aLocAgentNew._distProb;
-
-				aLocAgentNew._distCumProb = newVal;
-
-			}else{
-
-				LocatedAgent aLocAgentPrev = aPlasmid.nbhList.get(i-1);
-				LocatedAgent aLocAgentNew = aPlasmid.nbhList.get(i);
-
-				previousVal = aLocAgentPrev._distProb;
-				newVal = aLocAgentNew._distProb;
-
-				aLocAgentNew._distCumProb = previousVal + newVal;
-			}
-			counter++;
-
-		}
-
-		//Collections.shuffle(_myNeighbors);
-		//Collections.shuffle(aPlasmid.nbhList);
-
 	}
 
-	/* _______________________ HIGH LEVEL METHOD ____________________________ */
-
+	/* ______________________ HIGH LEVEL METHOD ___________________________ */
 
 	/**
 	 * Add a new plasmid to the list of hosted plasmids ; based on the
 	 * species name of the plasmid.
 	 */
-	public void addPlasmid(String plasmidName) {
+	public void addPlasmid(String plasmidName)
+	{
 		try {
-			MultiEpisome aPlasmid = (MultiEpisome) _species.getSpecies(plasmidName).sendNewAgent();
+			MultiEpisome aPlasmid = (MultiEpisome)
+					_species.getSpecies(plasmidName).sendNewAgent();
 			plasmidHosted.add(aPlasmid);
 			aPlasmid.setHost(this);
-			//sonia: 08-06-09
-			//when the cells carrying a plasmid are created we must set the field "timeSpentInHost" of the plasmid
-			// as being the time the cell was born (the currentime)
+			/*
+			 * When the cells carrying a plasmid are created we must set the
+			 * field "timeSpentInHost" of the plasmid as being the time the
+			 * cell was born (the current time).
+			 */
 			aPlasmid.timeSpentInHost = SimTimer.getCurrentTime();
-
-
-		} catch (Exception e) {
-			System.out.println("at EpiBac: addPlasmid error " + e.getMessage());
+		}
+		catch (Exception e)
+		{
+			LogFile.writeError(e, "EpiBac.addPlasmid("+plasmidName+")");
 		}
 	}
-
-	public boolean sendPlasmid(MultiEpisome aPlasmid, MultiEpiBac partner, double elapsedHGTtime) {
-
-		receivePlasmid(aPlasmid, partner);
-		aPlasmid.givePlasmid(elapsedHGTtime);
-
-		return true;
-	}
-
+	
 	/**
-	 * modified by sonia:
-	 * 
-	 * In this method we are also recording the information regarding the location and geneology/family/generation
-	 * of the recipient cell which will then be written in the agentState.xml output file.
 	 * 
 	 * @param aPlasmid
-	 * @param partner
-	 * @return
 	 */
-
-	public boolean receivePlasmid(MultiEpisome aPlasmid, MultiEpiBac partner) {
-		try {			
-
-			//int plListSize = partner._plasmidHosted.size();
-			//ArrayList<String> plHostedNames = new ArrayList<String>();
-
-			// Create a new instance
-			MultiEpisome baby = aPlasmid.sendNewAgent();
-			baby.setHost(partner);
-			//	baby.lastReception = elapsedHGTtime;
-			baby.nbhList.clear();
-			baby.setDefaultCopyNumber();	
-			//baby._newT = SimTimer.getCurrentIter();
-
-			//sonia: 08-06-09
-			//update the time this plasmid has entered the recipient, will be used to calculate its fitness cost
-			baby.timeSpentInHost = SimTimer.getCurrentTime();
-
-			// register the plasmid to the host	
-			//
-			partner.plasmidHosted.add(baby);	
-			partner.addPlasmidReaction(aPlasmid);
-
-			//StringBuffer partnerInfo = new StringBuffer();
-			//partnerInfo.append(partner.getName()+
-			//		","+ partner._family + "," + partner._genealogy + 
-			//		","+ partner._generation + ","+ partner._location);
-			//partnerVector.add(partnerInfo.toString());
-			//plasmidVector.add(aPlasmid.getName());
-			conjResult = true;
-			conjugationEvents++;
-
-
-
-		} catch (Exception e) {
-			System.out.println("At EpiBac receivePlasmid, exception is..." + e);
-			utils.LogFile.writeLog("Error met in EpiBac.receivePlasmid() " +e);		
-		}
-
-		if(conjResult){
-			System.out.println("ONE TRANSFER!");
-		}
-
-		return conjResult;
-	}
-
-	public void losePlasmid(MultiEpisome aPlasmid) {
+	public void losePlasmid(MultiEpisome aPlasmid)
+	{
 		for (int aReaction : aPlasmid.reactionActive)
 			removeReaction(allReactions[aReaction]);
 	}
-
-	/**
-	 * Add active reaction coded on the plasmid to active reaction of the host
-	 * @param aPlasmid
-	 */
-	public void addPlasmidReaction(MultiEpisome aPlasmid) {
-		for (int aReaction : aPlasmid.reactionActive) {
-			addActiveReaction(allReactions[aReaction], true);
-		}
-	}
-
+	
 	@Override
-	public MultiEpiBacParam getSpeciesParam() {
+	public MultiEpiBacParam getSpeciesParam()
+	{
 		return (MultiEpiBacParam) _speciesParam;
 	}
 
 	/**
 	 * Used to write povray files
+	 * 
 	 * @return color of the host if empty, color of the first hosted plasmid
 	 * else
 	 */
 	@Override
-	public Color getColor() {
-
-		MultiEpiBacParam param = getSpeciesParam();
-		boolean test = false;
-
-		if (plasmidHosted.size()==0){
-			//localAgent.setLocalAgentColor(param.rColor);
-			return param.rColor;
-		}
-		loopCol:
-			for(int i=0; i< plasmidHosted.size(); i++){
-				test = plasmidHosted.get(i).isTransConjugant();
-				if(test){
-					break loopCol;
-				}
-			}
-
-		if (test){
-			//localAgent.setLocalAgentColor(param.tColor);
-			return param.tColor;
-
-		}else{
-			//	localAgent.setLocalAgentColor(param.dColor);
-			return param.dColor;
-		}
-
-		//return localAgent.getLocalAgentColor();
-	}
-
-
-
-	public double getMuStar() {
-		return Math.pow(getNetGrowth()/getSpeciesParam().KSat, getSpeciesParam().nBind);
-	}
-
-
-	public int getPlasmidIndex(String plasmidName, Vector <MultiEpisome> plasmidList)
+	public Color getColor()
 	{
-		int index=0;
-		for (int i = 0; i < plasmidList.size(); i++)
-			if(plasmidList.get(i).getName().equals(plasmidName))
-				index = i;
-		return index;
+		MultiEpiBacParam param = getSpeciesParam();
+		if ( plasmidHosted.isEmpty() )
+			return param.rColor;
+		for ( MultiEpisome plasmid : plasmidHosted )
+			if ( plasmid.isTransConjugant() )
+				return param.tColor;
+		return param.dColor;
 	}
-
+	
 	@Override
 	public StringBuffer sendHeader()
 	{
-		// return the header file for this agent's values after sending those for super
-		StringBuffer tempString = super.sendHeader();
-		tempString.append(",plasmid,copyNumber,transconjugant");
-		return tempString;
+		return super.sendHeader().append(",plasmid,copyNumber,transconjugant");
 	}
 	
 	/**
@@ -865,32 +631,19 @@ public class MultiEpiBac extends BactEPS
 	public StringBuffer writeOutput()
 	{
 		StringBuffer tempString = super.writeOutput();
-		
-		for(MultiEpisome anEpi : plasmidHosted)
+		for ( MultiEpisome anEpi : plasmidHosted )
 		{	
 			tempString.append(",");
 			tempString.append(anEpi.getSpeciesParam().plasmidName + ",");
 			tempString.append(anEpi.getCopyNumber()+ ",");
-			//sonia:
-			//count cells that carry a certain type of plasmid; the copy number of the plasmid is irrelevant
-			//for the time being --> that's done in the matlab scripts analysing the agent_sum xml files 
-			
-			if(anEpi.isTransConjugant())
-				tempString.append("1");
-			else
-				tempString.append("0");
+			/*
+			 * Count cells that carry a certain type of plasmid; the copy
+			 * number of the plasmid is irrelevant for the time being -->
+			 * that's done in the matlab scripts analysing the agent_sum xml
+			 * files.
+			 */
+			tempString.append(anEpi.isTransConjugant() ? "1" : "0");
 		}
-		
-		//sonia: this will be used when we want to know the information about the partner, to be able to see
-		//where the conjugation events take place spatially
-		/* if(conjResult){					
-			for (int i=0; i< plasmidVector.size(); i++){
-				tempString.append("conjugation,plasmid,partnerInfo;");
-				tempString.append("1");
-				tempString.append("," + plasmidVector.get(i)+"," + partnerVector.get(i));
-				tempString.append(";\n");
-			}
-		}*/
 		plasmidVector.clear();
 		partnerVector.clear();
 		return tempString;

@@ -75,8 +75,8 @@ public class EpiBac extends BactEPS
 		// Initialisation of the Located agent
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// Create hosted plasmids
-		for (Element aSpeciesMarkUp : aSpeciesRoot.buildSetMarkUp("plasmid"))
-			addPlasmid(aSpeciesMarkUp.getAttributeValue("name"));
+		for (String aSpeciesName : aSpeciesRoot.getChildrenNames("plasmid"))
+			addPlasmid(aSpeciesName);
 		// Genealogy and size management
 		init();
 	}
@@ -109,45 +109,13 @@ public class EpiBac extends BactEPS
 		return baby;
 	}
 
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void createNewAgent(ContinuousVector position)
-	{
-		super.createNewAgent(position);
-	}
-	
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutatePop()
-	{
-		// Mutate inherited parameters
-		super.mutatePop();
-		// Now mutate your parameters
-	}
-
 	/* ______________________ CELL DIVISION ___________________ */
-
-	/**
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void mutateAgent()
-	{
-		// Mutate inherited parameters
-		super.mutateAgent();
-		// Now mutate your parameters
-	}
-
+	
 	@Override
 	public void makeKid() throws CloneNotSupportedException
 	{
 		// Create the new instance
 		EpiBac baby = sendNewAgent();
-		baby.mutateAgent();
 		// Update the lineage
 		recordGenealogy(baby);
 		// Share mass of all compounds between two daughter cells and compute
@@ -238,17 +206,6 @@ public class EpiBac extends BactEPS
 		for (Episome aPlasmid : _plasmidHosted)
 			if (aPlasmid.isReadyToConjugate())
 				searchConjugation(aPlasmid);
-	}
-
-	/**
-	 * Remove agent and all references from the system.
-	 * 
-	 * TODO Consider deleting
-	 */
-	@Override
-	public void die(Boolean isStarving)
-	{
-		super.die(isStarving);
 	}
 
 	/* __________________ CONJUGATION ___________________________ */

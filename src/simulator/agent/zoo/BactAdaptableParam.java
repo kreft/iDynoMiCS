@@ -128,7 +128,7 @@ public class BactAdaptableParam extends BactEPSParam
 		//////////////////////////////////////////////////////////////////////////
 		// create list of reactions during the On state
 		childParser = new XMLParser(switchParser.getChildElement("whenOn"));
-		for (Element aReactionMarkUp : childParser.buildSetMarkUp("reaction")) {
+		for (Element aReactionMarkUp : childParser.getChildrenElements("reaction")) {
 			// Add the reaction to the list of reactions for the on-state
 			// but add only ACTIVE reactions!!
 			reacIndex = aSim.getReactionIndex(aReactionMarkUp.getAttributeValue("name"));
@@ -149,7 +149,7 @@ public class BactAdaptableParam extends BactEPSParam
 		//////////////////////////////////////////////////////////////////////////
 		// create list of reactions during the Off state
 		childParser = new XMLParser(switchParser.getChildElement("whenOff"));
-		for (Element aReactionMarkUp : childParser.buildSetMarkUp("reaction")) {
+		for (Element aReactionMarkUp : childParser.getChildrenElements("reaction")) {
 			// Add the reaction to the list of reactions for the off-state
 			// but add only ACTIVE reactions!!
 			reacIndex = aSim.getReactionIndex(aReactionMarkUp.getAttributeValue("name"));
@@ -173,14 +173,14 @@ public class BactAdaptableParam extends BactEPSParam
 
 		// get type (solute or biomass) and controlling component
 		switchType = childParser.getAttribute("type");
-		switchControl = childParser.getAttribute("name");
+		switchControl = childParser.getName();
 
 		// get whether it's lessThan or greaterThan
 		switchCondition = childParser.getParam("switch");
 
 		// get the concentration or mass for the switch
 		if (switchType.equals("solute")) {
-			switchValue = childParser.getParamConc("concentration");
+			switchValue = childParser.getParamConcn("concentration");
 			switchControlIndex = aSim.soluteDic.indexOf(switchControl);
 			if (switchControlIndex == -1)
 				System.out.println("WARNING: solute "+switchControl+
@@ -194,8 +194,11 @@ public class BactAdaptableParam extends BactEPSParam
 				" used in the <reactionSwitch> markup does not exist.");
 
 		}
-
-
+	}
+	
+	public Color getCellColor(Boolean isSwitchOn)
+	{
+		return isSwitchOn ? onColor : offColor;
 	}
 
 }

@@ -9,10 +9,9 @@
 package simulator;
 
 import utils.ExtraMath;
+import utils.LogFile;
 import utils.XMLParser;
-
 import utils.UnitConverter;
-
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 
@@ -25,7 +24,7 @@ import simulator.geometry.boundaryConditions.AllBC;
  * 
  * @since June 2006
  * @version 1.2
- * @author Andreas DÃ¶tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu), Department of Engineering Sciences and Applied Mathematics, Northwestern University (USA)
  */
@@ -73,7 +72,7 @@ public class SoluteGrid extends SpatialGrid
 		StringBuffer unit = new StringBuffer("");
 
 		// Name the grid
-		gridName = xmlRoot.getAttribute("name");
+		gridName = xmlRoot.getName();
 		
 		// All solute names are stored in a simulation dictionary. Get the position of this solute in this list
 		soluteIndex = aSim.getSoluteIndex(gridName);
@@ -83,36 +82,29 @@ public class SoluteGrid extends SpatialGrid
 
 		// Now to set the resolution and create the grid
 		// First check whether a specific resolution has been set for this grid
-		value = xmlRoot.getParamLength("resolution");
-		
-		if (Double.isNaN(value)) 
-		{
-			// Use that from the domain itself if not
+		if ( xmlRoot.isParamGiven("resolution") )
+			specifyResolution(xmlRoot.getParamLength("resolution"));
+		else
 			useDomaingrid();
-		} 
-		else 
-		{
-			// Specify the resolution from that specified in the protocol file
-			specifyResolution(value);
-		}
 		
 		// Now initialise the grid - setting the grid to the required size
 		initGrids();
 		
 		// Set the diffusivity - if specified in the XML file
-		value = xmlRoot.getParamDbl("diffusivity", unit);
-		value *= UnitConverter.time(unit.toString());
-		value *= UnitConverter.length(unit.toString());
-		value *= UnitConverter.length(unit.toString());
-		diffusivity = value;
-
-		// Set the initial concentration
-		value = xmlRoot.getParamDbl("concentration");
-		// If no value specified, use the maximal concentration of the bulks
-		if (Double.isNaN(value)) value = ExtraMath.max(aSim.world.getAllBulkValue(soluteIndex));
-		// Set the grid to this initial concentration
-		setAllValueAt(value);
+		if ( xmlRoot.isParamGiven("diffusivity") )
+			diffusivity = xmlRoot.getParamDiffusivity("diffusivity");
+		else
+		{
+			LogFile.writeLogAlways(
+				"Error! Solute diffusivity must be given: "+this.gridName);
+		}
 		
+		// Set the initial concentration.
+		if ( xmlRoot.isParamGiven("concentration"))
+			value = xmlRoot.getParamConcn("concentration");
+		else
+			value = aSim.world.getMaxBulkValue(soluteIndex);
+		setAllValueAt(value);
 	}
 
 
@@ -144,7 +136,8 @@ public class SoluteGrid extends SpatialGrid
 	 * @param aName	The type of grid being created (e.g. domainGrid)
 	 * @param aDomain	The computation domain to which this grid is part of
 	 */
-	public SoluteGrid(int nI, int nJ, int nK, double res,String aName, Domain aDomain) {
+	public SoluteGrid(int nI, int nJ, int nK, double res,String aName, Domain aDomain)
+	{
 		super(nI, nJ, nK, res);
 		gridName = aName;
 		_domain = aDomain;
@@ -237,24 +230,21 @@ public class SoluteGrid extends SpatialGrid
 	/* ________________________ MAIN METHODS ______________________________ */
 
 	/**
-	 * \brief Examines all objects at the boundary of the grid, and adjusts them as specified by the boundary condition rules
-	 * 
-	 * Examines all objects at the boundary of the grid, and adjusts them as specified by the boundary condition rules
+	 * \brief Examines all objects at the boundary of the grid, and adjusts
+	 * them as specified by the boundary condition rules.
 	 */
 	public void refreshBoundary() 
 	{
 		for (AllBC aBC:_domain.getAllBoundaries()) 
-		{
 				aBC.refreshBoundary(this);
-		}
 	}
 
 	/**
-	 * \brief Returns the name of this solute grid
+	 * \brief Returns the name of this solute grid.
 	 * 
-	 * Returns the name of this solute grid, as was specified in the protocol file
+	 * Name was specified in the protocol file.
 	 * 
-	 * @return	String value representing the name of this grid
+	 * @return	String value representing the name of this grid.
 	 */
 	public String getName() 
 	{
@@ -262,23 +252,23 @@ public class SoluteGrid extends SpatialGrid
 	}
 
 	/**
-	 * \brief Returns the diffusivity of the solute in this grid
+	 * \brief Returns the diffusivity of the solute in this grid.
 	 * 
-	 * Returns the diffusivity of the solute in this grid, as was specified in the protocol file
+	 * Diffusivity was specified in the protocol file.
 	 * 
-	 * @return	Double value representing the diffusivity in water of this solute
+	 * @return	Double value representing the diffusivity in water of this
+	 * solute.
 	 */
-	public double getDiffusivity() 
+	public Double getDiffusivity() 
 	{
 		return diffusivity;
 	}
 
 	/**
-	 * \brief Returns the computation domain that this solute is associated with
+	 * \brief Returns the computation domain that this solute is associated
+	 * with.
 	 * 
-	 * Returns the computation domain that this solute is associated with
-	 * 
-	 * @return	Computation domain associated with the solute in this grid
+	 * @return	Computation domain associated with the solute in this grid.
 	 */
 	public Domain getDomain() 
 	{

@@ -16,8 +16,9 @@ import utils.XMLParser;
 /**
  * \brief Model a reaction using Hill Kinetics
  * 
- * Model a reaction using Hill Kinetics. Specify the solute of interest as an attribute and the half-maximum concentration (Ks) 
- * and exponent (h) as parameters. Formula: mu = Sh/Khs+Sh
+ * Model a reaction using Hill Kinetics. Specify the solute of interest as an
+ * attribute and the half-maximum concentration (Ks) and exponent (h) as
+ * parameters. Formula: mu = Sh/Khs+Sh
  *
  */
 public class HillKinetic extends IsKineticFactor 

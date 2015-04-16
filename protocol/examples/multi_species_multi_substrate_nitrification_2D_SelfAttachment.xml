@@ -95,8 +95,8 @@ A few general points about protocol files:
 			<param name="adaptive">true</param>
 			<param name="timeStepIni" unit="hour">0.1</param>
 			<param name="timeStepMin" unit="hour">0.05</param>
-			<param name="timeStepMax" unit="hour">1</param>
-			<param name="endOfSimulation" unit="day">3</param>
+			<param name="timeStepMax" unit="hour">1.0</param>
+			<param name="endOfSimulation" unit="day">3.0</param>
 		</timeStep>
 
 		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
@@ -158,7 +158,7 @@ A few general points about protocol files:
 		<param name="diffusivity" unit="m2.day-1">1e-4</param>
 	</solute>
 	<solute domain="MyBiofilm" name="pressure">
-		<param name="diffusivity" unit="m2.day-1">1</param>
+		<param name="diffusivity" unit="m2.day-1">1.0</param>
 	</solute>
 
 	<!-- This section defines the biomass types (NOT species types) that will be used in
@@ -171,13 +171,13 @@ A few general points about protocol files:
 	-->
 
 	<particle name="biomass">
-		<param name="density" unit="g.L-1">150</param>
+		<param name="density" unit="g.L-1">150.0</param>
 	</particle>
 	<particle name="inert">
-		<param name="density" unit="g.L-1">150</param>
+		<param name="density" unit="g.L-1">150.0</param>
 	</particle>
 	<particle name="capsule">
-		<param name="density" unit="g.L-1">75</param>
+		<param name="density" unit="g.L-1">75.0</param>
 	</particle>
 
 
@@ -234,8 +234,8 @@ A few general points about protocol files:
 				<param name="pulseRate" unit="h-1">0.1</param>
 			</solute>
 			<solute name="pressure">
-				<param name="Sbulk" unit="g.L-1">0</param>
-				<param name="Sin" unit="g.L-1">0</param>
+				<param name="Sbulk" unit="g.L-1">0.0</param>
+				<param name="Sin" unit="g.L-1">0.0</param>
 			</solute>
 		</bulk>
 
@@ -253,12 +253,12 @@ A few general points about protocol files:
 					nI*resolution
 			-->
 			<grid nDim="2" nI="33" nJ="33" nK="1"/>
-			<param name="resolution" unit="um">8</param>
+			<param name="resolution" unit="um">8.0</param>
 
 			<!-- 'boundaryLayer' sets the distance above the biofilm/liquid interface that the
 				liquid is assumed to be spatially invariant; within this distance from the biofilm the
 				solute concentration will vary because of diffusion. -->
-			<param name="boundaryLayer" unit="um">40</param>
+			<param name="boundaryLayer" unit="um">40.0</param>
 
 			<!-- The 'biofilmDiffusivity' sets the relative diffusivity of the biofilm compared
 				to water; because the biofilm is slightly more dense than water, the diffusivity
@@ -267,7 +267,7 @@ A few general points about protocol files:
 
 			<!-- The 'specificArea' is the surface-to-volume ratio of the reactor or world system, and
 				is used to scale up the limited computation domain to the global scale. -->
-			<param name="specificArea" unit="m2.m-3">80</param>
+			<param name="specificArea" unit="m2.m-3">80.0</param>
 
 
 			<!-- Now comes the definition of the behavior at the boundaries. In general, there are 6
@@ -308,8 +308,8 @@ A few general points about protocol files:
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
-					<param name="pointIn" x="-1" y="0" z="0"/>
-					<param name="vectorOut" x="-1" y="0" z="0"/>
+					<param name="pointIn" i="-1" j="0" k="0"/>
+					<param name="vectorOut" i="-1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
@@ -317,30 +317,30 @@ A few general points about protocol files:
 				<param name="activeForSolute">yes</param>
 				<param name="bulk">MyTank</param>
 				<shape class="Planar">
-					<param name="pointIn" x="33" y="0" z="0"/>
-					<param name="vectorOut" x="1" y="0" z="0"/>
+					<param name="pointIn" i="33" j="0" k="0"/>
+					<param name="vectorOut" i="1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0z">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="-1" z="0"/>
-					<param name="vectorOut" x="0" y="-1" z="0"/>
+					<param name="pointIn" i="0" j="-1" k="0"/>
+					<param name="vectorOut" i="0" j="-1" k="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="33" z="0"/>
-					<param name="vectorOut" x="0" y="1" z="0"/>
+					<param name="pointIn" i="0" j="33" k="0"/>
+					<param name="vectorOut" i="0" j="1" k="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="-1"/>
-					<param name="vectorOut" x="0" y="0" z="-1"/>
+					<param name="pointIn" i="0" j="0" k="-1"/>
+					<param name="vectorOut" i="0" j="0" k="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" x="0" y="0" z="1"/>
-					<param name="vectorOut" x="0" y="0" z="1"/>
+					<param name="pointIn" i="0" j="0" k="1"/>
+					<param name="vectorOut" i="0" j="0" k="1"/>
 				</shape>
 			</boundaryCondition>
 		</computationDomain>
@@ -799,40 +799,40 @@ A few general points about protocol files:
 		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
 		
 		<!-- Hour to start cell injection-->
-		<param name="cellInjectionStartHour" unit="hour">0</param>
+		<param name="cellInjectionStartHour" unit="hour">0.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10.0</param>
 
 		<!-- Hour to stop cell injection -->
-		<param name="cellInjectionEndHour" unit="hour">72</param>
+		<param name="cellInjectionEndHour" unit="hour">72.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
-		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0.0</param>
 	</species>
 
 
 	<species class="BactAdaptable" name="MySwitchHeterotroph">
 		<particle name="biomass">
-			<param name="mass" unit="fg">0</param>
+			<param name="mass" unit="fg">0.0</param>
 		</particle>
 		<particle name="inert">
-			<param name="mass" unit="fg">0</param>
+			<param name="mass" unit="fg">0.0</param>
 		</particle>
 
 		<param name="color">white</param>
 		<param name="computationDomain">MyBiofilm</param>
-		<param name="divRadius" unit="um">3</param>
+		<param name="divRadius" unit="um">3.0</param>
 		<param name="divRadiusCV">0.1</param>
 		<param name="deathRadius" unit="um">0.1</param>
 		<param name="deathRadiusCV">0.1</param>
 		<param name="babyMassFrac">0.5</param>
 		<param name="babyMassFracCV">0.05</param>
 		<param name="shoveFactor" unit="um">1.15</param>
-		<param name="shoveLimit" unit="um">0</param>
+		<param name="shoveLimit" unit="um">0.0</param>
 
         <param name="cellRunSpeed" unit="um/sec">30.0</param>
-		<param name="tumbleInt" unit="seconds">2</param>
+		<param name="tumbleInt" unit="seconds">2.0</param>
 		<param name="stickinessAddition" unit="um">0.5</param>
 
 		<param name="epsMax">0.1</param>
@@ -848,13 +848,13 @@ A few general points about protocol files:
 			<whenOff>
 				<reaction name="MyGrowthHeterotrophs" status="active"/>
 				<reaction name="MyMaintenanceHeterotrophs" status="active"/>
-				<param name="switchLag" unit="hour">0</param>
+				<param name="switchLag" unit="hour">0.0</param>
 				<param name="color">white</param>
 			</whenOff>
 			<whenOn>
 				<reaction name="MyAnaerobicGrowthHeterotrophs" status="active"/>
 				<reaction name="MyAnaerobicMaintenanceHeterotrophs" status="active"/>
-				<param name="switchLag" unit="hour">3</param>
+				<param name="switchLag" unit="hour">3.0</param>
 				<param name="color">black</param>
 			</whenOn>
 			<onCondition type="solute" name="o2d">
@@ -866,16 +866,16 @@ A few general points about protocol files:
 		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
 		
 		<!-- Hour to start cell injection-->
-		<param name="cellInjectionStartHour" unit="hour">0</param>
+		<param name="cellInjectionStartHour" unit="hour">0.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10.0</param>
 
 		<!-- Hour to stop cell injection -->
-		<param name="cellInjectionEndHour" unit="hour">72</param>
+		<param name="cellInjectionEndHour" unit="hour">72.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
-		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0.0</param>
 
 	</species>
 	

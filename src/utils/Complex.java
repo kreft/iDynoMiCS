@@ -9,189 +9,191 @@
 package utils;
 
 /**
- * \brief Class for storing complex numbers as two doubles representing real and imaginary part, respectively.
+ * \brief Class for storing complex numbers as two doubles representing real
+ * and imaginary part, respectively.
  * 
- * Class for storing complex numbers as two doubles representing real and imaginary part, respectively. Includes basic math operations 
- * (addition, subtraction, multiplication, division) 
+ * Includes basic math operations (addition, subtraction, multiplication,
+ * division). 
  *
- * @author Andreas Dotsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany).
  */
-public class Complex {
-	
-
+public class Complex
+{	
 	/**
 	 * 'Real' part of this complex number
 	 */
-	private double real;
+	private Double real;
 	
 	/**
 	 * 'Imaginary' part of this complex number
 	 */
-	private double imag;
+	private Double imag;
 	
 	/**
 	 * \brief Default constructor. Sets number to 0 + 0i
-	 *
-	 * Default constructor. Sets number to 0 + 0i
 	 */
-	public Complex(){
-		this.real = 0d;
-		this.imag = 0d;
+	public Complex()
+	{
+		this.real = 0.0;
+		this.imag = 0.0;
 	}
 	
 	/**
-	 * \brief Specific constructor, setting number to given real and imaginary part
+	 * \brief Specific constructor, setting number to given real and imaginary
+	 * part.
 	 * 
-	 * Specific constructor, setting number to given real and imaginary part
-	 * 
-	 * @param realPart	Number to be assigned to the 'Real' part of this complex number
-	 * @param imaginaryPart	Number to be assigned to the 'Imaginary' part of this complex number
+	 * @param realPart	Number to be assigned to the 'Real' part of this
+	 * complex number.
+	 * @param imaginaryPart	Number to be assigned to the 'Imaginary' part of
+	 * this complex number.
 	 */
-	public Complex(double realPart, double imaginaryPart){
+	public Complex(Double realPart, Double imaginaryPart)
+	{
 		this.real = realPart;
 		this.imag = imaginaryPart;
 	}
 	
 	/**
-	 * \brief Utility to add a complex number c to this complex number
+	 * \brief Utility to add a complex number c to this complex number.
 	 * 
-	 * Utility to add a complex number c to this complex number
-	 * 
-	 * @param c	Complex number being added to this complex number
+	 * @param c	Complex number being added to this complex number.
 	 */
-	public void add(Complex c){
+	public void add(Complex c)
+	{
 		this.real += c.getReal();
 		this.imag += c.getImag();
 	}
 	
 	/**
-	 * \brief Utility to subtract a complex number c from this complex number
+	 * \brief Utility to subtract a complex number c from this complex number.
 	 * 
-	 * Utility to subtract a complex number c from this complex number
-	 * 
-	 * @param c	Complex number being subtracted from this complex number
+	 * @param c	Complex number being subtracted from this complex number.
 	 */
-	public void sub(Complex c){
+	public void sub(Complex c)
+	{
 		this.real -= c.getReal(); 
 		this.imag -= c.getImag();
 	}
 	
 	/**
-	 * \brief Utility to multiply a complex number c to this complex number
+	 * \brief Utility to multiply a complex number c to this complex number.
 	 * 
-	 * Utility to multiply a complex number c to this complex number
-	 * 
-	 * @param c	Complex number being multiplied to this complex number
+	 * @param c	Complex number being multiplied to this complex number.
 	 */
-	public void mul(Complex c){
-		double re = this.real;
-		double im = this.imag;
+	public void mul(Complex c)
+	{
+		Double re = this.real;
+		Double im = this.imag;
 		this.real = re * c.getReal() - im * c.getImag();
 		this.imag = re * c.getImag() + im * c.getReal();
 	}
 	
 	/**
-	 * \brief Utility to divide a complex number by complex number c
+	 * \brief Utility to divide a complex number by complex number c.
 	 * 
-	 * Utility to divide a complex number by this complex number c
-	 * 
-	 * @param c	Complex number by which this object is being divided 
+	 * @param c	Complex number by which this object is being divided .
 	 */
-	public void div(Complex c){
-		double re = this.real;
-		double im = this.imag;
-		double  d = c.getReal() * c.getReal() + c.getImag() * c.getImag();
+	public void div(Complex c)
+	{
+		Double re = this.real;
+		Double im = this.imag;
+		Double  d = c.getReal() * c.getReal() + c.getImag() * c.getImag();
 		this.real = (re * c.getReal() + im * c.getImag())/d;
 		this.imag = (im * c.getReal() - re * c.getImag())/d;
 	}
 
 	/**
-	 * \brief Utility to add a double to this complex number
+	 * \brief Utility to add a double to this complex number.
 	 * 
-	 * Utility to add a double to this complex number
-	 * 
-	 * @param z	Double being added to this number
+	 * @param z	Double being added to this number.
 	 */
-	public void add(double z){
+	public void add(Double z)
+	{
 		this.real += z;
 	}
 	
 	/**
-	 * \brief Utility to subtract a double from this complex number
+	 * \brief Utility to subtract a double from this complex number.
 	 * 
-	 * Utility to subtract a double from this complex number
-	 * 
-	 * @param z	Double being subtracted from this number
+	 * @param z	Double being subtracted from this number.
 	 */
-	public void sub(double z){
+	public void sub(Double z)
+	{
 		this.real -= z; 
 	}
 	
 	/**
-	 * \brief Utility to multiply this complex number by a double
+	 * \brief Utility to multiply this complex number by a double.
 	 * 
-	 * Utility to multiply this complex number by a double
-	 * 
-	 * @param z	Double being multiplied to this complex number
+	 * @param z	Double being multiplied to this complex number.
 	 */
-	public void mul(double z){
+	public void mul(Double z)
+	{
 		this.real *= z;
 		this.imag *= z;
 	}
 	
 	/**
-	 * \brief Utility to divide this complex number by a double
+	 * \brief Utility to divide this complex number by a double.
 	 * 
-	 * Utility to divide this complex number by a double
-	 * 
-	 * @param z	Double being divided into this complex number
+	 * @param z	Double being divided into this complex number.
 	 */
-	public void div(double z){
+	public void div(Double z)
+	{
 		this.real /= z;
 		this.imag /= z;
 	}
 	
 	/**
-	 * \brief Sets the real part of this number
+	 * \brief Sets the real part of this number.
 	 * 
-	 * Sets the real part of this number
-	 * 
-	 * @param realPart	Double value to set the real part of this number too
+	 * @param realPart	Double value to set the real part of this number to.
 	 */
-	public void setReal(double realPart){
+	public void setReal(Double realPart)
+	{
 		this.real = realPart;
 	}
 
 	/**
-	 * \brief Sets the imaginary part of this number
+	 * \brief Sets the imaginary part of this number.
 	 * 
-	 * Sets the imaginary part of this number
-	 * 
-	 * @param imaginaryPart	Double value to set the imaginary part of this number too
+	 * @param imaginaryPart	Double value to set the imaginary part of this
+	 * number to.
 	 */
-	public void setImag(double imaginaryPart){
+	public void setImag(Double imaginaryPart)
+	{
 		this.imag = imaginaryPart;
 	}
 	
 	/**
-	 * \brief Returns the real part of this number
+	 * \brief Returns the real part of this number.
 	 * 
-	 * Returns the real part of this number
-	 * 
-	 * @return Double value stating the value of the real part of this complex number
+	 * @return Double value stating the value of the real part of this complex
+	 * number.
 	 */
-	public double getReal(){
+	public Double getReal()
+	{
 		return this.real;
 	}
 	
 	/**
-	 * \brief Returns the imaginary part of this number
+	 * \brief Returns the imaginary part of this number.
 	 * 
-	 * Returns the imaginary part of this number
-	 * 
-	 * @return Double value stating the value of the imaginary part of this complex number
+	 * @return Double value stating the value of the imaginary part of this
+	 * complex number.
 	 */
-	public double getImag(){
+	public Double getImag()
+	{
 		return this.imag;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public Boolean isReal()
+	{
+		return (this.imag == 0.0);
 	}
 }

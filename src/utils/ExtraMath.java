@@ -141,22 +141,6 @@ public final class ExtraMath
 	}
 	
 	/**
-	 * \brief Calculate 2 to the power of x where x is a long integer.
-	 * 
-	 * Returns 1 if x is less than zero.
-	 * 
-	 * @param x
-	 * @return 2^x
-	 */
-	public static final long exp2long(int x)
-	{
-		long out = 1;
-		for (int i = 0; i< x; i++)
-			out *= 2;
-		return out;
-	}
-	
-	/**
 	 * \brief Calculate 2 to the power of x where x is a double.
 	 * 
 	 * @param x The exponent
@@ -172,6 +156,8 @@ public final class ExtraMath
 	 * Pythagoras.
 	 * 
 	 * Formula: sqrt( a*a + b*b )
+	 * 
+	 * TODO replace references to this with Math.hypot
 	 * 
 	 * @param a Double value of the first side of the triangle.
 	 * @param b Double value of the second side of the triangle.
@@ -247,6 +233,44 @@ public final class ExtraMath
 	public static final Double triangleSide(Double hypotenuse, Double sideA, Double sideB)
 	{
 		return Math.sqrt(sq(hypotenuse) - sq(sideA) - sq(sideB));
+	}
+	
+	/**
+	 * \brief Calculates the roots of a quadratic equation.
+	 * 
+	 * Form of the equation should be 
+	 * a*x^2 + b*x + c = 0
+	 * where x is the variable to be solved.
+	 * 
+	 *  
+	 * 
+	 * @param a
+	 * @param b
+	 * @param c
+	 * @return
+	 */
+	public static final Complex[] rootsQuadratic(Double a, Double b, Double c)
+	{
+		Double discriminant = sq(b) - (4.0*a*c);
+		Complex[] out = new Complex[2];
+		if ( discriminant < 0.0 )
+		{
+			discriminant = Math.sqrt(-discriminant);
+			for ( Complex num : out )
+				num.setImag(discriminant);
+		}
+		else
+		{
+			discriminant = Math.sqrt(discriminant);
+			for ( Complex num : out )
+				num.setReal(discriminant);
+		}
+		for ( Complex num : out )
+		{
+			num.add(-b);
+			num.div(2*a);
+		}
+		return out;
 	}
 	
 	/*  ----------------------------- Shapes  ----------------------------- */
@@ -405,7 +429,7 @@ public final class ExtraMath
 	 * \brief Return the minimum entry in a Double array.
 	 * 
 	 * @param array Array of Doubles.
-	 * @return Least Double in a.
+	 * @return Least Double in array.
 	 */
 	public static Double min(Double[] array)
 	{
@@ -418,7 +442,7 @@ public final class ExtraMath
 	/**
 	 * \brief Determine the sum of an array of doubles.
 	 * 
-	 * Takes care to exclude any infinites or NaN's.
+	 * Takes care to exclude any infinities or NaN's.
 	 * 
 	 * @param array Array of doubles
 	 * @return
@@ -427,7 +451,7 @@ public final class ExtraMath
 	{
 		Double sum = 0.0;
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if ( Double.isFinite(value) )
 				sum += value;
 		return sum;
 	}
@@ -445,7 +469,7 @@ public final class ExtraMath
 		Double out = 0.0;
 		Double n = 0.0;
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if( Double.isFinite(value) )
 			{
 					out += value;
 					n++;
@@ -475,7 +499,7 @@ public final class ExtraMath
 		Double n = 0.0;
 		
 		for (Double value : array)
-			if(!Double.isInfinite(value) && !Double.isNaN(value))
+			if( Double.isFinite(value) )
 			{
 				sum += sq(value - mean);
 				n++;
@@ -609,7 +633,8 @@ public final class ExtraMath
 	 * 
 	 * @return A uniformly distributed random number in [0,1).
 	 */
-	public static Double getUniRandDbl() {
+	public static Double getUniRandDbl()
+	{
 		return random.nextDouble();
 	}
 	
@@ -623,6 +648,18 @@ public final class ExtraMath
 	public static Double getUniRandDbl(Double lBound, Double uBound)
 	{
 		return getUniRandDbl()*(uBound-lBound)+lBound;
+	}
+	
+	/**
+	 * \brief Return a uniformly distributed random number between 0 and 2*pi.
+	 * 
+	 * Lower bound (0) is inclusive, upper bound (2*pi) is exclusive.
+	 * 
+	 * @return A uniformly distributed random number in [0, 2*pi).
+	 */
+	public static Double getUniRandAngle()
+	{
+		return 2 * Math.PI * random.nextDouble();
 	}
 	
 	/**
