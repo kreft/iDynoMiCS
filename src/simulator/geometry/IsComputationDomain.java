@@ -20,7 +20,8 @@ import simulator.geometry.boundaryConditions.AllBC;
  * \brief Interface describing mandatory methods for a computation domain
  * object. The default class is "ComputationDomain" but others may be defined.
  * 
- * @author Andreas D�tsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre for Infection Research (Germany)
+ * @author Andreas Dötsch (andreas.doetsch@helmholtz-hzi.de), Helmholtz Centre
+ * for Infection Research (Germany)
  * @author Laurent Lardon (lardonl@supagro.inra.fr), INRA, France
  *
  */

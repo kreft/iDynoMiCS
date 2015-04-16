@@ -37,30 +37,7 @@ public class BactEPS extends Bacterium
 		super();
 		_speciesParam = new BactEPSParam();
 	}
-
-	/**
-	 * \brief Called at each time step of the simulation to compute mass growth and update radius, mass, and volume. In this case also manages EPS hydrolysis
-	 * 
-	 * Called at each time step of the simulation (under the control of the method Step of the class Agent) to compute mass growth 
-	 * and update radius, mass, and volume. Also determines whether the agent has reached the size at which it must divide, and 
-	 * monitors agent death. In this case also manages EPS hydrolysis
-	 */
-	@Override
-	protected void internalStep() {
-		// Compute mass growth over all compartments
-		grow();
-		updateSize();
-
-		// test if the EPS capsule has to be excreted
-		manageEPS();
-
-		// Divide if you have to
-		if (willDivide()) divide();
-
-		// Die if you have to
-		if (willDie()) die(true);
-	}
-
+	
 	/**
 	 * \brief Manages EPS hydrolyse by the agent and distribution between neighbouring agents
 	 * 

@@ -271,7 +271,13 @@ public class DiscreteVector implements Cloneable, Serializable
 	 */
 	public Double cosAngle(DiscreteVector v)
 	{
-		return prodScalar(v)/(this.norm() * v.norm());
+		/*
+		 * Returning 0 if the dot product is 0 removes the danger of
+		 * dividing 0/0.0 and also speeds things up slightly if the vectors
+		 * are orthogonal.
+		 */
+		int dotProd = prodScalar(v);
+		return (dotProd == 0 ) ? 0 : dotProd/(this.norm() * v.norm());
 	}
 	
 	public Boolean isParallel(DiscreteVector other)

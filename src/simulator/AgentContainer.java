@@ -320,8 +320,15 @@ public class AgentContainer
 			if ( ! Simulator.isChemostat )
 				followPressure();
 			
+			for ( int i = 0; i < agentList.size(); i++ )
+				agentList.get(i).step();
+			/*
+			 * TODO Rob 16Apr2015: Java is complaining about
+			 * "java.util.ConcurrentModificationException"
+			 * here, so using a basic for loop until I work out what's wrong. 
 			for ( SpecialisedAgent agent : agentList )
 				agent.step();
+			*/
 			
 			Collections.shuffle(agentList, ExtraMath.random);
 
@@ -723,17 +730,8 @@ public class AgentContainer
 		 * After having shuffled the list (during the step()) with all the
 		 * agents we are now ready to kill agents according to the dilution
 		 * value read from the Bulk class.
-		 * 
-		 * Sonia:2.03.2010 Just in case, let's do it again
 		 */
-		Collections.shuffle(agentList, ExtraMath.random);
-		Bulk aBulk;
-		for ( ConnectedBoundary aBC : domain.getAllConnectedBoundaries() )
-		{
-			aBulk = ((ConnectedBoundary) aBC).getBulk();
-			if ( aBulk.nameEquals("chemostat") )
-				Dfactor = aBulk._D;
-		}
+		Dfactor = domain.getChemostat()._D;
 		
 		int agentsToDilute = 0;
 		if (EROSIONMETHOD)

@@ -45,8 +45,9 @@ public class SpeciesParam
 	public String getSpeciesParameterString(String paramName,
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		String out = aSpeciesRoot.getParam(paramName);
-		return ( out == null ) ? speciesDefaults.getParam(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParam(paramName) : 
+					speciesDefaults.getParam(paramName);
 	}
 	
 	/**
@@ -60,56 +61,56 @@ public class SpeciesParam
 	public Integer getSpeciesParameterInteger(String paramName,
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Integer out = aSpeciesRoot.getParamInt(paramName);
-		return (out == XMLParser.nullInt) ?
-								speciesDefaults.getParamInt(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamInt(paramName) : 
+					speciesDefaults.getParamInt(paramName);
 	}
 
 	public Double getSpeciesParameterDouble(String paramName,
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Double out = aSpeciesRoot.getParamDbl(paramName);
-		return (out == XMLParser.nullDbl) ? 
-								speciesDefaults.getParamDbl(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamDbl(paramName) : 
+					speciesDefaults.getParamDbl(paramName);
 	}
 
 	public Double getSpeciesParameterLength(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Double out = aSpeciesRoot.getParamLength(paramName);
-		return (out == XMLParser.nullDbl) ? 
-							speciesDefaults.getParamLength(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamLength(paramName) : 
+					speciesDefaults.getParamLength(paramName);
 	}
 	
 	public Double getSpeciesParameterMass(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Double out = aSpeciesRoot.getParamMass(paramName);
-		return (out == XMLParser.nullDbl) ? 
-								speciesDefaults.getParamMass(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamMass(paramName) : 
+					speciesDefaults.getParamMass(paramName);
 	}
 	
 	public Double getSpeciesParameterTime(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Double out = aSpeciesRoot.getParamTime(paramName);
-		return (out == XMLParser.nullDbl) ? 
-								speciesDefaults.getParamTime(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamTime(paramName) : 
+					speciesDefaults.getParamTime(paramName);
 	}
 	
 	public Double getSpeciesParameterConcn(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Double out = aSpeciesRoot.getParamConcn(paramName);
-		return (out == XMLParser.nullDbl) ? 
-							speciesDefaults.getParamConcn(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamConcn(paramName) : 
+					speciesDefaults.getParamConcn(paramName);
 	}
 	
 	public Boolean getSpeciesParameterBool(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{
-		Boolean out = aSpeciesRoot.getParamBool(paramName);
-		return ( out == XMLParser.nullBool ) ?
-								speciesDefaults.getParamBool(paramName) : out;
+		return (aSpeciesRoot.isParamGiven(paramName)) ? 
+					aSpeciesRoot.getParamBool(paramName) : 
+					speciesDefaults.getParamBool(paramName);
 	}
 }

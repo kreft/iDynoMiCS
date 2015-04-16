@@ -658,7 +658,7 @@ public class Simulator
 		list = _protocolFile.getChildrenElements("particle");
 		particleDic = new ArrayList<String>(list.size());
 		for ( Element aChild : list )
-			particleDic.add(aChild.getName());
+			particleDic.add(aChild.getAttributeValue("name"));
 		if ( particleDic.remove("capsule") )
 			particleDic.add("capsule");
 		/*
@@ -668,14 +668,14 @@ public class Simulator
 		reactionDic = new ArrayList<String>(list.size());
 		reactionList = new Reaction[list.size()];
 		for ( Element aChild : list )
-			reactionDic.add(aChild.getName());
+			reactionDic.add(aChild.getAttributeValue("name"));
 		/* 
 		 * Build the dictionary of "species".
 		 */
 		list = _protocolFile.getChildrenElements("species");
 		speciesDic = new ArrayList<String>(list.size());
 		for ( Element aChild : list )
-			speciesDic.add(aChild.getName());
+			speciesDic.add(aChild.getAttributeValue("name"));
 		/* 
 		 * Build the dictionary of "solvers".
 		 */
@@ -683,7 +683,7 @@ public class Simulator
 		solverDic = new ArrayList<String>(list.size());
 		solverList = new DiffusionSolver[list.size()];
 		for ( Element aChild : list )
-			solverDic.add(aChild.getName());
+			solverDic.add(aChild.getAttributeValue("name"));
 	}
 
 	/**
@@ -1542,7 +1542,8 @@ public class Simulator
 			return null;
 	}
 
-	public int getParticleIndex(String particleName) {
+	public int getParticleIndex(String particleName)
+	{
 		return particleDic.indexOf(particleName);
 	}
 

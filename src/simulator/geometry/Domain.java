@@ -431,6 +431,18 @@ public class Domain implements IsComputationDomain
 		return out;
 	}
 	
+	public Bulk getChemostat()
+	{
+		Bulk aBulk;
+		for (ConnectedBoundary aBC : getAllConnectedBoundaries())
+		{
+			aBulk = aBC.getBulk();
+			if( aBulk != null && aBulk.nameEquals("chemostat") )
+				return aBulk;
+		}
+		return null;
+	}
+	
 	/**
 	 * \brief Creates an array list containing the 'i' coordinate of the
 	 * computation domain that is the top of the boundary layer.
@@ -499,13 +511,11 @@ public class Domain implements IsComputationDomain
 	 */
 	public void calculateComputationDomainGrids()
 	{
-		LogFile.writeLogDebug("Debugging Domain.calculateComputationDomainGrids()");
 		for (int i = 1; i <= _nI; i++) 
 			for (int j = 1; j <= _nJ; j++) 
 				for (int k = 1; k <= _nK; k++)
 					if ( _biomassGrid.grid[i][j][k] > 0.0 )
 					{
-						LogFile.writeLogDebug("\t("+i+","+j+","+k+") is biomass");
 						/*
 						 * This is biomass.
 						 */
@@ -598,9 +608,8 @@ public class Domain implements IsComputationDomain
 	 */
 	private Boolean bdryHasFreeNbh()
 	{
-		if (is3D())
+		if ( is3D() )
 		{
-			// 3D grid
 			for (int i = -1; i < 2; i++)
 				for (int j = -1; j < 2; j++)
 					for (int k = -1; k < 2; k++)
@@ -610,7 +619,6 @@ public class Domain implements IsComputationDomain
 		}
 		else
 		{
-			// 2D grid
 			for (int i = -1; i < 2; i++)
 				for (int j = -1; j < 2; j++)
 					if (_boundaryLayer.grid[_i+i][_j+j][1].equals(0.0))
@@ -640,8 +648,6 @@ public class Domain implements IsComputationDomain
 		 */
 		if ( _dilationBand == 0.0 )
 			return 0.0;
-		LogFile.writeLogDebug("Debugging Domain.checkDilationRadius()");
-		LogFile.writeLogDebug("\tLooking at ("+n+","+m+","+l+")");
 		int iInterval = (int) Math.floor(_dilationBand/_resolution);
 		int jInterval, kInterval;
 		DiscreteVector coord = new DiscreteVector();
@@ -689,21 +695,13 @@ public class Domain implements IsComputationDomain
 	 */
 	protected Boolean checkDilationCoord(DiscreteVector coord)
 	{
-		LogFile.writeLogDebug("Debugging Domain.checkDilationCoord()");
 		for (AllBC aBC : _boundaryList )
 			aBC.applyBoundary(coord);
-		if ( _biomassGrid.getValueAt(coord) > 0.0 )
-		{
-			LogFile.writeLogDebug("\t"+coord.toString()+" is biomass");
-			return true;
-		}
-		if ( _domainGrid.getValueAt(coord) == 0.0 )
-		{
-			LogFile.writeLogDebug("\t"+coord.toString()+" is solid");
-			return true;
-		}
-		LogFile.writeLogDebug("\t"+coord.toString()+" is liquid");
-		return false;
+		/*
+		 * Return true if this is biomass or substratum.
+		 */
+		return ( _biomassGrid.getValueAt(coord) > 0.0 ) ||
+				( _domainGrid.getValueAt(coord) == 0.0 );
 	}
 	
 	/**

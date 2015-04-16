@@ -194,8 +194,11 @@ public class BactAdaptableParam extends BactEPSParam
 				" used in the <reactionSwitch> markup does not exist.");
 
 		}
-
-
+	}
+	
+	public Color getCellColor(Boolean isSwitchOn)
+	{
+		return isSwitchOn ? onColor : offColor;
 	}
 
 }

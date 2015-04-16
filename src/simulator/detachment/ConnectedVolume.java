@@ -153,7 +153,7 @@ public class ConnectedVolume
 				test = test || _cvf[_shoveGrid[index].nbhIndex[1][1][0]];
 				test = test || _cvf[_shoveGrid[index].nbhIndex[1][1][2]];
 			}
-
+			
 			if ( test )
 				return _cvf[index] = true;
 		}

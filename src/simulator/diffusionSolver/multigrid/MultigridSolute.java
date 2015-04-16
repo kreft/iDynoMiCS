@@ -748,11 +748,10 @@ public class MultigridSolute
 	 */
 	public void readBulk()
 	{
-		for (AllBC aBC : _domain.getAllBoundaries())
-			if ( aBC instanceof ConnectedBoundary )
-			{
-				sBulk = ((ConnectedBoundary) aBC).getBulkValue(realGrid.soluteIndex);
-				return;
-			}
+		for ( ConnectedBoundary aBC : _domain.getAllConnectedBoundaries() )
+		{
+			sBulk = aBC.getBulkValue(realGrid.soluteIndex);
+			return;
+		}
 	}
 }
