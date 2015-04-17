@@ -1065,17 +1065,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	{
 		return false;
 	}
-
-	/**
-	 * \brief Report whether this agent contains any inert particles.
-	 * 
-	 * @return	Boolean noting whether this agent contains any inert particles.
-	 */
-	public Boolean hasInert()
-	{
-		return false;
-	}
-
+	
 	/**
 	 * \brief Return the shove factor to be used in shoving for this
 	 * species of agent.

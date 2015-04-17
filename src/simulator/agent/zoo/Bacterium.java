@@ -275,16 +275,23 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	@Override
 	protected void internalStep()
 	{
-		// Compute mass growth over all compartments.
+		/*
+		 * Compute mass growth over all compartments.
+		 */
 		grow();
 		updateSize();
-		
-		// Test if the EPS capsule has to be excreted.
+		/*
+		 * Test if the EPS capsule has to be excreted.
+		 */
 		manageEPS();
-		// Divide if you have to.
+		/*
+		 * Divide if you have to.
+		 */
 		if ( willDivide() )
 			divide();
-		// Die if you have to.
+		/*
+		 * Die if you have to.
+		 */
 		if ( willDie() )
 		{
 			this.death = "tooSmall";
@@ -316,12 +323,11 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	{
 		if ( ! _hasEps )
 			return;
-		// Manage excretion.
-		if (_volume/_totalVolume<(1-getSpeciesParam().epsMax))
-		{
-			Double ratio = ExtraMath.getUniRand(.6, .9);
-			excreteEPS(ratio);
-		}
+		/*
+		 * Manage excretion.
+		 */
+		if ( _volume < _totalVolume*(1-getSpeciesParam().epsMax) )
+			excreteEPS(ExtraMath.getUniRand(.6, .9));
 	}
 
 	/**
@@ -331,13 +337,19 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 */
 	public void excreteEPS(Double ratio)
 	{
-		int indexEPS = this._agentGrid.mySim.getParticleIndex("capsule");
-		// Check that the mass to excrete does exist.
+		int indexEPS = getIndexCapsule();
+		/*
+		 * Check that the mass to excrete does exist.
+		 */
 		if ( particleMass[indexEPS]*ratio <= 0.0 )
 			return;
-		// Create the particle.
+		/*
+		 * Create the particle.
+		 */
 		ParticulateEPS eps = (ParticulateEPS) _epsSpecies.getProgenitor();
-		// If the particle has been sucessfully created, update your size.
+		/*
+		 * If the particle has been successfully created, update your size.
+		 */
 		if ( eps.createByExcretion(this, ratio) )
 		{
 			particleMass[indexEPS] *= (1.0 - ratio);
@@ -356,20 +368,17 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	 */
 	public void guessMass()
 	{
-		Double divVol;
-		// We calculate the mass-at-division.
+		Double val = getSpeciesParam().divRadius;
+		/*
+		 * We calculate the mass-at-division:
+		 *  - in chemostats and 3D the cell is spherical.
+		 *  - in 2D the cell is cylindrical.
+		 */
 		if (Simulator.isChemostat || _agentGrid.is3D)
-		{
-			// In chemostats and 3D the cell is spherical.
-			divVol = ExtraMath.volumeOfASphere(getSpeciesParam().divRadius);
-		} 
+			val = ExtraMath.volumeOfASphere(val); 
 		else
-		{
-			//In 2D the cell is cylindrical.
-			divVol = ExtraMath.volumeOfACylinder(getSpeciesParam().divRadius,
-													 _species.domain.length_Z);
-		}
-		particleMass[0] = getSpeciesParam().particleDensity[0] * divVol / 2;
+			val = ExtraMath.volumeOfACylinder(val, _species.domain.length_Z);
+		particleMass[0] = getSpeciesParam().particleDensity[0] * val / 2;
 		updateMass();
 	}
 	
@@ -382,21 +391,19 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	@Override
 	public void updateVolume()
 	{
+		Double[] density = getSpeciesParam().particleDensity;
 		_totalVolume = 0.0;
-		for (int i = 0; i < particleMass.length; i++ )
-		{
-			_totalVolume += particleMass[i] /
-										getSpeciesParam().particleDensity[i];
-		}
-  		// Compute volume with or without EPS capsule.
+		for ( int i = 0; i < particleMass.length; i++ )
+			_totalVolume += particleMass[i] / density[i];
+  		/*
+  		 * Compute volume with or without EPS capsule.
+  		 */
+		_volume = _totalVolume;
 		if ( _hasEps )
 		{
-  			int i = particleMass.length - 1;
-  			_volume = _totalVolume-particleMass[i] / 
-  										getSpeciesParam().particleDensity[i];
+			int i = getIndexCapsule();
+  			_volume -= (particleMass[i] / density[i]);
   		}
-		else
-			_volume = _totalVolume;
   	}
 	
 	/**
@@ -413,7 +420,7 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	}
 
 	/**
-	 * \brief Determine whether this bacterium contains any EPS particles
+	 * \brief Return whether this bacterium contains any EPS particles
 	 * (capsule in the protocol file).
 	 * 
 	 *  @return Boolean noting whether this bacterium object contains EPS
@@ -423,19 +430,6 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	public Boolean hasEPS()
 	{
 		return _hasEps;
-	}
-
-	/**
-	 * \brief Determine whether this bacterium contains any inert particles.
-	 * 
-	 *  Determine whether this bacterium contains any inert particles.
-	 *  
-	 *  @return Boolean noting whether this bacterium object contains inert particles
-	 */
-	@Override
-	public Boolean hasInert()
-	{
-		return _hasInert;
 	}
 	
 	/**
@@ -447,16 +441,32 @@ public class Bacterium extends LocatedAgent implements Cloneable
 	@Override
 	public Double getActiveFrac()
 	{
-		if ( ! hasInert() )
+		if ( ! _hasInert )
 			return 1.0;
-  		int indexActive = this._agentGrid.mySim.getParticleIndex("biomass");
-  		int indexInert = this._agentGrid.mySim.getParticleIndex("inert");
-		Double val = particleMass[indexActive] /
-					(particleMass[indexActive] + particleMass[indexInert]); 
+		/*
+		 * Active fraction is biomass / ( biomass + inert ).
+		 */
+		int index = this._agentGrid.mySim.getParticleIndex("biomass");
+		Double val = particleMass[index];
+		index = this._agentGrid.mySim.getParticleIndex("inert");
+		val = val / (val + particleMass[index]);
+		/*
+		 * Check nothing's gone wrong (e.g. if biomass + inert = 0).
+		 */
 		if ( Double.isNaN(val) )
 			val = 1.0;
   		return val;
   	}
+	
+	/**
+	 * \brief Find the particle index for "capsule", i.e. EPS.
+	 * 
+	 * @return The particle index for "capsule".
+	 */
+	private int getIndexCapsule()
+	{
+		return this._agentGrid.mySim.getParticleIndex("capsule");
+	}
 	
 	/**
 	 * \brief Send the colour associated to the species to the defined EPS

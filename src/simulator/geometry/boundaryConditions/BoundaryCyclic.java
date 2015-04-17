@@ -176,14 +176,10 @@ public class BoundaryCyclic extends ExternalBoundary
 	@Override
 	public void applyBoundary(LocatedAgent anAgent, ContinuousVector target)
 	{
-		LogFile.writeLogDebug("Debugging BoundaryCyclic.applyBoundary()");
-		LogFile.writeLogDebug("\tAgent currently at "+anAgent.getLocation().toString());
-		LogFile.writeLogDebug("\tTarget "+target.toString());
 		// Determine the intersection with the crossed boundary.
 		// TODO Using first intersection is a quick fix.
 		vectorIn = _myShape.getIntersections(anAgent.getLocation(),
 											anAgent.getMovement()).getFirst();
-		LogFile.writeLogDebug("\tIntersection at "+vectorIn.toString());
 		// Determine the remaining movement when we touch the boundary.
 		target.sendDiff(target, vectorIn);
 		// Apply the residual movement on the symmetric point.
@@ -191,7 +187,6 @@ public class BoundaryCyclic extends ExternalBoundary
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
 		anAgent.getMovement().sendDiff(target, anAgent.getLocation());
-		LogFile.writeLogDebug("\tNew target "+target.toString());
 	}
 
 	/**
@@ -260,23 +255,6 @@ public class BoundaryCyclic extends ExternalBoundary
 			DiscreteVector diff = _myShape.getRelativePosition(coord);
 			coord = _myOppShape.getAbsolutePosition(diff);
 		}
-	}
-
-	/**
-	 * \brief Returns the value within a boundary. Not used for cyclic
-	 * boundaries.
-	 * 
-	 * @param aSpGrid	Solute grid which the boundary is being applied.
-	 * @param i	I Coordinate of grid space to query.
-	 * @param j	J Coordinate of grid space to query.
-	 * @param k	K Coordinate of grid space to query.
-	 * @return	Double value of the solute level stored in that boundary cell.
-	 */
-	public double getValueFromBoundary(SoluteGrid aSpGrid, int i, int j, int k)
-	{
-		System.out.println(
-					"CyclicBoundary.getValueFromBoundary:should not be used");
-		return 0.0;
 	}
 	
 	/**

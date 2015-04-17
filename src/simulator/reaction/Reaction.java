@@ -135,6 +135,8 @@ public abstract class Reaction implements Serializable
 
 	/**
 	 * dilution rate from associated bulk (sonia 21-04-10)
+	 * 
+	 * TODO Rob 16Apr2015: I'm not sure Reaction needs to know this...
 	 */
 	public Double Dil;
 
@@ -196,13 +198,9 @@ public abstract class Reaction implements Serializable
 
 		
 		// Set the boundary conditions if this is a chemostat condition
-		for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-			if ( aBC instanceof ConnectedBoundary )
-			{
-				Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
-				if ( aBulk != null && aBulk.nameEquals("chemostat") )
-					Dil = aBulk._D;
-			}
+		Bulk bulk = _reacGrid.getDomain().getChemostat();
+		if ( bulk != null )
+			Dil = bulk._D;
 		
 		// Extract the yields for solutes and particulates from the XML file
 		fillParameters(aSim, aReactionRoot);
@@ -534,18 +532,9 @@ public abstract class Reaction implements Serializable
 		//the concentration read by the agents is the one stored in the bulk (which has been previously updated)
 		if (Simulator.isChemostat)
 		{
-			int soluteIndex;
+			Bulk bulk = _reacGrid.getDomain().getChemostat();
 			for ( int index = 0; index < _soluteList.length; index++ )
-			{
-				soluteIndex = _soluteList[index].soluteIndex;
-				for (AllBC aBC : _reacGrid.getDomain().getAllBoundaries())
-					if ( aBC instanceof ConnectedBoundary )
-					{
-						Bulk aBulk = ((ConnectedBoundary) aBC).getBulk();
-						if ( aBulk.nameEquals("chemostat") )
-							out[index] = aBulk.getValue(soluteIndex);
-					}
-			}
+				out[index] = bulk.getValue(_soluteList[index].soluteIndex);
 		}
 		else
 		{
@@ -554,7 +543,8 @@ public abstract class Reaction implements Serializable
 				// The agent is a located agent, use the local concentration
 				for (int iGrid = 0; iGrid<_soluteList.length; iGrid++)
 				{
-					out[iGrid] = _soluteList[iGrid].getValueAround(((LocatedAgent) anAgent));
+					out[iGrid] = _soluteList[iGrid].getValueAround(
+													(LocatedAgent) anAgent);
 				}
 			} 
 			else 
@@ -564,7 +554,6 @@ public abstract class Reaction implements Serializable
 					out[iGrid] = _soluteList[iGrid].getAverage();
 			}
 		}
-
 		return out;
 	}
 	

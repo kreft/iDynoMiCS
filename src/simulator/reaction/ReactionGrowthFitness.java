@@ -547,7 +547,8 @@ public class ReactionGrowthFitness extends Reaction{
 
 	public ArrayList<Double> setYield(ActiveAgent anAgent)
 	{
-		Double plCopyNum, initialCost, rateDec, basalCost, plCost, timeSpentInHost;
+		Double initialCost, rateDec, basalCost, plCost, timeSpentInHost;
+		int plCopyNum;
 		ArrayList<Double> plTotalCosts = new ArrayList<Double>();
 		
 		if(anAgent instanceof MultiEpiBac)
@@ -563,7 +564,7 @@ public class ReactionGrowthFitness extends Reaction{
 					//System.out.println("plasmidCost is " + initialCost);
 					rateDec = plParam.rateDec;
 					basalCost = plParam.basalCost;
-					plCopyNum = anEpiBac.plasmidHosted.get(pl)._nCopy;
+					plCopyNum = anEpiBac.plasmidHosted.get(pl).getCopyNumber();
 					timeSpentInHost = SimTimer.getCurrentTime()-anEpiBac.plasmidHosted.get(pl).timeSpentInHost;
 					//sonia: the cost of a plasmid increases additively as its copy number goes up
 					plCost = (initialCost*(Math.exp((-(rateDec*timeSpentInHost))))+ basalCost)*plCopyNum;

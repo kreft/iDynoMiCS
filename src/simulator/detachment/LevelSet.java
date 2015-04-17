@@ -28,7 +28,7 @@ import utils.XMLParser;
 /**
  * \brief Solver used for modelling detachment.
  * 
- * @author Jo�o Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
+ * @author João Xavier (xavierj@mskcc.org), Memorial Sloan-Kettering Cancer
  * Center (NY, USA).
  */
 public abstract class LevelSet
@@ -240,7 +240,7 @@ public abstract class LevelSet
 	private void addToCloseAndUpdate(LocatedGroup aGroup, Simulator aSim)
 	{
 		// If this element is not in the biofilm, get out;
-		if ( aGroup.group.size() == 0 )
+		if ( aGroup.group.isEmpty() )
 			return;
 		
 		if ( ! (_close.contains(aGroup) || _alive.contains(aGroup)) )
