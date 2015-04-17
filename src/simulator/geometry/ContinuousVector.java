@@ -317,9 +317,9 @@ public class ContinuousVector implements Cloneable
 	 */
 	public void alea(Boolean is3D)
 	{
-		this.x = ExtraMath.getUniRand(-1,1);
-		this.y = ExtraMath.getUniRand(-1,1);
-		this.z = (is3D ? ExtraMath.getUniRand(-1,1) : 0);
+		this.x = ExtraMath.getUniRand(-1.0, 1.0);
+		this.y = ExtraMath.getUniRand(-1.0, 1.0);
+		this.z = (is3D ? ExtraMath.getUniRand(-1.0, 1.0) : 0.0);
 	}
 	
 	/**
