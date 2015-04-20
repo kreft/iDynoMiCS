@@ -13,6 +13,7 @@
 package utils;
 
 import java.text.DecimalFormat;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -701,10 +702,11 @@ public final class ExtraMath
 	 * @param hBound
 	 * @return a double between lBound inclusive and hBound exclusive
 	 */
-	public static Double getUniRand(double lBound, double hBound) {
+	public static Double getUniRand(Double lBound, Double hBound)
+	{
 		return random.nextDouble()*(hBound-lBound)+lBound;
 	}
-
+	
 	/**
 	 * \brief Return a truncated N(0,1) distributed random number.
 	 * 

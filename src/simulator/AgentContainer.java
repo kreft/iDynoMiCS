@@ -298,7 +298,7 @@ public class AgentContainer
 		// for the local time step, choose the value according to which is best
 		double localdt = Math.min(AGENTTIMESTEP,globalTimeStep);
 
-		double nAgent0 = agentList.size();
+		int nAgent0 = agentList.size();
 		// Apply a shorter time step when visiting all the agents
 
 		while (elapsedTime < globalTimeStep)

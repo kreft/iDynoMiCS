@@ -501,13 +501,7 @@ public class XMLParser implements Serializable
 	 */
 	public Integer getChildAttrInt(String childName, String attrName) 
 	{
-		Integer out = stringToInteger(getChildAttrStr(childName, attrName));
-		if ( out == nullInt )
-		{
-			LogFile.writeLogAlways("No value given for "+attrName+
-														" of "+childName+"!");
-		}
-		return out;
+		return stringToInteger(getChildAttrStr(childName, attrName));
 	}
 	
 	/**
@@ -520,10 +514,7 @@ public class XMLParser implements Serializable
 	 */
 	public Integer getAttributeInt(String attributeName)
 	{
-		Integer out = stringToInteger(getAttribute(attributeName));
-		if ( out == nullInt )
-			LogFile.writeLog("No value given for "+attributeName+"!");
-		return out;
+		return stringToInteger(getAttribute(attributeName));
 	}
 	
 	/**
@@ -535,10 +526,7 @@ public class XMLParser implements Serializable
 	 */
 	public Integer getParamInt(String paramName) 
 	{
-		Integer out = stringToInteger(getParam(paramName));
-		if ( out == nullInt )
-			LogFile.writeLog("No value given for "+paramName+"!");
-		return out;
+		return stringToInteger(getParam(paramName));
 	}
 	
 	/*************************************************************************
@@ -567,10 +555,7 @@ public class XMLParser implements Serializable
 	 */
 	public Boolean getParamBool(String paramName)
 	{
-		Boolean out = stringToBoolean(getParam(paramName));
-		if ( out == nullBool )
-			LogFile.writeLog("No value given for "+paramName+"!");
-		return out;
+		return stringToBoolean(getParam(paramName));
 	}
 	
 	/**
@@ -586,13 +571,7 @@ public class XMLParser implements Serializable
 	 */
 	public Boolean getParamSuchBool(String paramName, String detailName)
 	{
-		Boolean out = stringToBoolean(getParamSuch(paramName, detailName));
-		if ( out == nullBool )
-		{
-			LogFile.writeLog("No value given for "+paramName+
-													" with "+detailName+"!");
-		}
-		return out;
+		return stringToBoolean(getParamSuch(paramName, detailName));
 	}
 	
 	/*************************************************************************
@@ -620,10 +599,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getValueDbl()
 	{
-		Double out = stringToDouble(getValue());
-		if ( out == nullDbl )
-			LogFile.writeLog("No value given!");
-		return out;
+		return stringToDouble(getValue());
 	}
 	
 	/**
@@ -636,10 +612,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getAttributeDbl(String attributeName)
 	{
-		Double out = stringToDouble(getAttribute(attributeName));
-		if ( out == nullDbl )
-			LogFile.writeLog("No value given for "+attributeName+"!");
-		return out;
+		return stringToDouble(getAttribute(attributeName));
 	}
 	
 	/**
@@ -655,13 +628,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getChildAttrDbl(String childName, String attrName) 
 	{
-		Double out = stringToDouble(getChildAttrStr(childName, attrName));
-		if ( out == nullDbl )
-		{
-			LogFile.writeLog("No value given for "+attrName+
-														" of "+childName+"!");
-		}
-		return out;
+		return stringToDouble(getChildAttrStr(childName, attrName));
 	}
 	
 	/**
@@ -673,10 +640,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getParamDbl(String paramName) 
 	{
-		Double out = stringToDouble(getParam(paramName));
-		if ( out == nullDbl )
-			LogFile.writeLog("No value given for "+paramName+"!");
-		return out;
+		return stringToDouble(getParam(paramName));
 	}
 
 	/**
@@ -690,10 +654,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getParamDbl(String paramName, StringBuffer unit) 
 	{
-		Double out = stringToDouble(getParam(paramName, unit));
-		if ( out == nullDbl )
-			LogFile.writeLog("No value given for "+paramName+"!");
-		return out;
+		return stringToDouble(getParam(paramName, unit));
 	}
 	
 	/**
@@ -709,13 +670,7 @@ public class XMLParser implements Serializable
 	 */
 	public Double getParamSuchDbl(String paramName, String detailName)
 	{
-		Double out = stringToDouble(getParamSuch(paramName, detailName));
-		if ( out == nullDbl )
-		{
-			LogFile.writeLog("No value given for "+paramName+
-													" with "+detailName+"!");
-		}
-		return out;
+		return stringToDouble(getParamSuch(paramName, detailName));
 	}
 	
 	/**
@@ -733,13 +688,7 @@ public class XMLParser implements Serializable
 	public Double getParamSuchDbl(String paramName,
 										String detailName, StringBuffer unit)
 	{
-		Double out = stringToDouble(getParamSuch(paramName, detailName, unit));
-		if ( out == nullDbl )
-		{
-			LogFile.writeLog("No value given for "+paramName+
-													" with "+detailName+"!");
-		}
-		return out;
+		return stringToDouble(getParamSuch(paramName, detailName, unit));
 	}
 	
 	/**
@@ -760,14 +709,8 @@ public class XMLParser implements Serializable
 	public Double getDblAttrOfChildSuchAttribute(String childName,
 						String attrName, String attrValue, String attr2Name)
 	{
-		Double out = stringToDouble(getChildSuchAttribute(childName, 
-						attrName, attrValue).getAttributeValue(attr2Name));
-		if ( out == nullDbl )
-		{
-			LogFile.writeLog("No value given for "+attr2Name+" of "+
-							childName+" with "+attrName+" = "+attrValue+"!");
-		}
-		return out;
+		return stringToDouble(getChildSuchAttribute(childName, 
+				attrName, attrValue).getAttributeValue(attr2Name));
 	}
 	
 	/*************************************************************************
