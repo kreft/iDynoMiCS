@@ -1,11 +1,9 @@
 package simulator.geometry.pointProcess;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import simulator.agent.LocatedGroup;
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
@@ -60,7 +58,7 @@ public class Voronoi
 		// TODO is this necessary?
 		HalfEdge leftLeftBoundary, rightRightBoundary;
 		
-		Boolean isLeftHanded;
+		Boolean isOutbound;
 		Site nextSite, bottom, top, temp;
 		Edge bisector;
 		Vertex nextVertex, intersection;
@@ -89,7 +87,8 @@ public class Voronoi
 				/*
 				 * Find the first HalfEdge to the left of this site.
 				 */
-				leftBoundary = sweepTable.leftBoundary(nextSite);
+				//leftBoundary = sweepTable.leftBoundary(nextSite);
+				leftBoundary = sweepTable.halfEdgeImmediatelyBehind(nextSite);
 				/*
 				 * Store the HalfEdge immediately to the right, as the left
 				 * HE will change before we need it.
@@ -116,28 +115,22 @@ public class Voronoi
 				/*
 				 * 
 				 */
-				System.out.println("Inserting");
-				System.out.println("\tbisector: "+newHE.toString());
-				System.out.println("to the right of");
-				System.out.println("\tleftBoundary: "+leftBoundary.toString());
 				sweepTable.insert(leftBoundary, newHE);
 				intersection = intersect(leftBoundary, newHE);
 				if ( intersection != null )
 				{
 					// PQdelete() ???
-					System.out.println("Vertex found at "+intersection.toString()+" [A]");
+					System.out.println("\nVertex found at "+
+											intersection.toString()+" [A]");
 					offset = _space.distance(intersection,  nextSite);
 					priorityQueueInsert(intersection, offset);
+					intersection.previousHE = leftBoundary;
 				}
 				/*
 				 * Now look at the right-hand HalfEdge of newEdge.
 				 */
 				leftBoundary = newHE;
 				newHE = new HalfEdge(bisector, false);
-				System.out.println("Inserting");
-				System.out.println("\tbisector: "+newHE.toString());
-				System.out.println("to the right of");
-				System.out.println("\tleftBoundary: "+leftBoundary.toString());
 				sweepTable.insert(leftBoundary, newHE);
 				/*
 				 * See if this intersects rightBoundary.
@@ -145,9 +138,11 @@ public class Voronoi
 				intersection = intersect(newHE, rightBoundary);
 				if ( intersection != null )
 				{
-					System.out.println("Vertex found at "+intersection.toString()+" [B]");
+					System.out.println("\nVertex found at "+
+											intersection.toString()+" [B]");
 					offset = _space.distance(intersection,  nextSite);
 					priorityQueueInsert(intersection, offset);
+					intersection.previousHE = newHE;
 				}
 			}
 			else if ( nextEvent instanceof Vertex)
@@ -157,7 +152,9 @@ public class Voronoi
 				/*
 				 * Find the first HalfEdge to the left of this vertex.
 				 */
-				leftBoundary = sweepTable.leftBoundary(nextVertex);
+				leftBoundary = nextVertex.previousHE;
+				System.out.println("HE immediately to left is "+
+													leftBoundary.toString());
 				/*
 				 * 
 				 */
@@ -188,38 +185,40 @@ public class Voronoi
 				/* 
 				 * 
 				 */
-				System.out.println("HalfEdge on left: "+leftBoundary.toString());
-				setEndPoint(leftBoundary.edge, leftBoundary.isOutbound(), nextVertex);
-				System.out.println("HalfEdge on right: "+rightBoundary.toString());
-				setEndPoint(rightBoundary.edge, rightBoundary.isOutbound(), nextVertex);
+				//System.out.println("HalfEdge on left: "+leftBoundary.toString());
+				setEndPoint(leftBoundary.edge, false, nextVertex);
+				//System.out.println("HalfEdge on right: "+rightBoundary.toString());
+				setEndPoint(rightBoundary.edge, true, nextVertex);
 				/*
-				 * Assume the new bisector will be left-handed.
+				 * Assume the new bisector will be out-bound.
 				 */
-				isLeftHanded = true;
+				isOutbound = true;
 				/*
-				 * If bottom is higher than top, switch them and change the
-				 * handedness of the new bisector to right.
+				 * If bottom is higher than top, switch them and make the
+				 * new half-edge in-bound.
 				 */
 				if ( _space.compareSecondary(bottom, top) > 0 )
 				{
 					temp = bottom;
 					bottom = top;
 					top = temp;
-					isLeftHanded = false;
+					isOutbound = false;
 				}
 				bisector = _space.bisect(bottom, top);
 				edges.add(bisector);
-				newHE = new HalfEdge(bisector, isLeftHanded);
+				newHE = new HalfEdge(bisector, isOutbound);
 				sweepTable.insert(leftBoundary, newHE);
 				System.out.println("newEdge "+bisector.toString());
-				setEndPoint(bisector, ! isLeftHanded, nextVertex);
+				setEndPoint(bisector, ! isOutbound, nextVertex);
 				
 				intersection = intersect(leftLeftBoundary, newHE);
 				if ( intersection != null )
 				{
-					System.out.println("Vertex found at "+intersection.toString()+" [C]");
+					System.out.println("\nVertex found at "+
+											intersection.toString()+" [C]");
 					offset = _space.distance(intersection,  bottom);
 					priorityQueueInsert(intersection, offset);
+					intersection.previousHE = leftLeftBoundary;
 				}
 				/*
 				 * TODO Check why it's the distance to the bottom that's used
@@ -228,9 +227,11 @@ public class Voronoi
 				intersection = intersect(newHE, rightRightBoundary);
 				if ( intersection != null )
 				{
-					System.out.println("Vertex found at "+intersection.toString()+" [D]");
+					System.out.println("\nVertex found at "+
+											intersection.toString()+" [D]");
 					offset = _space.distance(intersection,  bottom);
 					priorityQueueInsert(intersection, offset);
+					intersection.previousHE = newHE;
 				}
 			}
 			
@@ -312,18 +313,14 @@ public class Voronoi
 	}
 	
 	/**
-	 * 
-	 * TODO Tidy up
+	 * \brief Insert a Vertex into the Priority Queue
 	 * 
 	 * @param vertex
 	 * @param starOffset
 	 */
 	private void priorityQueueInsert(Vertex vertex, Double starOffset)
 	{
-		int currentIndex = pqIterator.previousIndex();
-		//System.out.println("index of event = "+currentIndex);
-		ContinuousVector current = pqIterator.previous();
-		ContinuousVector next;
+		int currentIndex = pqIterator.nextIndex();
 		vertex.starValue = getValue(vertex) + starOffset;
 		/*
 		 * Search the priority queue for a position with
@@ -332,20 +329,18 @@ public class Voronoi
 		 * If _space.compareSecondary(vertex, current) < 0
 		 * we take the next position
 		 */
+		ContinuousVector next = pqIterator.previous();
 		do { next = pqIterator.next(); }
-		while ( pqIterator.hasNext() && _space.compareSecondary(vertex, next) > 0 );
+		while ( pqIterator.hasNext() && 
+								_space.compareSecondary(vertex, next) > 0 );
 		/*
 		 * Once we've found the right place, add the vertex.
 		 */
 		pqIterator.add(vertex);
-		//currentIndex = pqIterator.previousIndex();
-		//System.out.println("index of inserted vertex = "+currentIndex);
 		/*
 		 * Get back to where we were before.
 		 */
-		//while ( (! next.equals(current)) && pqIterator.hasPrevious() )
-		//	next = pqIterator.previous();
-		pqIterator = priorityQueue.listIterator(currentIndex+1);
+		pqIterator = priorityQueue.listIterator(currentIndex);
 		
 	}
 	
@@ -354,7 +349,6 @@ public class Voronoi
 	 * 
 	 * @param index Position in the priority queue that you want to flag.
 	 */
-	@SuppressWarnings("unused")
 	private void printPriorityQueue(int index)
 	{
 		String msg;
@@ -391,21 +385,23 @@ public class Voronoi
 	}
 	
 	/**
-	 * TODO Check inner-outer
+	 * \brief Set an end point of the given Edge to be the given Vertex.
 	 * 
+	 * Also clips the line if both end points have been set.
 	 * 
-	 * 
-	 * @param edge
-	 * @param isOutbound
-	 * @param vertex
+	 * @param edge	The Edge to have its end point set.
+	 * @param setOuter	Whether to set the outer end point (true) or the inner
+	 * end point (false).
+	 * @param vertex	The Vertex to be set as an end point.
 	 */
-	private void setEndPoint(Edge edge, Boolean isOutbound, Vertex vertex)
+	private void setEndPoint(Edge edge, Boolean setOuter, Vertex vertex)
 	{
-		String msg = "Setting ";
-		msg += isOutbound ? "inner" : "outer";
-		msg += " vertex of edge to ";
-		System.out.println(msg+vertex.toString());
-		edge.setEndPoint(vertex, isOutbound);
+		System.out.print("setEndPoint: ");
+		System.out.print(setOuter ? "outer" : "inner");
+		System.out.print(" vertex "+vertex.toString()+" for edge ");
+		System.out.println(edge.toString());
+		
+		edge.setEndPoint(vertex, setOuter);
 		if ( edge.areEndPointsSet() )
 			clip(edge);
 	}

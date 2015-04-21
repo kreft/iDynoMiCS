@@ -35,12 +35,23 @@ public class Edge
 	/**
 	 * \brief Set one of the end points of this Edge to the given Vertex. 
 	 * 
-	 * @param vertex
-	 * @param setInner
+	 * @param vertex	The vertex to set as an end point.
+	 * @param setOuter	Whether to set the outer end point (true) or the inner
+	 * end point (false). 
 	 */
-	public void setEndPoint(Vertex vertex, Boolean setInner)
+	public void setEndPoint(Vertex vertex, Boolean setOuter)
 	{
-		endPoint[setInner ? inner : outer] = vertex;
+		endPoint[setOuter ? outer : inner] = vertex;
+	}
+	
+	public Vertex getInnerEndPoint()
+	{
+		return endPoint[inner];
+	}
+	
+	public Vertex getOuterEndPoint()
+	{
+		return endPoint[outer];
 	}
 	
 	public Site getSiteBelow()
