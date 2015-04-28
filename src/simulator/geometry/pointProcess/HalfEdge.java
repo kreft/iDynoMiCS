@@ -8,25 +8,19 @@ public class HalfEdge
 	
 	public Boolean deleted;
 	
-	public Vertex vertex;
-	
-	public static final int outbound = 0;
-	public static final int inbound = 1;
-	
 	/**
-	 * Integer denoting whether this HalfEdge is on the out-bound (0) or the
-	 * in-bound (1) side of the Edge it corresponds to. 
+	 * Boolean denoting whether this HalfEdge is on the out-bound (true) or
+	 * the in-bound (false) side of the Edge it corresponds to. 
 	 */
 	private Boolean isOutbound;
 	
 	/**
 	 * side is set to left by default.
 	 */
-	public HalfEdge()
+	public HalfEdge(Boolean isOutbound)
 	{
 		this.edge = null;
-		this.vertex = null;
-		this.isOutbound = true;
+		this.isOutbound = isOutbound;
 		this.deleted = false;
 	}
 	
@@ -41,7 +35,6 @@ public class HalfEdge
 	public HalfEdge(Edge edge, Boolean isOutbound)
 	{
 		this.edge = edge;
-		this.vertex = null;
 		this.isOutbound = isOutbound;
 		this.deleted = false;
 	}
@@ -125,8 +118,7 @@ public class HalfEdge
 		if ( deleted )
 			out += "(deleted) ";
 		
-		out += "on the ";
-		out += ( isOutbound() ) ? "left" : "right";
+		out += ( isOutbound ) ? "outbound" : "inbound";
 		
 		out += " with ";
 		if ( previousNeighbor == null )
@@ -134,12 +126,12 @@ public class HalfEdge
 			if ( nextNeighbor == null )
 				out += "no neighbors";
 			else
-				out += "right neighbor only";
+				out += "next neighbor only";
 		}
 		else if ( nextNeighbor == null )
-			out += "left neighbor only";
+			out += "previous neighbor only";
 		else
-			out += "left and right neighbors";
+			out += "both neighbors";
 		
 		out += " and ";
 		

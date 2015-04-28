@@ -199,6 +199,8 @@ public class ContinuousVector implements Cloneable
 	 */
 	public Boolean equals(ContinuousVector other)
 	{
+		if ( other == null )
+			return false;
 		return equals(other.x, other.y, other.z);
 	}
 	

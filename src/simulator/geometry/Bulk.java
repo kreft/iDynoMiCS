@@ -230,21 +230,18 @@ public class Bulk
 			// specified in Spulse parameter at a given time
 			
 			// for pulses, set pulse concentration and interval
+			_pulseInterval[soluteIndex] = Double.MAX_VALUE;
 			if ( parser.isParamGiven("Spulse"))
 			{
 				_sPulse[soluteIndex] = parser.getParamConcn("Spulse");
 				_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
 				// pulse interval will be infinite if the rate is zero
-				_pulseInterval[soluteIndex] = Double.MAX_VALUE;
-				_lastPulseTime[soluteIndex] = 0.0;
 				if ( ! _pulseRate[soluteIndex].isNaN() && 
 											! _pulseRate[soluteIndex].equals(0.0) )
 				{
 					_pulseInterval[soluteIndex] = 1.0/_pulseRate[soluteIndex];
 				}
 			}
-			else
-				_sPulse[soluteIndex] = 0.0;
 		}
 	}
                   
