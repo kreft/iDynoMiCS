@@ -662,8 +662,10 @@ public class Domain implements IsComputationDomain
 			{
 				if ( _nK == 1)
 				{
-					coord.set(n, m, 0);
-					coord.add(i, j, 0);
+					coord.set(i, j, 0);
+					if ( coord.isZero() )
+						continue;
+					coord.add(n, m, 0);
 					if ( checkDilationCoord(coord) )
 						return 1.0;
 				}
