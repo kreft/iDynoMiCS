@@ -1302,6 +1302,7 @@ public class Simulator
 			{
 				aDomain.refreshBioFilmGrids();
 				aDomain.getBiomass().writeReport(result[0], result[1]);
+				aDomain.getBoundaryLayer().writeReport(result[0], result[1]);
 			}
 
 			// KA AUGUST 2013
