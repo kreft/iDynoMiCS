@@ -224,7 +224,7 @@ public class SweepTable
 		 *	ELSE: The initial guess is to the right of the Site, so keep
 		 *		moving left until the HE is left of the Site.
 		 */ 
-		if (out==start || ((out!=finish) && isPointAheadOfHE(out, point)))
+		if ( out==start || ((out!=finish) && isPointAheadOfHE(out, point)) )
 		{
 			printHalfEdge("Starting behind with ", out, ", going forward");
 			do
@@ -254,7 +254,7 @@ public class SweepTable
 				out = out.previousNeighbor;
 				printHalfEdge("\tTrying ", out, "");
 			}
-			while ( out != finish && isPointBehindHE(out, point) );
+			while ( out != start && isPointBehindHE(out, point) );
 			/* Nothing more to do here - we've found the HalfEdge immediately
 			 * to the left of the point.
 			 */
@@ -299,7 +299,7 @@ public class SweepTable
 		 * Whether or not the point given is above (true) or below (false) the
 		 * point given.
 		 */
-		Boolean pointAboveEdge;
+		Boolean pointRightOfEdge;
 		
 		/*
 		 * 
@@ -334,18 +334,18 @@ public class SweepTable
 				/*
 				 * 
 				 */
-				pointAboveEdge = ( secondaryDiff >= kv * primaryDiff);
-				fast = pointAboveEdge;
+				pointRightOfEdge = ( secondaryDiff >= kv * primaryDiff);
+				fast = pointRightOfEdge;
 			}
 			else
 			{
 				/*
 				 * 
 				 */
-				pointAboveEdge = _space.compareSecondary(point, shadowOnEdge) > 0;
+				pointRightOfEdge = _space.compareSecondary(point, shadowOnEdge) > 0;
 				if ( kv < 0.0 )
-					pointAboveEdge = ! pointAboveEdge;
-				fast = ( ! pointAboveEdge );
+					pointRightOfEdge = ! pointRightOfEdge;
+				fast = ( ! pointRightOfEdge );
 			}
 			/*
 			 * If fast is false the problem is still not solved, and so we
@@ -359,9 +359,9 @@ public class SweepTable
 				t2 = r[primary] - _space.getPrimary(he.getSiteBelow());
 				t2 *= secondaryDiff * (1.0 + ExtraMath.sq(kv));
 				t2 += 2.0 * primaryDiff * secondaryDiff;
-				pointAboveEdge = t1 < t2;
+				pointRightOfEdge = t1 < t2;
 				if ( kv < 0.0 )
-					pointAboveEdge = ! pointAboveEdge;
+					pointRightOfEdge = ! pointRightOfEdge;
 			}
 		}
 		else
@@ -381,10 +381,10 @@ public class SweepTable
 			 * it's pointing between 3:00 and 4:30 on a clock, or East to
 			 * SE on a compass.
 			 */
-			pointAboveEdge = _space.distance(point, shadowOnEdge) > 
+			pointRightOfEdge = _space.distance(point, shadowOnEdge) > 
 					_space.distance(he.getSiteAbove(), shadowOnEdge);
 		}
-		return he.isOutbound() == pointAboveEdge;
+		return he.isInbound() == pointRightOfEdge;
 	}
 	
 	private Boolean isPointBehindHE(HalfEdge he, ContinuousVector point)
