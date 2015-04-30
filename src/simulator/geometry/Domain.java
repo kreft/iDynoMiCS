@@ -648,46 +648,76 @@ public class Domain implements IsComputationDomain
 		 */
 		if ( _dilationBand == 0.0 )
 			return 0.0;
-		int iInterval = (int) Math.floor(_dilationBand/_resolution);
-		int jInterval, kInterval;
-		DiscreteVector coord = new DiscreteVector();
-		Double deltaI, deltaJ, dilationRadiusJ, dilationRadiusK;
 		
-		for ( int i = -iInterval; i <= iInterval; i++ )
+		int nInterval, mInterval, lInterval;
+		int jIndex, kIndex;
+		Double deltaN, deltaM;
+		Double dilationRadiusM, dilationRadiusL;
+		
+		nInterval = (int) Math.floor(_dilationBand/_resolution);
+		
+		for (int i = -nInterval; i <= nInterval; i++)
 		{
-			deltaI = i * _resolution;
-			dilationRadiusJ = ExtraMath.triangleSide(_dilationBand, deltaI);
-			jInterval = (int) Math.floor(dilationRadiusJ / _resolution);
-			for ( int j = -jInterval; j <= jInterval; j++ )
+			// only proceed if neighbour is within computational
+			// volume top and bottom boundaries
+			if ( (n+i >= 0) && (n+i < _nI) )
 			{
+				deltaN = i*_resolution;
+				// This calculates the range in the j direction based on a right triangle
+				// with hypotenuse equal to the sphere's radius, so that the total area
+				// checked is a sphere
+				dilationRadiusM = ExtraMath.triangleSide(_dilationBand, deltaN);
+				mInterval = (int) Math.floor(dilationRadiusM/_resolution);
+				
+				for (int j = -mInterval; j <= mInterval; j++) {
 				if ( _nK == 1)
 				{
-					coord.set(i, j, 0);
-					if ( coord.isZero() )
-						continue;
-					coord.add(n, m, 0);
-					if ( checkDilationCoord(coord) )
+						// 2D case
+						jIndex = cyclicIndex(m+j,_nJ+2);
+						if (_biomassGrid.grid[n+i][jIndex][1] > 0.0) 
 						return 1.0;
+						if (_domainGrid.grid[n+i][jIndex][1] == 0.0)
+							return 1.0;
 				}
 				else
 				{
-					deltaJ = j * _resolution;
-					dilationRadiusK = 
-						ExtraMath.triangleSide(_dilationBand, deltaI, deltaJ);
-					kInterval = (int) Math.floor(dilationRadiusK/_resolution);
-					for ( int k = -jInterval; k <= kInterval; k++ )
+						// 3D case
+						deltaM = j*_resolution;
+						// This calculates the range in the k direction based on
+						// a right triangle with hypotenuse equal to the sphere's
+						// radius, so that the total area checked is a sphere
+						dilationRadiusL = ExtraMath.triangleSide(_dilationBand, deltaN, deltaM);
+						lInterval = (int) Math.floor(dilationRadiusL/_resolution);
+
+						for (int k = -lInterval; k <= lInterval; k++)
+							if ( (i != 0) || (j != 0) || (k != 0) )
 					{
-						coord.set(i, j, k);
-						if ( coord.isZero() )
-							continue;
-						coord.add(n, m, l);
-						if ( checkDilationCoord(coord) )
+								jIndex = cyclicIndex(m+j, _nJ+2);
+								kIndex = cyclicIndex(l+k, _nK+2);
+								if (_biomassGrid.grid[n+i][jIndex][kIndex] > 0.0)
 							return 1.0;
+								if (_domainGrid.grid[n+i][jIndex][kIndex] == 0.0)
+									return 1.0;
 					}
 				}
 			}
 		}
+		}
 		return 0.0;
+	}
+	
+	/**
+	 * \brief For cyclic boundaries, returns the index of the grid space on the
+	 * opposite side of the boundary.
+	 * 
+	 * @param val	The integer grid spqce to check.
+	 * @param limit	The limit of the grid.
+	 * @return	The integer of the grid square the opposite side of the
+	 * boundary.
+	 */
+	protected final int cyclicIndex(int val, int limit)
+	{
+		return (val<0 ? limit+val : (val>=limit ? val-limit : val));
 	}
 	
 	/**
