@@ -117,7 +117,7 @@ public class SinglegridPressure
 	public SinglegridPressure(SoluteGrid aSolute, SoluteGrid bLayer, Double sBulk)
 	{
 		realGrid = aSolute;
-		realGrid.diffusivity = 1;
+		realGrid.diffusivity = 1.0;
 		soluteName = realGrid.gridName;
 		
 		_nI = realGrid.getGridSizeI();
