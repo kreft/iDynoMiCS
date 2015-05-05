@@ -236,21 +236,12 @@ public class SinglegridPressure
 	
 	/**
 	 * 
-	 * @param value
-	 */
-	public void resetSoluteGrid(double value)
-	{
-		_conc.setAllValueAt(value);
-	}
-	
-	/**
-	 * 
 	 */
 	public void resetMultigridCopies()
 	{
 		setSoluteGridToBulk();
-		_reac.setAllValueAt(0d);
-		_rhs.setAllValueAt(0d);
+		_reac.resetToZero();;
+		_rhs.resetToZero();;
 	}
 	
 	/**

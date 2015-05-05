@@ -12,6 +12,10 @@
 package simulator;
 
 import java.io.Serializable;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 
 import simulator.geometry.ContinuousVector;
 import simulator.geometry.DiscreteVector;
@@ -715,6 +719,27 @@ public class SpatialGrid implements Serializable
 					for (int k = 0; k < _nK+2; k++)
 						grid[i][j][k] = value;
 	}
+	
+	
+	/*
+	 * TODO Play around with Lambda functions, not yet working.
+	 * 
+	 *
+	public void applyToAll(DoubleFunction<Double> f)
+	{
+		ExtraMath.applyToAll(grid, f);
+	}
+	
+	public void setAllValueAtNew(Double value)
+	{
+		applyToAll((gridpoint) -> {return value;});
+	}
+	
+	public void truncateAll()
+	{
+		applyToAll((gridpoint) -> {return Math.max(gridpoint, 0.0);});
+	}
+	*/
 	
 	/**
 	 * \brief Set all meshes of the grid to zero.

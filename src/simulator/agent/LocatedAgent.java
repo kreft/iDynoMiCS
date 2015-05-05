@@ -224,6 +224,10 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
+		String msg = new String("LocatedAgent ");
+		for ( String i : singleAgentData )
+			msg += i+",";
+		LogFile.writeLogAlways(msg);
 		/*
 		 * Find the position to start at.
 		 */

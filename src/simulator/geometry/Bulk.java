@@ -273,10 +273,10 @@ public class Bulk
 		// use only the reaction method in general
 
 		//sonia 19.02.2010 - new method to update the bulk in a chemostat setup
-		if(Simulator.isChemostat){
+		if(Simulator.isChemostat)
 			updateChemostatBulk(soluteGrid, reacGrid);
-		}else{
-
+		else
+		{
 			// bvm 30.4.2009: for pulsed bulk concentrations
 			for (int i=0; i<_bulkValue.length; i++)
 				if (SimTimer.getCurrentTime()-_lastPulseTime[i] >= _pulseInterval[i]) {
@@ -334,80 +334,102 @@ public class Bulk
 	/**
 	 * \brief Update bulk concentration by reaction, determining reaction rate seen from reaction compartments
 	 * 
-	 * Update bulk concentration by reaction, determining reaction rate seen from reaction compartments
+	 * TODO Use ODEsolver, rather than Backward Euler scheme.
 	 * 
 	 * @param reacGrid	An array of uptake-rates grids in g.L-1.h-1
 	 * @param timeStep	Internal timestep used to update the simulation environment
 	 */
-	public void updateBulkByReaction(SoluteGrid[] reacGrid, double timeStep) {
-
+	public void updateBulkByReaction(SoluteGrid[] reacGrid, double timeStep)
+	{
 		Domain aDomain;
-		double factor, dSdT, oldValue;
-
-		String message = "Bulk dynamics \n";
-
-		// Determine reaction rate seen from reactor compartment
-		for (int iGrid = 0; iGrid<reacGrid.length; iGrid++) {
-			// we don't do the bulk update for certain solutes
-			if (reacGrid[iGrid]==null) continue;
-			//if (reacGrid[iGrid].gridName.contentEquals("o2d")) continue;
-			if (reacGrid[iGrid].gridName.contentEquals("pressure")) continue;
-			//Brian 14.04.2010
-			if (_isConstant[iGrid]) continue;
-
+		Double factor, dSdT, oldValue;
+		String message = "Bulk dynamics: \n";
+		/*
+		 * These times are not used to update, but stored for changing
+		 * the timestep.
+		 */
+		Double t1, t2;
+		/*
+		 *  Determine reaction rate seen from reactor compartment
+		 */
+		for (int iGrid = 0; iGrid<reacGrid.length; iGrid++)
+		{
+			/*
+			 * We don't do the bulk update for certain solutes.
+			 */
+			if ( reacGrid[iGrid] == null )
+				continue;
+			if ( reacGrid[iGrid].gridName.contentEquals("pressure") )
+				continue;
+			if ( _isConstant[iGrid] )
+				continue;
+			/*
+			 * Store the current value for log output. 
+			 */
 			oldValue = _bulkValue[iGrid];
-
+			/*
+			 * Find the relevant Domain.
+			 */
 			aDomain = reacGrid[iGrid].getDomain();
-
-			// Scale-up factor (V_domain to V_reactor scaling in m3/m3)
+			/*
+			 * Scale-up factor (V_domain to V_reactor scaling in m3/m3).
+			 */
 			factor = (aDomain.length_X*1e-6) * aDomain.specificArea;
-
-			// Compute average reaction rate in g.L-1.h-1
+			/*
+			 * Compute average reaction rate in g.L-1.h-1
+			 */
 			_reacRate[iGrid] = reacGrid[iGrid].getAverage()*factor;
-
-			// compute the total rate change by dilution and reaction
+			/*
+			 * Compute the total rate change by dilution and reaction.
+			 */
 			dSdT = _D*(_sIn[iGrid]-_bulkValue[iGrid]) + _reacRate[iGrid];
-
-			// now do the actual update of the concentration
-
+			/*
+			 * Now do the actual update of the concentration.
+			 */
 			// forward Euler method
 			//			_bulkValue[iGrid] = _bulkValue[iGrid]+dSdT*timeStep;
-
-			// backward Euler method
+			/*
+			 * Backward Euler method
+			 */
 			_bulkValue[iGrid] = (_bulkValue[iGrid] +
 					timeStep*(_D*_sIn[iGrid]+_reacRate[iGrid]))
 					/(1+timeStep*_D);
-
-			// safety catch on concentration
-			if (_bulkValue[iGrid] < 0.) _bulkValue[iGrid] = 0.;
-
-			// finally update the timestep value
-			// safety catch if nothing is happening (to avoid infinite dt)
-			if (dSdT == 0.)
+			/*
+			 * Safety catch on concentration.
+			 */
+			_bulkValue[iGrid] = Math.max(_bulkValue[iGrid], 0.0);
+			/*
+			 * Finally update the timestep value.
+			 * Safety catch if nothing is happening (to avoid infinite dt).
+			 */
+			if ( dSdT == 0.0 )
 				_dT[iGrid] = Double.MAX_VALUE;
-			else {
-				// these times are not used to update, but stored for changing the timestep
-				double t1, t2;
-				// t1 is the time needed to change the bulk by 5%
-				t1 = 0.05*_bulkValue[iGrid]/Math.abs(dSdT);
-				// t2 is 5% of the time to return to the influent value
-				t2 = 0.05*(_bulkValue[iGrid]-_sIn[iGrid])/dSdT;
-				if (t2<0)
+			else
+			{
+				/*
+				 * t1 is the time needed to change the bulk by 5%.
+				 */
+				t1 = 0.05 * _bulkValue[iGrid] / Math.abs(dSdT);
+				/*
+				 * t2 is 5% of the time to return to the influent value.
+				 */
+				t2 = 0.05 * ( _bulkValue[iGrid] - _sIn[iGrid] ) / dSdT;
+				if ( t2 < 0 )
 					// t2 is only used for the situation that S is returning toward Sin
 					_dT[iGrid] = Math.min(t1, -t2);
 				else
-					_dT[iGrid]=t1;
+					_dT[iGrid] = t1;
 			}
-
-			// some output
+			/*
+			 * Some output.
+			 */
 			message += reacGrid[iGrid].gridName+" [";
-			message += ExtraMath.toString(oldValue, true)+" -> "
-			+ExtraMath.toString(_bulkValue[iGrid], true);
+			message += ExtraMath.toString(oldValue, true) + " -> ";
+			message += ExtraMath.toString(_bulkValue[iGrid], true);
 			message += " ("+ExtraMath.toString(dSdT, true)+")";
 			message += " step "+_dT[iGrid]+" ]\n";
 		}
-
-		LogFile.writeLog("Bulk update: "+message);
+		LogFile.writeLog(message);
 	}
 
 	/**

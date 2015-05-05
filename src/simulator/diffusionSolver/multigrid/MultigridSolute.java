@@ -268,7 +268,7 @@ public class MultigridSolute
 		MultigridUtils.interpolateBoundaryLayer(_conc[order],
 										_conc[order-1], _bLayer[order].grid);
 		// Set each solute's r.h.s. to 0
-		_rhs[order].setAllValueAt(0.0);
+		_rhs[order].resetToZero();;
 	}
 
 	public void downward(int order, int outer)
@@ -325,7 +325,7 @@ public class MultigridSolute
 
 		// compute the truncation error for this V-cycle
 		// for all chemicals
-		if (order+1==outer)
+		if ( order+1 == outer )
 			truncationError = .3333*MultigridUtils.computeNorm(_itau[order].grid);
 	}
 	
@@ -349,19 +349,16 @@ public class MultigridSolute
 	 */
 	public boolean breakVCycle(int order, int v)
 	{
-		// compute the residue for this solute species
+		/*
+		 * Compute the residue for this solute.
+		 */
 		computeResidual(_itemp, order);
 		MultigridUtils.subtractTo(_itemp[order].grid, _rhs[order].grid);
-
-		float res = MultigridUtils.computeNorm(_itemp[order].grid);
-		// confirm that criterium is met for each solute
-		if (v>0&order==maxOrder-1) {
-			//System.out.println("grid "+order+"; v "+v+"; "+soluteName+" res "+res+"; truncerr "
-			 //       +truncationError);
-		}
-		
-		// confirm that criterium is met for each solute
-		return !(res>truncationError);
+		Double res = MultigridUtils.computeNorm(_itemp[order].grid);
+		/*
+		 *  Confirm that criterion is met for each solute.
+		 */
+		return ( res <= truncationError );
 	}
 	
 	/**
@@ -533,6 +530,9 @@ public class MultigridSolute
 	
 	/**
 	 * 
+	 * TODO Why are we only doing this to concentrations in the boundary
+	 * layer? 
+	 * 
 	 * @param order
 	 */
 	public void truncateConcToZero(int order)
@@ -543,15 +543,11 @@ public class MultigridSolute
 		Double[][][] bl = _bLayer[order].grid;
 		Double[][][] u = _conc[order].grid;
 		
-		Double v;
 		for (int _i = 1; _i <= nI; _i++)
 			for (int _j = 1; _j <= nJ; _j++)
 				for (int _k = 1; _k <= nK; _k++)
 					if (bl[_i][_j][_k] >= BLTHRESH)
-					{
-						v = u[_i][_j][_k];
-						u[_i][_j][_k] = (v<0 ? 0 : v);
-					}
+						u[_i][_j][_k] = Math.max(u[_i][_j][_k], 0.0);
 	}
 	
 	/* _________________________ TOOLBOX ____________________________ */
@@ -573,11 +569,11 @@ public class MultigridSolute
 		for (int order = 0; order < maxOrder; order++)
 		{
 			setSoluteGridToBulk(order);
-			_itau[order].setAllValueAt(0d);
-			_itemp[order].setAllValueAt(0d);
-			_reac[order].setAllValueAt(0d);
-			_diffReac[order].setAllValueAt(0d);
-			_rhs[order].setAllValueAt(0d);
+			_itau[order].resetToZero();
+			_itemp[order].resetToZero();
+			_reac[order].resetToZero();
+			_diffReac[order].resetToZero();
+			_rhs[order].resetToZero();
 		}
 	}
 	
@@ -596,8 +592,8 @@ public class MultigridSolute
 	 */
 	public void resetReaction(int order)
 	{
-		_reac[order].setAllValueAt(0d);
-		_diffReac[order].setAllValueAt(0d);
+		_reac[order].resetToZero();
+		_diffReac[order].resetToZero();
 	}
 	
 	/**

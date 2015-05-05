@@ -15,6 +15,9 @@ package utils;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.function.DoubleFunction;
+
+import simulator.Simulator;
 
 /**
  * \brief Abstract class with some extra useful math functions.
@@ -456,6 +459,39 @@ public final class ExtraMath
 				sum += value;
 		return sum;
 	}
+	
+	/*
+	public static void applyToAll(Double[][][] array, DoubleFunction<Double> f)
+	{
+		for (int i = 0; i < array.length; i++)
+			for (int j = 0; j < array[i].length; j++)
+				for (int k = 0; k < array[i][j].length; k++)
+					array[i][j][k] = (Double) f.apply(array[i][j][k]);
+	}
+	
+	public static Double getStatistic(Double[][][] array,
+			DoubleFunction<Double> f)
+	{
+		Double total = 0.0;
+		for (int i = 0; i < array.length; i++)
+			for (int j = 0; j < array[i].length; j++)
+				for (int k = 0; k < array[i][j].length; k++)
+					total += (Double) f.apply(array[i][j][k]);
+		return total;
+	}
+	
+	public static Double getSum(Double[][][] array)
+	{
+		return getStatistic(array, (value) -> {return value;});
+	}
+	
+	public static Double getNorm(Double[][][] array)
+	{
+		Double n2 = getStatistic(array,
+								 (value) -> {return ExtraMath.sq(value);});
+		return Math.sqrt(n2);
+	}
+	*/
 	
 	/**
 	 * \brief Return the mean average entry in a Double array.
