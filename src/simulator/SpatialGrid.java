@@ -720,27 +720,6 @@ public class SpatialGrid implements Serializable
 						grid[i][j][k] = value;
 	}
 	
-	
-	/*
-	 * TODO Play around with Lambda functions, not yet working.
-	 * 
-	 *
-	public void applyToAll(DoubleFunction<Double> f)
-	{
-		ExtraMath.applyToAll(grid, f);
-	}
-	
-	public void setAllValueAtNew(Double value)
-	{
-		applyToAll((gridpoint) -> {return value;});
-	}
-	
-	public void truncateAll()
-	{
-		applyToAll((gridpoint) -> {return Math.max(gridpoint, 0.0);});
-	}
-	*/
-	
 	/**
 	 * \brief Set all meshes of the grid to zero.
 	 */

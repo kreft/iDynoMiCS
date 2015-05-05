@@ -13,7 +13,6 @@ package simulator.agent;
 
 import idyno.SimTimer;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.awt.Color;
 
@@ -224,10 +223,6 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
-		String msg = new String("LocatedAgent ");
-		for ( String i : singleAgentData )
-			msg += i+",";
-		LogFile.writeLogAlways(msg);
 		/*
 		 * Find the position to start at.
 		 */

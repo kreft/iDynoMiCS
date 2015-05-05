@@ -106,10 +106,6 @@ public abstract class Agent implements Cloneable
 	 */
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData) 
 	{
-		String msg = new String("Agent ");
-		for ( String i : singleAgentData )
-			msg += i+",";
-		LogFile.writeLogAlways(msg);
 		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
 		_family     = Integer.parseInt(singleAgentData[0]);
 		_genealogy  = new BigInteger(singleAgentData[1]);

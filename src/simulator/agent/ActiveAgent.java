@@ -18,7 +18,6 @@ import simulator.Simulator;
 import simulator.SpatialGrid;
 import simulator.reaction.Reaction;
 import utils.ExtraMath;
-import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -224,11 +223,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
 	{
-		String msg = new String("ActiveAgent ");
-		for ( String i : singleAgentData )
-			msg += i+",";
-		LogFile.writeLogAlways(msg);
-		
 		/*
 		 * This routine will read data from the end of the singleAgentData
 		 * array and then pass the remaining values onto the super class.
