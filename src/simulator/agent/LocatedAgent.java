@@ -13,7 +13,6 @@ package simulator.agent;
 
 import idyno.SimTimer;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.awt.Color;
 

@@ -117,7 +117,7 @@ public class SinglegridPressure
 	public SinglegridPressure(SoluteGrid aSolute, SoluteGrid bLayer, Double sBulk)
 	{
 		realGrid = aSolute;
-		realGrid.diffusivity = 1;
+		realGrid.diffusivity = 1.0;
 		soluteName = realGrid.gridName;
 		
 		_nI = realGrid.getGridSizeI();
@@ -236,21 +236,12 @@ public class SinglegridPressure
 	
 	/**
 	 * 
-	 * @param value
-	 */
-	public void resetSoluteGrid(double value)
-	{
-		_conc.setAllValueAt(value);
-	}
-	
-	/**
-	 * 
 	 */
 	public void resetMultigridCopies()
 	{
 		setSoluteGridToBulk();
-		_reac.setAllValueAt(0d);
-		_rhs.setAllValueAt(0d);
+		_reac.resetToZero();;
+		_rhs.resetToZero();;
 	}
 	
 	/**

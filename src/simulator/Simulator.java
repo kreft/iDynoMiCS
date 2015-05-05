@@ -1035,24 +1035,19 @@ public class Simulator
 			}
 			
 			// Else process agents description
-			String dataSource = aSpeciesRoot.getElement().getContent(0).toString();
+			String dataSource = aSpeciesRoot.getValue();
+			dataSource = dataSource.replace("\n", "");
 			String[] allAgentData = null;
 			try 
 			{
-				allAgentData = dataSource.split(";\n");
-				// this removes the '[Text: \n' line from the first item in the list
-				// so that all agents will be treated equally
+				allAgentData = dataSource.split(";");
 			} 
 			catch (Exception e)
 			{
 				LogFile.writeLog("Simulator.recreateSpecies() : problem splitting up data");
 			}
 			
-			allAgentData[0] = allAgentData[0].substring(8);
-			
 			progenitor = speciesList.get(spIndex).getProgenitor();
-			
-			// don't use the last index because it is a string with only ']'
 			for (String data : allAgentData)
 			{
 				progenitor.sendNewAgent().

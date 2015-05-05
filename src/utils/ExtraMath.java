@@ -15,6 +15,9 @@ package utils;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.function.DoubleFunction;
+
+import simulator.Simulator;
 
 /**
  * \brief Abstract class with some extra useful math functions.

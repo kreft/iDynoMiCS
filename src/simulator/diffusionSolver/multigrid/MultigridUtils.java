@@ -449,26 +449,14 @@ public abstract class MultigridUtils {
 	 * @param a
 	 * @return the norm of the matrix
 	 */
-	public static float computeNorm(Double[][][] a) {
-		float norm = 0;
+	public static Double computeNorm(Double[][][] a)
+	{
+		Double norm = 0.0;
 		for (int i = 1; i<a.length-1; i++)
 			for (int j = 1; j<a[i].length-1; j++)
 				for (int k = 1; k<a[i][j].length-1; k++)
 					norm += ExtraMath.sq(a[i][j][k]);
-		return (float) Math.sqrt(norm);
-	}
-
-	/**
-	 * @param a
-	 * @return the sum of all elements of a
-	 */
-	public static float computeSum(float[][][] a) {
-		float sum = 0;
-		for (int i = 1; i<a.length-1; i++)
-			for (int j = 1; j<a[i].length-1; j++)
-				for (int k = 1; k<a[i][j].length-1; k++)
-					sum += a[i][j][k];
-		return sum;
+		return Math.sqrt(norm);
 	}
 
 	/**

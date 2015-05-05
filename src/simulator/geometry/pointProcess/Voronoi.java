@@ -89,11 +89,13 @@ public class Voronoi
 				 */
 				//leftBoundary = sweepTable.leftBoundary(nextSite);
 				leftBoundary = sweepTable.halfEdgeImmediatelyBehind(nextSite);
+				System.out.println("leftBoundary is "+leftBoundary.toString());
 				/*
 				 * Store the HalfEdge immediately to the right, as the left
 				 * HE will change before we need it.
 				 */
 				rightBoundary = leftBoundary.nextNeighbor;
+				System.out.println("rightBoundary is "+rightBoundary.toString());
 				/*
 				 * 
 				 */
@@ -116,16 +118,21 @@ public class Voronoi
 				 * 
 				 */
 				sweepTable.insert(leftBoundary, newHE);
+				System.out.println("\nTrying to intersect [A]");
+				System.out.println(leftBoundary.toString());
+				System.out.println(newHE.toString());
 				intersection = intersect(leftBoundary, newHE);
 				if ( intersection != null )
 				{
 					// PQdelete() ???
-					System.out.println("\nVertex found at "+
+					System.out.println("Vertex found at "+
 											intersection.toString()+" [A]");
 					offset = _space.distance(intersection,  nextSite);
 					priorityQueueInsert(intersection, offset);
 					intersection.previousHE = leftBoundary;
 				}
+				else
+					System.out.println("No vertex found [A]");
 				/*
 				 * Now look at the right-hand HalfEdge of newEdge.
 				 */
@@ -135,15 +142,21 @@ public class Voronoi
 				/*
 				 * See if this intersects rightBoundary.
 				 */
+				System.out.println("\nTrying to intersect [B]");
+				System.out.println(newHE.toString());
+				System.out.println(rightBoundary.toString());
 				intersection = intersect(newHE, rightBoundary);
 				if ( intersection != null )
 				{
-					System.out.println("\nVertex found at "+
+					System.out.println("Vertex found at "+
 											intersection.toString()+" [B]");
 					offset = _space.distance(intersection,  nextSite);
 					priorityQueueInsert(intersection, offset);
 					intersection.previousHE = newHE;
 				}
+				else
+					System.out.println("No vertex found [B]");
+					
 			}
 			else if ( nextEvent instanceof Vertex)
 			{
