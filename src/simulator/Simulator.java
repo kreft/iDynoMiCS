@@ -414,14 +414,13 @@ public class Simulator
 			 * If this is an invComp simulation (default is false), stop if
 			 * there are fewer than two species remaining.
 			 */
-			if (invComp)
-			{
-				int specAlive = 0;
-				for ( Species aSpec : speciesList )
-					if ( aSpec.getPopulation() > 0 )
-						specAlive++;
-				continueRunning = (specAlive >= 2);
-			}
+			int specAlive = 0;
+			for ( Species aSpec : speciesList )
+				if ( aSpec.getPopulation() > 0 )
+					specAlive++;
+			continueRunning = (specAlive >= (invComp ? 2 : 1));
+			// stop simulation if all cells are washed out, or if only species
+			// for invComp = true (invasion competition simulation)
 			LogFile.chronoMessageOut("Agents simulated");
 			
 			SimTimer.updateTimeStep(world);
@@ -1021,14 +1020,13 @@ public class Simulator
 		
 		// Initialise a parser of the XML agent file
 		XMLParser simulationRoot = agentFile.getChildParser("simulation");
-		int counterSpecies = 0;
 		String spName;
 		for (XMLParser aSpeciesRoot : simulationRoot.getChildrenParsers("species")) 
 		{
 			spName = aSpeciesRoot.getName();
 			spIndex = getSpeciesIndex(spName);
 			// Check consistency with protocol file declarations.
-			if ( ! speciesList.get(counterSpecies).speciesName.equals(spName) )
+			if ( ! speciesList.get(spIndex).speciesName.equals(spName) )
 			{
 				throw new Exception(
 					"Agent input file is inconsistent with protocol file: ");
@@ -1036,7 +1034,11 @@ public class Simulator
 			
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getValue();
-			dataSource = dataSource.replace("\n", "");
+			
+			// remove all whitespace and returns.
+			dataSource = dataSource.replaceAll("\\s","");
+			if(dataSource.isEmpty())
+				continue;
 			String[] allAgentData = null;
 			try 
 			{
@@ -1055,10 +1057,8 @@ public class Simulator
 			}
 			
 			LogFile.writeLog(spName+" : "
-					+speciesList.get(counterSpecies).getPopulation()
+					+speciesList.get(spIndex).getPopulation()
 					+" agents created from input file.");
-			
-			counterSpecies++;
 		}
 	}
 
