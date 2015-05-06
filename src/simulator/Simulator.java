@@ -18,8 +18,8 @@ import java.util.*;
 import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import de.schlichtherle.io.FileInputStream;
 
+import de.schlichtherle.io.FileInputStream;
 import idyno.Idynomics;
 import idyno.SimTimer;
 import povray.PovRayWriter;
@@ -1021,14 +1021,13 @@ public class Simulator
 		
 		// Initialise a parser of the XML agent file
 		XMLParser simulationRoot = agentFile.getChildParser("simulation");
-		int counterSpecies = 0;
 		String spName;
 		for (XMLParser aSpeciesRoot : simulationRoot.getChildrenParsers("species")) 
 		{
 			spName = aSpeciesRoot.getName();
 			spIndex = getSpeciesIndex(spName);
 			// Check consistency with protocol file declarations.
-			if ( ! speciesList.get(counterSpecies).speciesName.equals(spName) )
+			if ( spIndex < 0 )
 			{
 				throw new Exception(
 					"Agent input file is inconsistent with protocol file: ");
@@ -1037,6 +1036,11 @@ public class Simulator
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getValue();
 			dataSource = dataSource.replace("\n", "");
+			if (dataSource.length() == 0)
+			{
+				System.out.println("Caught empty species : "+spName);
+				continue;
+			}
 			String[] allAgentData = null;
 			try 
 			{
@@ -1055,10 +1059,8 @@ public class Simulator
 			}
 			
 			LogFile.writeLog(spName+" : "
-					+speciesList.get(counterSpecies).getPopulation()
+					+allAgentData.length
 					+" agents created from input file.");
-			
-			counterSpecies++;
 		}
 	}
 
