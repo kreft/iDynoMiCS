@@ -414,14 +414,13 @@ public class Simulator
 			 * If this is an invComp simulation (default is false), stop if
 			 * there are fewer than two species remaining.
 			 */
-			if (invComp)
-			{
-				int specAlive = 0;
-				for ( Species aSpec : speciesList )
-					if ( aSpec.getPopulation() > 0 )
-						specAlive++;
-				continueRunning = (specAlive >= 2);
-			}
+			int specAlive = 0;
+			for ( Species aSpec : speciesList )
+				if ( aSpec.getPopulation() > 0 )
+					specAlive++;
+			continueRunning = (specAlive >= (invComp ? 2 : 1));
+			// stop simulation if all cells are washed out, or if only species
+			// for invComp = true (invasion competition simulation)
 			LogFile.chronoMessageOut("Agents simulated");
 			
 			SimTimer.updateTimeStep(world);
