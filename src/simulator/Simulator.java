@@ -1035,7 +1035,9 @@ public class Simulator
 			
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getValue();
-			dataSource = dataSource.replace("\n", "");
+			
+			// remove all whitespace and returns.
+			dataSource = dataSource.replaceAll("\\s","");
 			if(dataSource.isEmpty())
 				continue;
 			String[] allAgentData = null;
