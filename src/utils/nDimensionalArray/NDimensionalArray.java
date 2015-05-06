@@ -13,6 +13,11 @@ public class NDimensionalArray
 	
 	protected int[] padding;
 	
+	/*
+	 * For iteration.
+	 */
+	protected int previousIndex;
+	
 	
 	public NDimensionalArray(int[] dimensionSizes) throws Exception
 	{
@@ -31,6 +36,8 @@ public class NDimensionalArray
 			this.totalLength *= d;
 			padding[d] = 0;
 		}
+		
+		this.previousIndex = -1;
 	}
 	
 	public int getNDimensions()
@@ -143,6 +150,46 @@ public class NDimensionalArray
 	}
 	
 	
+	/*************************************************************************
+	 * ITERATION
+	 ************************************************************************/
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public Boolean hasNext()
+	{
+		return this.previousIndex < this.totalLength - 1;
+	}
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public Boolean hasPrevious()
+	{
+		return this.previousIndex > 0;
+	}
+	
+	public int nextIndex()
+	{
+		this.previousIndex++;
+		return previousIndex;
+	}
+	
+	public int previousIndex()
+	{
+		return previousIndex;
+	}
+	
+	public int[] nextPosition() throws Exception
+	{
+		return findPosition(nextIndex());
+	}
+	
+	public int[] previousPosition() throws Exception
+	{
+		return findPosition(previousIndex());
+	}
 }
