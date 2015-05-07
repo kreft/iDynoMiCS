@@ -224,11 +224,11 @@ public class Planar extends IsShape
 	public LinkedList<ContinuousVector> getIntersections(
 						ContinuousVector position, ContinuousVector vector)
 	{
+		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
 		// If the line is parallel to his plane, return null.
 		Double c = _cVectorOut.prodScalar(vector);
 		if ( c.equals(0.0) )
-			return null;
-		LinkedList<ContinuousVector> out = new LinkedList<ContinuousVector>();
+			return out;
 		ContinuousVector intersection = new ContinuousVector(vector);
 		/* 
 		 * Find the (relative) length along vector we must travel to hit the
@@ -700,9 +700,17 @@ public class Planar extends IsShape
 		}
 	}
 	
+	/**
+	 * TODO generalise to all shapes, not just planes
+	 * 
+	 * @param walls
+	 */
 	public void restrictPlane(LinkedList<Planar> walls)
 	{
 		//System.out.println("RESTRICING PLANE");
+		boundaries = new LinkedList<IsShape>();
+		boundaries.addAll(walls);
+		
 		_maxPrimary = -Double.MAX_VALUE;
 		_minPrimary = Double.MAX_VALUE;
 		Edge temp;

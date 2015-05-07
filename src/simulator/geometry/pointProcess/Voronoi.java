@@ -8,6 +8,7 @@ import simulator.geometry.ContinuousVector;
 import simulator.geometry.pointProcess.HalfEdge;
 import simulator.geometry.pointProcess.Site;
 import simulator.geometry.shape.IsShape;
+import simulator.geometry.shape.Planar;
 import utils.LogFile;
 import utils.ResultFile;
 
@@ -68,7 +69,8 @@ public class Voronoi
 		 */
 		pqIterator.next();
 		System.out.println("Bottom site at "+bottomSite().toString());
-		
+		try
+		{
 		while ( pqIterator.hasNext() )
 		{
 			System.out.println("");
@@ -177,6 +179,8 @@ public class Voronoi
 				 * HE will change before we need it.
 				 */
 				rightBoundary = leftBoundary.nextNeighbor;
+				System.out.println("HE immediately to right is "+
+													rightBoundary.toString());
 				/*
 				 * 
 				 */
@@ -194,6 +198,7 @@ public class Voronoi
 				top = rightBoundary.getSiteAhead();
 				if ( top == null )
 					top = bottomSite();
+				System.out.println("top at "+top.toString());
 				// TODO set vertex number?
 				/* 
 				 * 
@@ -250,14 +255,24 @@ public class Voronoi
 			
 			
 		} // End of while ( pqIterator.hasNext() )
-		
+		}
+		catch (Exception e)
+		{
+			
+		}
 		
 		
 		// Deal with any Edges that cross boundaries
 		// TODO just those in sweepTable?
-		//for ( Edge edge : edges )
-		//	clip(edge);
-		
+		try
+		{
+		for ( Edge edge : edges )
+			clip(edge);
+		}
+		catch (Exception e)
+		{
+			
+		}
 		System.out.println("");
 		System.out.println("------------------- FINISHED! -------------------");
 		System.out.println("");
@@ -428,27 +443,100 @@ public class Voronoi
 	 */
 	private void clip(Edge edge)
 	{
+		System.out.println("Voronoi.clip(Edge) looking at "+edge.toString());
+		/*
+		 * Build a list of all points on the shape we need to consider. This
+		 * obviously includes the endPoints already set, if they exist.
+		 */
+		LinkedList<ContinuousVector> allToConsider =
+										new LinkedList<ContinuousVector>();
+		for ( Vertex ep : edge.endPoint )
+			if ( ep != null )
+				allToConsider.add(ep);
+		/*
+		 * Now add all intersections with boundaries of the shape.
+		 */
 		ContinuousVector diff = new ContinuousVector();
-		LinkedList<ContinuousVector> intersections;
-		if ( ! edge.areEndPointsSet() )
-		{
-			//ContinuousVector[] temp = _space.
-			
-		}
 		diff.sendDiff(edge.endPoint[1], edge.endPoint[0]);
-		for ( IsShape boundary : boundaries )
-		{
+		LinkedList<ContinuousVector> intersections;
+		for ( IsShape boundary : _space.getBoundaries() )
+		{ 
 			intersections = boundary.getIntersections(edge.endPoint[0], diff);
-			if ( intersections == null )
+			if ( intersections.isEmpty() )
 				continue;
-			/*
-			 * TODO Currently only handles one intersection, should make more
-			 * robust.
-			 */
-			if ( boundary.isOutside(edge.endPoint[0]) )
-				edge.endPoint[0].set(intersections.getFirst());
+			allToConsider.addAll(intersections);
+		}
+		/*
+		 * Remove any that are outside any other boundary.
+		 */
+		LinkedList<ContinuousVector> toRemove = 
+										new LinkedList<ContinuousVector>();
+		//System.out.println("Considering...");
+		for ( ContinuousVector v : allToConsider )
+		{
+			//System.out.println("\n\t"+v.toString());
+			sLoop: for ( IsShape boundary : _space.getBoundaries() )
+			{
+				//System.out.println("\t\t"+boundary.toString());
+				if ( boundary instanceof Planar )
+				{
+					Double angle = ((Planar) boundary).getNormalContinuous().
+							cosAngle(((Planar) boundary).getRelativePosition(v));
+					//System.out.println("\t\t\t"+angle);
+				}
+				if ( boundary.isOutside(v) )
+				{
+					//System.out.println("\tOUTSIDE!");
+					toRemove.add(v);
+					break sLoop;
+				}
+			}
+		}
+		allToConsider.removeAll(toRemove);
+		/*
+		 * Sort this list lexicographically, i.e. the same way as we did with
+		 * the sites at the beginning.
+		 */
+		allToConsider.sort(new PositionComparator());
+		switch ( allToConsider.size() )
+		{
+		case 2:
+			edge.endPoint[0] = new Vertex();
+			edge.endPoint[1] = new Vertex();
+			edge.endPoint[0].set(allToConsider.getFirst());
+			edge.endPoint[1].set(allToConsider.getLast());
+			break;
+		case 3:
+			if ( allToConsider.get(1).equals(edge.endPoint[0]) )
+			{
+				edge.endPoint[1] = new Vertex();
+				edge.endPoint[1].set(allToConsider.getLast());
+			}
+			else if ( allToConsider.get(1).equals(edge.endPoint[1]) )
+			{
+				edge.endPoint[0] = new Vertex();
+				edge.endPoint[0].set(allToConsider.getFirst());
+			}
 			else
-				edge.endPoint[1].set(intersections.getFirst());
+			{
+				System.out.println("Voronoi.clip(Edge) has broken!");
+				for ( ContinuousVector v : allToConsider )
+					System.out.println("\t"+v.toString());
+				System.exit(-1);
+			}
+			break;
+		case 4:
+			edge.endPoint[0] = new Vertex();
+			edge.endPoint[1] = new Vertex();
+			edge.endPoint[0].set(allToConsider.get(1));
+			edge.endPoint[1].set(allToConsider.get(2));
+			break;
+
+		default:
+			System.out.println("Voronoi.clip(Edge) has broken!");
+			for ( ContinuousVector v : allToConsider )
+				System.out.println("\t"+v.toString());
+			System.exit(-1);
 		}
 	}
 	
@@ -492,6 +580,8 @@ public class Voronoi
 		Double[] p;
 		for ( Edge edge : edges )
 		{
+			try
+			{
 			textBuffer.append(edge.coefficient[0]+","+
 								edge.coefficient[1]+","+
 								edge.coefficient[2]+",");
@@ -510,6 +600,11 @@ public class Voronoi
 				textBuffer.append(p[0]+","+p[1]);
 			}
 			textBuffer.append(";\n");
+			}
+			catch ( Exception e)
+			{
+				
+			}
 		}
 		textBuffer.append("<edges/>\n");
 		System.out.print(textBuffer.toString());

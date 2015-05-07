@@ -15,18 +15,21 @@ public class VoronoiTest
 		
 		DiscreteVector origin = new DiscreteVector(0, 0, 0);
 		DiscreteVector tenTen = new DiscreteVector(0, 33, 33);
-		DiscreteVector iUnit = new DiscreteVector(1, 0, 0);
-		DiscreteVector jUnit = new DiscreteVector(0, 1, 0);
-		DiscreteVector kUnit = new DiscreteVector(0, 0, 1);
+		DiscreteVector ipUnit = new DiscreteVector(1, 0, 0);
+		//DiscreteVector imUnit = new DiscreteVector(-1, 0, 0);
+		DiscreteVector jpUnit = new DiscreteVector(0, 1, 0);
+		DiscreteVector jmUnit = new DiscreteVector(0, -1, 0);
+		DiscreteVector kpUnit = new DiscreteVector(0, 0, 1);
+		DiscreteVector kmUnit = new DiscreteVector(0, 0, -1);
 		
-		Planar mainShape = new Planar(origin, iUnit, resolution);
+		Planar mainShape = new Planar(origin, ipUnit, resolution);
 		//System.out.println("This "+mainShape.toString()+"\n");
 		
 		LinkedList<Planar> walls = new LinkedList<Planar>();
-		walls.add(new Planar(origin, jUnit, resolution));
-		walls.add(new Planar(origin, kUnit, resolution));
-		walls.add(new Planar(tenTen, jUnit, resolution));
-		walls.add(new Planar(tenTen, kUnit, resolution));
+		walls.add(new Planar(origin, jmUnit, resolution));
+		walls.add(new Planar(origin, kmUnit, resolution));
+		walls.add(new Planar(tenTen, jpUnit, resolution));
+		walls.add(new Planar(tenTen, kpUnit, resolution));
 		mainShape.restrictPlane(walls);
 		
 		LinkedList<Site> sites = new LinkedList<Site>();
@@ -79,6 +82,7 @@ public class VoronoiTest
         sites.add(new Site(0.0,187.14356504246678,250.75143779522674));
         sites.add(new Site(0.0,209.04129817533493,204.29868041769666));
         //*/
+        
         Voronoi voronoi = new Voronoi(mainShape, sites);
 	}
 }
