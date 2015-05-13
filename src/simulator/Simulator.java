@@ -18,8 +18,8 @@ import java.util.*;
 import org.jdom.Element;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
 import de.schlichtherle.io.FileInputStream;
+
 import idyno.Idynomics;
 import idyno.SimTimer;
 import povray.PovRayWriter;
