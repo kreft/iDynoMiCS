@@ -733,7 +733,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * @return Distance moved relative to total radius.
 	 */
 	@Override
-	public Double move() {
+	public Double move()
+	{
 		/*
 		 * Check the movement is valid.
 		 */

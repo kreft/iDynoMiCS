@@ -414,14 +414,13 @@ public class Simulator
 			 * If this is an invComp simulation (default is false), stop if
 			 * there are fewer than two species remaining.
 			 */
-			if (invComp)
-			{
 				int specAlive = 0;
 				for ( Species aSpec : speciesList )
 					if ( aSpec.getPopulation() > 0 )
 						specAlive++;
-				continueRunning = (specAlive >= 2);
-			}
+			continueRunning = (specAlive >= (invComp ? 2 : 1));
+			// stop simulation if all cells are washed out, or if only species
+			// for invComp = true (invasion competition simulation)
 			LogFile.chronoMessageOut("Agents simulated");
 			
 			SimTimer.updateTimeStep(world);
@@ -1027,7 +1026,7 @@ public class Simulator
 			spName = aSpeciesRoot.getName();
 			spIndex = getSpeciesIndex(spName);
 			// Check consistency with protocol file declarations.
-			if ( spIndex < 0 )
+			if ( ! speciesList.get(spIndex).speciesName.equals(spName) )
 			{
 				throw new Exception(
 					"Agent input file is inconsistent with protocol file: ");
@@ -1035,12 +1034,11 @@ public class Simulator
 			
 			// Else process agents description
 			String dataSource = aSpeciesRoot.getValue();
-			dataSource = dataSource.replace("\n", "");
-			if (dataSource.length() == 0)
-			{
-				System.out.println("Caught empty species : "+spName);
+			
+			// remove all whitespace and returns.
+			dataSource = dataSource.replaceAll("\\s","");
+			if(dataSource.isEmpty())
 				continue;
-			}
 			String[] allAgentData = null;
 			try 
 			{
@@ -1059,7 +1057,7 @@ public class Simulator
 			}
 			
 			LogFile.writeLog(spName+" : "
-					+allAgentData.length
+					+speciesList.get(spIndex).getPopulation()
 					+" agents created from input file.");
 		}
 	}
