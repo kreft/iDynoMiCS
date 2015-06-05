@@ -426,7 +426,6 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 				_netVolumeRate += deltaMass/getSpeciesParam().particleDensity[i];
 			}
 		}
-		
 	}
 	
 	/**
