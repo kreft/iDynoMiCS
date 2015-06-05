@@ -353,7 +353,7 @@ public abstract class AllBC
 		 * Recording reason of death: agent will be moved to agentToKill list
 		 * when die() calls registerDeath().
 		 */
-		anAgent.death = "overBoard";
+		anAgent.death = reason;
 		
 		anAgent.die(false);
 		// To label this agent as "shoving solved", set to zero its movement.
