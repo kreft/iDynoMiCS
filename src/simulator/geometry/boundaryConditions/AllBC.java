@@ -390,6 +390,16 @@ public abstract class AllBC
 		// Compute the new position.
 		target.add(vectorIn);
 		// Compute and update the movement vector leading to this new position.
-		anAgent.getMovement().sendDiff(anAgent.getLocation(), target);
+		anAgent.getMovement().sendDiff(target,anAgent.getLocation());
+	}
+	
+	public Double overBoundary(Double radius, ContinuousVector target) {
+		Double v = _myShape.getDistance(target)-radius;
+		if (isOutside(target) || (v < 0))
+			return v;
+		else
+			return null;
+
+		
 	}
 }
