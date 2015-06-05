@@ -10,6 +10,8 @@ public class NDimensionalDouble extends NDimensionalArray
 {
 	private Double[] values;
 	
+	private Double temp;
+	
 	public NDimensionalDouble(int[] dimensionSizes) throws Exception
 	{
 		super(dimensionSizes);
@@ -27,7 +29,7 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * 
 	 * @param position
 	 * @param f
-	 * @throws Exception
+	 * @throws Exception thrown if position given is outside the array.
 	 */
 	public void applyToValue(int[] position, DoubleFunction<Double> f)
 															throws Exception
@@ -40,41 +42,110 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * \brief Apply a given function to all values.
 	 * 
 	 * @param f Function to apply to all values.
-	 * @throws Exception 
 	 */
 	public void applyToAll(DoubleFunction<Double> f, Boolean excludePadding)
-															throws Exception
 	{
-		for (int i = 0; i < this.totalLength; i++)
+		try
 		{
-			if ( excludePadding && isInPadding(findPosition(i)) )
-				continue;
-			this.values[i] = (Double) f.apply((Double) this.values[i]);
+			for (int i = 0; i < this.totalLength; i++)
+			{
+				if ( excludePadding && isInPadding(findPosition(i)) )
+					continue;
+				this.values[i] = (Double) f.apply((Double) this.values[i]);
+			}
+		}
+		catch (Exception e)
+		{
+			/*
+			 * This shouldn't ever happen, since we are looping through the
+			 * indices rather than choosing positions externally.
+			 */
 		}
 	}
 	
+	/**
+	 * \brief Apply a given function to all values.
+	 * 
+	 * @param f Function to apply to all values.
+	 */
+	public void getFromAll(BiFunction<Double, Double, Double> f,
+														Boolean excludePadding)
+	{
+		try
+		{
+			for (int i = 0; i < this.totalLength; i++)
+			{
+				if ( excludePadding && isInPadding(findPosition(i)) )
+					continue;
+				temp = (Double) f.apply((Double) this.values[i], (Double) temp);
+			}
+		}
+		catch (Exception e)
+		{
+			/*
+			 * This shouldn't ever happen, since we are looping through the
+			 * indices rather than choosing positions externally.
+			 */
+		}
+	}
+	
+	/**
+	 * \brief 
+	 * 
+	 * @param f
+	 * @param excludePadding
+	 * @return
+	 * @throws Exception
+	 */
 	public Double getProcessedSum(DoubleFunction<Double> f,
-									Boolean excludePadding) throws Exception
+														Boolean excludePadding)
 	{
 		Double out = 0.0;
-		for (int i = 0; i < this.totalLength; i++)
+		try
 		{
-			if ( excludePadding && isInPadding(findPosition(i)) )
-				continue;
-			out += (Double) f.apply((Double) this.values[i]);
+			for (int i = 0; i < this.totalLength; i++)
+			{
+				if ( excludePadding && isInPadding(findPosition(i)) )
+					continue;
+				out += (Double) f.apply((Double) this.values[i]);
+			}
+		}
+		catch (Exception e)
+		{
+			/*
+			 * This shouldn't ever happen, since we are looping through the
+			 * indices rather than choosing positions externally.
+			 */
 		}
 		return out;
 	}
 	
+	/**
+	 * \brief 
+	 * 
+	 * @param f
+	 * @param excludePadding
+	 * @return
+	 */
 	public Boolean checkAllTrue(Function<Double, Boolean> f,
-									Boolean excludePadding) throws Exception
+														Boolean excludePadding)
 	{
-		for (int i = 0; i < this.totalLength; i++)
+		try
 		{
-			if ( excludePadding && isInPadding(findPosition(i)) )
-				continue;
-			if ( ! f.apply(this.values[i]) )
-				return false;
+			for (int i = 0; i < this.totalLength; i++)
+			{
+				if ( excludePadding && isInPadding(findPosition(i)) )
+					continue;
+				if ( ! f.apply(this.values[i]) )
+					return false;
+			}
+		}
+		catch (Exception e)
+		{
+			/*
+			 * This shouldn't ever happen, since we are looping through the
+			 * indices rather than choosing positions externally.
+			 */
 		}
 		return true;
 	}
@@ -145,6 +216,14 @@ public class NDimensionalDouble extends NDimensionalArray
 	public Boolean checkAllTrue(BiFunction<Double, Double, Boolean> f,
 			NDimensionalDouble other, Boolean excludePadding) throws Exception
 	{
+		/*
+		 * Safety checking first.
+		 */
+		if ( ! areDimensionsSame(other) )
+			throw new Exception();
+		/*
+		 * Now check condition is met for all pairs of corresponding values.
+		 */
 		for (int i = 0; i < this.totalLength; i++)
 		{
 			if ( excludePadding && isInPadding(findPosition(i)) )
@@ -155,10 +234,17 @@ public class NDimensionalDouble extends NDimensionalArray
 		return true;
 	}
 	
+	
 	/*************************************************************************
 	 * USEFUL METHODS
 	 ************************************************************************/
 	
+	/**
+	 * \brief 
+	 * 
+	 * @param index
+	 * @return
+	 */
 	public Double getValue(int index)
 	{
 		return this.values[index];
@@ -192,9 +278,8 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * \brief Sets all values to that given.
 	 * 
 	 * @param newValue Double value to set all values to.
-	 * @throws Exception 
 	 */
-	public void setAllTo(Double newValue, Boolean excludePadding) throws Exception
+	public void setAllTo(Double newValue, Boolean excludePadding)
 	{
 		this.applyToAll((value) -> {return newValue;}, excludePadding);
 	}
@@ -204,12 +289,27 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * 
 	 * Includes padding, if any.
 	 */
-	public void resetAllToZero() throws Exception
+	public void resetAllToZero()
 	{
 		this.setAllTo(0.0, true);
 	}
 	
-	public void times(Double multiplier, Boolean excludePadding) throws Exception
+	public Double max(Boolean excludePadding)
+	{
+		temp = Double.NEGATIVE_INFINITY;
+		this.applyToAll(
+				(value) -> {temp = Math.max(temp,  value); return value;},
+										excludePadding);
+		return temp;
+	}
+	
+	/**
+	 * \brief 
+	 * 
+	 * @param multiplier
+	 * @param excludePadding
+	 */
+	public void times(Double multiplier, Boolean excludePadding)
 	{
 		this.applyToAll((value) -> {return multiplier * value;},
 															excludePadding);
@@ -217,30 +317,39 @@ public class NDimensionalDouble extends NDimensionalArray
 	
 	/**
 	 * \brief If any values are negative, sets them to zero.
-	 * @throws Exception 
 	 */
-	public void ensureAllNonNegative() throws Exception
+	public void ensureAllNonNegative()
 	{
 		this.applyToAll((value) -> {return Math.max(value,  0.0);}, false);
 	}
 	
 	/**
+	 * \brief 
 	 * 
-	 * @return
+	 * @param excludePadding 
+	 * @return Boolean stating whether array contains any negative values (False)
+	 * or all values are non-negative (true).
 	 */
-	public Boolean areAllNonNegative(Boolean excludePadding) throws Exception
+	public Boolean areAllNonNegative(Boolean excludePadding)
 	{
-		return this.checkAllTrue((value) -> {return value >= 0.0;},
-															excludePadding);
+		try
+		{
+			return this.checkAllTrue((value) -> {return value >= 0.0;},
+					excludePadding);
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
 	}
 	
 	/**
+	 * \brief
 	 * 
 	 * @param excludePadding
 	 * @return
-	 * @throws Exception
 	 */
-	public Boolean areAllZero(Boolean excludePadding) throws Exception
+	public Boolean areAllZero(Boolean excludePadding)
 	{
 		return this.checkAllTrue((value) -> {return value == 0.0;},
 															excludePadding);
@@ -250,16 +359,15 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * \brief Checks whether the array contains any NaN or infinities.
 	 * 
 	 * @return
-	 * @throws Exception 
 	 */
-	public Boolean isFinite(Boolean excludePadding) throws Exception
+	public Boolean isFinite(Boolean excludePadding)
 	{
 		return this.checkAllTrue((value) -> {return Double.isFinite(value);},
 															excludePadding);
 	}
 	
 	
-	public Double norm(Boolean excludePadding) throws Exception
+	public Double norm(Boolean excludePadding)
 	{
 		Double sumSq = this.getProcessedSum(
 					(value) -> {return ExtraMath.sq(value);}, excludePadding);
@@ -271,9 +379,8 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * 
 	 * @param newNorm
 	 * @param excludePadding
-	 * @throws Exception
 	 */
-	public void normalise(Double newNorm, Boolean excludePadding) throws Exception
+	public void normalise(Double newNorm, Boolean excludePadding)
 	{
 		Double oldNorm = this.norm(excludePadding);
 		if ( oldNorm != 0.0 || oldNorm == newNorm )
@@ -284,9 +391,8 @@ public class NDimensionalDouble extends NDimensionalArray
 	 * \brief Sets the norm to 1.0
 	 * 
 	 * @param excludePadding
-	 * @throws Exception
 	 */
-	public void normalise(Boolean excludePadding) throws Exception
+	public void normalise(Boolean excludePadding)
 	{
 		this.normalise(1.0, excludePadding);
 	}
@@ -297,10 +403,14 @@ public class NDimensionalDouble extends NDimensionalArray
 	 ************************************************************************/
 
 	/**
+	 * \brief Check if this array is the same as that given.
 	 * 
-	 * @param other
-	 * @return
-	 * @throws Exception
+	 * Will return false if any corresponding values in the arrays are different.
+	 * 
+	 * @param other	NDimensionalDouble object to be compared with this one.
+	 * @return	Boolean stating whether other is the same (True) or different
+	 * (False).
+	 * @throws Exception if the dimensions are different.
 	 */
 	public Boolean equals(NDimensionalDouble other) throws Exception
 	{
@@ -322,9 +432,10 @@ public class NDimensionalDouble extends NDimensionalArray
 	}
 	
 	/**
+	 * \brief 
 	 * 
 	 * @param other
-	 * @throws Exception
+	 * @throws Exception if the dimensions are different.
 	 */
 	public void add(NDimensionalDouble other, Boolean excludePadding)
 															throws Exception
@@ -333,9 +444,10 @@ public class NDimensionalDouble extends NDimensionalArray
 	}
 	
 	/**
+	 * \brief 
 	 * 
 	 * @param other
-	 * @throws Exception
+	 * @throws Exception if the dimensions are different.
 	 */
 	public void subtract(NDimensionalDouble other, Boolean excludePadding)
 															throws Exception
@@ -344,11 +456,12 @@ public class NDimensionalDouble extends NDimensionalArray
 	}
 	
 	/**
+	 * \brief 
 	 * 
 	 * @param other
 	 * @param excludePadding
 	 * @return
-	 * @throws Exception
+	 * @throws Exception if the dimensions are different.
 	 */
 	public Double dotProduct(NDimensionalDouble other, Boolean excludePadding)
 															throws Exception
@@ -358,11 +471,12 @@ public class NDimensionalDouble extends NDimensionalArray
 	}
 	
 	/**
+	 * \brief 
 	 * 
 	 * @param other
 	 * @param excludePadding
 	 * @return
-	 * @throws Exception
+	 * @throws Exception if the dimensions are different.
 	 */
 	public Double distance(NDimensionalDouble other, Boolean excludePadding)
 															throws Exception
@@ -377,9 +491,37 @@ public class NDimensionalDouble extends NDimensionalArray
 	
 	/*************************************************************************
 	 * VECTOR METHODS
+	 * These always assume there to be no padding.
 	 ************************************************************************/
 	
+	/**
+	 * \brief 
+	 * 
+	 * 
+	 * @param other
+	 * @param excludePadding
+	 * @return
+	 * @throws Exception if the dimensions are different.
+	 */
+	public Double cosAngle(NDimensionalDouble other) throws Exception
+	{
+		Double dotProd = dotProduct(other, false);
+		return ( dotProd == 0.0 ) ? 0.0 : dotProd/
+										(this.norm(false) * other.norm(false));
+	}
 	
+	/**
+	 * \brief 
+	 * 
+	 * @param other
+	 * @param excludePadding
+	 * @return
+	 * @throws Exception if the dimensions are different.
+	 */
+	public Double angle (NDimensionalDouble other) throws Exception
+	{
+		return Math.acos(this.cosAngle(other));
+	}
 	
 	
 }

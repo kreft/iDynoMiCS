@@ -47,6 +47,8 @@ public abstract class IsShape implements Serializable
 	 */
 	protected static Double _minPrimary, _maxPrimary;
 	
+	protected LinkedList<IsShape> boundaries; 
+	
 	/**
 	 * \brief Reads the coordinates that specify a boundary from the protocol
 	 * file, creating a shape.
@@ -321,6 +323,11 @@ public abstract class IsShape implements Serializable
 	}
 	
 	public abstract ContinuousVector getEdgePointFromPrimary(Edge edge, Double primaryValue);
+	
+	public LinkedList<IsShape> getBoundaries()
+	{
+		return boundaries;
+	}
 	
 	/* ---------------------- SpatialGrid boundaries ---------------------- */
 	
