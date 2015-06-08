@@ -1,17 +1,50 @@
 package odeSolver;
 
+import simulator.reaction.Reaction;
 import Jama.Matrix;
 
 public class ChemostatSolver extends ODEsolver
 {
+	protected Double _dilution;
 	
+	protected Reaction[] _reactions;
 	
+	protected int _nReac;
 	
-	public Matrix calc1stDeriv(Matrix y)
+	protected Matrix _inflow;
+	
+	protected Double[] _catalysts;
+	
+	public void init(int nVar, Double dilution, Reaction[] reactions)
 	{
-		Matrix out = new Matrix(nVar, 1, 0.0);
-		// TODO
-		return out;
+		super.init(nVar, false);
+		this._dilution = dilution;
+		this._reactions = reactions;
+		this._nReac = this._reactions.length;
+	}
+	
+	public void solve(Matrix solutes, Double[] catalysts)
+	{
+		this._catalysts = catalysts;
+		
+		
+	}
+	
+	/**
+	 * 
+	 * @param y
+	 * @param target 
+	 */
+	protected void calc1stDeriv(Matrix y, Matrix target)
+	{
+		target = this._inflow.copy();
+		target.minusEquals(y);
+		target.timesEquals(this._dilution);
+		for ( int iReac = 0; iReac < this._nReac; iReac++ )
+		{
+			target.plusEquals(
+				this._reactions[iReac].calcdMUdT(y, this._catalysts[iReac]));
+		}
 	}
 	
 	/**
@@ -19,13 +52,12 @@ public class ChemostatSolver extends ODEsolver
 	 * respect to time (dFdT).
 	 * 
 	 * @param y 
-	 * @param tdel 
+	 * @param tdel
+	 * @param target  
 	 */
-	public Matrix calc2ndDeriv(Matrix y, Double tdel)
+	protected void calc2ndDeriv(Matrix y, Double tdel, Matrix target)
 	{
-		Matrix out = new Matrix(nVar, 1, 0.0);
-		// TODO
-		return out;
+		this.numerical2ndDeriv(y, tdel, target);
 	}
 	
 	/**
@@ -33,11 +65,15 @@ public class ChemostatSolver extends ODEsolver
 	 * each of the variables in Y (dFdY).
 	 * 
 	 * @param y 
+	 * @param target 
 	 */
-	public Matrix calcJacobian(Matrix y)
+	protected void calcJacobian(Matrix y, Matrix target)
 	{
-		Matrix out = new Matrix(nVar, nVar, 0.0);
-		// TODO
-		return out;
+		target = Matrix.identity(this._nVar, this._nVar).times(-this._dilution);
+		for ( int iReac = 0; iReac < this._nReac; iReac++ )
+		{
+			target.plusEquals(
+				this._reactions[iReac].calcdMUdS(y, this._catalysts[iReac]));
+		}
 	}
 }
