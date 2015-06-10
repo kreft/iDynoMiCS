@@ -196,7 +196,7 @@ class IterateInformation:
 
 
 
-def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
+def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None, alpha=1.0):
     """
 
     """
@@ -211,7 +211,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
     #col = cell_output.color
     if (y_limits != None) and (y - rad < y_limits[0]):
         segment = toolbox_schematic.CircleSegment()
-        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        segment.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
         angle = pi - numpy.arccos((y - y_limits[0])/rad)
         segment.set_points((y, x), rad, [angle, -angle])
         segment.draw(axis)
@@ -219,7 +219,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
         segment.draw(axis)
     elif (y_limits != None) and (y + rad > y_limits[1]):
         segment = toolbox_schematic.CircleSegment()
-        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        segment.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
         angle = numpy.arccos((y_limits[1] - y)/rad)
         segment.set_points((y, x), rad, [angle, 2*pi-angle])
         segment.draw(axis)
@@ -227,7 +227,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
         segment.draw(axis)
     else:
         circle = toolbox_schematic.Circle()
-        circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
+        circle.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
         circle.set_points((y, x), rad)
         circle.draw(axis)
 
@@ -287,6 +287,26 @@ def plot_cells_3d(axis, agent_output, zorder=0):
     axis.set_xlim(0, width)
     axis.set_ylim(0, depth)
     axis.set_zlim(0, height)
+
+
+def plot_cells_3d_curtains(axis, agent_output):
+    res = agent_output.grid_res
+    width = agent_output.grid_nJ * res
+    height = agent_output.grid_nI * res
+    depth = agent_output.grid_nK * res
+    num_cells = len(agent_output.get_all_cells())
+    counter = 0
+    for cell in agent_output.get_all_cells():
+        scale = 1 - (cell.get_location()[2] / depth)
+        draw_cell_2d(axis, cell, alpha=scale, zorder=scale)
+        counter += 1
+        sys.stdout.write('\r')
+        i = int(20*counter/num_cells)
+        sys.stdout.write("Plotting cells [%-20s] %d%%" % ('='*i, 5*i))
+        sys.stdout.flush()
+    sys.stdout.write('\n')
+    axis.set_xlim(0, width)
+    axis.set_ylim(0, height)
 
 
 def get_default_species_colors(sim):

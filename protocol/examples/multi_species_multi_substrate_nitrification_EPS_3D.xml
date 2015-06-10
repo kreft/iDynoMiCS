@@ -421,9 +421,14 @@
 		<reaction name="MyMaintenanceAutotrophs" status="active"/>
 		<reaction name="MyInactivationAutotrophs" status="active"/>
 
-		<initArea number="100">
+		<initArea number="25">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="64" z="64"/>
+		</initArea>
+		<initArea number="25">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="64" z="64"/>
 			<coordinates x="1" y="128" z="128"/>
 		</initArea>
 	</species>
@@ -457,9 +462,14 @@
 		<reaction name="MyMaintenanceHeterotrophs" status="active"/>
 		<reaction name="MyInactivationHeterotrophs" status="active"/>
 
-		<initArea number="100">
+		<initArea number="25">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="64" z="64"/>
+		</initArea>
+		<initArea number="25">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="64" z="64"/>
 			<coordinates x="1" y="128" z="128"/>
 		</initArea>
 	</species>
@@ -520,9 +530,14 @@
 			-->
 		</reactionSwitch>
 
-		<initArea number="100">
+		<initArea number="25">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="64" z="64"/>
+		</initArea>
+		<initArea number="25">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="64" z="64"/>
 			<coordinates x="1" y="128" z="128"/>
 		</initArea>
 	</species>
