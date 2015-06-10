@@ -5,7 +5,6 @@ import numpy
 import os
 import sys
 import toolbox_basic
-import toolbox_plotting
 import toolbox_results
 import toolbox_schematic_new as toolbox_schematic
 
@@ -172,18 +171,10 @@ class IterateInformation:
         agent_path = toolbox_basic.check_path(agent_path)
         self.agent_output = toolbox_results.AgentOutput(path=agent_path)
         self.time = self.agent_output.time
-        agent_path = os.path.join(simulation_directory.agent_Sum,
-                                    'agent_Sum(%d).xml'%(iterate_number))
-        agent_path = toolbox_basic.check_path(agent_path)
-        self.agent_sum = toolbox_results.AgentOutput(path=agent_path)        
         env_path = os.path.join(simulation_directory.env_State,
                                         'env_State(%d).xml'%(iterate_number))
         env_path = toolbox_basic.check_path(env_path)
         self.env_output = toolbox_results.EnvOutput(path=env_path)
-        env_path = os.path.join(simulation_directory.env_Sum,
-                                        'env_Sum(%d).xml'%(iterate_number))
-        env_path = toolbox_basic.check_path(env_path)
-        self.env_sum = toolbox_results.EnvOutput(path=env_path)
 
     def get_min_max_concns(self):
         if self.min_max_concns == {}:
@@ -196,7 +187,7 @@ class IterateInformation:
 
 
 
-def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None, alpha=1.0):
+def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None):
     """
 
     """
@@ -211,7 +202,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None, 
     #col = cell_output.color
     if (y_limits != None) and (y - rad < y_limits[0]):
         segment = toolbox_schematic.CircleSegment()
-        segment.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
         angle = pi - numpy.arccos((y - y_limits[0])/rad)
         segment.set_points((y, x), rad, [angle, -angle])
         segment.draw(axis)
@@ -219,7 +210,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None, 
         segment.draw(axis)
     elif (y_limits != None) and (y + rad > y_limits[1]):
         segment = toolbox_schematic.CircleSegment()
-        segment.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
+        segment.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
         angle = numpy.arccos((y_limits[1] - y)/rad)
         segment.set_points((y, x), rad, [angle, 2*pi-angle])
         segment.draw(axis)
@@ -227,7 +218,7 @@ def draw_cell_2d(axis, cell_output, total_radius=True, zorder=0, y_limits=None, 
         segment.draw(axis)
     else:
         circle = toolbox_schematic.Circle()
-        circle.set_defaults(alpha=alpha, edgecolor='none', facecolor=col, zorder=zorder)
+        circle.set_defaults(edgecolor='none', facecolor=col, zorder=zorder)
         circle.set_points((y, x), rad)
         circle.draw(axis)
 
@@ -289,49 +280,33 @@ def plot_cells_3d(axis, agent_output, zorder=0):
     axis.set_zlim(0, height)
 
 
-def plot_cells_3d_curtains(axis, agent_output):
-    res = agent_output.grid_res
-    width = agent_output.grid_nJ * res
-    height = agent_output.grid_nI * res
-    depth = agent_output.grid_nK * res
-    num_cells = len(agent_output.get_all_cells())
-    counter = 0
-    for cell in agent_output.get_all_cells():
-        scale = 1 - (cell.get_location()[2] / depth)
-        draw_cell_2d(axis, cell, alpha=scale, zorder=scale)
-        counter += 1
-        sys.stdout.write('\r')
-        i = int(20*counter/num_cells)
-        sys.stdout.write("Plotting cells [%-20s] %d%%" % ('='*i, 5*i))
-        sys.stdout.flush()
-    sys.stdout.write('\n')
-    axis.set_xlim(0, width)
-    axis.set_ylim(0, height)
-
-
 def get_default_species_colors(sim):
+    colors = ['red', 'blue', 'green', 'cyan', 'yellow', 'purple', 'brown',
+              'magenta', 'tomato', 'darkblue', 'darkturquoise']
     out = {}
     for species_name in sim.get_species_names():
-        out[species_name] = None
+        if len(colors) == 0:
+            print "Not enough default colors for so many species!"
+            return out
+        print "Coloring "+species_name+" "+ colors[0]
+        out[species_name] = colors.pop(0)
     for solute_name in sim.get_solute_names():
         if solute_name in out.keys():
             continue
-        out[solute_name] = None
-    html = toolbox_plotting.distinguishable_colors(len(out.keys()))
-    for name in out.keys():
-        out[name] = html.pop(0)
+        if len(colors) == 0:
+            print "Not enough default colors for so many species & solutes!"
+            return out
+        print "Coloring "+solute_name+" "+ colors[0]
+        out[solute_name] = colors.pop(0)
     return out
 
 
 def save_color_dict(color_dict, file_path):
-    script = 'Color\t\tItem\n'
+    script = 'Item\t\tColor\n'
     for key, value in color_dict.iteritems():
-        script += str(value)+'\t\t'+str(key)+'\n'
+        script += str(key)+'\t\t'+str(value)+'\n'
     with open(file_path, 'w') as f:
         f.write(script)
-    file_path = file_path.replace('.txt', '.png')
-    toolbox_plotting.plot_color_dictionary(color_dict, file_path)
-    
 
 
 def read_color_dict(file_path):
@@ -341,7 +316,7 @@ def read_color_dict(file_path):
         for line in f.readlines()[1:]:
             line = line.replace('\n', '')
             vals = line.split('\t\t')
-            out[vals[1]] = vals[0]
+            out[vals[0]] = vals[1]
     return out
         
 

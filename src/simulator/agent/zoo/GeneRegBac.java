@@ -52,8 +52,7 @@ public abstract class GeneRegBac extends Bacterium implements Cloneable
 	{
 		super.initFromProtocolFile(aSim, aSpeciesRoot);
 		
-		_regulationSolver.init(_numProtTypes, getSpeciesParam().hmax, 
-												getSpeciesParam().rtol);
+		_regulationSolver.init(_numProtTypes);
 		_regulationSolver.setReferenceAgent(this);
 	}
 	

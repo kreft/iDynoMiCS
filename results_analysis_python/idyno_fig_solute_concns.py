@@ -26,7 +26,7 @@ max_time = 1
 max_concn = 0
 
 for solute_name in sim_dir.get_solute_names():
-    if solute_name == 'boundaryLayer' or '-rate' in solute_name:
+    if solute_name in ['boundaryLayer']:
         continue
     time = []
     concn = []

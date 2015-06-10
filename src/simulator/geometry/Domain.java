@@ -132,7 +132,7 @@ public class Domain implements IsComputationDomain
 	 * Array to hold the X position that is the top of the boundary layer in
 	 * each of the Y and Z positions. Used for self-attach scenarios.
 	 */
-	public int[][] _topOfBoundaryLayer;
+	public double[][] _topOfBoundaryLayer;
 	
 	/**
 	 * Grid to hold total biomass in a particular area.
@@ -230,7 +230,7 @@ public class Domain implements IsComputationDomain
 		// For consistency (for the moment), the top of the boundary layer
 		// array will work in the same way - thus we will be ignoring space at
 		// either end (_nJ and _nK=0 and _nJ+2 and _nK+2).  
-		_topOfBoundaryLayer = new int[_nJ+2][_nK+2];
+		_topOfBoundaryLayer = new double[_nJ+2][_nK+2];
 		
 		// Now comes the definition of the behavior at the boundaries.
 		// In general, there are 6 boundaries that must be addressed: y0z, yNz,
@@ -554,7 +554,6 @@ public class Domain implements IsComputationDomain
 						 * within the boundary layer.
 						 */
 						_boundaryLayer.grid[i][j][k] = checkDilationRadius(i, j, k);
-						//LogFile.writeLog("_boundaryLayer["+i+"]["+j+"]["+k+"] = "+_boundaryLayer.grid[i][j][k]);
 						if ( _domainGrid.grid[i][j][k] == -1.0 )
 							_diffusivityGrid.grid[i][j][k] = Double.MIN_VALUE;
 						else
@@ -700,7 +699,7 @@ public class Domain implements IsComputationDomain
 						// 2D case
 						jIndex = cyclicIndex(m+j,_nJ+2);
 						if (_biomassGrid.grid[n+i][jIndex][1] > 0.0) 
-							return 1.0;
+						return 1.0;
 						if (_domainGrid.grid[n+i][jIndex][1] == 0.0)
 							return 1.0;
 				}
@@ -720,7 +719,7 @@ public class Domain implements IsComputationDomain
 								jIndex = cyclicIndex(m+j, _nJ+2);
 								kIndex = cyclicIndex(l+k, _nK+2);
 								if (_biomassGrid.grid[n+i][jIndex][kIndex] > 0.0)
-										return 1.0;
+							return 1.0;
 								if (_domainGrid.grid[n+i][jIndex][kIndex] == 0.0)
 									return 1.0;
 					}

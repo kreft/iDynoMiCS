@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -27,9 +28,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import de.schlichtherle.io.FileOutputStream;
-
 import simulator.Simulator;
 import soft_update.Check_Release_Status;
+import utils.Gui;
 import utils.ExtraMath;
 import utils.InitialisationErrorLog;
 import utils.LogFile;
@@ -63,6 +64,8 @@ import utils.XMLParser;
 **/
 public class Idynomics
 {
+	
+	private static boolean outputFrame = false;
 	/**
 	 * Version number of this iteration of iDynoMiCS - required by update
 	 * procedure.
@@ -360,6 +363,8 @@ public class Idynomics
 	 */
 	public static void startIDynomics() throws Exception
 	{
+		if (outputFrame)
+			Gui.openGui("iDynoMiCS");
 		System.out.println("Starting iDynomics");
 		
 		// Start the simulation
@@ -435,14 +440,22 @@ public class Idynomics
 		 * Linked list that will contain the files selected from the dialog box.
 		 */
 		LinkedList<File> protocolFiles = new LinkedList<File>();
-
+		
 		// Open a FileChooser window in the current directory
 		JFileChooser chooser = 
 			  new JFileChooser(""+System.getProperty("user.dir")+"/protocol");
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		
 		// Allow the user to select multiple files.
 		chooser.setMultiSelectionEnabled(true);
+		
+		JCheckBox outputframeOption = new JCheckBox("output to frame ");
+		chooser.add(outputframeOption, BorderLayout.WEST);
+		outputframeOption.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	outputFrame = true;
+            }
+		});
 		
 		if ( chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION )
 		{
@@ -452,7 +465,6 @@ public class Idynomics
 			for (java.io.File aFile : chooser.getSelectedFiles()) 
 				listDirectory(aFile, "xml", protocolFiles);
 		}
-		
 		return protocolFiles;
 	}
 
@@ -758,7 +770,6 @@ public class Idynomics
 	{
 		try 
 		{
-			LogFile.writeLogAlways("Launching simulation...");
 			/* Get the current system time in milliseconds - used to calculate
 			 * length of run.
 			 */

@@ -10,6 +10,7 @@
 -->
 
 
+
 <!-- The entire simulation description is contained within the <idynomics> mark-up tags. -->
 <idynomics>
 
@@ -17,30 +18,35 @@
 		SIMULATOR SECTION
 	######################################################################-->
 
+	<!-- the <simulator> mark-up defines some global simulation parameters for the run. -->
+
 	<simulator>
 
+        <!-- Set "quietMode" to true if you don't need the log file (saves space and simulation runs slightly faster) -->
         <param name="quietMode">false</param>
 		<param name="restartPreviousRun">false</param>
 		<param name="randomSeed">42</param>
-		<param name="outputPeriod" unit="hour">1</param>
+		<param name="outputPeriod" unit="hour">2</param>
 
 		<!-- Specifies whether the simulation should check as to whether a new release is available -->
 		<param name="checkForReleaseUpdate">true</param>
-
 		<timeStep>
 			<param name="adaptive">true</param>
-			<param name="timeStepIni" unit="hour">0.5</param>
+			<param name="timeStepIni" unit="hour">0.1</param>
 			<param name="timeStepMin" unit="hour">0.05</param>
 			<param name="timeStepMax" unit="hour">1</param>
 			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
-
+	
 		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
 		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
 		<param name="attachment">onetime</param>
 
+		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->
 		<param name="agentTimeStep" unit="hour">0.05</param>
+		<!-- Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system -->
         <param name="invComp">false</param> 
+
 	</simulator>
 
 
@@ -48,6 +54,11 @@
 		INPUT SECTION
 	######################################################################-->
 
+	<!-- You may define the initial condition from which to start a simulation
+		by specifying an agent and/or bulk conditions file to read in. Often,
+		the files listed are taken from an evolved state of a similar simulation.
+
+		Note that any input files MUST be in the same directory as this protocol file. -->
 
 	<input>
 		<param name="useAgentFile">false</param>
@@ -61,8 +72,6 @@
 	<!--#####################################################################
 		SOLUTES AND BIOMASS TYPES SECTION
 	######################################################################-->
-
-	
 
 	<solute domain="MyBiofilm" name="o2d">
 		<param name="diffusivity" unit="m2.day-1">2e-4</param>
@@ -99,17 +108,17 @@
 	######################################################################-->
 
 
+
 	<world>
 		<bulk name="MyTank">
 
 			<param name="isConstant">true</param>
 			<param name="D" unit="h-1">0.6</param>
 
-
 			<solute name="o2d">
 				<param name="Sbulk" unit="g.L-1">10e-3</param>
 				<param name="Sin" unit="g.L-1">10e-3</param>
-				<param name="isConstant">true</param>
+   				<param name="isConstant">true</param>
 			</solute>
 			<solute name="MyNH4">
 				<param name="Sbulk" unit="g.L-1">6e-3</param>
@@ -136,11 +145,12 @@
 
 		<computationDomain name="MyBiofilm">
 
-			<grid nDim="3" nI="33" nJ="33" nK="33"/>
+			<grid nDim="2" nI="33" nJ="33" nK="1"/>
 			<param name="resolution" unit="um">8</param>
 			<param name="boundaryLayer" unit="um">50</param>
 			<param name="biofilmDiffusivity">0.8</param>
 			<param name="specificArea" unit="m2.m-3">80</param>
+
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
@@ -175,7 +185,7 @@
 					<param name="vectorOut" i="0" j="0" k="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="0" k="33"/>
+					<param name="pointIn" i="0" j="0" k="1"/>
 					<param name="vectorOut" i="0" j="0" k="1"/>
 				</shape>
 			</boundaryCondition>
@@ -187,6 +197,7 @@
 	<!--#####################################################################
 		REACTION SECTION
 	######################################################################-->
+
 
 	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyGrowthAutotrophs">
 		<param name="muMax" unit="hour-1">0.0417</param>
@@ -332,7 +343,7 @@
 		The parameters should be adjusted to match the simulation conditions. -->
 
 	<agentGrid>
-
+	
 		<param name="computationDomain">MyBiofilm</param>
 		<param name="resolution" unit="um">8</param>
 
@@ -340,6 +351,7 @@
 			<param name="kDet" unit="um-1.hour-1">5e-6</param>
 			<param name="maxTh" unit="um">200</param>
 		</detachment>
+
 		<param name="sloughDetachedBiomass">true</param>
 		
 		<!-- These parameters relate to particle shoving and are generally okay as-is. -->
@@ -354,7 +366,10 @@
 		SPECIES SECTION
 	######################################################################-->
 
-	
+	<!-- ParticulateEPS: this represents generic extracellular polymers and contains only
+			the 'capsule' <particle> type. This <species> has no unique parameters. -->
+
+
 	<species class="ParticulateEPS" name="MyAutotrophEPS">
 		<particle name="capsule">
 			<param name="mass" unit="fg">0</param>
@@ -365,7 +380,7 @@
 		<param name="divRadius" unit="um">2</param>
 		<param name="divRadiusCV">0.0</param>
 		<param name="deathRadius" unit="um">0.1</param>
-		<param name="deathRadiusCV">0.0</param>
+		<param name="deathRadiusCV">0.1</param>
 		<param name="babyMassFrac">0.5</param>
 		<param name="babyMassFracCV">0.0</param>
 		<param name="shoveFactor" unit="um">1</param>
@@ -384,7 +399,7 @@
 		<param name="divRadius" unit="um">5</param>
 		<param name="divRadiusCV">0.0</param>
 		<param name="deathRadius" unit="um">0.1</param>
-		<param name="deathRadiusCV">0.0</param>
+		<param name="deathRadiusCV">0.1</param>
 		<param name="babyMassFrac">0.5</param>
 		<param name="babyMassFracCV">0.0</param>
 		<param name="shoveFactor" unit="um">1</param>
@@ -421,11 +436,53 @@
 		<reaction name="MyMaintenanceAutotrophs" status="active"/>
 		<reaction name="MyInactivationAutotrophs" status="active"/>
 
-		<initArea number="100">
+		<!-- NOTE FROM iDynoMiCS v1.3 - DEFINITION OF SPECIES INITIAL AREA CAN BE DONE IN A NUMBER OF 
+		WAYS. THE TRADITIONAL WAY IS STILL POSSIBLE, WHERE A BIRTH REGION IS DEFINED AND THE NUMBER OF 
+		CELLS REQUIRED IN THAT REGION STATED:
+
+		<initArea number="10">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="264" z="0"/>
+		</initArea>
+
+		NOW, YOU CAN ALSO STATE THE NUMBER OF CELLS YOU REQUIRE PER AREA ON THE SUBSTRATUM SURFACE FOR 3D 
+		(MILLIMETRE SQUARED) OR CELLS PER LENGTH OF THE SUBSTRATUM FOR 2D. iDynoMiCS WILL THEN CALCULATE 
+		THE NUMBER OF CELLS REQUIRED. THIS IS DONE AS BELOW FOR 3D:
+		
+		<initArea cellsperMM2="40">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
 			<coordinates x="1" y="264" z="264"/>
 		</initArea>
+
+		AND FOR 2D:
+		<initArea cellsperMM="40">
+			<param name="birthday" unit="hour">0</param>
+			<coordinates x="0" y="0" z="0"/>
+			<coordinates x="1" y="264" z="0"/>
+		</initArea>
+
+
+		BUT YOU CAN NOW ALSO DO MORE. NOTE IN THE ABOVE THAT THE COORDINATES SUGGEST THE BIRTH REGION
+		IS JUST ABOVE THE SUBSTRATUM, BUT IS THE WHOLE LENGTH OF THE DOMAIN? NOW, IF YOU WANT THIS
+		TO BE THE CASE, YOU CAN LEAVE OUT THE 'COORDINATES' TAGS COMPLETELY. THIS CREATES A BIRTH
+		REGION THAT IS THE LENGTH OF THE WHOLE DOMAIN (IN Y AND Z DIRECTIONS) WITH A HEIGHT OF 1, LIKE THIS:
+
+		<initArea cellsperMM2="40">
+			<param name="birthday" unit="hour">0</param>
+		</initArea>
+
+		THIS CAN ALSO BE DONE WITH THE PREVIOUS METHOD OF CREATING AN INITIAL AREA:
+
+		<initArea number="10">
+			<param name="birthday" unit="hour">0</param>
+		</initArea>-->
+
+		<initArea cellsperMM="40">
+			<param name="birthday" unit="hour">0</param>
+		</initArea>
+
 	</species>
 
 	<species class="BactEPS" name="MyHeterotroph">
@@ -457,10 +514,10 @@
 		<reaction name="MyMaintenanceHeterotrophs" status="active"/>
 		<reaction name="MyInactivationHeterotrophs" status="active"/>
 
-		<initArea number="100">
+		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="264" z="264"/>
+			<coordinates x="1" y="264" z="0"/>
 		</initArea>
 	</species>
 
@@ -499,14 +556,14 @@
 			<whenOff>
 				<reaction name="MyGrowthHeterotrophs" status="active"/>
 				<reaction name="MyMaintenanceHeterotrophs" status="active"/>
-				<param name="color">white</param>
 				<param name="switchLag" unit="hour">0</param>
+				<param name="color">white</param>
 			</whenOff>
 			<whenOn>
 				<reaction name="MyAnaerobicGrowthHeterotrophs" status="active"/>
 				<reaction name="MyAnaerobicMaintenanceHeterotrophs" status="active"/>
-				<param name="color">black</param>
 				<param name="switchLag" unit="hour">3</param>
+				<param name="color">black</param>
 			</whenOn>
 			<onCondition type="solute" name="o2d">
 				<param name="switch">lessThan</param>
@@ -520,10 +577,10 @@
 			-->
 		</reactionSwitch>
 
-		<initArea number="100">
+		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="264" z="264"/>
+			<coordinates x="1" y="264" z="0"/>
 		</initArea>
 	</species>
 	

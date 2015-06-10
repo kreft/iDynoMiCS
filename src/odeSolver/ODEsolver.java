@@ -32,10 +32,6 @@ public abstract class ODEsolver
 	 */
 	protected Double _EPS = 2.22e-16;
 	
-	protected Double _hmax;
-	
-	protected Double _rtol;
-	
 	/**
 	 * Number of variables in the solver.
 	 */
@@ -69,12 +65,10 @@ public abstract class ODEsolver
 		
 	}
 	
-	public void init(int nVar, Boolean allowNegatives, Double hmax, Double rtol)
+	public void init(int nVar, Boolean allowNegatives)
 	{
 		this._nVar = nVar;
 		this._allowNegatives = allowNegatives;
-		this._hmax = hmax;
-		this._rtol = rtol;
 		
 		_ynext = new Matrix(nVar, 1, 0.0);
 		_dYdT  = new Matrix(nVar, 1, 0.0);
@@ -102,7 +96,7 @@ public abstract class ODEsolver
 	 * @param hmax
 	 * @return
 	 */
-	public Matrix solve(Matrix y, Double tfinal)
+	public Matrix solve(Matrix y, Double tfinal, Double rtol, Double hmax)
 	{
 		/*
 		 * First check that y is the correct size.
@@ -112,8 +106,7 @@ public abstract class ODEsolver
 		/*
 		 * Reset the matrices we will need.
 		 */
-		Double hmax = _hmax;
-		Double rtol = _rtol;
+		
 		/*
 		 * Control statement in case the maximum timestep size, hmax, is too
 		 * large.
@@ -145,13 +138,8 @@ public abstract class ODEsolver
 			 * matrix, dFdY, doesn't need this mini-timestep.
 			 */
 			_tdel = _sqrtE * (_t+_h);
-			LogFile.writeMatrix("y", y);
-			LogFile.writeLog("tdel "+_tdel);
-			_dYdT = calc1stDeriv(y, _dYdT);
-			LogFile.writeMatrix("dYdT", _dYdT);
-			_dFdT = calc2ndDeriv(y, _tdel, _dFdT);
-			LogFile.writeMatrix("dFdT", _dFdT);
-			_dFdY = calcJacobian(y, _dFdY);
+			calc2ndDeriv(y, _tdel, _dFdT);
+			calcJacobian(y, _dFdY);
 			/*
 			 * Try out this value of h, keeping a note of whether it ever
 			 * fails.
@@ -184,7 +172,7 @@ public abstract class ODEsolver
 					/*
 					 * f1 = dYdT(y + k1*h/2)
 					 */
-					_f1 = calc1stDeriv( _k1.times(_h/2).plus(y), _f1 );
+					calc1stDeriv( _k1.times(_h/2).plus(y), _f1 );
 					/*
 					 * k2 = invW * ( f1 - k1 ) + k1
 					 */
@@ -197,7 +185,7 @@ public abstract class ODEsolver
 					/*
 					 * f2 = dYdT(ynext)
 					 */
-					_f2 = calc1stDeriv( _ynext, _f2 );
+					calc1stDeriv( _ynext, _f2 );
 					/*
 					 * k3 = invW * ( f2 - e32*(k2-f1) - 2*(k1-y) + h*d*dFdT )
 					 * 
@@ -298,9 +286,6 @@ public abstract class ODEsolver
 		/*
 		 * Finally, return the answer.
 		 */
-		LogFile.writeLog("new y");
-		for ( int i = 0; i < _nVar; i++ )
-			LogFile.writeLog("\t"+y.get(i, 0));
 		return y;
 	}
 	
@@ -311,7 +296,7 @@ public abstract class ODEsolver
 	 * @param y
 	 * @param target 
 	 */
-	protected abstract Matrix calc1stDeriv(Matrix y, Matrix target);
+	protected abstract void calc1stDeriv(Matrix y, Matrix target);
 	
 	/**
 	 * Update the second derivative of Y, i.e. the rate of change of F with
@@ -321,7 +306,7 @@ public abstract class ODEsolver
 	 * @param tdel 
 	 * @param target 
 	 */
-	protected abstract Matrix calc2ndDeriv(Matrix y, Double tdel, Matrix target);
+	protected abstract void calc2ndDeriv(Matrix y, Double tdel, Matrix target);
 	
 	/**
 	 * Update the Jacobian matrix, i.e. the rate of change of F with respect to
@@ -330,7 +315,7 @@ public abstract class ODEsolver
 	 * @param y 
 	 * @param target 
 	 */
-	protected abstract Matrix calcJacobian(Matrix y, Matrix target);
+	protected abstract void calcJacobian(Matrix y, Matrix target);
 	
 	/**
 	 * 
@@ -338,20 +323,19 @@ public abstract class ODEsolver
 	 * @param tdel
 	 * @param target
 	 */
-	protected Matrix numerical2ndDeriv(Matrix y, Double tdel, Matrix target)
+	protected void numerical2ndDeriv(Matrix y, Double tdel, Matrix target)
 	{
 		Matrix dYdT = new Matrix(_nVar, 1, 0.0);
-		dYdT = calc1stDeriv(y, dYdT);
+		calc1stDeriv(y, dYdT);
 		/*
-		 * yNext = y + (tdel * dYdT)
+		 * yNext = levels + (tdel * dYdT)
 		 */
 		Matrix yNext = y.plus(dYdT.times(tdel));
 		/*
 		 * dFdT = ( dYdT(ynext) - dYdT(y) )/tdel
 		 */
-		target = calc1stDeriv(yNext, target);
+		calc1stDeriv(yNext, target);
 		target.minusEquals(dYdT);
 		target.timesEquals(1/tdel);
-		return target;
 	}
 }

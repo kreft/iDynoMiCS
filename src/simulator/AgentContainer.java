@@ -21,6 +21,7 @@ import simulator.detachment.*;
 import simulator.diffusionSolver.DiffusionSolver;
 import simulator.diffusionSolver.Solver_pressure;
 import simulator.geometry.*;
+import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.SpatialGrid;
 import utils.ResultFile;
 import utils.XMLParser;
@@ -196,34 +197,29 @@ public class AgentContainer
 	public AgentContainer(Simulator aSimulator, XMLParser root, double agentTimeStep) throws Exception 
 	{
 		// Read FINAL fields
-		if ( root.isParamGiven("shovingFraction") )
-			SHOVEFRACTION = root.getParamDbl("shovingFraction");
-		else
-			SHOVEFRACTION = 0.01;
-		if ( root.isParamGiven("shovingMaxIter") )
-			MAXITER = root.getParamInt("shovingMaxIter");
-		else
-			MAXITER = 100;
-		if ( root.isParamGiven("shovingMutual") )
-			MUTUAL = root.getParamBool("shovingMutual");
-		else
-			MUTUAL = true;
-		if ( root.isParamGiven("erosionMethod") )
-			EROSIONMETHOD = root.getParamBool("erosionMethod");
-		else
+		SHOVEFRACTION = root.getParamDbl("shovingFraction");
+		MAXITER = root.getParamInt("shovingMaxIter");
+		MUTUAL = root.getParamBool("shovingMutual");
+
+		
+		if (root.getParam("erosionMethod") == null)
 			EROSIONMETHOD = true;
-		if ( root.isParamGiven("sloughDetachedBiomass") )
-			DOSLOUGHING = root.getParamBool("sloughDetachedBiomass");
 		else
+			EROSIONMETHOD = root.getParamBool("erosionMethod");
+
+		if (root.getParam("sloughDetachedBiomass") == null)
 			DOSLOUGHING = true; // default to carry out sloughing
-		if ( root.isParamGiven("maxPopLimit") )
-			maxPopLimit = root.getParamInt("maxPopLimit");
 		else
+			DOSLOUGHING = root.getParamBool("sloughDetachedBiomass");
+			
+		if (root.getParamBool("maxPopLimit") == null)
 			maxPopLimit = 0;
-		/*
-		 * Now deal with the agent timestep.
-		 */
-		Double value = agentTimeStep;
+		else
+			maxPopLimit = root.getParamInt("maxPopLimit");
+
+		double value = agentTimeStep;
+
+		// Now deal with the agent timestep
 		if (Double.isNaN(value))
 		{
 			AGENTTIMESTEP = SimTimer.getCurrentTimeStep();
@@ -288,6 +284,7 @@ public class AgentContainer
 	 */
 	public void step(Simulator aSim)
 	{
+		SpecialisedAgent anAgent;
 		/* STEP AGENTS ________________________________________________ */
 		LogFile.chronoMessageIn();
 		Collections.shuffle(agentList, ExtraMath.random);
@@ -761,7 +758,11 @@ public class AgentContainer
 			anAgent.death = "dilution";
 			anAgent.die(false);
 		}
-		agentList.removeAll(_agentToKill);
+		
+		// TODO Rob 13Mar2015: Simplify? agentList.removeAll(_agentToKill);
+		for ( SpecialisedAgent anAgent : agentList )
+			if ( anAgent.isDead )
+				agentList.remove(anAgent);
 	}
 	
 	/**

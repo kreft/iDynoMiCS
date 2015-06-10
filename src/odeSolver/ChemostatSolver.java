@@ -1,18 +1,13 @@
 package odeSolver;
 
-import idyno.SimTimer;
-
-import java.util.ArrayList;
-
 import simulator.reaction.Reaction;
-import utils.LogFile;
 import Jama.Matrix;
 
 public class ChemostatSolver extends ODEsolver
 {
 	protected Double _dilution;
 	
-	protected ArrayList<Reaction> _reactions;
+	protected Reaction[] _reactions;
 	
 	protected int _nReac;
 	
@@ -20,24 +15,19 @@ public class ChemostatSolver extends ODEsolver
 	
 	protected Double[] _catalysts;
 	
-	public void init(int nVar, Double dilution, ArrayList<Reaction> reactions,
-													Double hmax, Double rtol)
+	public void init(int nVar, Double dilution, Reaction[] reactions)
 	{
-		super.init(nVar, false, hmax, rtol);
+		super.init(nVar, false);
 		this._dilution = dilution;
 		this._reactions = reactions;
-		this._nReac = this._reactions.size();
+		this._nReac = this._reactions.length;
 	}
 	
-	public void updateInflow(Matrix inflow)
-	{
-		this._inflow = inflow;
-	}
-	
-	public Matrix solve(Matrix solutes, Double[] catalysts)
+	public void solve(Matrix solutes, Double[] catalysts)
 	{
 		this._catalysts = catalysts;
-		return this.solve(solutes, SimTimer.getCurrentTimeStep());
+		
+		
 	}
 	
 	/**
@@ -45,7 +35,7 @@ public class ChemostatSolver extends ODEsolver
 	 * @param y
 	 * @param target 
 	 */
-	protected Matrix calc1stDeriv(Matrix y, Matrix target)
+	protected void calc1stDeriv(Matrix y, Matrix target)
 	{
 		target = this._inflow.copy();
 		target.minusEquals(y);
@@ -53,9 +43,8 @@ public class ChemostatSolver extends ODEsolver
 		for ( int iReac = 0; iReac < this._nReac; iReac++ )
 		{
 			target.plusEquals(
-				this._reactions.get(iReac).calcdMUdT(y, this._catalysts[iReac]));
+				this._reactions[iReac].calcdMUdT(y, this._catalysts[iReac]));
 		}
-		return target;
 	}
 	
 	/**
@@ -66,9 +55,9 @@ public class ChemostatSolver extends ODEsolver
 	 * @param tdel
 	 * @param target  
 	 */
-	protected Matrix calc2ndDeriv(Matrix y, Double tdel, Matrix target)
+	protected void calc2ndDeriv(Matrix y, Double tdel, Matrix target)
 	{
-		return this.numerical2ndDeriv(y, tdel, target);
+		this.numerical2ndDeriv(y, tdel, target);
 	}
 	
 	/**
@@ -78,15 +67,13 @@ public class ChemostatSolver extends ODEsolver
 	 * @param y 
 	 * @param target 
 	 */
-	protected Matrix calcJacobian(Matrix y, Matrix target)
+	protected void calcJacobian(Matrix y, Matrix target)
 	{
 		target = Matrix.identity(this._nVar, this._nVar).times(-this._dilution);
-		Matrix dMUdS;
 		for ( int iReac = 0; iReac < this._nReac; iReac++ )
 		{
-			dMUdS = this._reactions.get(iReac).calcdMUdS(y, this._catalysts[iReac]);
-			target.plusEquals(dMUdS);
+			target.plusEquals(
+				this._reactions[iReac].calcdMUdS(y, this._catalysts[iReac]));
 		}
-		return target;
 	}
 }
