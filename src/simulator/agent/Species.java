@@ -274,6 +274,8 @@ public class Species implements Serializable
 	 */
 	public void createBoundaryLayerPop(XMLParser spRoot, int numberAttachedInjectedAgents)
 	{
+		LogFile.writeLog("\t\tAttempting to create "+numberAttachedInjectedAgents+
+							" agents of "+speciesName+" in the boundary layer");
 		// Create all the required agents
 		
 		// Note that this continues UNTIL THE DESIRED NUMBER OF CELLS HAVE ATTACHED SOMEWHERE
@@ -294,9 +296,7 @@ public class Species implements Serializable
 				swimmingAgentPosition.reset();
 				
 				// Now to choose coordinates for this particular agent
-				// boolean used to check that the coordinate chosen is ok
-				boolean test = true;
-				while (test) 
+				while ( true ) 
 				{
 					// This cell needs to take a random location in the Z and Y
 					// directions. The X will come from the position of the
@@ -304,9 +304,10 @@ public class Species implements Serializable
 					swimmingAgentPosition.y =
 							ExtraMath.getUniRandDbl()*domain.length_Y;
 					if ( domain.is3D )
+					{
 						swimmingAgentPosition.z =
-						ExtraMath.getUniRandDbl()*domain.length_Z;
-					
+									ExtraMath.getUniRandDbl()*domain.length_Z;
+					}
 					// Now to work out the X coordinate. This is based on where
 					// the top of the boundary layer is when this agent is
 					// created. The top of the boundary layer is calculated in
@@ -318,11 +319,16 @@ public class Species implements Serializable
 					// 						 top of the layer) 
 					// - multiply by resolution of this domain.
 					dV.set(swimmingAgentPosition, domain._resolution);
+					if ( ! domain.is3D )
+						dV.k = 1;
 					swimmingAgentPosition.x =
-							domain._topOfBoundaryLayer[dV.j][dV.k] -1;
+								domain._topOfBoundaryLayer[dV.j][dV.k] - 1.0;
+					
 					swimmingAgentPosition.x *= domain._resolution;
 					// Check this is ok.
-					test = !( domain.testCrossedBoundary(swimmingAgentPosition) == null );
+					//System.out.println("Trying starting position "+dV.toString()+" => "+this.swimmingAgentPosition.toString());
+					if ( domain.testCrossedBoundary(swimmingAgentPosition) == null )
+						break;
 				}
 				
 				// Now we can do the run and tumble motion of these cells
@@ -334,16 +340,16 @@ public class Species implements Serializable
 				switch(cellRunResult)
 				{
 					case 1:	// Successfully Attached
-						numberAttachedInjectedAgents--;						
+						numberAttachedInjectedAgents--;
 						// Create the agent at these coordinates
 						((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
+						//System.out.println("Cell "+swimmingAgentPosition.toString()+" attached");
 						break;
 					case 2:
+						//System.out.println("Cell at "+swimmingAgentPosition.toString()+" returned to bulk");
 						agentsReturnedToBulk++;
 						break;
 				}
-				
-				
 			}
 			else 
 			{
@@ -404,37 +410,44 @@ public class Species implements Serializable
 		int cellRunResult = 0;
 		
 		while ( true )
+		//for ( int i = 0; i < 1000000; i++ )
 		{
-			// Now work out the new position of the cell based on the distance covered this tumble
-			// Now work out the new position of the cell based on the distance
-			// covered this tumble. Firstly calculate that direction - generate
-			// a random angle between 0 and 360.
+			/*
+			 * Now work out the new position of the cell based on the distance
+			 * covered this tumble. Firstly calculate that direction - generate
+			 * a random angle between 0 and 360.
+			 */
 			setAgentAngleOfMovement();
-
-			// Now we're going to break the move down into chunks such that
-			// collision or move over the boundary can be detected. The size of
-			// the chunk is going to be the resolution of the agent grid.
+			/*
+			 * Now we're going to break the move down into chunks such that
+			 * collision or move over the boundary can be detected. The size of
+			 * the chunk is going to be the resolution of the agent grid.
+			 */
 			distanceToMoveThisTumble = distanceEachTumble;
 			while ( distanceToMoveThisTumble > 0.0 )
 			{
-				// If the cell has less distance to move remaining that the
-				// resolution, should only move that much.
-				distanceAgentMoves =
-						Math.min(distanceToMoveThisTumble, distanceSeekingAgent);
-
+				/*
+				 * If the cell has less distance to move remaining that the
+				 * resolution, should only move that much.
+				 */
+				distanceAgentMoves = Math.min(distanceToMoveThisTumble,
+												distanceSeekingAgent);
 				calculateNewAgentPosition(distanceAgentMoves);
-
-				// Now need to check for collision on any point of that path.
+				
+				/*
+				 * Now need to check for collision on any point of that path.
+				 */
 				cellRunResult = checkAgentMove(distanceAgentMoves);
 
 				// Add the distance moved in this mini move to the tally.
 				distanceToMoveThisTumble -= distanceAgentMoves;
 
 				// If the cell has finished moving, we can return the result. 
-				if ( cellRunResult != 0)
+				if ( cellRunResult != 0 )
 					return cellRunResult;
 			}
 		}
+		//return cellRunResult;
 	}
 	
 	/**
@@ -534,16 +547,17 @@ public class Species implements Serializable
 					// Now set the final X position.
 					// Do a new check on the boundary crossed.
 					boundaryCrossed = domain.testCrossedBoundarySelfAttach(
-							swimmingAgentPosition);
-
-					boundaryCrossedName = boundaryCrossed.getSideName();
-
+													   swimmingAgentPosition);
+					
 					if ( boundaryCrossed != null )
+					{
+						boundaryCrossedName = boundaryCrossed.getSideName();
 						if(boundaryCrossedName.equals("xNz") ||
 								boundaryCrossedName.equals("x0z"))
 							correctCrossedLeftRightBoundaries(boundaryCrossed);
 						else
 							correctCrossedFrontBackBoundaries(boundaryCrossed);
+					}
 					return 1;
 				}
 
@@ -697,13 +711,13 @@ public class Species implements Serializable
 
 		if (swimmingAgentPosition.z > domain.length_Z)
 			swimmingAgentPosition.z = domain.length_Z - 1;
-
+		//System.out.println("Checking if "+swimmingAgentPosition.toString()+" above boundary layer");
 		// Now calculate the top of the boundary layer at the y, z coordinate.
 		int j = (int) (swimmingAgentPosition.y/domain._resolution);
 		int k = (int) (swimmingAgentPosition.z/domain._resolution);
 		double boundaryAtThisPoint = domain._topOfBoundaryLayer[j+1][k+1];
 		boundaryAtThisPoint *= domain._resolution;
-
+		//System.out.println("..."+(swimmingAgentPosition.x > boundaryAtThisPoint));
 		// Check if we are above it
 		return ( swimmingAgentPosition.x > boundaryAtThisPoint ); 
 	}

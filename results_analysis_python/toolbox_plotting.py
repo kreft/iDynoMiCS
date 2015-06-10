@@ -476,3 +476,34 @@ def draw_linear_regression(axis, color, x_vals, y_vals):
     y1, y2 = x1*slope + intercept, x2*slope + intercept
     axis.plot([x1, x2], [y1, y2], color)
     return r_value, p_value, std_err
+
+
+def distinguishable_colors(number, cmap='hsv'):
+    rgba = matplotlib.pyplot.get_cmap(cmap)(numpy.linspace(0.0, 1.0, number))
+    html = []
+    for old in rgba:
+        new = "#"
+        for i in range(3):
+            temp = hex(int(old[i]*255))[2:]
+            if len(temp) == 1:
+                temp = "0"+temp
+            new += temp
+        html.append(new)
+    return html
+
+def plot_color_dictionary(color_dict, file_path):
+    y_scale = 0.3
+    x_scale = 0.1
+    height = y_scale*(len(color_dict)+1)
+    width = x_scale * (max([len(n) for n in color_dict.keys()]) + 1)
+    fig = SlideFigure(height=height, width=width)
+    sub = fig.add_subplot("", 111, frameon=False)
+    sub.set_xlim([0, width])
+    sub.set_ylim([0, height])
+    y = y_scale
+    for name, color in color_dict.iteritems():
+        sub.plot([0.0, 1.0], [y]*2, '-', color=color)
+        sub.text(1.0 + x_scale, y, name, color='black', va='center', ha='left')
+        y += y_scale
+    fig.subplots_adjust(left=0.01, right=0.99, bottom=0.01, top=0.99)
+    fig.save(file_path)

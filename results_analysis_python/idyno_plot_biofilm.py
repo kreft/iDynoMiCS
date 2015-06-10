@@ -95,7 +95,11 @@ def plot(iter_info, min_max_concns):
     toolbox_idynomics.plot_cells_2d(axis, iter_info.agent_output)
     if options.substratum:
         axis.fill_between([0, nJ*res], [0]*2, y2=[-res]*2, color='k', zorder=-1)
-    figure.subplots_adjust(left=0.01, bottom=0.01, right=0.9, top=0.9)
+    lb = 0.01
+    if options.frameon:
+        lb = 0.06
+        figure.process_lines()
+    figure.subplots_adjust(left=lb, bottom=lb, right=0.9, top=0.9)
     figure.inset_axes()
     if not options.solute_name == "none":
         #print min_max_concns[options.solute_name]
@@ -109,11 +113,11 @@ def plot(iter_info, min_max_concns):
     if options.titleon:
         axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
     if options.frameon:
-        axis.set_xlabel('x')
-        axis.set_ylabel('y')
+        axis.set_xlabel(r'x ($\mu$m)')
+        axis.set_ylabel(r'y ($\mu$m)')
     if options.timeon:
-        axis.text(0.0, nI*res, 'Time: %d h'%(int(iter_info.time)),
-                  va='top', ha='left')
+        axis.text(0.1*res, (nI+0.1)*res, 'Time: %d h'%(int(iter_info.time)),
+                  va='bottom', ha='left', color='0.5')
     axis.set_xlim(0, nJ * res)
     axis.set_ylim(-res, nI * res)
     save_num = str(iter_info.number)

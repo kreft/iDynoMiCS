@@ -5,6 +5,7 @@ import numpy
 import os
 import sys
 import toolbox_basic
+import toolbox_plotting
 import toolbox_results
 import toolbox_schematic_new as toolbox_schematic
 
@@ -171,10 +172,18 @@ class IterateInformation:
         agent_path = toolbox_basic.check_path(agent_path)
         self.agent_output = toolbox_results.AgentOutput(path=agent_path)
         self.time = self.agent_output.time
+        agent_path = os.path.join(simulation_directory.agent_Sum,
+                                    'agent_Sum(%d).xml'%(iterate_number))
+        agent_path = toolbox_basic.check_path(agent_path)
+        self.agent_sum = toolbox_results.AgentOutput(path=agent_path)        
         env_path = os.path.join(simulation_directory.env_State,
                                         'env_State(%d).xml'%(iterate_number))
         env_path = toolbox_basic.check_path(env_path)
         self.env_output = toolbox_results.EnvOutput(path=env_path)
+        env_path = os.path.join(simulation_directory.env_Sum,
+                                        'env_Sum(%d).xml'%(iterate_number))
+        env_path = toolbox_basic.check_path(env_path)
+        self.env_sum = toolbox_results.EnvOutput(path=env_path)
 
     def get_min_max_concns(self):
         if self.min_max_concns == {}:
@@ -281,32 +290,28 @@ def plot_cells_3d(axis, agent_output, zorder=0):
 
 
 def get_default_species_colors(sim):
-    colors = ['red', 'blue', 'green', 'cyan', 'yellow', 'purple', 'brown',
-              'magenta', 'tomato', 'darkblue', 'darkturquoise']
     out = {}
     for species_name in sim.get_species_names():
-        if len(colors) == 0:
-            print "Not enough default colors for so many species!"
-            return out
-        print "Coloring "+species_name+" "+ colors[0]
-        out[species_name] = colors.pop(0)
+        out[species_name] = None
     for solute_name in sim.get_solute_names():
         if solute_name in out.keys():
             continue
-        if len(colors) == 0:
-            print "Not enough default colors for so many species & solutes!"
-            return out
-        print "Coloring "+solute_name+" "+ colors[0]
-        out[solute_name] = colors.pop(0)
+        out[solute_name] = None
+    html = toolbox_plotting.distinguishable_colors(len(out.keys()))
+    for name in out.keys():
+        out[name] = html.pop(0)
     return out
 
 
 def save_color_dict(color_dict, file_path):
-    script = 'Item\t\tColor\n'
+    script = 'Color\t\tItem\n'
     for key, value in color_dict.iteritems():
-        script += str(key)+'\t\t'+str(value)+'\n'
+        script += str(value)+'\t\t'+str(key)+'\n'
     with open(file_path, 'w') as f:
         f.write(script)
+    file_path = file_path.replace('.txt', '.png')
+    toolbox_plotting.plot_color_dictionary(color_dict, file_path)
+    
 
 
 def read_color_dict(file_path):
@@ -316,7 +321,7 @@ def read_color_dict(file_path):
         for line in f.readlines()[1:]:
             line = line.replace('\n', '')
             vals = line.split('\t\t')
-            out[vals[0]] = vals[1]
+            out[vals[1]] = vals[0]
     return out
         
 

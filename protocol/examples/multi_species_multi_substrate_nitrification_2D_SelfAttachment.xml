@@ -80,7 +80,7 @@ A few general points about protocol files:
 		<!-- defining this value allows the simulation to be re-run deterministically -->
 		<param name="randomSeed">42</param>
 		<!-- this specifies how often the output files should be written -->
-		<param name="outputPeriod" unit="hour">0.1</param>
+		<param name="outputPeriod" unit="hour">1.0</param>
 		
 		<!-- Specifies whether the simulation should check as to whether a new release is available -->
 		<param name="checkForReleaseUpdate">true</param>
@@ -575,7 +575,7 @@ A few general points about protocol files:
 			In addition, a maximum biofilm thickness may be given via the 'maxTh' parameter.
 		-->
 		<detachment class="DS_Quadratic">
-			<param name="kDet" unit="um-1.hour-1">5e-6</param>
+			<param name="kDet" unit="um-1.hour-1">5e-4</param>
 			<param name="maxTh" unit="um">200</param>
 		</detachment>
 
@@ -741,7 +741,7 @@ A few general points about protocol files:
 		<param name="shoveLimit" unit="um">0.</param>
 
 		<param name="cellRunSpeed" unit="um/sec">30.0</param>
-		<param name="tumbleInt" unit="seconds">2</param>
+		<param name="tumbleInt" unit="seconds">2.0</param>
 		<param name="stickinessAddition" unit="um">0.5</param>
 
 		<param name="epsMax">0.1</param>
@@ -753,16 +753,16 @@ A few general points about protocol files:
 		<!-- THIS IS AN EXAMPLE OF SELF-ATTACHMENT, SO WE USE THESE TAGS AND NOT INIT AREA -->
 		
 		<!-- Hour to start cell injection-->
-		<param name="cellInjectionStartHour" unit="hour">0</param>
+		<param name="cellInjectionStartHour" unit="hour">0.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection on-->
-		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10</param>
+		<param name="injectionOnAttachmentFrequency" unit = "cells/hour">10.0</param>
 
 		<!-- Hour to stop cell injection -->
-		<param name="cellInjectionEndHour" unit="hour">72</param>
+		<param name="cellInjectionEndHour" unit="hour">72.0</param>
 
 		<!-- Cell Attachment frequency during injection - the number of cells that attach to the substratum per hour when injection ff-->
-		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0</param>
+		<param name="injectionOffAttachmentFrequency" unit = "cells/hour">0.0</param>
 
 	</species>
 
@@ -786,7 +786,7 @@ A few general points about protocol files:
 		<param name="shoveLimit" unit="um">0.</param>
 
 		<param name="cellRunSpeed" unit="um/sec">30.0</param>
-		<param name="tumbleInt" unit="seconds">5</param>
+		<param name="tumbleInt" unit="seconds">5.0</param>
 		<param name="stickinessAddition" unit="um">0.5</param>
 
 		<param name="epsMax">0.1</param>

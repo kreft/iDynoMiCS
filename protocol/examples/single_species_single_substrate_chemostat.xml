@@ -55,33 +55,13 @@
 		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
 		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
 		<param name="attachment">onetime</param>
-
+		<!-- Set the flag "chemostat" to true. The default is false, i.e., if nothing is said a biofilm scenario is simulated-->
+		<param name="chemostat">true</param>
 		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->
 		<param name="agentTimeStep" unit="hour">0.05</param>
 		<!-- Invasion/Competition simulation. Set to true if the simulation should stop once there is only one species left in the system -->
-        <param name="invComp">false</param> 
-
+        <param name="invComp">false</param>
 	</simulator>
-
-
-	<!--#####################################################################
-		INPUT SECTION
-	######################################################################-->
-
-	<!-- You may define the initial condition from which to start a simulation
-		by specifying an agent and/or bulk conditions file to read in. Often,
-		the files listed are taken from an evolved state of a similar simulation.
-
-		Note that any input files MUST be in the same directory as this protocol file. -->
-
-	<input>
-		<param name="useAgentFile">false</param>
-		<param name="inputAgentFileURL">agent_State(last).xml</param>
-		<param name="useBulkFile">false</param>
-		<param name="inputBulkFileURL">env_Sum(last).xml</param>
-	</input>
-
-
 
 	<!--#####################################################################
 		SOLUTES AND BIOMASS TYPES SECTION
@@ -91,18 +71,11 @@
 		solute must be assigned to a domain (which will be defined later in the protocol
 		file), given a name, and must have its diffusivity parameter set.
 
-		Note that the solute name 'pressure' is treated specially in the code:
-		- 'pressure' is used to calculate the biomass pressure that leads to biomass
-			spreading in the biofilm, and should generally be left as-is.
-
 		Diffusion coefficients are expressed in units of m2.day-1.
 	-->
 
-	<solute domain="MyBiofilm" name="MyCOD">
+	<solute domain="chemostat" name="MyCOD">
 		<param name="diffusivity" unit="m2.day-1">1e-4</param>
-	</solute>
-	<solute domain="MyBiofilm" name="pressure">
-		<param name="diffusivity" unit="m2.day-1">1</param>
 	</solute>
 
 	<!-- This section defines the biomass types (NOT species types) that will be used in
@@ -115,13 +88,13 @@
 	-->
 
 	<particle name="biomass">
-		<param name="density" unit="g.L-1">150</param>
+		<param name="density" unit="g.L-1">150.0</param>
 	</particle>
 	<particle name="inert">
-		<param name="density" unit="g.L-1">150</param>
+		<param name="density" unit="g.L-1">150.0</param>
 	</particle>
 	<particle name="capsule">
-		<param name="density" unit="g.L-1">75</param>
+		<param name="density" unit="g.L-1">75.0</param>
 	</particle>
 
 
@@ -138,99 +111,33 @@
 	-->
 
 	<world>
-		<bulk name="MyTank">
+		<!-- CHEMOSTAT: the bulk name MUST be "chemostat" -->
+		<bulk name="chemostat">
 
-			<!-- If 'isConstant' is set to false, then solute concentrations in the bulk will
-				change in time due to production and consumption by the biofilm and by dilution
-				at the rate 'D' -->
-			<param name="isConstant">true</param>
-			<param name="D" unit="h-1">0.6</param>
+			<!-- CHEMOSTAT: set to false the parameter "isConstant". Note: setting this parameter to false doesn't invalidate the use of "isConstant"
+			for each individual substrate whose concentration you want to remain constant throughout the simulation. -->
+			<param name="isConstant">false</param>
+			<param name="D" unit="h-1">0.2</param>
 
 			<!-- List the solutes that reside in this bulk compartment, along with the initial
 				concentration ('Sbulk') and influent concentration ('Sin'). 
 
 				Concentrations should be given as g.L-1 ( = kg.m-3 = fg.um-3 ).
-				The 'pressure' solute parameters should be left as-is.
 			-->
 
 			<solute name="MyCOD">
-				<param name="Sbulk" unit="g.L-1">5e-3</param>
-				<param name="Sin" unit="g.L-1">5e-3</param>
-			</solute>
-			<solute name="pressure">
-				<param name="Sbulk" unit="g.L-1">0</param>
-				<param name="Sin" unit="g.L-1">0</param>
+				<param name="Sbulk" unit="g.L-1">1e-3</param>
+				<param name="Sin" unit="g.L-1">1e-3</param>
 			</solute>
 		</bulk>
 
 		<!-- The computation domain is a physical region that will contain the biofilm,
 			and has a more complex setup. -->
 
-		<computationDomain name="MyBiofilm">
+		<computationDomain name="chemostat">
 
-			<!-- These parameters define whether the domain is 2D or 3D, and the number of
-				grid elements in each direction. 'nI', 'nJ', and 'nK' should be a power of two +1
-				(i.e. 33, 65, 129, etc.), and if 'nDim' is 3, then 'nK' should not be 1.
-
-				The 'resolution' parameter defines the size of an element edge, and so the
-				global domain size in a direction is the number of elements times the resolution:
-					nI*resolution
-			-->
-			<grid nDim="2" nI="33" nJ="33" nK="1"/>
-			<param name="resolution" unit="um">8</param>
-
-			<!-- 'boundaryLayer' sets the distance above the biofilm/liquid interface that the
-				liquid is assumed to be spatially invariant; within this distance from the biofilm the
-				solute concentration will vary because of diffusion. The length of the boundaryLayer 
-				must be a multiple of the grid resolution
-				-->
-			<param name="boundaryLayer" unit="um">48</param>
-
-			<!-- The 'biofilmDiffusivity' sets the relative diffusivity of the biofilm compared
-				to water; because the biofilm is slightly more dense than water, the diffusivity
-				will be lower. -->
-			<param name="biofilmDiffusivity">0.8</param>
-
-			<!-- The 'specificArea' is the surface-to-volume ratio of the reactor or world system, and
-				is used to scale up the limited computation domain to the global scale. -->
-			<param name="specificArea" unit="m2.m-3">80</param>
-
-
-			<!-- Now comes the definition of the behavior at the boundaries. In general, there are 6
-				boundaries that must be addressed: y0z, yNz, x0z, xNz, x0y, xNy. These represent
-				the edges of the domain along the non-named direction (i.e. y0z is the face at x=0,
-				and yNz is the face at x=N). (For 2D simulations the x0y and xNy directions are
-				included, but are made periodic.)
-				
-				Each <boundaryCondition> also includes a <shape> mark-up to define the shape of the boundary.
-				In this release only the 'Planar' class is available, and it requires specification of
-				a point on the boundary and a vector pointing outside the domain. These shape parameters
-				must be given in index coordinates (0 to 33 for 33 gridpoints).
-				
-				The possible boundary types and any particular parameters that need to be given are:
-
-				- BoundaryZeroFlux: a boundary impermeable to solutes and agents
-					(no parameters)
-				- BoundaryBulk: a boundary connected to a <bulk> region, with a spatial region within
-					the domain representing the entire compartment. If agents cross this boundary
-					they are treated as having left the computation domain. Other parameters include:
-					* 'activeForSolute': set to 'yes' to allow solutes to interact with the bulk
-						<param name="activeForSolute">yes</param>
-					* 'bulk': this specifies wich <bulk> compartment to connect to.
-						<param name="bulk">MyTank</param>
-				- BoundaryCyclic: the boundary is periodic with another boundary, so that agents leaving
-					this boundary will enter through the other, and vice-versa; solute concentrations
-					are constant across the two boundaries. You must specify the two faces (<shape>)
-					that are to be connected this way.
-				- BoundaryGasMembrane: a boundary that is impermeable to agents and most solutes, but
-					permeable to a specified solute (used to represent gas transfer membranes).
-					Parameters include:
-					* You must specify a bulk compartment and the solute able to permeate:
-						<param name="isPermeableTo" detail="o2d" unit="m2.day-1">1</param>
-					* 'bulk': this will be different than the 'bulk' for BoundaryBulk:
-						<param name="bulk">MyGasMembraneBulk</param>
-
-			-->
+			<grid nDim="1" nI="1" nJ="1" nK="1"/>
+			<param name="resolution" unit="um">2e3</param>
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
@@ -239,11 +146,13 @@
 				</shape>
 			</boundaryCondition>
 
+		<!-- CHEMOSTAT: the bulk name MUST be "chemostat" -->
+		
 			<boundaryCondition class="BoundaryBulk" name="yNz">
 				<param name="activeForSolute">yes</param>
-				<param name="bulk">MyTank</param>
+				<param name="bulk">chemostat</param>
 				<shape class="Planar">
-					<param name="pointIn" i="33" j="0" k="0"/>
+					<param name="pointIn" i="1" j="0" k="0"/>
 					<param name="vectorOut" i="1" j="0" k="0"/>
 				</shape>
 			</boundaryCondition>
@@ -254,11 +163,11 @@
 					<param name="vectorOut" i="0" j="-1" k="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="33" k="0"/>
+					<param name="pointIn" i="0" j="1" k="0"/>
 					<param name="vectorOut" i="0" j="1" k="0"/>
 				</shape>
 			</boundaryCondition>
-			
+
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
 					<param name="pointIn" i="0" j="0" k="-1"/>
@@ -347,29 +256,18 @@
 	<!-- The <solver> mark-ups define the solvers to be used in calculating different
 		aspects of the simulation -->
 
-	<!-- The 'Solver_multigrid' solver will compute solute concentrations in the
-		given computational domain. The given parameters pertain to details of
-		the multigrid algorithm and should generally be left as-is. The list of
-		<reaction> mark-ups should include ALL reactions that affect solute concentrations
-		in the domain through production or consumption. -->
+	<!-- CHEMOSTAT SOLVER - Don't forget to use ONLY the solver for the chemostat situation: Solver_chemostat 
+	 and thus either delete/comment out the other solvers present in the xml file -->
+	<!-- Parameters related to the solver itself: rtol stands for the relative tolerance of the calculated error;
+		hmax is maximum internal step of the solver. -->
 
-	<solver class="Solver_multigrid" name="solutes" domain="MyBiofilm">
+	<solver class="Solver_chemostat" name="solver1" domain="chemostat">
+		<param name="rtol">1e-2</param>
+	 	<param name="hmax">1e-3</param>
 		<param name="active">true</param>
-		<param name="preStep">150</param>
-		<param name="postStep">150</param>
-		<param name="coarseStep">1500</param>
-		<param name="nCycles">5</param>
 
 		<reaction name="MyGrowthHeterotrophs"/>
 	</solver>
-
-	<!-- The 'Solver_pressure' solver is used to compute the pressure field in the biofilm
-		that is used to spread biomass due to growth. -->
-
-	<solver class="Solver_pressure" name="pressure" domain="MyBiofilm">
-		<param name="active">true</param>
-	</solver>
-
 
 
 	<!--#####################################################################
@@ -381,47 +279,7 @@
 
 	<agentGrid>
 		<!-- domain of agents to manage -->
-		<param name="computationDomain">MyBiofilm</param>
-
-		<!-- The resolution should be a multiple of two of the computationDomain resolution,
-			and should be on the order of the diameter of the largest species. -->
-		<param name="resolution" unit="um">8</param>
-
-		<!-- The <detachment> mark-up defines the erosion forces that act on the biofilm surface.
-			Detachment works by removing a layer of biomass based on the detachment speed and
-			the timestep, with the detachment speed calculated via one of the given forms.
-			The possible detachment types are:
-			* quadratic: kDet*L^2, where L is the local biomass thickness
-				<detachment class="DS_Quadratic">
-					<param name="kDet" unit="um-1.hour-1">5e-6</param>
-					<param name="maxTh" unit="um">200</param>
-				</detachment>
-			* biomass: kDet*L^2/X, where L is the local biomass thickness and X the local biomass
-				concentration.
-				<detachment class="DS_Biomass">
-					<param name="kDet" unit="fg.um-4.hour-1.">2e-4</param>
-					<param name="maxTh" unit="um">300</param>
-				</detachment>
-
-			In addition, a maximum biofilm thickness may be given via the 'maxTh' parameter.
-		-->
-		<detachment class="DS_Quadratic">
-			<param name="kDet" unit="um-1.hour-1">1e-4</param>
-			<param name="maxTh" unit="um">200</param>
-		</detachment>
-		
-		<param name="erosionMethod">false</param>
-
-		<!-- The 'sloughDetachedBiomass' parameter sets whether biomass that is no longer
-			connected to the substratum will be removed. In general this should be true, but
-			set it to false if you want to consider a different structure, e.g. granules. -->
-		<param name="sloughDetachedBiomass">true</param>
-		
-		<!-- These parameters relate to particle shoving and are generally okay as-is. -->
-		<param name="shovingMaxNodes">2e6</param>
-		<param name="shovingFraction">0.025</param>
-		<param name="shovingMaxIter">250</param>
-		<param name="shovingMutual">true</param>
+		<param name="computationDomain">chemostat</param>
 	</agentGrid>
 
 
@@ -443,7 +301,7 @@
 		* the color is used to distinguish agents in POV-Ray output images
 			<param name="color">yellow</param>
 		* you must define which domain the agents will live in
-			<param name="computationDomain">MyBiofilm</param>
+			<param name="computationDomain">chemostat</param>
 		* you must specify how large the agents may be before dividing; the actual
 			division decision will be based on a standard deviation around this value
 			<param name="divRadius" unit="um">2</param>
@@ -524,7 +382,7 @@
 		</particle>
 
 		<param name="color">blue</param>
-		<param name="computationDomain">MyBiofilm</param>
+		<param name="computationDomain">chemostat</param>
 		<param name="divRadius" unit="um">2</param>
 		<param name="divRadiusCV">0.1</param>
 		<param name="deathRadius" unit="um">0.2</param>
@@ -542,7 +400,7 @@
 		<initArea number="10">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="4" y="264" z="0"/>
+			<coordinates x="1" y="1" z="0"/>
 		</initArea>
 	</species>
 

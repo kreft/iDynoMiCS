@@ -80,7 +80,7 @@ A few general points about protocol files:
 		<!-- defining this value allows the simulation to be re-run deterministically -->
 		<param name="randomSeed">42</param>
 		<!-- this specifies how often the output files should be written -->
-		<param name="outputPeriod" unit="hour">2</param>
+		<param name="outputPeriod" unit="hour">1.0</param>
 
 		<!-- Specifies whether the simulation should check as to whether a new release is available -->
 		<param name="checkForReleaseUpdate">true</param>
