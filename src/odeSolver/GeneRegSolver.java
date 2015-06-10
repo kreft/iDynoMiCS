@@ -28,9 +28,9 @@ public class GeneRegSolver extends ODEsolver
 	/**
 	 * 
 	 */
-	public void init(int nVar)
+	public void init(int nVar, Double hmax, Double rtol)
 	{
-		super.init(nVar, false);
+		super.init(nVar, false, hmax, rtol);
 	}
 	
 	public void setReferenceAgent(GeneRegBac aCell)
@@ -44,9 +44,10 @@ public class GeneRegSolver extends ODEsolver
 	 * @param target 
 	 */
 	@Override
-	protected void calc1stDeriv(Matrix y, Matrix target)
+	protected Matrix calc1stDeriv(Matrix y, Matrix target)
 	{
 		target = _refCell.calc1stDeriv(y);
+		return target;
 	}
 	
 	
@@ -62,9 +63,10 @@ public class GeneRegSolver extends ODEsolver
 	 * @param tdel 
 	 * @param target 
 	 */
-	protected void calc2ndDeriv(Matrix y, Double tdel, Matrix target)
+	protected Matrix calc2ndDeriv(Matrix y, Double tdel, Matrix target)
 	{
 		this.numerical2ndDeriv(y, tdel, target);
+		return target;
 	}
 	
 	/**
@@ -74,8 +76,9 @@ public class GeneRegSolver extends ODEsolver
 	 * @param levels Matrix (column) of the gene expression levels.
 	 * @param target 
 	 */
-	protected void calcJacobian(Matrix levels, Matrix target)
+	protected Matrix calcJacobian(Matrix levels, Matrix target)
 	{
 		target = _refCell.calcJacobian(levels);
+		return target;
 	}
 }

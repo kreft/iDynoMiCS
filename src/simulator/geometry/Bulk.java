@@ -273,7 +273,7 @@ public class Bulk
 		// use only the reaction method in general
 
 		//sonia 19.02.2010 - new method to update the bulk in a chemostat setup
-		if(Simulator.isChemostat)
+		if ( Simulator.isChemostat )
 			updateChemostatBulk(soluteGrid, reacGrid);
 		else
 		{

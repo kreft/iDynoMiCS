@@ -154,8 +154,8 @@
 			-->
 
 			<solute name="MyCOD">
-				<param name="Sbulk" unit="g.L-1">10e-3</param>
-				<param name="Sin" unit="g.L-1">10e-3</param>
+				<param name="Sbulk" unit="g.L-1">5e-3</param>
+				<param name="Sin" unit="g.L-1">5e-3</param>
 			</solute>
 			<solute name="pressure">
 				<param name="Sbulk" unit="g.L-1">0</param>
@@ -184,7 +184,7 @@
 				solute concentration will vary because of diffusion. The length of the boundaryLayer 
 				must be a multiple of the grid resolution
 				-->
-			<param name="boundaryLayer" unit="um">40</param>
+			<param name="boundaryLayer" unit="um">48</param>
 
 			<!-- The 'biofilmDiffusivity' sets the relative diffusivity of the biofilm compared
 				to water; because the biofilm is slightly more dense than water, the diffusivity
@@ -406,7 +406,7 @@
 			In addition, a maximum biofilm thickness may be given via the 'maxTh' parameter.
 		-->
 		<detachment class="DS_Quadratic">
-			<param name="kDet" unit="um-1.hour-1">5e-5</param>
+			<param name="kDet" unit="um-1.hour-1">1e-4</param>
 			<param name="maxTh" unit="um">200</param>
 		</detachment>
 		

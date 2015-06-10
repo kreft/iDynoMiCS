@@ -82,7 +82,7 @@ Time : hour
 			<solute name="o2d">
 				<param name="Sbulk" unit="g.L-1">1e-3</param>
 				<param name="Sin" unit="g.L-1">1e-3</param>
-				<param name="isConstant">true</param>
+				<!--<param name="isConstant">true</param>-->
 			</solute>
 			<solute name="nh4">
 				<param name="Sbulk" unit="g.L-1">1.5e-3</param>
@@ -100,7 +100,7 @@ Time : hour
 		<computationDomain name="chemostat">
 		
 			<grid nDim="1" nI="1" nJ="1" nK="1"/>
-			<param name="resolution" unit="um">5e4</param>
+			<param name="resolution" unit="um">2e3</param>
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">

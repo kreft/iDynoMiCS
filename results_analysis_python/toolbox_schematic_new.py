@@ -64,14 +64,16 @@ class Arrow:
 class Shape:
     def __init__(self):
         self.y2xscale  = 1
+        self.alpha      = 1.0
         self.edgecolor  = 'k'
         self.facecolor  = 'none'
         self.linestyle  = '-'
         self.linewidth  = 1
         self.zorder     = 0
         self.transform  = False
-    def set_defaults(self, edgecolor=None, facecolor=None, linestyle=None,
+    def set_defaults(self, alpha=None, edgecolor=None, facecolor=None, linestyle=None,
                 linewidth=None, transform=None, y2xscale=None, zorder=None):
+        if not (alpha      == None): self.alpha      = alpha
         if not (edgecolor  == None): self.edgecolor  = edgecolor
         if not (facecolor  == None): self.facecolor  = facecolor
         if not (linewidth  == None): self.linewidth  = linewidth
@@ -81,8 +83,9 @@ class Shape:
         if not (zorder     == None): self.zorder     = zorder
     def set_points(self):
         self.vals = []
-    def draw(self, axis, edgecolor=None, facecolor=None, linestyle=None,
+    def draw(self, axis, alpha = None, edgecolor=None, facecolor=None, linestyle=None,
                                     transform=None, linewidth=None, zorder=None):
+        alpha     = self.alpha     if (alpha     == None) else alpha
         #linestyle = self.linestyle if (linestyle == None) else linestyle
         linewidth = self.linewidth if (linewidth == None) else linewidth
         transform = self.transform if (transform == None) else transform
@@ -90,14 +93,14 @@ class Shape:
         edgecolor = self.edgecolor if (edgecolor == None) else edgecolor
         zorder    = self.zorder    if (zorder    == None) else zorder
         if transform:
-            axis.add_patch(matplotlib.patches.Polygon(self.vals, closed=True,
-                            facecolor=facecolor, edgecolor=edgecolor,
-                            zorder=zorder, 
+            axis.add_patch(matplotlib.patches.Polygon(self.vals, alpha=alpha,
+                            closed=True, facecolor=facecolor,
+                            edgecolor=edgecolor, zorder=zorder, 
                             linewidth=linewidth, transform=axis.transAxes))
         else:
             axis.add_patch(matplotlib.patches.Polygon(self.vals, closed=True,
                             facecolor=facecolor, edgecolor=edgecolor,
-                            zorder=zorder, 
+                            zorder=zorder, alpha=alpha,
                             linewidth=linewidth))
 
 
@@ -106,9 +109,10 @@ class CircleSegment(Shape):
         Shape.__init__(self)
         self.npoints = 100
     
-    def set_defaults(self, edgecolor=None, facecolor=None, linestyle=None,
+    def set_defaults(self, alpha=None, edgecolor=None, facecolor=None, linestyle=None,
                      linewidth=None, npoints=None, transform=None, y2xscale=None, zorder=None):
-        Shape.set_defaults(self, edgecolor=edgecolor,
+        Shape.set_defaults(self, alpha=alpha,
+                                 edgecolor=edgecolor,
                                  facecolor=facecolor,
                                  linestyle=linestyle,
                                  linewidth=linewidth,

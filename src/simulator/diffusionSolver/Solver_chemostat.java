@@ -13,12 +13,15 @@ import Jama.Matrix;
 
 import java.util.ArrayList;
 
+import idyno.Idynomics;
 import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.Simulator;
 import simulator.SoluteGrid;
+import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
+import simulator.geometry.Domain;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;

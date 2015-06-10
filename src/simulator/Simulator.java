@@ -66,7 +66,7 @@ public class Simulator
 	 * start of the simulation has been specified. Such files are 
 	 * normally taken from an evolved state of a similar simulation
 	 */
-	private Boolean	useAgentFile;
+	private Boolean	useAgentFile = false;
 	
 	/**
 	 * Where the parameter useAgentFile is set to true, this must be a parser
@@ -80,7 +80,7 @@ public class Simulator
 	 * start of the simulation has been specified. Such files are normally
 	 * taken from an evolved state of a similar simulation.
 	 */
-	private Boolean	useBulkFile;
+	private Boolean	useBulkFile = false;
 	
 	/**
 	 * Where the parameter useBulkFile is set to true, this must be a parser
@@ -376,7 +376,9 @@ public class Simulator
 			SimTimer.applyTimeStep();
 			
 			// Check if new agents should be created.
+			LogFile.chronoMessageIn("Checking for new agent birth");
 			checkAgentBirth();
+			LogFile.chronoMessageIn("New agent birth checked");
 			
 			LogFile.chronoMessageIn("Solving Diffusion-Reaction");
 			
@@ -532,13 +534,15 @@ public class Simulator
 			{
 				try
 				{
+					System.out.println(ExtraMath.random.toString());
 					System.out.println("Random number generator test: "+
 												ExtraMath.random.nextInt());
 				}
 				catch(java.lang.NullPointerException e)
 				{
-					LogFile.writeError(e, "Simulator.createSimulator() while"+
-									"trying to test random number generator");
+					LogFile.writeError(e, "Simulator.createSimulator()"+
+							" while trying to test random number generator");
+					System.exit(-1);
 				}
 			}
 		}
@@ -719,7 +723,9 @@ public class Simulator
 			 * If a initial bulk state is required and set using parameter 
 			 * useBulkFile, we need to recreate these conditions.
 			 */
-			if (useBulkFile)
+			if ( useBulkFile == null )
+				System.out.println("useBulkFile is null!");
+			if ( useBulkFile )
 				recreateBulkConditions();
 			System.out.println("\tWorld created");
 		} 
@@ -947,59 +953,46 @@ public class Simulator
 			
 			for (XMLParser spParser : _protocolFile.getChildrenParsers("species")) 
 			{
-				
-				
 				// Create the progenitor
 				getSpecies(spParser.getName()).getProgenitor().
 										initFromProtocolFile(this, spParser);
 				
 				//sonia: creating a list with the plasmid names which will be used afterwards to write the agentSum report
 				// Whether MultiEpiBac and MultiEpisome agents are being used 
-				if(multiEpi)
-				{
-					if ( spParser.getAttribute("class").equals("MultiEpisome"))
+				if ( multiEpi )
+					if (spParser.getAttribute("class").equals("MultiEpisome"))
 					{
 						String plName = spParser.getName();
 						Double scanSpeed = spParser.getParamDbl("scanSpeed");
 						plasmidList.add(plName);
 						scanSpeedList.add(scanSpeed);
-
 					}
-				}
 			}
-			
 			System.out.print("\t done\n");
 		} 
 		catch (Exception e) 
 		{
-			LogFile.writeLog("Error in Simulator.createSpecies() second stage");
-			e.printStackTrace();
+			LogFile.writeError(e, "Error in Simulator.createSpecies() second stage");
+			System.exit(-1);
 		}
 		
 		// STAGE 3: CREATION OF POPULATIONS OF THE SPECIES
 		// NOTE WE ARE ONLY GOING TO DO STAGE 3 (AT THIS POINT IN DEVELOPMENT) IF ONE TIME ATTACHMENT IS ON
 		// FOR SELF ATTACHMENT, ENTRY OF AGENTS BEGINS WHEN THE SIMULATION BEGINS
 		
-		if(this.attachmentMechanism.equals("onetime"))
+		if ( this.attachmentMechanism.equals("onetime") )
 		{
 			System.out.print("\t Species populations: \n");
-
-			// If there is a previous state file, recreate the species that were present
-			if (useAgentFile)
-			{
+			/*
+			 * If there is a previous state file, recreate the species that
+			 * were present.
+			 */
+			if ( useAgentFile )
 				recreateSpecies();
-						
-				//sonia: 20-07-09 
-				//I've added the line of code below, so that it is possible to create new agents from the protocol file when restarting
-				//from a previous simulation (environment) using a new protocol file
-				checkAgentBirth();
-	
-			}
-			else
-			{
-				checkAgentBirth();
-			}
-		
+			/*
+			 * Check if we need to create any new agents.
+			 */
+			checkAgentBirth();
 			System.out.print("\t done\n");
 		}
 			
@@ -1143,7 +1136,7 @@ public class Simulator
 	public boolean selfAttachmentAgentBirth(XMLParser parser, int spIndex)
 	{
 		boolean creatingAgents = false;
-		
+		LogFile.writeLog("\tAttempting self-attachment birth...");
 		// Now check the injection period. 
 		if(SimTimer.getCurrentTime()>=speciesList.get(spIndex).cellInjectionStartHour
 			&& SimTimer.getCurrentTime()<=speciesList.get(spIndex).cellInjectionEndHour)
@@ -1161,7 +1154,7 @@ public class Simulator
 					create_Required_Number_Of_SelfAttaching_Agents(speciesList.get(spIndex).injectionOffAttachmentFrequency, 
 																	parser,spIndex);
 		}	
-		
+		LogFile.writeLog("\tSelf-attachment birth done.");
 		return creatingAgents;
 	}
 	
@@ -1555,29 +1548,29 @@ public class Simulator
 
 		// first check whether we are restarting from a previous run
 		XMLParser restartInfo = new XMLParser(_protocolFile.getChildElement("simulator"));
-
-		if (restartInfo.getParamBool("restartPreviousRun")) {
-			// if this is true, then we set the input files as the last files
-			// that were output
-
+		/*
+		 * If we're restarting from a previous run, then we set the input
+		 * files as the last files that were output.
+		 */
+		if ( restartInfo.getParamBool("restartPreviousRun") )
+		{
 			useAgentFile = true;
 			useBulkFile = true;
-
 			agentFile = new XMLParser(_resultPath+File.separator
 					+"lastIter"+File.separator
 					+"agent_State(last).xml");
 			bulkFile = new XMLParser(_resultPath+File.separator
 					+"lastIter"+File.separator
 					+"env_Sum(last).xml");
-
 			LogFile.writeLog("Restarting run from previous state in directory: "
 					+_resultPath);
-
 			return;
 		} 
-
-		// otherwise just do things as usual, but only if input is specified
-		if (_protocolFile.getChildElement("input")==null) return;
+		/*
+		 * Otherwise just do things as usual, but only if input is specified.
+		 */
+		if ( _protocolFile.getChildElement("input") == null )
+			return;
 
 		XMLParser input = new XMLParser(_protocolFile.getChildElement("input"));
 
@@ -1591,8 +1584,9 @@ public class Simulator
 			agentFile = new XMLParser(agentFileName);
 			LogFile.writeLog("Using agent input file: "+agentFileName);
 		}
-
+		
 		useBulkFile = input.getParamBool("useBulkFile");
+		useBulkFile = ( useBulkFile == null ) ? false : useBulkFile;
 		if (useBulkFile) {
 			String bulkFileName = input.getParam("inputBulkFileURL");
 			// construct the input file name using the path of the protocol file
@@ -1602,7 +1596,6 @@ public class Simulator
 			bulkFile = new XMLParser(bulkFileName);
 			LogFile.writeLog("Using bulk input file: "+bulkFileName);
 		}
-
 	}
 
 	/**
