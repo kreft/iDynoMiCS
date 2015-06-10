@@ -1,5 +1,5 @@
 .idea
-*.pyc
+results_analysis_python/*.pyc
 *.iml
 bin
 random.state

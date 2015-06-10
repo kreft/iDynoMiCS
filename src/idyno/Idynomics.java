@@ -758,6 +758,7 @@ public class Idynomics
 	{
 		try 
 		{
+			LogFile.writeLogAlways("Launching simulation...");
 			/* Get the current system time in milliseconds - used to calculate
 			 * length of run.
 			 */
