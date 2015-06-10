@@ -493,7 +493,7 @@ def distinguishable_colors(number, cmap='hsv'):
 
 def plot_color_dictionary(color_dict, file_path):
     y_scale = 0.3
-    x_scale = 0.1
+    x_scale = 0.15
     height = y_scale*(len(color_dict)+1)
     width = x_scale * (max([len(n) for n in color_dict.keys()]) + 1)
     fig = SlideFigure(height=height, width=width)

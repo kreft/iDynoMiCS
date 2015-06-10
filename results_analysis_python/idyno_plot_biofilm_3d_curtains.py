@@ -1,12 +1,10 @@
 #!/usr/bin/python
 from __future__ import division
 from __future__ import with_statement
-import matplotlib
 import os
 from optparse import OptionParser
 import toolbox_idynomics
 import toolbox_plotting
-import toolbox_results
 
 
 parser = OptionParser()
