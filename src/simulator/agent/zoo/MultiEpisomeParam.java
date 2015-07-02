@@ -1,8 +1,6 @@
 package simulator.agent.zoo;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import simulator.Simulator;
@@ -12,39 +10,89 @@ import utils.XMLParser;
 
 public class MultiEpisomeParam extends ActiveParam
 {
-	LinkedList<Reaction>      pathwayKnown        = new LinkedList<Reaction>();
-
+	/**
+	 * Already coded in EpisomeParam
+	 */
+	LinkedList<Reaction>	pathwayKnown = new LinkedList<Reaction>();
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public Boolean	isHighCopy = false;
-	public int		nCopy, nCopyMin, nCopyMax;
+	
+	/**
+	 * Already coded in EpisomeParam
+	 */
+	public int nCopy;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
+	public int nCopyMin, nCopyMax;
+	
+	/**
+	 * Already coded in EpisomeParam
+	 */
 	public Double	pilusLength = 0.0;
 	
+	/**
+	 * Already coded in EpisomeParam
+	 */
 	public Double	exchangeLag = 0.0;
+	
+	/**
+	 * Already coded in EpisomeParam
+	 */
 	public Double	receptionLag = 0.0;
 
-	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public Double	replicationSpeed = 0.26;
 	
+	/**
+	 * Already coded in EpisomeParam
+	 */
 	public Double	lossProbability = 0.0;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public Double	hotLag = 2.0;
 	
-	//sonia: info used in output writing
+	/**
+	 * Info used in output writing.
+	 */
 	public String	plasmidName;
-
-	// plasmid markers (used in host compatibility)
+	
+	/**
+	 * Plasmid markers (used in host compatibility)
+	 */
 	public ArrayList<String> hostCompatibilityMarkers = new ArrayList<String>();
 	
-	//plasmid Markers for plasmid compatibility (based on incompatibility groups)
+	/**
+	 * Plasmid Markers for plasmid compatibility (based on incompatibility groups)
+	 */
 	public ArrayList<String> plasmidCompatibilityMarkers = new ArrayList<String>();
 	
-	//sonia: transferProb is the parameter related to the plasmid transfer rate observed
-	// for this plasmid.
-	
+	/**
+	 * Already coded in EpisomeParam
+	 */
 	public Double transferProb = 0.0;
-	//sonia 11.10.2010 - scanspeed should be a plasmid parameter 
+	
+	/**
+	 * Scan speed should be a plasmid parameter.
+	 * 
+	 * TODO This is different from Brian's code, where scanSpeed belongs to
+	 * the EpiBac.
+	 */
 	public Double	scanSpeed = 0.0;
 	
-	//sonia: 21-05-09
-	//fitness cost management
+	/**
+	 * Fitness cost management
+	 * 
+	 * Replace with Brian's approach (i.e. addtional maintenance reaction)?
+	 */
 	public Double initialCost = 0.0;
 	public Double rateDec = 0.0; 
 	public Double basalCost = 0.0;
@@ -89,33 +137,5 @@ public class MultiEpisomeParam extends ActiveParam
 		System.out.println("rate of Decay is  " + rateDec);
 		//System.out.println("compatibility markers being read from xml file are " + compatibilityMarkers);
 
-	}
-
-	public HashMap<String, double[]> getSoluteYield()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* ______________ UNIVERSAL MUTATOR _________________________________ */
-	/**
-	 * Rob Nov 2014: I have no idea what's going on here
-	 * 
-	 * @param paramName
-	 * @param value
-	 */
-	public void callParamMutator(String paramName, Double value)
-	{
-		try
-		{
-			Class[] paramTypes = null;
-			paramTypes[0] = (new Double(value)).getClass();
-			Method m = this.getClass().getMethod("set"+paramName, paramTypes);
-			m.invoke(this, value);
-		}
-		catch (Exception e)
-		{
-			
-		}
 	}
 }

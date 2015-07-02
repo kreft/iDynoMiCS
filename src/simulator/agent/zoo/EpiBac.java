@@ -1,12 +1,12 @@
 /**
  * Project iDynoMicS
- * ______________________________________________________
+ * ___________________________________________________________________________
  * @since June 2006
  * @copyright -> see Idynomics.java
  * @version 1.0
  * @author Laurent Lardon (lardonl@supagro.inra.fr)
  * @author Brian Merkey (brim@env.dtu.dk, bvm@northwestern.edu)
- * ____________________________________________________________________________
+ * ___________________________________________________________________________
  */
 
 package simulator.agent.zoo;
@@ -15,14 +15,12 @@ import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import org.jdom.Element;
 
 import idyno.SimTimer;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
-import simulator.geometry.ContinuousVector;
 import simulator.Simulator;
 
 // bvm 30.1.2009
@@ -37,6 +35,14 @@ public class EpiBac extends BactEPS
 	private Double _lastReception = 0.0;
 	private Double _lastExchange = 0.0;
 	private int _nCopy = 0;
+	
+	/**
+	 * _status == 0: recipient
+	 * _status == 1: donor
+	 * _status == 11: transconjugant able to transfer
+	 * _status == 101: donor has transferred
+	 * _status == 111: transconjugant has transferred
+	 */
 	private int _status = 0;
 
 	/* _________________________ CONSTRUCTOR _____________________________ */
@@ -70,7 +76,7 @@ public class EpiBac extends BactEPS
 	 */
 	@Override
 	public void initFromProtocolFile(Simulator aSimulator,
-												XMLParser aSpeciesRoot)
+													XMLParser aSpeciesRoot)
 	{
 		// Initialisation of the Located agent
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
@@ -85,18 +91,25 @@ public class EpiBac extends BactEPS
 	@Override
 	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
 	{
-		// find the position to start at by using length and number of values read
+		/*
+		 * Find the position to start at by using length and number of values
+		 * read.
+		 */
 		int nValsRead = 4;
 		int iDataStart = singleAgentData.length - nValsRead;
-		// read in info from the result file IN THE SAME ORDER AS IT WAS OUTPUT
-		// HGT parameters
+		/*
+		 * Read in info from the result file IN THE SAME ORDER AS IT WAS
+		 * OUTPUT. HGT parameters:
+		 */
 		_status        = Integer.parseInt(singleAgentData[iDataStart]);
 		_nCopy         = Integer.parseInt(singleAgentData[iDataStart+1]);
 		_lastReception = Double.parseDouble(singleAgentData[iDataStart+2]);
 		_lastExchange  = Double.parseDouble(singleAgentData[iDataStart+3]);
-		// now go up the hierarchy with the rest of the data
+		/*
+		 * Now go up the hierarchy with the rest of the data.
+		 */
 		String[] remainingSingleAgentData = new String[iDataStart];
-		for (int i=0; i<iDataStart; i++)
+		for ( int i = 0; i < iDataStart; i++ )
 			remainingSingleAgentData[i] = singleAgentData[i];
 		super.initFromResultFile(aSim, remainingSingleAgentData);
 	}
@@ -175,7 +188,7 @@ public class EpiBac extends BactEPS
 		for(int i = 0; i < nIter; i++)
 		{
 			anEpi = _plasmidHosted.removeFirst();
-			if (anEpi.getCopyNumber() <= 0)
+			if ( anEpi.getCopyNumber() <= 0 )
 				losePlasmid(anEpi);
 			else
 				_plasmidHosted.addLast(anEpi);				
@@ -183,28 +196,32 @@ public class EpiBac extends BactEPS
 	}
 
 	/**
-	 * test if this cell can be a recipient for a given plasmid
+	 * Test if this cell can be a recipient for a given plasmid by checking
+	 * whether any of the plasmids already hosted is incompatible with it.
+	 * 
 	 * @param aPlasmid
 	 * @return true if this cell is compatible
 	 */
 	public Boolean isCompatible(Episome aPlasmid)
 	{
-		Boolean out = true;
-		for (Episome hostPlasmid : _plasmidHosted)
-			out &= hostPlasmid.isCompatible(aPlasmid);
-		return out;
+		for ( Episome hostPlasmid : _plasmidHosted )
+			if ( ! hostPlasmid.isCompatible(aPlasmid) )
+				return false;
+		return true;
 	}
 
 	/**
-	 * Search a recipient in your nbh, and try to initiate a conjugation with
-	 * him.
+	 * Search a recipient in your neighbourhood, and try to initiate a
+	 * conjugation with him.
 	 * TODO : cells are attracted
 	 */
 	public void conjugate()
 	{
-		// For each plasmid ready to conjugate search a partner and conjugate
-		for (Episome aPlasmid : _plasmidHosted)
-			if (aPlasmid.isReadyToConjugate())
+		/*
+		 * For each plasmid ready to conjugate, search a partner and conjugate.
+		 */
+		for ( Episome aPlasmid : _plasmidHosted )
+			if ( aPlasmid.isReadyToConjugate() )
 				searchConjugation(aPlasmid);
 	}
 
@@ -216,50 +233,61 @@ public class EpiBac extends BactEPS
 	 * @param aPlasmid
 	 * @return issue of the transfer
 	 */
-	public boolean searchConjugation(Episome aPlasmid)
+	public void searchConjugation(Episome aPlasmid)
 	{
+		/*
+		 * Build a neighbourhood including only Bacteria. If this is empty,
+		 * there is nothing more to do.
+		 */
+		buildNbh( aPlasmid.getPilusRange() );
+		if ( _myNeighbors.isEmpty() )
+			return;
+		/*
+		 * Find a partner(s) and try to send them a plasmid.
+		 */
+		Double maxTest = getMaxTest();
 		LocatedAgent aLoc;
-		Boolean hasTransfered = false;
-		// Build a neighborhood including only Bacteria
-		buildNbh(aPlasmid.getPilusRange());
-		if(_myNeighbors.isEmpty()) return false;
-		// Find a partner and try to send him a plasmid
-		int iLoop = 0;
-		double maxTest = getMaxTest();
-		while (iLoop < maxTest)
-		{			
-			aLoc = pickNeighbor();			
-			iLoop++;
-			if (aLoc instanceof EpiBac)
-				hasTransfered = tryToSendPlasmid(aPlasmid, (EpiBac) aLoc);
+		for ( int i = 0; i < maxTest; i++ )
+		{
+			aLoc = pickNeighbor();
+			if ( aLoc instanceof EpiBac )
+				tryToSendPlasmid(aPlasmid, (EpiBac) aLoc);
 		}
-		return hasTransfered;
 	}
 
 	/**
-	 * List all cells in a given nbh : at the end of the method, the field
-	 * listNbh contains all clocatedAgents located in the nbh
+	 * List all cells in a given neighbourhood: at the end of the method, the
+	 * field _myNeighbors contains all Bacteria with a surface-surface
+	 * distance from this EpiBac of less than nbhRadius.
+	 * 
+	 * Parameter nbhRadius is typically the pilus length.
 	 * 
 	 * @param nbhRadius
 	 */
 	public void buildNbh(Double nbhRadius)
 	{
-		// Manhattan perimeter
+		/*
+		 * Manhattan perimeter.
+		 */
 		getPotentialShovers(nbhRadius);
-		// Now remove too far agents (apply circular perimeter)
+		/*
+		 * nbhRadius gives the distance OUTSIDE the donor agent that touches a
+		 * recipient agent, and so we need to subtract the radii from
+		 * getDistance() or add the radii to nbhRadius.
+		 * 
+		 * getDistance(aLocAgent) gets distance between cell centres.
+		 */
+		Double temp = nbhRadius + this.getRadius(false);
+		/*
+		 * Now remove too far agents (apply circular perimeter).
+		 */
 		LocatedAgent aLocAgent;
 		for (int iter = 0; iter < _myNeighbors.size(); iter++)
 		{
 			aLocAgent = _myNeighbors.removeFirst();
-			if ( aLocAgent == this )
+			if ( aLocAgent == this || ! (aLocAgent instanceof Bacterium) )
 				continue;
-			if ( ! (aLocAgent instanceof Bacterium) )
-				continue;
-			// getDistance(aLocAgent) gets distance between cell centers
-			// nbhRadius is the pilus length, and should give the distance OUTSIDE
-			// the donor agent that touches a recipient agent, and so we need to 
-			// subtract the radii from getDistance() or add the radii to nbhRadius 
-			if (getDistance(aLocAgent) < (nbhRadius + aLocAgent.getRadius(false) + this.getRadius(false)) )
+			if ( getDistance(aLocAgent) < (temp + aLocAgent.getRadius(false)) )
 				_myNeighbors.addLast(aLocAgent);
 		}
 		Collections.shuffle(_myNeighbors, ExtraMath.random);
@@ -272,87 +300,85 @@ public class EpiBac extends BactEPS
 	 * @param aTarget
 	 * @return issue of the test
 	 */
-	public boolean tryToSendPlasmid(Episome aPlasmid, EpiBac aTarget)
+	public void tryToSendPlasmid(Episome aPlasmid, EpiBac aTarget)
 	{
-		if (aTarget.isCompatible(aPlasmid) && aPlasmid.testProficiency())
+		if ( aTarget.isCompatible(aPlasmid) && aPlasmid.testProficiency() )
 		{
-			//LogFile.writeLog("transfer "+aPlasmid.getHost().sendName()+"->"+aTarget.sendName());
-			// 19.3.09: bvm add more descriptive text to log
 			EpiBac aHost = aPlasmid.getHost();
-			String transType = "Unknown transfer ";
-			// _status == 0: recipient
-			// _status == 1: donor
-			// _status == 11: transconjugant able to transfer
-			// _status == 101: donor has transferred
-			// _status == 111: transconjugant has transferred
+			String transType;
 			int hostStatus = aHost.getStatus();
-			if (hostStatus == 1)
+			if ( hostStatus == 1 )
 				transType = "Donor initial transfer ";
-			else if (hostStatus == 101)
+			else if ( hostStatus == 101 )
 				transType = "Donor subsequent transfer ";
-			else if (hostStatus == 11)
+			else if ( hostStatus == 11 )
 				transType = "Transconjugant initial transfer ";
-			else if (hostStatus == 111)
+			else if ( hostStatus == 111 )
 				transType = "Transconjugant subsequent transfer ";
+			else
+				transType= "Unknown transfer ("+hostStatus+") ";
 			LogFile.writeLog(transType+aHost.sendName()+" -> "+aTarget.sendName()+
 					" at time "+SimTimer.getCurrentTime());
-			return aTarget.receivePlasmid(aPlasmid);
+			aTarget.receivePlasmid(aPlasmid);
 		}
-		else
-			return false;
 	}
 
 	/* _______________________ HIGH LEVEL METHOD ____________________________ */
+	
 	/**
-	 * Add a new plasmid to the list of hosted plasmids ; based on the
-	 * speciesname of the plasmid
+	 * Add a new plasmid to the list of hosted plasmids; based on the
+	 * speciesName of the plasmid.
 	 */
-	public Boolean addPlasmid(String plasmidName)
+	public void addPlasmid(String plasmidName)
 	{
 		try
 		{
-			Episome aPlasmid = 
-					(Episome) _species.getSpecies(plasmidName).sendNewAgent();
-			// this should match the receivePlasmid() routine
-			aPlasmid.setHost(this);
-			_plasmidHosted.add(aPlasmid);
-			addPlasmidReaction(aPlasmid);
-			aPlasmid.givePlasmid(aPlasmid);
-
-			return true;
+			Episome aPlasmid = (Episome)
+							_species.getSpecies(plasmidName).sendNewAgent();
+			welcomePlasmid(aPlasmid);
 		}
 		catch (Exception e)
 		{
-			utils.LogFile.writeLog("Error met in EpiBac.addPlasmid()");
-			return false;
+			LogFile.writeError(e, "EpiBac.addPlasmid()");
 		}
 	}
-
-	public Boolean receivePlasmid(Episome aPlasmid)
+	
+	/**
+	 * 
+	 * @param aPlasmid
+	 */
+	public void receivePlasmid(Episome aPlasmid)
 	{
 		try
 		{
-			// Create a new instance
+			/*
+			 * Create a new instance and set new plasmid descriptors (copy
+			 * number, host, timers). Register the plasmid to the host.
+			 */
 			Episome baby = aPlasmid.sendNewAgent();
-			// Set new plasmid descriptors (copy number, host, timers)
-			baby.setHost(this);
-			// register the plasmid to the host
-			_plasmidHosted.add(baby);
-			addPlasmidReaction(baby);
-			aPlasmid.givePlasmid(baby);
-
-			return true;
+			welcomePlasmid(baby);
 		}
 		catch (Exception e)
 		{
 			utils.LogFile.writeLog("Error met in EpiBac.receivePlasmid()");
-			return false;
 		}
 	}
-
+	
+	public void welcomePlasmid(Episome aPlasmid)
+	{
+		aPlasmid.setHost(this);
+		_plasmidHosted.add(aPlasmid);
+		addPlasmidReaction(aPlasmid);
+		aPlasmid.updateConjugationTime(aPlasmid);
+	}
+	
+	/**
+	 * 
+	 * @param aPlasmid
+	 */
 	public void losePlasmid(Episome aPlasmid)
 	{		
-		for (int aReaction : aPlasmid.reactionActive)
+		for ( int aReaction : aPlasmid.reactionActive )
 			removeReaction(allReactions[aReaction]);
 		aPlasmid.die();
 		LogFile.writeLog("Plasmid lost "+sendName());
@@ -365,7 +391,7 @@ public class EpiBac extends BactEPS
 	 */
 	public void addPlasmidReaction(Episome aPlasmid)
 	{
-		for (int aReaction : aPlasmid.reactionActive)
+		for ( int aReaction : aPlasmid.reactionActive )
 			addActiveReaction(allReactions[aReaction], true);
 	}
 
@@ -375,62 +401,58 @@ public class EpiBac extends BactEPS
 	{
 		return (EpiBacParam) _speciesParam;
 	}
-
+	
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
 	public Double getMaxTest()
 	{
-		// ======== no growth dependence ======== 
-		//		return ((EpiBacParam) _speciesParam).scanSpeed*SimTimer.getCurrentTimeStep();
-
-
-		// ======== all in one ========
-		// return 0 when below lowTonus
-		// return 1 when above highTonus
-		// interpolate in-between
-		//
-		// (for no growth dependence, set highTonus = -Double.MAX_VALUE)
-		// (for step dependence, set high & low tonus the same)
-
-		Double lowTonus = ((EpiBacParam) _speciesParam).lowTonusCutoff;
-		Double highTonus = ((EpiBacParam) _speciesParam).highTonusCutoff;
+		Double lowTonus = getSpeciesParam().lowTonusCutoff; 
+		Double highTonus = getSpeciesParam().highTonusCutoff;
 		Double theTonus = sendTonus();
-
-		if (theTonus >= highTonus) {
-			//			System.out.println("high case: "+theTonus);
-			// high tonus, so return maximum (same effect as no growth dependence)
-			return ((EpiBacParam) _speciesParam).scanSpeed*
-			SimTimer.getCurrentTimeStep();
-		}
-		else if (theTonus < lowTonus)
-		{
-			//			System.out.println("low case: "+theTonus);
-			// too low, so return 0
-			return 0.;
-		}
-		else
-		{
-			//			System.out.println("middle case: "+theTonus);
-			// middle case, so do linear interpolation
-			Double vs = ((EpiBacParam) _speciesParam).scanSpeed;
-			vs = vs*(theTonus-lowTonus)/(highTonus-lowTonus);
-			return vs*SimTimer.getCurrentTimeStep();
-		}
+		Double scanSpeed = getSpeciesParam().scanSpeed;
+		/*
+		 * Too low, so return zero.
+		 */
+		if ( theTonus < lowTonus )
+			scanSpeed = 0.0;
+		/*
+		 * Middle case, so do linear interpolation.
+		 */
+		else if ( theTonus < highTonus )
+			scanSpeed *= (theTonus-lowTonus) / (highTonus-lowTonus);
+		/*
+		 * If neither of these is called we have a high tonus,
+		 * so just return maximum (same effect as no growth dependence).
+		 */
+		// TODO Jan's notes suggested we should be using agentTimeStep instead
+		// of the global timestep. Check this!
+		//return scanSpeed * SimTimer.getCurrentTimeStep();
+		return scanSpeed * _agentGrid.AGENTTIMESTEP;
 	}
 
 
 	/**
 	 * Used to write povray files (replaces the version in LocatedAgent)
+	 * 
+	 * If this is...
+	 * - a recipient, append "_r" to the species name.
+	 * - a transconjugant, append "_t" to the species name.
+	 * - a donot, append "_d" to the species name.
 	 */
 	@Override
 	public String getName()
 	{
-		if (_plasmidHosted.size() == 0)
-			return _species.speciesName+"_r";
-
-		Boolean isTransHost = _plasmidHosted.getFirst().lastReception > _birthday;
-		if (isTransHost)
-			return _species.speciesName+"_t";
+		StringBuffer out = new StringBuffer( _species.speciesName );
+		if ( _plasmidHosted.isEmpty() )
+			out.append( "_r" );
+		else if ( _plasmidHosted.getFirst().lastReception > _birthday )
+			out.append( "_t" );
 		else
-			return _species.speciesName+"_d";
+			out.append( "_d" );
+		return out.toString();
 	}
 
 	/**
@@ -440,15 +462,14 @@ public class EpiBac extends BactEPS
 	public Color getColor()
 	{
 		EpiBacParam param = getSpeciesParam();
-
-		// recipients have no plasmid
-		if (_plasmidHosted.size() == 0)
+		/*
+		 * Recipients have no plasmid.
+		 * Transconjugant received the plasmid after birth.
+		 * Donor received the plasmid before/at birth.
+		 */
+		if ( _plasmidHosted.isEmpty() )
 			return param.rColor;
-
-		// transconjugant received the plasmid after birth;
-		// donor received the plasmid before/at birth
-		boolean isTransHost = _plasmidHosted.getFirst().lastReception > _birthday;
-		if (isTransHost)
+		else if ( _plasmidHosted.getFirst().lastReception > _birthday )
 			return param.tColor;
 		else
 			return param.dColor;
@@ -456,11 +477,13 @@ public class EpiBac extends BactEPS
 
 	/* _______________ FILE OUTPUT _____________________ */
 
-
+	/**
+	 * Return the header file for this agent's values after sending those
+	 * for super.
+	 */
 	@Override
 	public StringBuffer sendHeader()
 	{
-		// return the header file for this agent's values after sending those for super
 		StringBuffer tempString = super.sendHeader();
 		tempString.append(",status,copyNumber,lastReception,lastExchange");
 		return tempString;
@@ -483,62 +506,67 @@ public class EpiBac extends BactEPS
 		tempString.append(","+_status+","+_nCopy+","+_lastReception+","+_lastExchange);
 		return tempString;
 	}
-
+	
+	/**
+	 * This returns the net growth rate as a fraction of the maximum rate, 
+	 * and the value is as large as 1 but may also be negative.
+	 * 
+	 * @return
+	 */
 	public Double sendTonus()
 	{
-		// this returns the net growth rate as a fraction of the maximum rate,
-		// and the value is as large as 1 but may also be negative
 		Double tonusMax = 0.0;
-		int reacIndex;
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
-		{
-			// Compute the growth rate
-			reacIndex = reactionActive.get(iReac);
-			tonusMax += reactionKinetic[reacIndex][0]*particleYield[reacIndex][0];			
-		}
-
-		tonusMax *= particleMass[0];
-		return _netGrowthRate/tonusMax;
+		for ( int reacIndex : reactionActive )
+			tonusMax += reactionKinetic[reacIndex][0] * particleYield[reacIndex][0];
+		return _netGrowthRate / (tonusMax * particleMass[0]);
 	}
-
+	
+	/**
+	 * 
+	 */
 	public void updateStatus()
 	{
 		_nCopy = 0;
 		_status = 0;
-		// _status == 0: recipient
-		// _status == 1: donor
-		// _status == 11: transconjugant able to transfer
-		// _status == 101: donor has transferred
-		// _status == 111: transconjugant has transferred
-		// ones digit specifies number of plasmids hosted
-		for(Episome anEpi:_plasmidHosted)
+		/*
+		 * Unit digit specifies number of plasmids hosted.
+		 * 
+		 * TODO Rob 16June2015: potential problem here!
+		 * If more than one plasmid is hosted and nCopy > 0, status will have
+		 * a unit digit that is not 0 or 1. This will not be recognised by 
+		 * tryToSendPlasmid()
+		 * Not the end of the world, since it will only interfere with
+		 * reporting, but still worth reconsidering.
+		 */
+		for ( Episome anEpi : _plasmidHosted )
 		{
 			_lastReception = Math.max(_lastReception, anEpi.lastReception);
 			_lastExchange = Math.max(_lastExchange, anEpi.lastExchange);
 			_nCopy = Math.max(_nCopy, anEpi.getCopyNumber());
-			_status+=1;
+			_status++;
 		}
-		if(_nCopy == 0)
+		if ( _nCopy == 0 )
 			_status = 0;
 		else
 		{
-			// transconjugant received the plasmid after birth;
-			// donor received the plasmid before/at birth
-			// tens digit specifies if it is a transconjugant
-			if(_lastReception > _birthday)
+			/*
+			 * Transconjugant received the plasmid after birth;
+			 * Donor received the plasmid before/at birth.
+			 * Tens digit specifies if it is a transconjugant.
+			 */
+			if( _lastReception > _birthday )
 				_status += 10;
-			// hundreds digit specifies whether it has transferred a plasmid
-			if(_lastExchange > _birthday)
+			/*
+			 * Hundreds digit specifies whether it has transferred a plasmid.
+			 */
+			if( _lastExchange > _birthday )
 				_status += 100;
 		}
 	}
-
-	// return the current status for use elsewhere
-	// _status == 0: recipient
-	// _status == 1: donor
-	// _status == 11: transconjugant able to transfer
-	// _status == 101: donor has transferred
-	// _status == 111: transconjugant has transferred
+	
+	/**
+	 * Return the current status for use elsewhere.
+	 */
 	public int getStatus()
 	{
 		return _status;

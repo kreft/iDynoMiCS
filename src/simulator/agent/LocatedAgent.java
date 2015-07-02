@@ -685,12 +685,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	/**
 	 * \brief Pick a random neighbour from the _myNeigbors collection.
 	 * 
+	 * If used multiple times without changing _myNeighbours, this will be
+	 * random selection WITH repetition.
+	 * 
 	 * @return	A randomly picked neighbour (LocatedAgent object) from the
 	 * list of neighbours.
 	 */
 	public LocatedAgent pickNeighbor()
 	{
-		if (_myNeighbors.isEmpty())
+		if ( _myNeighbors.isEmpty() )
 			return null;
 		return _myNeighbors.get(ExtraMath.getUniRandInt(_myNeighbors.size()));
 	}

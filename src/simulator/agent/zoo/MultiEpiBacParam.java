@@ -24,7 +24,12 @@ public class MultiEpiBacParam extends BactEPSParam
 	// Serial version used for the serialisation of the class
 	private static final long serialVersionUID     = 1L;
 	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public double donorProbability = 1.0;
+	
+	
 	public double recipientProbability = 1.0;
 	
 	//Plasmid replication speed

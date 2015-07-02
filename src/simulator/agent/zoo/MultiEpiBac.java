@@ -328,9 +328,10 @@ public class MultiEpiBac extends BactEPS
 	/**
 	 * Search a recipient in your neighbourhood, and try to initiate a conjugation with it.
 	 * 
+	 * Doesn't seem to be used
 	 */
-	public void conjugate(double elapsedHGTtime) {
-
+	public void conjugate(double elapsedHGTtime)
+	{
 		// For each plasmid ready to conjugate search a number of potential recipients (partners) and conjugate
 
 		//Randomise list of plasmids, specially useful in the incompatible plasmids scenario
@@ -370,9 +371,15 @@ public class MultiEpiBac extends BactEPS
 	 * sonia: modified 8-12-2010
 	 * 
 	 * Run a dice to know if we initiate the conjugation (probability of transfer).
+	 * 
+	 * FIXME This returns a boolean... which is never used!
+	 * Can't see the purpose of this method
+	 * 
+	 * Only called by searchConjugation(), which itself is only called by
+	 * conjugate(), which deosn't ever seem to be used
 	 */
-
-	public boolean acceptConjugation(MultiEpisome aPlasmid, MultiEpiBac partner, double distBasedProb) {
+	public boolean acceptConjugation(MultiEpisome aPlasmid, MultiEpiBac partner, double distBasedProb)
+	{
 
 		double tP, rP;
 		//sonia 8-12-2010
@@ -430,6 +437,8 @@ public class MultiEpiBac extends BactEPS
 
 	/**
 	 * \brief Initiate the search for a recipient cell in the neighbourhood.
+	 * 
+	 * Only called by conjugate(), which doesn't seem to be used
 	 * 
 	 * @param aPlasmid
 	 */

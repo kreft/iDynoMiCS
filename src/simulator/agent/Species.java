@@ -893,9 +893,9 @@ public class Species implements Serializable
 	}
 
 	/**
-	 * \brief Return the parameters associated with this species (a SpeciesParam object)
+	 * \brief Return the parameters associated with this species.
 	 * 
-	 * Return the parameters associated with this species. These are contained within a SpeciesParam object
+	 * These are contained within a SpeciesParam object.
 	 * 
 	 * @return	SpeciesParam object associated with this Species
 	 */
@@ -905,16 +905,14 @@ public class Species implements Serializable
 	}
 
 	/**
-	 * \brief Return the species object for a given species name
-	 * 
-	 * Return the species object for a given species name
+	 * \brief Return the species object for a given species name.
 	 * 
 	 * @param speciesName	Text string containing the name of this species
 	 * @return	Species object named with the given text string
 	 */
 	public Species getSpecies(String speciesName) 
 	{
-		return currentSimulator.speciesList.get(currentSimulator.getSpeciesIndex(speciesName));
+		return currentSimulator.getSpecies(speciesName);
 	}
 	
 	/**

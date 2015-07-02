@@ -73,7 +73,12 @@ public class SpeciesParam
 					aSpeciesRoot.getParamDbl(paramName) : 
 					speciesDefaults.getParamDbl(paramName);
 	}
-
+	
+	/*
+	 * TODO Create method getSpeciesParameterProbability(...)?
+	 * This would check that values given are within [0, 1]
+	 */
+	
 	public Double getSpeciesParameterLength(String paramName, 
 							XMLParser aSpeciesRoot, XMLParser speciesDefaults)
 	{

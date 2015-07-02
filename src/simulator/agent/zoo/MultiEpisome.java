@@ -15,46 +15,97 @@ import java.util.LinkedList;
 
 import org.jdom.Element;
 
-import utils.XMLParser;
-import utils.ExtraMath;
 import idyno.SimTimer;
+import simulator.Simulator;
 import simulator.agent.*;
 import simulator.reaction.Reaction;
-import simulator.Simulator;
+import utils.ExtraMath;
+import utils.LogFile;
+import utils.XMLParser;
 
 public class MultiEpisome extends InfoAgent
 {
-	//sonia:I've changed it to public
-	public MultiEpiBac              _host;
+	/**
+	 * 
+	 */
+	protected MultiEpiBac              _host;
 
 	/* Division management ___________________________________ */
 	
-	//sonia:I've changed it to public
+	/**
+	 * 
+	 */
 	private int _nCopy;
 
 	/* Conjugation management __________________________________ */
-	public double               lastExchange=0, lastReception=0, timeSpentInHost;
-	private double              _pilusLength;
-	//public boolean				_newT = false;
-   //sonia 01.03.2010
-	public double _newT =0;
+	
+	/**
+	 * Already coded in EpisomeParam
+	 * 
+	 * Doesn't seem to be used here, but is in Episome!
+	 */
+	public Double lastExchange = 0.0;
+	
+	/**
+	 * Already coded in EpisomeParam
+	 */
+	public Double lastReception = 0.0;
+	
+	/**
+	 * TODO Rename timeEnteredHost?
+	 */
+	public Double timeSpentInHost;
+	
+	/**
+	 * This just gets the parameter from MultiEpisomeParam
+	 * Already coded in EpisomeParam
+	 */
+	private Double _pilusLength;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
+	public Double _newT = 0.0;
+	
 	/* Reaction management ___________________________________ */
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	private boolean             _conjugationIsOff = false;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public boolean              isHot             = false;
-
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	public Reaction[]            allReactions;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	protected ArrayList<Integer> reactionActive;
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	protected ArrayList<Integer> reactionKnown;
 	
-	//sonia 11.10.2010 array containing list of potential nbh to be screened during the hgt time step
+	/**
+	 * Array containing list of potential neighbours to be screened during the
+	 * HGT time step.
+	 * 
+	 * TODO In Brian's code, this is done by EpiBac rather than Episome.
+	 */
 	protected LinkedList<LocatedAgent> nbhList = new LinkedList<LocatedAgent>();
-
-
-	
 	
 	/* ____________________ CONSTRUCTOR _______________________________ */
 
-	public MultiEpisome() {
+	public MultiEpisome()
+	{
 		super();
 		_speciesParam = new MultiEpisomeParam();
 	}
@@ -62,7 +113,8 @@ public class MultiEpisome extends InfoAgent
 	//sonia 12.10.09
 	@Override
 	@SuppressWarnings("unchecked")
-	public Object clone() throws CloneNotSupportedException {
+	public Object clone() throws CloneNotSupportedException
+	{
 		MultiEpisome o = (MultiEpisome) super.clone();
 		o._host = this._host;
 		o._speciesParam = _speciesParam;
@@ -79,10 +131,8 @@ public class MultiEpisome extends InfoAgent
      * Attributes the plasmid to an host (used for conjugation events and for cell division)
      * @param anHost
      */
-	public void setHost(MultiEpiBac anHost) {
-		
-		//sonia 4.10.2010 
-	
+	public void setHost(MultiEpiBac anHost)
+	{
 		lastReception = SimTimer.getCurrentTime();
 		//lastExchange = -1;
 		this._host = anHost;
@@ -98,7 +148,8 @@ public class MultiEpisome extends InfoAgent
 	/* ______________________ CREATION _____________________________ */
 
 	@Override
-	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp) {
+	public void initFromProtocolFile(Simulator aSim, XMLParser xmlMarkUp)
+	{
 		// Initialisation of the Located agent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
@@ -121,26 +172,31 @@ public class MultiEpisome extends InfoAgent
 		}
 		
 	}
-
-	public MultiEpisome reset(MultiEpisome aPlasmid){
+	
+	/**
+	 * Doesn't seem to be used
+	 */
+	public MultiEpisome reset(MultiEpisome aPlasmid)
+	{
 		aPlasmid._generation = 0;
 		aPlasmid._genealogy = BigInteger.ZERO;
-		aPlasmid.lastExchange = -1;
-		aPlasmid.lastReception = -1;
-		
+		aPlasmid.lastExchange = -1.0;
+		aPlasmid.lastReception = -1.0;
 		return aPlasmid;
 	}
 	
 	/**
-     * Used to initialize any new agent (progenitor or daughter cell)
+     * Used to initialise any new agent (progenitor or daughter cell)
+     * 
      * @see sendNewAgent()
      */
-	public void init() {
+	public void init()
+	{
 		// Lineage management : this is a new agent, he has no known parents
 		_generation = 0;
 		_genealogy = BigInteger.ZERO;
 		//sonia 01.03.2010 changed from -1 to 0
-		lastExchange = 0;
+		lastExchange = 0.0;
 		lastReception = SimTimer.getCurrentTime();
 	}
 
@@ -148,7 +204,8 @@ public class MultiEpisome extends InfoAgent
      * 
      */
 	@Override
-	public MultiEpisome sendNewAgent() throws CloneNotSupportedException {
+	public MultiEpisome sendNewAgent() throws CloneNotSupportedException
+	{
 		MultiEpisome baby = (MultiEpisome) this.clone();
 		baby.init();
 		return baby;
@@ -158,15 +215,18 @@ public class MultiEpisome extends InfoAgent
      * 
      */
 	@Override
-	public void createNewAgent() {
-		try {
+	public void createNewAgent()
+	{
+		try
+		{
 			// Clone the plasmid
 			MultiEpisome baby = this.sendNewAgent();
 			// Register the plasmid (species population)
 			baby.registerBirth();
-
-		} catch (CloneNotSupportedException e) {
-			System.out.println("at Episome: createNewAgent error " + e);
+		}
+		catch (CloneNotSupportedException e)
+		{
+			LogFile.writeError(e, "MultiEpisome.createNewAgent()");
 		}
 	}
 
@@ -177,7 +237,10 @@ public class MultiEpisome extends InfoAgent
 	}
 
 	/* __________________________ CELL DIVISION ____________________________ */
-
+	
+	/**
+	 * Doesn't seem to be used
+	 */
 	@Override
 	public void makeKid() throws CloneNotSupportedException
 	{

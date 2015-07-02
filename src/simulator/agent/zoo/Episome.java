@@ -21,28 +21,25 @@ import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 import simulator.agent.*;
-import simulator.reaction.Reaction;
 import simulator.Simulator;
 
 public class Episome extends InfoAgent
 {
+	/**
+	 * The cell currently hosting this Episome.
+	 */
 	protected EpiBac _host;
 	
-	/* Division management ___________________________________ */
+	/**
+	 * The number of plasmid copies of this episome in the host.
+	 */
 	protected int _nCopy;
 
 	/* Conjugation management __________________________________ */
 	public Double lastExchange, lastReception;
-	protected Double _pilusLength;
-
-	/* Reaction management ___________________________________ */
-	protected Boolean _isRepressed = false;
-	public Boolean isHot = false;
-
-	public Reaction[] allReactions;
+	
 	protected ArrayList<Integer> reactionActive;
-	protected ArrayList<Integer> reactionKnown;
-
+	
 	/* ____________________ CONSTRUCTOR _______________________________ */
 
 	public Episome() {
@@ -58,9 +55,7 @@ public class Episome extends InfoAgent
 		o._host = this._host;
 		o._speciesParam = _speciesParam;
 
-		o.allReactions = this.allReactions.clone();
 		o.reactionActive = (ArrayList<Integer>) this.reactionActive.clone();
-		o.reactionKnown = (ArrayList<Integer>) this.reactionKnown.clone();
 		o.lastExchange = this.lastExchange;
 		o.lastReception = this.lastReception;
 
@@ -93,32 +88,22 @@ public class Episome extends InfoAgent
 		// super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		// init();
 		_nCopy = getSpeciesParam().nCopy;
-		_pilusLength = getSpeciesParam().pilusLength;
 		int reacIndex;
-
-		allReactions = aSim.reactionList;
-		reactionKnown = new ArrayList<Integer>();
+		
 		reactionActive = new ArrayList<Integer>();
 
 		for (Element aReactionMarkUp : xmlMarkUp.getChildrenElements("reaction"))
 		{
 			reacIndex = aSim.getReactionIndex(
 								aReactionMarkUp.getAttributeValue("name"));
-
-			// Add the reaction to the list of known (and active) reactions
-			reactionKnown.add(reacIndex);
+			/*
+			 * Add the reaction to the list of active reactions.
+			 */
 			if (aReactionMarkUp.getAttributeValue("status").equals("active"))
 				reactionActive.add(reacIndex);
 		}
 	}
 	
-	public void initFromResultFile(Simulator aSim, String[] singleAgentData)
-	{
-		// this writes no unique values, so doesn't need unique reading-in
-		// (for a template on how to read in data, look in LocatedAgent.java)
-		super.initFromResultFile(aSim,singleAgentData);
-	}
-
 	/**
 	 * Used to initialize any new agent (progenitor or daughter cell)
 	 * 
@@ -192,44 +177,42 @@ public class Episome extends InfoAgent
 	/**
 	 * Test if the episome can be transfered.
 	 */
-	public boolean isReadyToConjugate()
+	public Boolean isReadyToConjugate()
 	{
+		/*
+		 * First check if the plasmid has sufficient copies.
+		 */
+		if ( _nCopy < 1 )
+			return false;
+		/*
+		 * Now check timings: cannot conjugate if given/received a plasmid too
+		 * recently.
+		 */
 		EpisomeParam param = getSpeciesParam();
-		isHot = false;
-		
-		// not enough copys
-		if (_isRepressed)
-			return false;
-		if (_nCopy < 1)
-			return false;
-		
-		// You have given a plasmid a few minutes ago
-		if (SimTimer.getCurrentTime() - lastExchange < param.exchangeLag)
-			return false;
-		
-		// You have received this plasmid a few minutes ago
-		if (SimTimer.getCurrentTime() - lastReception < param.receptionLag)
-			return false;
-		
-		return true;
+		Double triggerTime = Math.max(param.exchangeLag + lastExchange,
+										param.receptionLag + lastReception);
+		return triggerTime >= SimTimer.getCurrentTime();
 	}
-
+	
+	
 	public void die()
 	{
 		_species.notifyDeath();
 	}
-
-	public double getPilusRange()
+	
+	/**
+	 * Returns the length (in um) of this plasmid's pilus.
+	 */
+	public Double getPilusRange()
 	{
-		return _pilusLength;
+		return getSpeciesParam().pilusLength;
 	}
 
 	/**
-	 * You are doing a conjugation ! Update your parameters
+	 * You are doing a conjugation! Update your lag variables.
 	 */
-	public void givePlasmid(Episome baby)
+	public void updateConjugationTime(Episome baby)
 	{
-		// Update your time counter for conjugation-able recovery
 		lastExchange = SimTimer.getCurrentTime();
 		baby.lastReception = SimTimer.getCurrentTime();		
 	}
@@ -275,39 +258,11 @@ public class Episome extends InfoAgent
 	{
 		Double alea = ExtraMath.getUniRandDbl();
 		return (alea <= getSpeciesParam().transferProficiency);
-		
-		// previous (LAL) growth-dependence mechanism
-		//double prof = getSpeciesParam().transferProficiency;
-		//if (_host.sendTonus() < 0.25)
-		//	prof = prof / 5;
-		//return (alea <= prof);
 	}
 
 	public Boolean isCompatible(Episome aPlasmid)
 	{
-		return aPlasmid.getSpeciesParam().compatibilityMarker != this
-				.getSpeciesParam().compatibilityMarker;
-	}
-	
-	public int giveStatus()
-	{
-		return 1;
-	}
-	
-	/* _______________ FILE OUTPUT _____________________ */
-	
-	/**
-	 * \brief Creates an output string of information generated on this
-	 * particular agent.
-	 * 
-	 * Used in creation of results files.
-	 * Writes the data matching the header file.
-	 * 
-	 * @return	String containing results associated with this agent.
-	 */
-	public StringBuffer writeOutput()
-	{
-		StringBuffer tempString = super.writeOutput();
-		return tempString;
+		return aPlasmid.getSpeciesParam().compatibilityMarker !=
+								this.getSpeciesParam().compatibilityMarker;
 	}
 }
