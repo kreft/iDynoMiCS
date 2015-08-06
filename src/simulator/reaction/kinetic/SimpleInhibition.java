@@ -61,7 +61,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 */
 	public void init(Element defMarkUp)
 	{
-		_Ki = (new XMLParser(defMarkUp)).getParamDbl("Ki");		
+		_Ki = (new XMLParser(defMarkUp)).getParamConcn("Ki");		
 		nParam = 1;
 	}
 	
@@ -74,7 +74,7 @@ public class SimpleInhibition extends IsKineticFactor
 	 */
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{	
-		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ki");	
+		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamConcn("Ki");	
 	}
 	
 	/**

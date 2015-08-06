@@ -500,10 +500,11 @@ def plot_color_dictionary(color_dict, file_path):
     sub = fig.add_subplot("", 111, frameon=False)
     sub.set_xlim([0, width])
     sub.set_ylim([0, height])
-    y = y_scale
-    for name, color in color_dict.iteritems():
+    y = height - y_scale
+    for name in sorted(color_dict.keys()):
+        color = color_dict[name]
         sub.plot([0.0, 1.0], [y]*2, '-', color=color)
         sub.text(1.0 + x_scale, y, name, color='black', va='center', ha='left')
-        y += y_scale
+        y -= y_scale
     fig.subplots_adjust(left=0.01, right=0.99, bottom=0.01, top=0.99)
     fig.save(file_path)

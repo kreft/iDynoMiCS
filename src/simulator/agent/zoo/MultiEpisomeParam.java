@@ -111,11 +111,11 @@ public class MultiEpisomeParam extends ActiveParam
 		pilusLength = aSpeciesRoot.getParamLength("pilusLength");
 		exchangeLag = aSpeciesRoot.getParamTime("exchangeLag");
 		receptionLag = aSpeciesRoot.getParamTime("receptionLag");
-		replicationSpeed = aSpeciesRoot.getParamDbl("replicationSpeed");
+		replicationSpeed = aSpeciesRoot.getParamTime("replicationSpeed");
 		lossProbability = aSpeciesRoot.getParamDbl("lossProbability");
 		
 		transferProb = aSpeciesRoot.getParamDbl("transferProb");
-	    scanSpeed = aSpeciesRoot.getParamDbl("scanSpeed");;
+	    scanSpeed = aSpeciesRoot.getParamTime("scanSpeed");;
 		
 		plasmidName = aSpeciesRoot.getName();	
 		
@@ -130,7 +130,7 @@ public class MultiEpisomeParam extends ActiveParam
 		for (XMLParser aChild : aSpeciesRoot.getChildrenParsers("fitnessCost"))
 		{
 			initialCost = aChild.getParamDbl("initialCost");
-			rateDec = aChild.getParamDbl("rateOfDecay");
+			rateDec = aChild.getParamTime("rateOfDecay");
 			basalCost = aChild.getParamDbl("basalCost");
 		}
 		

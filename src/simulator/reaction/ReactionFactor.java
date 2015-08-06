@@ -105,9 +105,7 @@ public class ReactionFactor extends Reaction
 		marginalDiffMu = ExtraMath.newDoubleArray(_kineticFactor.length);
 		
 		// muMax is the first factor
-		unit = new StringBuffer("");
-		value = xmlRoot.getParamDbl("muMax", unit);
-		_muMax = value*UnitConverter.time(unit.toString());
+		_muMax = xmlRoot.getParamTime("muMax");
 		
 		int iFactor = 0;
 		try

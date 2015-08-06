@@ -729,6 +729,23 @@ public class XMLParser implements Serializable
 		value *= utils.UnitConverter.length(unit.toString());
 		return value;
 	}
+	
+	/**
+	 * \brief Returns an area parameter from the XML, converting to the
+	 * correct unit as required.
+	 * 
+	 * @param paramName	The name of the parameter for which the area value
+	 * should be returned.
+	 * @return	The area value assigned to this parameter in the protocol
+	 * file.
+	 */
+	public Double getParamArea(String paramName)
+	{
+		unit = new StringBuffer("");
+		value = getParamDbl(paramName, unit);
+		value *= utils.UnitConverter.area(unit.toString());
+		return value;
+	}
 
 	/**
 	 * \brief Returns the mass of a specified parameter from the XML,

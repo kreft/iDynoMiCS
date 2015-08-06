@@ -101,6 +101,18 @@ public class Plasmid extends InfoAgent
 	 ************************************************************************/
 	
 	/**
+	 * \brief Determines if the given name is the same as this Plasmid's 
+	 * species name.
+	 * 
+	 * @param name String to check (case-sensitive)
+	 * @return boolean: true if name is species name, false if different.
+	 */
+	public boolean isSpeciesName(String name)
+	{
+		return name.equals(this._species.speciesName);
+	}
+	
+	/**
 	 * \brief Set all of this Plasmid's details to default values. 
 	 */
 	public void reset()
@@ -264,7 +276,7 @@ public class Plasmid extends InfoAgent
 		 * test, there is no donation.
 		 */
 		if ( ! ( this.isCompatible(aPB) &&  this.testProficiency() ) )
-			return;
+			return;	
 		/*
 		 * Donation is successful, so make the new plasmid, give it to the
 		 * target, and update the old plasmid.
@@ -274,6 +286,7 @@ public class Plasmid extends InfoAgent
 			Plasmid baby = this.sendNewAgent();
 			baby.registerBirth();
 			aPB.welcomePlasmid(baby);
+			baby._copyNumber = this._copyNumber;
 			this._tLastDonated = baby._tReceived = SimTimer.getCurrentTime();
 			this._testTally = 0.0;
 		}

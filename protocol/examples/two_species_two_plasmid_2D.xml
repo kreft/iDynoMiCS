@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Rob Clegg 6Aug2015: Only parameters specific to Plasmid classes are
+	 commented here, so look at a more basic example protocol file for advice
+	 on generic parameter settings. All Plasmid-specific parameter values
+	 given here are defaults. -->
+
+<idynomics>
+	
+	<simulator>
+		<param name="restartPreviousRun">false</param>
+		<param name="randomSeed">42</param>
+		<param name="outputPeriod" unit="hour">1.0</param>
+		<param name="checkForReleaseUpdate">true</param>
+		<timeStep>
+			<param name="adaptive">false</param>
+			<param name="timeStepIni" unit="hour">0.2</param>
+			<param name="timeStepMin" unit="hour">0.2</param>
+			<param name="timeStepMax" unit="hour">0.2</param>
+			<param name="endOfSimulation" unit="day">7.0</param>
+		</timeStep>
+		<!-- Keep agentTimeStep the same as the global time step -->
+		<param name="agentTimeStep" unit="hour">0.2</param>
+	</simulator>
+	
+	<input>
+		<!-- Set this to true if you want to read in results from a previous
+			 simulation. Especially useful here, as you can introduce plasmids
+			 by modifying the output of a previous output without plasmids. -->
+		<param name="useAgentFile">false</param>
+		<param name="inputAgentFileURL">agent_State(last).xml</param>
+		<param name="useBulkFile">false</param>
+		<param name="inputBulkFileURL">env_Sum(last).xml</param>
+	</input>
+	
+	<solute domain="biofilm" name="o2d">
+		<param name="diffusivity" unit="m2.day-1">2.1e-4</param>
+	</solute>
+	<solute domain="biofilm" name="cod">
+		<param name="diffusivity" unit="m2.day-1">0.6e-4</param>
+	</solute>
+	<solute domain="biofilm" name="pressure">
+		<param name="diffusivity" unit="m2.day-1">1.0</param>
+	</solute>
+
+	
+	<particle name="biomass">
+		<param name="density" unit="g.L-1">150.0</param>
+	</particle>
+	<particle name="inert">
+		<param name="density" unit="g.L-1">150.0</param>
+	</particle>
+	<particle name="capsule">
+		<param name="density" unit="g.L-1">75.0</param>
+	</particle>
+	
+	<world>
+		<bulk name="tank">
+			<param name="isConstant">true</param>
+			<param name="D" unit="h-1">0.01</param>
+
+			<solute name="o2d">
+				<param name="Sbulk" unit="mg.L-1">2.0</param>
+				<param name="Sin" unit="mg.L-1">2.0</param>
+			</solute>
+			<solute name="cod">
+				<param name="Sbulk" unit="mg.L-1">1.0</param>
+				<param name="Sin" unit="mg.L-1">1.0</param>
+			</solute>
+			<solute name="pressure">
+				<param name="Sbulk" unit="g.L-1">0.0</param>
+				<param name="Sin" unit="g.L-1">0.0</param>
+			</solute>
+		</bulk>
+		<computationDomain name="biofilm">
+			<grid nDim="2" nI="65" nJ="65" nK="1"/>
+			<param name="resolution" unit="um">5.0</param>
+			<param name="boundaryLayer" unit="um">25.0</param>
+			<param name="biofilmDiffusivity">0.8</param>
+			<param name="specificArea" unit="m2.m-3">0.8</param>
+			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
+				<shape class="Planar">
+					<param name="pointIn" i="-1" j="0" k="0"/>
+					<param name="vectorOut" i="-1" j="0" k="0"/>
+				</shape>
+			</boundaryCondition>
+			<boundaryCondition class="BoundaryBulk" name="yNz">
+				<param name="activeForSolute">yes</param>
+				<param name="bulk">tank</param>
+				<shape class="Planar">
+					<param name="pointIn" i="65" j="0" k="0"/>
+					<param name="vectorOut" i="1" j="0" k="0"/>
+				</shape>
+			</boundaryCondition>
+			<boundaryCondition class="BoundaryCyclic" name="x0z">
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="-1" k="0"/>
+					<param name="vectorOut" i="0" j="-1" k="0"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="65" k="0"/>
+					<param name="vectorOut" i="0" j="1" k="0"/>
+				</shape>
+			</boundaryCondition>
+			<boundaryCondition class="BoundaryCyclic" name="x0y">
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="0" k="-1"/>
+					<param name="vectorOut" i="0" j="0" k="-1"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="0" k="1"/>
+					<param name="vectorOut" i="0" j="0" k="1"/>
+				</shape>
+			</boundaryCondition>
+		</computationDomain>
+	</world>
+	
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="growth_cod">
+		<param name="muMax" unit="hour-1">0.5</param>
+		<kineticFactor class="MonodKinetic" solute="cod">
+			<param name="Ks" unit="mg.L-1">5.0</param>
+		</kineticFactor>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="mg.L-1">0.1</param>
+		</kineticFactor>
+		<yield>
+			<param name="cod" unit="g.g-1">-1.52</param>
+			<param name="o2d" unit="g.g-1">-0.52</param>
+			<param name="biomass" unit="g.g-1">1.0</param>
+		</yield>
+	</reaction>
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="maintenance_cell">
+		<param name="muMax" unit="hour-1">0.001</param>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="mg.L-1">0.1</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1.0</param>
+			<param name="o2d" unit="g.g-1">-1.0</param>
+		</yield>
+	</reaction>
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="decay_cell">
+		<param name="muMax" unit="hour-1">0.001</param>
+		<kineticFactor class="FirstOrderKinetic"/>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1.0</param>
+			<param name="inert" unit="g.g-1">1.0</param>
+		</yield>
+	</reaction>
+	<reaction catalyzedBy="capsule" class="ReactionFactor" name="hydrolysis_eps">
+		<param name="muMax" unit="hour-1">0.007</param>
+		<kineticFactor class="FirstOrderKinetic"/>
+		<yield>
+			<param name="capsule" unit="g.g-1">-1.0</param>
+			<param name="cod" unit="g.g-1">1.0</param>
+		</yield>
+	</reaction>
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="maintenance_narrow">
+		<param name="muMax" unit="hour-1">0.01</param>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="mg.L-1">0.1</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1.0</param>
+			<param name="o2d" unit="g.g-1">-1.0</param>
+		</yield>
+	</reaction>
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="maintenance_broad">
+		<param name="muMax" unit="hour-1">0.02</param>
+		<kineticFactor class="MonodKinetic" solute="o2d">
+			<param name="Ks" unit="mg.L-1">0.1</param>
+		</kineticFactor>
+		<yield>
+			<param name="biomass" unit="g.g-1">-1.0</param>
+			<param name="o2d" unit="g.g-1">-1.0</param>
+		</yield>
+	</reaction>
+	
+	<solver class="Solver_multigrid" name="solver1" domain="biofilm">
+		<param name="active">true</param>
+		<param name="preStep">150</param>
+		<param name="postStep">150</param>
+		<param name="coarseStep">1500</param>
+		<param name="nCycles">5</param>
+		<reaction name="growth_cod"/>
+		<reaction name="maintenance_cell"/>
+		<reaction name="decay_cell"/>
+		<reaction name="hydrolysis_eps"/>
+		<reaction name="maintenance_narrow"/>
+		<reaction name="maintenance_broad"/>
+	</solver>
+	<solver class="Solver_pressure" name="pressure" domain="biofilm">
+		<param name="active">true</param>
+	</solver>
+	
+	<agentGrid>
+		<param name="computationDomain">biofilm</param>
+		<param name="resolution" unit="um">5.0</param>
+		<detachment class="DS_Quadratic">
+			<param name="kDet" unit="um-1.hour-1">200e-6</param>
+			<param name="maxTh" unit="um">300.0</param>
+		</detachment>
+		<param name="shovingMaxNodes">2e6</param>
+		<param name="shovingFraction">0.025</param>
+		<param name="shovingMaxIter">250</param>
+		<param name="shovingMutual">true</param>
+	</agentGrid>
+	
+	<species class="ParticulateEPS" name="EPS">
+		<particle name="capsule">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<param name="computationDomain">biofilm</param>
+		<param name="divRadius" unit="um">0.5</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="shoveFactor" unit="um">1.0</param>
+		<param name="shoveLimit" unit="um">0.0</param>
+		<reaction name="hydrolysis_eps" status="active"/>
+	</species>
+	<!-- Make sure plasmid species names contain the string 'plasmid', and
+		 that all other species names do not contain it, if you want to use
+		 the python analysis scripts -->
+	<species class="Plasmid" name="BroadPlasmid">
+		<param name="computationDomain">biofilm</param>
+		<!-- Default copy number when creating this plasmid. Leave as 1. -->
+		<param name="copyNumDefault">1</param>
+		<!-- Determines the maximum surface-surface distance between donor and
+			 potential recipient. -->
+		<param name="pilusLength" unit="um">5.0</param>
+		<!-- Time delay after a plasmid has donated, before it can donate 
+			 again. -->
+		<param name="donationLag" unit="hour">5.0</param>
+		<!-- Time delay after a plasmid has entered a host, before it can
+			 start donating. -->
+		<param name="receptionLag" unit="hour">1.0</param>
+		<!-- Probability that a plasmid will be lost during host division. -->
+		<param name="lossProbability">0.0</param>
+		<!-- Probability that a viable donation will succeed. -->
+		<param name="transferProficiency">1.0</param>
+		<!-- The number of potential recipients this plasmid can scan per
+			 hour. -->
+		<param name="scanSpeed">10.0</param>
+		<!-- Reactions that this plasmid encodes. -->
+		<reaction name="maintenance_broad" status="active"/>
+		<!-- Any hosts or plasmids that are not listed here are incompatible.
+			 MAKE SURE that plasmid compatibility is matched in the other
+			 plasmid. -->
+		<compatibleHost name="OneHost"/>
+		<compatibleHost name="BothHost"/>
+		<compatiblePlasmid name="NarrowPlasmid"/>
+	</species>
+	<species class="Plasmid" name="NarrowPlasmid">
+		<param name="computationDomain">biofilm</param>
+		<param name="copyNumDefault">1</param>
+		<param name="pilusLength" unit="um">5.0</param>
+		<param name="donationLag" unit="hour">5.0</param>
+		<param name="receptionLag" unit="hour">1.0</param>
+		<param name="lossProbability">0.0</param>
+		<param name="transferProficiency">1.0</param>
+		<param name="scanSpeed">10.0</param>
+		<reaction name="maintenance_narrow" status="active"/>
+		<!-- As above. Since NarrowPlasmid is compatible to BroadPlasmid, here
+			 BroadPlasmid is compatible to NarrowPlasmid. -->
+		<compatibleHost name="BothHost"/>
+		<compatiblePlasmid name="BroadPlasmid"/>
+	</species>
+	<species class="PlasmidBac" name="BothHost">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<particle name="capsule" class="EPS">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<param name="computationDomain">biofilm</param>
+		<param name="divRadius" unit="um">1.0</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="shoveFactor" unit="um">1.1</param>
+		<param name="shoveLimit" unit="um">0.0</param>
+		<param name="epsMax">0.1</param>
+		<!-- Tonus describes the scan speed dependence for plasmids in this
+			 host. By setting these cutoffs to negative infinity we are saying
+			 that there is no growth dependence. See Merkey et al (2011) p.5
+			 for more details. -->
+		<param name="lowTonusCutoff">-1E308</param>
+		<param name="highTonusCutoff">-1E308</param>
+		<!-- Proportional to the speed at which cells are travelling: only
+			 applies in the chemostat. Set this to be the same in all
+			 PlasmidBac species. -->
+		<param name="collisionCoeff">0.1</param>
+		<!-- Whether or not to scale the probability of a potential recipient
+			 being scanned by its distance from the donor. -->
+		<param name="scaleScanProb">false</param>
+		<!-- Reactions always performed by this cell, whether it hosts
+			 plasmids or not. -->
+		<reaction name="growth_cod" status="active"/>
+		<reaction name="maintenance_cell" status="active"/>
+		<reaction name="decay_cell" status="active"/>
+		<!-- These cells are created free of plasmids. -->
+		<initArea number="19">
+			<param name="birthday" unit="hour">0.0</param>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="325.0" z="0.0"/>
+		</initArea>
+		<!-- This cell is created hosting one NarrowPlasmid. -->
+		<initArea number="1">
+			<param name="birthday" unit="hour">0.0</param>
+			<plasmid name="NarrowPlasmid"/>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="325.0" z="0.0"/>
+		</initArea>
+	</species>
+	<species class="PlasmidBac" name="OneHost">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<particle name="capsule" class="EPS">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<param name="computationDomain">biofilm</param>
+		<param name="divRadius" unit="um">1.0</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="shoveFactor" unit="um">1.1</param>
+		<param name="shoveLimit" unit="um">0.0</param>
+		<param name="epsMax">0.1</param>
+		<param name="lowTonusCutoff">-1E308</param>
+		<param name="highTonusCutoff">-1E308</param>
+		<!-- Value should be same as in BroadHost. -->
+		<param name="collisionCoeff">0.1</param>
+		<!-- Value should be same as in BroadHost. -->
+		<param name="scaleScanProb">false</param>
+		<reaction name="growth_cod" status="active"/>
+		<reaction name="maintenance_cell" status="active"/>
+		<reaction name="decay_cell" status="active"/>
+		<initArea number="9">
+			<param name="birthday" unit="hour">0.0</param>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="325.0" z="0.0"/>
+		</initArea>
+		<initArea number="1">
+			<param name="birthday" unit="hour">0.0</param>
+			<plasmid name="BroadPlasmid"/>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="325.0" z="0.0"/>
+		</initArea>
+	</species>
+	
+</idynomics>

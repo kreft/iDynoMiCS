@@ -1305,7 +1305,7 @@ public class AgentContainer
 		 * TODO RC - Why are we reading in the resolution from the xml root,
 		 * only to overwrite it with info from the domain?!
 		 */
-		_res = root.getParamDbl("resolution");
+		_res = root.getParamLength("resolution");
 		if ( Simulator.isChemostat )
 		{
 			//set the resolution to the resolution of the domain

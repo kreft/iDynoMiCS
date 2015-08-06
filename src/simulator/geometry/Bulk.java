@@ -192,7 +192,7 @@ public class Bulk
 		_sPulse = ExtraMath.newDoubleArray(aSim.soluteDic.size());
 		
 		// Parameter D is the Reactor Dilusion rate, used if isConstand is set to false
-		_D = aBulkRoot.getParamDbl("D");
+		_D = aBulkRoot.getParamTime("D");
 	
 
 		// Now iterate through each solute specified in this bulk
@@ -234,7 +234,7 @@ public class Bulk
 			if ( parser.isParamGiven("Spulse"))
 			{
 				_sPulse[soluteIndex] = parser.getParamConcn("Spulse");
-				_pulseRate[soluteIndex] = parser.getParamDbl("pulseRate");
+				_pulseRate[soluteIndex] = parser.getParamTime("pulseRate");
 				// pulse interval will be infinite if the rate is zero
 				if ( ! _pulseRate[soluteIndex].isNaN() && 
 											! _pulseRate[soluteIndex].equals(0.0) )

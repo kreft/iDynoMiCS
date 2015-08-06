@@ -221,7 +221,8 @@ public class Bacterium extends LocatedAgent implements Cloneable
 			//System.out.println("RADIUS AFTER CALL: "+this._totalRadius);
 
 			// Just to avoid to be in the carrier
-			position.x += this._totalRadius;
+			// This is solved by Bas's boundary fix
+			//position.x += this._totalRadius;
 			
 			baby.setLocation(position);
 			baby.registerBirth();

@@ -963,7 +963,7 @@ public class Simulator
 					if (spParser.getAttribute("class").equals("MultiEpisome"))
 					{
 						String plName = spParser.getName();
-						Double scanSpeed = spParser.getParamDbl("scanSpeed");
+						Double scanSpeed = spParser.getParamTime("scanSpeed");
 						plasmidList.add(plName);
 						scanSpeedList.add(scanSpeed);
 					}

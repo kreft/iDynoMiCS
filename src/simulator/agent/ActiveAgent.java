@@ -398,14 +398,13 @@ public abstract class ActiveAgent extends SpecialisedAgent implements HasReactio
 		_netVolumeRate = 0.0;
 		
 		// Compute mass growth rate of each active reaction
-		for (int iReac = 0; iReac<reactionActive.size(); iReac++)
+		for ( int iReac = 0; iReac < reactionActive.size(); iReac++ )
 		{
 			// Compute the growth rate
 			reacIndex = reactionActive.get(iReac);
 			catMass = particleMass[allReactions[reacIndex]._catalystIndex];
 			// get the growth rate in [fgX.hr-1]
 			growthRate[reacIndex] = allReactions[reacIndex].computeSpecGrowthRate(this);
-			
 			for (int i = 0; i<particleYield[reacIndex].length; i++)
 			{
 				if (allReactions[reacIndex].autocatalytic)

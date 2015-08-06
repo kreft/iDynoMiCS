@@ -41,7 +41,7 @@ public class LinearKinetic extends IsKineticFactor
 	@Override
 	public void init(Element defMarkUp)
 	{
-		_K = (new XMLParser(defMarkUp)).getParamDbl("K");
+		_K = (new XMLParser(defMarkUp)).getParamTime("K");
 		nParam = 1;
 	}
 	
@@ -55,7 +55,7 @@ public class LinearKinetic extends IsKineticFactor
 	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
-		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("K");
+		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamTime("K");
 	}
 	
 	/**

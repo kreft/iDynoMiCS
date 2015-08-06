@@ -1,5 +1,7 @@
 package simulator.agent.zoo;
 
+import idyno.SimTimer;
+
 import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,9 +11,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import simulator.Simulator;
+import simulator.agent.ActiveAgent;
 import simulator.agent.LocatedAgent;
 import simulator.agent.SpecialisedAgent;
 import simulator.agent.Species;
+import simulator.geometry.ContinuousVector;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
@@ -35,6 +39,11 @@ public class PlasmidBac extends BactEPS
 	 * Plasmids hosted by this bacterium.
 	 */
 	private LinkedList<Plasmid> _plasmidHosted = new LinkedList<Plasmid>();
+	
+	/**
+	 * TODO
+	 */
+	private double _chemoScalar;
 	
 	/*************************************************************************
 	 * CONSTRUCTORS
@@ -72,11 +81,6 @@ public class PlasmidBac extends BactEPS
 		 */
 		super.initFromProtocolFile(aSimulator, aSpeciesRoot);
 		/*
-		 * Create hosted plasmids.
-		 */
-		for ( String aSpeciesName : aSpeciesRoot.getChildrenNames("plasmid") )
-			this.initPlasmid(aSpeciesName);
-		/*
 		 * Genealogy and size management.
 		 */
 		init();
@@ -111,8 +115,8 @@ public class PlasmidBac extends BactEPS
 			nCopy = Integer.parseInt(singleAgentData[iDataStart+3*spCounter]);
 			if ( nCopy <= 0 )
 				continue;
-			r = Integer.parseInt(singleAgentData[iDataStart+3*spCounter + 1]);
-			d = Integer.parseInt(singleAgentData[iDataStart+3*spCounter + 2]);
+			r = Double.parseDouble(singleAgentData[iDataStart+3*spCounter+1]);
+			d = Double.parseDouble(singleAgentData[iDataStart+3*spCounter+2]);
 			Plasmid aPlasmid = this.initPlasmid(plasmidName);
 			aPlasmid.setDetails(nCopy, r, d);
 		}
@@ -167,6 +171,63 @@ public class PlasmidBac extends BactEPS
 				this._plasmidHosted.get(i).applySegregation();
 			else
 				baby._plasmidHosted.get(i).applySegregation();
+	}
+	
+	/**
+	 * \brief Create a new PlasmidBac agent (who a priori is registered in at
+	 * least one container).
+	 * 
+	 * <p>This agent is located on the relevant grid, and may host plasmids if
+	 * stated in the protocol file.</p>
+	 * 
+	 * @param position Where to put this new agent.
+	 * @param root XMLParser used in determining if the cell should contain a
+	 * plasmid(s).
+	 * @see {@link #createNewAgent(ContinuousVector)}
+	 */
+	public void createNewAgent(ContinuousVector position, XMLParser root)
+	{
+		try 
+		{
+			// Get a clone of the progenitor.
+			PlasmidBac baby = (PlasmidBac) sendNewAgent();
+			baby.giveName();
+			baby.updateMass();
+			
+			/* If no mass defined, use the division radius to find the mass */
+			// Note this should have been done already in initFromProtocolFile
+			if ( this._totalMass == 0.0 )
+			{
+				guessMass();
+				LogFile.writeLog("Warning: PlasmidBac.createNewAgent calling guessMass()");
+			}
+			// randomise its mass
+			baby.randomiseMass();
+			//System.out.println("RADIUS AT THIS POINT: "+this._totalRadius);
+			baby.updateSize();
+			
+			this._myDivRadius = getDivRadius();
+			baby._myDivRadius = getDivRadius();
+			baby._myDeathRadius = getDeathRadius();
+			
+			baby.setLocation(position);
+			baby.registerBirth();
+			
+			/*
+			 * This is the part specific to PlasmidBac!
+			 */
+			
+			Plasmid plasmid;
+			for ( String plName : root.getChildrenNames("plasmid") )
+			{
+				plasmid = baby.initPlasmid(plName);
+				plasmid.setDetails(1, SimTimer.getCurrentTime(), -Double.MAX_VALUE);
+			}
+		} 
+		catch (CloneNotSupportedException e) 
+		{
+			LogFile.writeError(e, "PlasmidBac.createNewAgent()");
+		}
 	}
 	
 	/*************************************************************************
@@ -375,27 +436,42 @@ public class PlasmidBac extends BactEPS
 	
 	/**
 	 * \brief Add all non-self Bacteria in the agent grid to the list of
-	 * potential recipients, with equal probability.
+	 * potential recipients, with equal proportional to their mass.
+	 * 
+	 * TODO [Rob6Aug2015] This is not quite equivalent to Sonia's ODE model:
+	 * there it is assumed that compatability upon collision is assessed 
+	 * instantaneously. Fixing this would require either: 1) filtering the
+	 * potential recipients below by compatability, whereby losing equivalence
+	 * with the biofilm model, or 2) changing the ODE model.
 	 */
 	public HashMap<Bacterium, Double> buildNbh()
 	{
 		HashMap<Bacterium, Double> out = new HashMap<Bacterium, Double>();
-		int total = 0;
+		this._chemoScalar = 0.0;
 		/*
 		 * Loop through all SpecialisedAgents in the agentGrid, adding only
 		 * Bacteria and subclasses (e.g. PlasmidBac) to the output. Count 
-		 * these as they are added.
+		 * the total mass as they are added.
 		 */
+		Bacterium bac;
 		for ( SpecialisedAgent aSA : _agentGrid.agentList )
 			if ( (aSA != this) && (aSA instanceof Bacterium) )
 			{
-				out.put((Bacterium) aSA, 1.0);
-				total++;
+				bac = (Bacterium) aSA;
+				out.put(bac, 1.0);
+				this._chemoScalar += bac.getMass(false);
 			}
 		/*
-		 * Replace the probability of each with 1/(number of Bacteria).
+		 * Scale the probability of each by its mass.
 		 */
-		scaleProbabilities(out, total);
+		scaleProbabilities(out, this._chemoScalar);
+		/*
+		 * Finally, the chemostat collision scalar is proportional to the
+		 * concentration of potentials multiplied by the concentration of
+		 * this cell. Concentrations in fg/um3 = g/L.
+		 */
+		this._chemoScalar *= getSpeciesParam().collisionCoeff * 
+			this.getMass(false) * Math.pow(_agentGrid.getResolution(), -6.0);
 		return out;
 	}
 	
@@ -455,8 +531,9 @@ public class PlasmidBac extends BactEPS
 			/*
 			 * Finally, add the cell, together with a probability variable.
 			 * By default, all potential recipients are treated equally.
-			 * 
-			 * TODO Why do we use the donorRadius and not recipRadius?
+			 * If scaleScanProb is true, scale the probability by the distance
+			 * from the donor (reasoning is similar to the intensity of 
+			 * sunlight as a function of distance from the Sun's surface). 
 			 */
 			if ( getSpeciesParam().scaleScanProb )
 				probVar = ExtraMath.sq( donorRadius / (donorRadius+distance));
@@ -483,8 +560,8 @@ public class PlasmidBac extends BactEPS
 	 */
 	private void scaleProbabilities(HashMap<Bacterium, Double> hm, double sum)
 	{
-		final double probability = 1.0/sum;
-		hm.replaceAll((b, p) -> {return p*probability;});
+		final double scalar = 1.0/sum;
+		hm.replaceAll((b, p) -> {return p*scalar;});
 	}
 	
 	/**
@@ -596,18 +673,18 @@ public class PlasmidBac extends BactEPS
 	 */
 	private void collectPlasmidSpeciesNames(Simulator aSim)
 	{
-		System.out.println("This is "+aSim.speciesDic.get(this.speciesIndex));
+		//System.out.println("This is "+aSim.speciesDic.get(this.speciesIndex));
 		for ( Species aSpecies : aSim.speciesList )
 		{
 			if ( ! ( aSpecies.getProgenitor() instanceof Plasmid ) )
 				continue;
-			System.out.println("Looking at "+aSpecies.speciesName);
+			//System.out.println("Looking at "+aSpecies.speciesName);
 			if ( ! ((Plasmid) aSpecies.getProgenitor()).isCompatible(this) )
 			{
-				System.out.println("\tNot compatible");
+				//System.out.println("\tNot compatible");
 				continue;
 			}
-			System.out.println("\tAdded!");
+			//System.out.println("\tAdded!");
 			getSpeciesParam().addPotentialPlasmidName(aSpecies.speciesName);
 		}
 	}
@@ -666,13 +743,12 @@ public class PlasmidBac extends BactEPS
 			nCopy = 0;
 			r = -Double.MAX_VALUE;
 			d = -Double.MAX_VALUE;
-			h: for ( Plasmid aPlasmid : _plasmidHosted )
-				if ( aPlasmid.sendName().equals(plasmidSpeciesName) )
+			for ( Plasmid aPlasmid : _plasmidHosted )
+				if ( aPlasmid.isSpeciesName(plasmidSpeciesName) )
 				{
 					nCopy = aPlasmid.getCopyNumber();
 					r = aPlasmid.getTimeRecieved();
 					d = aPlasmid.getTimeLastDonated();
-					break h;
 				}
 			tempString.append(","+nCopy+","+r+","+d);
 		}

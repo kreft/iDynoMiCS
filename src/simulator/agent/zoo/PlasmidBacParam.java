@@ -35,6 +35,11 @@ public class PlasmidBacParam extends BactEPSParam
 	public double highTonusCutoff = - Double.MAX_VALUE;
 	
 	/**
+	 * Parameter for collision frequency in chemostat simulations.
+	 */
+	public double collisionCoeff = 0.1;
+	
+	/**
 	 * Whether or not to scale scan probabilities by distance from the host
 	 * (only applies in biofilm simulations).
 	 */

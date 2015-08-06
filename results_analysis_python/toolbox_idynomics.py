@@ -311,12 +311,23 @@ def plot_cells_3d_curtains(axis, agent_output):
 
 def get_default_species_colors(sim):
     out = {}
+    nonplasmids = []
+    plasmids = []
     for species_name in sim.get_species_names():
-        out[species_name] = None
+        if 'plasmid' in species_name.lower():
+            plasmids.append(species_name)
+            continue
+        nonplasmids.append(species_name)
     for solute_name in sim.get_solute_names():
-        if solute_name in out.keys():
+        if solute_name in plasmids+nonplasmids:
             continue
         out[solute_name] = None
+    suffixes = ['']
+    for plasmid_name in sorted(plasmids):
+        suffixes.extend([elem+'_'+plasmid_name for elem in suffixes])
+    for species_name in nonplasmids:
+        for suffix in suffixes:
+            out[species_name+suffix] = None
     html = toolbox_plotting.distinguishable_colors(len(out.keys()))
     for name in out.keys():
         out[name] = html.pop(0)
@@ -351,10 +362,16 @@ def color_cells_by_species(agent_output, species_color_dict):
 
     """
     for species in agent_output.species_outputs:
-        print('Colouring %d %s cells %s'
-            %(len(species.members), species.name, species_color_dict[species.name]))
+        if species.members == []:
+            continue
+        print('Colouring %d %s cells %s'%(len(species.members),
+                            species.name, species_color_dict[species.name]))
         for cell in species.members:
-            cell.color = species_color_dict[species.name]
+            name = species.name
+            for key in sorted(cell.vars.keys()):
+                if 'CopyNumber' in key and int(cell.vars[key]) > 0:
+                    name += '_'+key.replace('CopyNumber', '')
+            cell.color = species_color_dict[name]
 
 
 # Find a list of standard colormaps (cmap) at
@@ -371,9 +388,9 @@ def solute_contour(axis, solute_output, interpolation='nearest', zorder=-10,
     array = solute_output.concentration_array()
     if not array_multiplier == 1:
         array = numpy.multiply(array, array_multiplier)
-    cs = axis.imshow(array,
-            interpolation=interpolation, origin='lower', cmap=cmap,
-            extent=extent, zorder=zorder, vmin=concn_range[0], vmax=concn_range[1])
+    cs = axis.imshow(array, interpolation=interpolation, origin='lower', 
+                     cmap=cmap, extent=extent, zorder=zorder,
+                     vmin=concn_range[0], vmax=concn_range[1])
     return cs
 
 

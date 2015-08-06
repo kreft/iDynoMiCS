@@ -45,7 +45,7 @@ public class MonodKinetic extends IsKineticFactor
 	 */
 	public void init(Element defMarkUp)
 	{
-		_Ks = (new XMLParser(defMarkUp)).getParamDbl("Ks");
+		_Ks = (new XMLParser(defMarkUp)).getParamConcn("Ks");
 		nParam = 1;
 	}
 	
@@ -59,7 +59,7 @@ public class MonodKinetic extends IsKineticFactor
 	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
-		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ks");
+		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamConcn("Ks");
 	}
 	
 	/**

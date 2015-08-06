@@ -7,6 +7,7 @@ import simulator.Simulator;
 import simulator.agent.ActiveParam;
 import simulator.agent.zoo.PlasmidBac;
 import simulator.agent.Species;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
@@ -31,7 +32,7 @@ public class PlasmidParam extends ActiveParam
 	 * (in um). Note that the pilus should reach between cell surfaces, not
 	 * between cell centres.
 	 */
-	public Double pilusLength = 2.0;
+	public Double pilusLength = 5.0;
 	
 	/**
 	 * After donating a plasmid of this species, a host needs to recover
@@ -63,7 +64,7 @@ public class PlasmidParam extends ActiveParam
 	/**
 	 * The maximum scan speed (in cells/hour) of Plasmids of this species.
 	 */
-	public Double scanSpeed = 1.0;
+	public Double scanSpeed = 10.0;
 	
 	/**
 	 * Plasmid markers (used in host compatibility).
@@ -132,6 +133,9 @@ public class PlasmidParam extends ActiveParam
 											aSpeciesRoot, speciesDefaults);
 		transferProficiency = Double.isFinite(tempDbl) ?
 												tempDbl : transferProficiency;
+		tempDbl = getSpeciesParameterTime("scanSpeed",
+											aSpeciesRoot, speciesDefaults);
+		scanSpeed = Double.isFinite(tempDbl) ? tempDbl : scanSpeed;
 		/*
 		 * 
 		 */
@@ -146,17 +150,17 @@ public class PlasmidParam extends ActiveParam
 		tempXML = aSpeciesRoot.getChildrenParsers("compatibleHost");
 		if ( tempXML == null || tempXML.isEmpty() )
 		{
-			System.out.println("Entering all host compatability markers");
+			//System.out.println("Entering all host compatability markers");
 			for ( Species spec : aSim.speciesList )
 				if ( spec.getProgenitor() instanceof PlasmidBac )
 					hostCompatibilityMarkers.add( spec.speciesName );
 		}
 		else
 		{
-			System.out.println("Trying to read in host compatability markers");
+			//System.out.println("Trying to read in host compatability markers");
 			for ( XMLParser parser : tempXML )
 			{
-				System.out.println("\tAdding "+parser.getName());
+				//System.out.println("\tAdding "+parser.getName());
 				hostCompatibilityMarkers.add( parser.getName() );
 			}
 		}
@@ -192,14 +196,8 @@ public class PlasmidParam extends ActiveParam
 	 */
 	public boolean isCompatible(PlasmidBac targetRecipient)
 	{
-		System.out.println("Checking compatibility of "+
-				targetRecipient.getName()+" with "+this.name);
-		for ( String host : hostCompatibilityMarkers)
-			System.out.println("\t"+host);
 		if ( ! hostCompatibilityMarkers.contains(targetRecipient.getName()) )
-		{
 			return false;
-		}
 		for ( Plasmid p : targetRecipient.getPlasmidsHosted() )
 			if ( ! plasmidCompatibilityMarkers.contains(p.getName()) )
 				return false;

@@ -11,11 +11,13 @@
  */
 package simulator.agent;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.io.Serializable;
 import java.awt.Color;
 
 import simulator.Simulator;
+import simulator.agent.zoo.PlasmidBac;
 import simulator.geometry.*;
 import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.BoundaryCyclic;
@@ -172,10 +174,10 @@ public class Species implements Serializable
 		
 		// KA May 2013
 		// If this is self-attach, useful to store the injection period parameters here, so can reference these later
-		cellInjectionStartHour = aSpRoot.getParamDbl("cellInjectionStartHour");
-		injectionOnAttachmentFrequency = aSpRoot.getParamDbl("injectionOnAttachmentFrequency");
-		cellInjectionEndHour = aSpRoot.getParamDbl("cellInjectionEndHour");
-		injectionOffAttachmentFrequency = aSpRoot.getParamDbl("injectionOffAttachmentFrequency");
+		cellInjectionStartHour = aSpRoot.getParamTime("cellInjectionStartHour");
+		injectionOnAttachmentFrequency = aSpRoot.getParamTime("injectionOnAttachmentFrequency");
+		cellInjectionEndHour = aSpRoot.getParamTime("cellInjectionEndHour");
+		injectionOffAttachmentFrequency = aSpRoot.getParamTime("injectionOffAttachmentFrequency");
 		
 		// Create the progenitor and tune its speciesParam object
 		_progenitor = (SpecialisedAgent) aSpRoot.instanceCreator("simulator.agent.zoo");
@@ -248,14 +250,33 @@ public class Species implements Serializable
 				// Set coordinates within the birth area - randomly
 				if( ! Simulator.isChemostat )					
 					shuffleCoordinates(cc, _initArea);
-
+				
 				// Create the agent at these coordinates
-				((LocatedAgent) _progenitor).createNewAgent(cc);
+				if ( _progenitor instanceof PlasmidBac )
+					((PlasmidBac) _progenitor).createNewAgent(cc, spRoot);
+				else
+					((LocatedAgent) _progenitor).createNewAgent(cc);
+						 
 			}
 			else
 				_progenitor.createNewAgent();
 		
 		LogFile.writeLog(howMany+" agents of species "+speciesName+" for one-time attachment successfully created");
+		if ( _progenitor instanceof PlasmidBac )
+		{
+			LinkedList<String> names = spRoot.getChildrenNames("plasmid");
+			String msg = "\t(";
+			if ( names.isEmpty() )
+				msg += "without plasmids";
+			else
+			{
+				msg += "with plasmid";
+				if ( names.size() > 1)
+					msg += "s";
+				msg += ": "+String.join(", ", names);
+			}
+			LogFile.writeLogAlways(msg+")");
+		}
 	}
 	
 	
@@ -345,7 +366,10 @@ public class Species implements Serializable
 					case 1:	// Successfully Attached
 						numberAttachedInjectedAgents--;
 						// Create the agent at these coordinates
-						((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
+						if ( _progenitor instanceof PlasmidBac )
+							((PlasmidBac) _progenitor).createNewAgent(this.swimmingAgentPosition, spRoot);
+						else
+							((LocatedAgent) _progenitor).createNewAgent(this.swimmingAgentPosition);
 						//System.out.println("Cell "+swimmingAgentPosition.toString()+" attached");
 						break;
 					case 2:

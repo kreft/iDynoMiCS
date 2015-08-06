@@ -70,8 +70,8 @@ public class HaldaneKinetic extends IsKineticFactor
 	@Override
 	public void init(Element defMarkUp)
 	{
-		_Ks = (new XMLParser(defMarkUp)).getParamDbl( "Ks");
-		_Ki = (new XMLParser(defMarkUp)).getParamDbl( "Ki");
+		_Ks = (new XMLParser(defMarkUp)).getParamConcn( "Ks");
+		_Ki = (new XMLParser(defMarkUp)).getParamConcn( "Ki");
 		nParam = 2;
 	}
 	
@@ -85,8 +85,8 @@ public class HaldaneKinetic extends IsKineticFactor
 	@Override
 	public void initFromAgent(Element defMarkUp, Double[] kineticParam, int paramIndex)
 	{
-		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamDbl("Ks");
-		kineticParam[paramIndex+1] = (new XMLParser(defMarkUp)).getParamDbl("Ki");
+		kineticParam[paramIndex] = (new XMLParser(defMarkUp)).getParamConcn("Ks");
+		kineticParam[paramIndex+1] = (new XMLParser(defMarkUp)).getParamConcn("Ki");
 	}
 	
 	/**

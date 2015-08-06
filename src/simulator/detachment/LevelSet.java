@@ -110,7 +110,7 @@ public abstract class LevelSet
 		_alive = new LinkedList<LocatedGroup>();
 		
 		kDet = root.getParamDbl("kDet");
-		Double value = root.getParamDbl("maxTh");
+		Double value = root.getParamLength("maxTh");
 		maxTh = (Double.isNaN(value)? Double.POSITIVE_INFINITY:value);
 		
 		Boolean bool = root.getParamBool("endSimWhenMaxThCrossed");

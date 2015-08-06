@@ -105,7 +105,53 @@ public class UnitConverter
 
 		return out;
 	}
+	
+	/**
+	 * \brief Takes an area unit and returns a double value of area for that
+	 * unit.
+	 * 
+	 * TODO 1 Converter?
+	 * 
+	 * @param areaUnit	String containing a unit of area (m2, cm2, etc)
+	 * @return	Double value of area for that unit
+	 */
+	public static Double area(String areaUnit)
+	{
+		Double out = 1.0;
+		String unit = "";
 
+		if (areaUnit.contains("m")) {
+			out = 1e12;
+			unit = "m2";
+		}
+		if (areaUnit.contains("cm")) {
+			out = 1e8;
+			unit = "cm2";
+		}
+		if (areaUnit.contains("mm")) {
+			out = 1e6;
+			unit = "mm2";
+		}
+		if (areaUnit.contains("µm")) {
+			out = 1.0;
+			unit = "microm2";
+		}
+		if (areaUnit.contains("um")) {
+			out = 1.0;
+			unit = "microm2";
+		}
+		if (areaUnit.contains("fm")) {
+			out = 1e-18;
+			unit = "fm2";
+		}
+
+		if (areaUnit.contains(unit+"-1")) {
+			out = 1.0/out;
+		}
+
+		return out;
+	}
+	
 	/**
 	 * \brief Takes a mass unit and returns a double value of mass for that unit
 	 * 
@@ -167,7 +213,7 @@ public class UnitConverter
 
 		if (massUnit.contains("m")) {
 			out = 1e18;
-			unit = "m";
+			unit = "m3";
 		}
 		if (massUnit.contains("L")) {
 			out = 1e15;
@@ -176,11 +222,11 @@ public class UnitConverter
 
 		if (massUnit.contains("µm")) {
 			out = 1;
-			unit = "µm";
+			unit = "µm3";
 		}
 		if (massUnit.contains("um")) {
 			out = 1;
-			unit = "µm";
+			unit = "µm3";
 		}
 
 		if (massUnit.contains(unit+"-1")) {
