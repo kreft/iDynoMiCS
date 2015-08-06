@@ -10,6 +10,7 @@ import simulator.agent.Species;
 import utils.XMLParser;
 
 /**
+ * \brief TODO
  * 
  * @author Robert Clegg (r.j.clegg@bham.ac.uk)
  */
@@ -62,7 +63,7 @@ public class PlasmidParam extends ActiveParam
 	/**
 	 * The maximum scan speed (in cells/hour) of Plasmids of this species.
 	 */
-	public Double scanSpeed = 0.0;
+	public Double scanSpeed = 1.0;
 	
 	/**
 	 * Plasmid markers (used in host compatibility).
@@ -132,24 +133,51 @@ public class PlasmidParam extends ActiveParam
 		transferProficiency = Double.isFinite(tempDbl) ?
 												tempDbl : transferProficiency;
 		/*
+		 * 
+		 */
+		tempXML = aSpeciesRoot.getChildrenParsers("reaction");
+		for ( XMLParser parser : tempXML )
+			if ( parser.getAttribute("status").equals("active") )
+				reactionsEncoded.add(aSim.getReactionIndex(parser.getName()));
+		/*
 		 * If no host markers are given, assume all species may be hosts.
 		 * Note: Old EpiBac protocol files should be unaffected by this.
 		 */
-		tempXML = aSpeciesRoot.getChildrenParsers("CompatibleHosts");
+		tempXML = aSpeciesRoot.getChildrenParsers("compatibleHost");
 		if ( tempXML == null || tempXML.isEmpty() )
+		{
+			System.out.println("Entering all host compatability markers");
 			for ( Species spec : aSim.speciesList )
 				if ( spec.getProgenitor() instanceof PlasmidBac )
 					hostCompatibilityMarkers.add( spec.speciesName );
+		}
 		else
+		{
+			System.out.println("Trying to read in host compatability markers");
 			for ( XMLParser parser : tempXML )
+			{
+				System.out.println("\tAdding "+parser.getName());
 				hostCompatibilityMarkers.add( parser.getName() );
+			}
+		}
+		/*
+		 * Try to add this plasmid name to the list of potential plasmids in 
+		 * compatible hosts, if they have been initialised yet.
+		 */
+		for ( String hostName : hostCompatibilityMarkers )
+			try
+			{
+				((PlasmidBacParam)aSim.getSpecies(hostName).getSpeciesParam())
+											.potentialPlasmids.add(this.name);
+			}
+			catch ( Exception e) {}
 		/*
 		 * If no plasmid markers are given, assume all plasmids are
 		 * incompatible.
 		 * 
-		 * TODO Old (Multi)EpiBac protocol files will need to be modified.
+		 * TODO check that compatibility goes both ways?
 		 */
-		tempXML = aSpeciesRoot.getChildrenParsers("CompatiblePlasmids");
+		tempXML = aSpeciesRoot.getChildrenParsers("compatiblePlasmids");
 		if ( ! (tempXML == null || tempXML.isEmpty()) )
 			for ( XMLParser parser : tempXML )
 				plasmidCompatibilityMarkers.add( parser.getName() );
@@ -164,8 +192,14 @@ public class PlasmidParam extends ActiveParam
 	 */
 	public boolean isCompatible(PlasmidBac targetRecipient)
 	{
+		System.out.println("Checking compatibility of "+
+				targetRecipient.getName()+" with "+this.name);
+		for ( String host : hostCompatibilityMarkers)
+			System.out.println("\t"+host);
 		if ( ! hostCompatibilityMarkers.contains(targetRecipient.getName()) )
+		{
 			return false;
+		}
 		for ( Plasmid p : targetRecipient.getPlasmidsHosted() )
 			if ( ! plasmidCompatibilityMarkers.contains(p.getName()) )
 				return false;

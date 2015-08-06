@@ -4,27 +4,41 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import simulator.Simulator;
+import utils.LogFile;
 import utils.XMLParser;
 
 /**
+ * \brief TODO
  * 
  * @author Robert Clegg (r.j.clegg@bham.ac.uk)
  */
 public class PlasmidBacParam extends BactEPSParam
 {
 	/**
-	 * Parameter for growth dependency: value specifies a transition point. By
-	 * default, this takes a very large, negative number so that it has no
-	 * effect.
+	 * The maximum growth rate this PlasmidBac can achieve. Parameter for
+	 * growth dependency of Plasmid scan rate.
 	 */
-	public Double lowTonusCutoff = - Double.MAX_VALUE;
+	public double maxGrowthRate = 1.0;
 	
 	/**
 	 * Parameter for growth dependency: value specifies a transition point. By
 	 * default, this takes a very large, negative number so that it has no
 	 * effect.
 	 */
-	public Double highTonusCutoff = - Double.MAX_VALUE;
+	public double lowTonusCutoff = - Double.MAX_VALUE;
+	
+	/**
+	 * Parameter for growth dependency: value specifies a transition point. By
+	 * default, this takes a very large, negative number so that it has no
+	 * effect.
+	 */
+	public double highTonusCutoff = - Double.MAX_VALUE;
+	
+	/**
+	 * Whether or not to scale scan probabilities by distance from the host
+	 * (only applies in biofilm simulations).
+	 */
+	public boolean scaleScanProb = false;
 	
 	/**
 	 * Colours for POV-Ray output.
@@ -57,18 +71,36 @@ public class PlasmidBacParam extends BactEPSParam
 	{
 		super.init(aSim, aSpeciesRoot, speciesDefaults);
 		
-		Double tempDbl;
+		double tempDbl;
+		Boolean tempBool;
 		String tempCol;
 		/*
 		 * Get the growth dependency parameters.
 		 */
+		tempDbl = getSpeciesParameterDouble("maxGrowthRate",
+											aSpeciesRoot, speciesDefaults);
+		maxGrowthRate = Double.isFinite(tempDbl) ? tempDbl : maxGrowthRate;
+		
+		
 		tempDbl = getSpeciesParameterDouble("lowTonusCutoff",
 											aSpeciesRoot, speciesDefaults);
 		lowTonusCutoff = Double.isFinite(tempDbl) ? tempDbl : lowTonusCutoff;
 		
+		
 		tempDbl = getSpeciesParameterDouble("highTonusCutoff", aSpeciesRoot,
 															speciesDefaults);
-		highTonusCutoff = Double.isFinite(tempDbl) ? tempDbl : highTonusCutoff;
+		highTonusCutoff = Double.isFinite(tempDbl)? tempDbl : highTonusCutoff;
+		
+		
+		tempBool = getSpeciesParameterBool("scaleScanProb", aSpeciesRoot,
+															speciesDefaults);
+		scaleScanProb = (tempBool == null) ? scaleScanProb : tempBool;
+		if ( scaleScanProb && Simulator.isChemostat )
+		{
+			LogFile.writeLogAlways("Cannot scale scan probabilities by"+
+				"distance in the chemostat! Setting scaleScanProb to false");
+			scaleScanProb = false;
+		}
 		
 		/*
 		 * Get the colours for POV-Ray output.
@@ -78,15 +110,19 @@ public class PlasmidBacParam extends BactEPSParam
 		tempCol = ( tempCol == null ) ? "white" : tempCol;
 		dColor = utils.UnitConverter.getColor(tempCol);
 		
+		
 		tempCol = getSpeciesParameterString("transconjugantColor",
 											aSpeciesRoot, speciesDefaults);
 		tempCol = ( tempCol == null ) ? "white" : tempCol;
 		tColor = utils.UnitConverter.getColor(tempCol);
 		
+		
 		tempCol = getSpeciesParameterString("recipientColor",
 											aSpeciesRoot, speciesDefaults);
 		tempCol = ( tempCol == null ) ? "white" : tempCol;
 		rColor = utils.UnitConverter.getColor(tempCol);
+		
+		potentialPlasmids = new ArrayList<String>();
 	}
 	
 	/**

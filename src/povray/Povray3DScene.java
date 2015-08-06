@@ -245,7 +245,7 @@ public class Povray3DScene implements Serializable
 		try {
 			_biofilm.particlesToFile(fr);
 		} catch(Exception e) {
-			_biofilm.particlesToFile(fr);
+			//_biofilm.particlesToFile(fr);
 		}
 
 		fr.write("#include \""+INCFOOTER+"\"\n");

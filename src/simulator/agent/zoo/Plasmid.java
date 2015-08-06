@@ -10,6 +10,7 @@ import utils.ExtraMath;
 import utils.LogFile;
 
 /**
+ * \brief TODO
  * 
  * <p>NOTE: This uses simulation time, not agentGrid time (there is no
  * such thing in iDynoMiCS v1.x), so I (Rob) strongly recommend keeping 
@@ -28,12 +29,12 @@ public class Plasmid extends InfoAgent
 	/**
 	 * Simulation time (h) at which this plasmid last donated to another host.
 	 */
-	protected Double _tLastDonated;
+	protected double _tLastDonated;
 	
 	/**
 	 * Simulation time (h) at which this plasmid was received by its host.
 	 */
-	protected Double _tReceived;
+	protected double _tReceived;
 	
 	/**
 	 * Tally variable for the number of potential recipients this plasmid can
@@ -55,6 +56,17 @@ public class Plasmid extends InfoAgent
 	{
 		super();
 		_speciesParam = new PlasmidParam();
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException
+	{
+		Plasmid out = (Plasmid) super.clone();
+		out._speciesParam = this._speciesParam;
+		out._copyNumber = this._copyNumber;
+		out._tLastDonated = this._tLastDonated;
+		out._tReceived = this._tReceived;
+		return out;
 	}
 	
 	@Override
@@ -261,9 +273,8 @@ public class Plasmid extends InfoAgent
 		{
 			Plasmid baby = this.sendNewAgent();
 			baby.registerBirth();
-			//TODO tell baby it has been donated
 			aPB.welcomePlasmid(baby);
-			this._tLastDonated = SimTimer.getCurrentTime();
+			this._tLastDonated = baby._tReceived = SimTimer.getCurrentTime();
 			this._testTally = 0.0;
 		}
 		catch (CloneNotSupportedException e)

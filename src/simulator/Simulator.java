@@ -972,6 +972,8 @@ public class Simulator
 		} 
 		catch (Exception e) 
 		{
+			for ( String sName : speciesDic )
+				System.out.println(sName);
 			LogFile.writeError(e, "Error in Simulator.createSpecies() second stage");
 			System.exit(-1);
 		}

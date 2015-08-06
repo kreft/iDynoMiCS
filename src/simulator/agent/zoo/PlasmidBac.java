@@ -4,12 +4,15 @@ import java.awt.Color;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import simulator.Simulator;
 import simulator.agent.LocatedAgent;
 import simulator.agent.SpecialisedAgent;
 import simulator.agent.Species;
+import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -154,13 +157,16 @@ public class PlasmidBac extends BactEPS
 		 */
 		baby.registerBirth();
 		/*
-		 * Both daughters cells have cloned plasmids; apply the segregation.
-		 * 
-		 * TODO [Rob 31July2015]: I've followed Brian's logic here, but it
-		 * seems strange that only the mother's plasmids are at risk of loss.
+		 * Both daughter cells have an identical list of plasmids hosted.
+		 * Loss-at-division could happen to either but not both, so first
+		 * determine which daughter it could happen to, then determine if it
+		 * does actually happen.
 		 */
-		for ( Plasmid aPlasmid : this._plasmidHosted )
-			aPlasmid.applySegregation();
+		for ( int i = 0; i < this._plasmidHosted.size(); i++ )
+			if ( ExtraMath.getUniRandDbl() < 0.5 )
+				this._plasmidHosted.get(i).applySegregation();
+			else
+				baby._plasmidHosted.get(i).applySegregation();
 	}
 	
 	/*************************************************************************
@@ -337,28 +343,81 @@ public class PlasmidBac extends BactEPS
 	 */
 	protected void conjugate()
 	{
+		/*
+		 * No point continuing if there are no plasmids in this host.
+		 */
+		if ( this._plasmidHosted.isEmpty() )
+			return;
+		/*
+		 * Build a neighbourhood including only non-self Bacteria. The methods
+		 * for this differ between chemostat and biofilm simulations:
+		 * -	No point generating the list for each plasmid in the 
+		 * 		chemostat, since all plasmids are treated equally there.
+		 * -	In the biofilm, all non-self Bacteria within reach of the
+		 * 		Plasmid's pilus should be included.
+		 * 
+		 * [Rob 31July2016] No need to shuffle this list: 
+		 * LocatedAgent.pickNeighbour() uses a randomly generated value to pick
+		 * a random Bacterium.
+		 */
+		HashMap<Bacterium, Double> 
+								potentials = new HashMap<Bacterium, Double>();
+		if ( Simulator.isChemostat )
+			potentials = buildNbh();
 		for ( Plasmid aPlasmid : this._plasmidHosted )
 			if ( aPlasmid.isReadyToConjugate() )
-				this.searchConjugation(aPlasmid);
+			{
+				if ( ! Simulator.isChemostat )
+					potentials = buildNbh(aPlasmid.getPilusRange());
+				this.searchConjugation(aPlasmid, potentials);
+			}
 	}
 	
 	/**
-	 * List all cells in a given neighbourhood: at the end of the method, the
-	 * field _myNeighbors contains all Bacteria with a surface-surface
-	 * distance from this PlasmidBac of less than nbhRadius.
+	 * \brief Add all non-self Bacteria in the agent grid to the list of
+	 * potential recipients, with equal probability.
+	 */
+	public HashMap<Bacterium, Double> buildNbh()
+	{
+		HashMap<Bacterium, Double> out = new HashMap<Bacterium, Double>();
+		int total = 0;
+		/*
+		 * Loop through all SpecialisedAgents in the agentGrid, adding only
+		 * Bacteria and subclasses (e.g. PlasmidBac) to the output. Count 
+		 * these as they are added.
+		 */
+		for ( SpecialisedAgent aSA : _agentGrid.agentList )
+			if ( (aSA != this) && (aSA instanceof Bacterium) )
+			{
+				out.put((Bacterium) aSA, 1.0);
+				total++;
+			}
+		/*
+		 * Replace the probability of each with 1/(number of Bacteria).
+		 */
+		scaleProbabilities(out, total);
+		return out;
+	}
+	
+	/**
+	 * \brief Add all non-self Bacteria within reach of this to a HashMap of
+	 * potential recipients.
+	 * 
+	 * <p>The double values in the HashMap correspond to the Bacterium's 
+	 * probability of being selected at random. If the species parameter
+	 * <i>scaleScanProb</i> is false (default) then these probabilities are all
+	 * equal, but if it is true then they are scaled by the distance from the
+	 * host (this cell).</p>
 	 * 
 	 * <p>Parameter <b>nbhRadius</b> is typically the pilus length.</p>
-	 * 
-	 * <p><b>[Rob 31July2016]</b> No need to shuffle this list: 
-	 * LocatedAgent.pickNeighbour() uses a randomly generated integer for
-	 * the index to return.</p>
 	 * 
 	 * @param nbhRadius double length (in um) of the maximum cell 
 	 * surface-surface distance for another Bacterium to be considered a
 	 * neighbor.
 	 */
-	public void buildNbh(double nbhRadius)
+	public HashMap<Bacterium, Double> buildNbh(double nbhRadius)
 	{
+		HashMap<Bacterium, Double> out = new HashMap<Bacterium, Double>();
 		/*
 		 * nbhRadius gives the distance OUTSIDE the donor agent that touches a
 		 * recipient agent, and so we need to subtract the radii from
@@ -366,23 +425,88 @@ public class PlasmidBac extends BactEPS
 		 * 
 		 * getDistance(aLocAgent) gets distance between cell centres.
 		 */
-		double temp = nbhRadius + this.getRadius(false);
+		double donorRadius = this.getRadius(false);
 		/*
 		 * Find all neighbours in the Manhattan perimeter.
 		 */
-		this.getPotentialShovers(temp);
+		this.getPotentialShovers(nbhRadius + donorRadius);
 		/*
 		 * Now remove agents that are too far (apply Euclidean perimeter).
 		 */
-		LocatedAgent aLocAgent;
-		for (int iter = 0; iter < _myNeighbors.size(); iter++)
+		double distance;
+		double recipRadius;
+		double probVar = 1.0;
+		double cumulativeProb = 0.0;
+		for ( LocatedAgent recip : _myNeighbors )
 		{
-			aLocAgent = _myNeighbors.removeFirst();
-			if ( aLocAgent == this || ! (aLocAgent instanceof Bacterium) )
+			/*
+			 * First check that the potential recipient is not the current
+			 * host, and that it is a Bacterium (or subclass, e.g. PlasmidBac)
+			 */
+			if ( recip == this || ! (recip instanceof Bacterium) )
 				continue;
-			if ( getDistance(aLocAgent) < (temp + aLocAgent.getRadius(false)) )
-				_myNeighbors.addLast(aLocAgent);
+			/*
+			 * Now filter by the Euclidean distance between cell surfaces.
+			 */
+			recipRadius = recip.getRadius(false);
+			distance = getDistance(recip) - donorRadius - recipRadius;
+			if ( distance > nbhRadius )
+				continue;
+			/*
+			 * Finally, add the cell, together with a probability variable.
+			 * By default, all potential recipients are treated equally.
+			 * 
+			 * TODO Why do we use the donorRadius and not recipRadius?
+			 */
+			if ( getSpeciesParam().scaleScanProb )
+				probVar = ExtraMath.sq( donorRadius / (donorRadius+distance));
+			out.put((Bacterium) recip, probVar);
+			cumulativeProb += probVar;
 		}
+		this._myNeighbors.clear();
+		/*
+		 * Now scale all probabilities so that they sum to one.
+		 */
+		scaleProbabilities(out, cumulativeProb);
+		return out;
+	}
+	
+	/**
+	 * \brief Scale all probability variables in a given HashMap by 1/sum.
+	 * 
+	 * <p>Accepting <b>sum</b> as input, rather than calculating it directly,
+	 * is a shortcut but depends on an accurate value of <b>sum</b>. 
+	 * 
+	 * @param hm HashMap<Bacterium, Double> linking each Bacterium with a
+	 * probability variable.
+	 * @param sum The sum of all these probability variables.
+	 */
+	private void scaleProbabilities(HashMap<Bacterium, Double> hm, double sum)
+	{
+		final double probability = 1.0/sum;
+		hm.replaceAll((b, p) -> {return p*probability;});
+	}
+	
+	/**
+	 * \brief Randomly select a Bacterium from the list of potential
+	 * recipients generated in {@link #findPotentialRecipients(Plasmid)}.
+	 * 
+	 * <p>Assumes the sum total of probability variables to be one.</p>
+	 */
+	protected Bacterium pickPotentialRecipient(HashMap<Bacterium, Double> hm)
+	{
+		double rand = ExtraMath.getUniRandDbl();
+		double counter = 0.0;
+		Iterator<Bacterium> it = hm.keySet().iterator();
+		Bacterium bac;
+		while( it.hasNext() )
+		{
+			bac = it.next();
+			counter += hm.get(bac);
+			if ( counter > rand )
+				return bac;
+		}
+		return null;
 	}
 	
 	/**
@@ -391,47 +515,47 @@ public class PlasmidBac extends BactEPS
 	 * @param aPlasmid A Plasmid, hosted by this PlasmidBac, that should try
 	 * to conjugate with neighboring bacteria.
 	 */
-	public void searchConjugation(Plasmid aPlasmid)
+	public void searchConjugation(Plasmid aPlasmid,
+										HashMap<Bacterium, Double> potentials)
 	{
 		/*
-		 * Build a neighbourhood including only Bacteria. If this is empty,
-		 * there is nothing more to do.
-		 * 
-		 * TODO [Rob 31July2015] In Sonia's code we only search once in the
-		 * chemostat!
+		 * If there is nobody to conjugate with, there is nothing more to do.
 		 */
-		if ( Simulator.isChemostat )
-		{
-			this._myNeighbors.clear();
-			for ( SpecialisedAgent aSA : _agentGrid.agentList )
-				if ( aSA instanceof Bacterium )
-					this._myNeighbors.add((Bacterium) aSA);
-		}
-		else
-			this.buildNbh( aPlasmid.getPilusRange() );
-		if ( this._myNeighbors.isEmpty() )
+		if ( potentials.isEmpty() )
 			return;
 		/*
 		 * First update the plasmid's scan rate from its host's growth tone.
 		 * The plasmid will calculate the number of neighbours it can
-		 * look at (there may be some overflow from the previous timestep). 
+		 * look at (there may be some overflow from the previous timestep).
+		 * 
+		 * In chemostat simulations, the collision frequency will be
+		 * proportional to the total population density.
+		 * 
+		 * TODO We may want to scale the population concentration bit in the
+		 * chemostat by a parameter.
 		 */
-		aPlasmid.updateScanRate(this.getScaledTone());
+		if ( Simulator.isChemostat )
+		{
+			aPlasmid.updateScanRate(this.getScaledTone() * 
+					potentials.size()/_agentGrid.getVoxelVolume());
+		}
+		else
+			aPlasmid.updateScanRate(this.getScaledTone());
 		/*
 		 * Find a recipient(s) and try to send them a plasmid.
-		 * 
-		 * Note that LocatedAgent.pickNeighbor() picks a random member, with
-		 * replacement, of this._myNeighbors.
 		 */
 		while ( aPlasmid.canScan() )
-			aPlasmid.tryToSendPlasmid( this.pickNeighbor() );
+			aPlasmid.tryToSendPlasmid(pickPotentialRecipient(potentials));
 	}
 	
 	/**
 	 * \brief Growth tone as a linear interpolation between the two cutoffs
 	 * specified in the protocol file.
 	 * 
-	 * <p>See Merkey <i>et al</i> (2011) p.5 for more details.</p>
+	 * <p>See Merkey <i>et al</i> (2011) p.5 for more details:
+	 * <a href=
+	 * "http://onlinelibrary.wiley.com/doi/10.1111/j.1462-2920.2011.02535.x/full#ss18"
+	 * >link</a>.</p>
 	 * 
 	 * @return double value in the range [0.0, 1.0]
 	 */
@@ -445,45 +569,45 @@ public class PlasmidBac extends BactEPS
 	/**
 	 * \brief Net growth rate as a fraction of the maximum rate.
 	 * 
-	 * <p>The value is as large as 1 but may also be negative.
-	 * See Merkey <i>et al</i> (2011) p.5 for more details.</p>
-	 * 
-	 * TODO Is always using zero for the final index safe/correct here?  
+	 * <p>See Merkey <i>et al</i> (2011) p.5 for more details:
+	 * <a href=
+	 * "http://onlinelibrary.wiley.com/doi/10.1111/j.1462-2920.2011.02535.x/full#ss18"
+	 * >link</a>.</p>
 	 * 
 	 * @return Net growth rate divided by maximum growth rate.
 	 */
 	public Double growthTone()
 	{
-		Double tonusMax = 0.0;
-		updateGrowthRates();
-		for ( int reacIndex : reactionActive )
-		{
-			tonusMax += reactionKinetic[reacIndex][0] * 
-												particleYield[reacIndex][0];
-		}
-		return _netGrowthRate / (tonusMax * particleMass[0]);
+		return _netGrowthRate / getSpeciesParam().maxGrowthRate;
 	}
 	
 	/*************************************************************************
 	 * REPORTING
 	 ************************************************************************/
 	
-	
-	
 	/**
 	 * \brief Using the Simulator species list, collect the names of all
 	 * Plasmid species that could be hosted by this PlasmidBac species.
+	 * 
+	 * <p>This list will be used when writing output and reading in from
+	 * output agent_State file.</p>
 	 * 
 	 * @param aSim The Simulator this is running in.
 	 */
 	private void collectPlasmidSpeciesNames(Simulator aSim)
 	{
+		System.out.println("This is "+aSim.speciesDic.get(this.speciesIndex));
 		for ( Species aSpecies : aSim.speciesList )
 		{
 			if ( ! ( aSpecies.getProgenitor() instanceof Plasmid ) )
 				continue;
+			System.out.println("Looking at "+aSpecies.speciesName);
 			if ( ! ((Plasmid) aSpecies.getProgenitor()).isCompatible(this) )
+			{
+				System.out.println("\tNot compatible");
 				continue;
+			}
+			System.out.println("\tAdded!");
 			getSpeciesParam().addPotentialPlasmidName(aSpecies.speciesName);
 		}
 	}

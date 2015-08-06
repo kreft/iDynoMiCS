@@ -1804,6 +1804,16 @@ public class AgentContainer
 	}
 	
 	/**
+	 * \brief Return the volume of a single voxel (in cubic micrometers).
+	 * 
+	 * @return Volume of a single voxel (in um<sup>3</sup>)
+	 */
+	public double getVoxelVolume()
+	{
+		return ExtraMath.cube(_res);
+	}
+	
+	/**
 	 * \brief Return the dimensions of the grid (nI,nJ,nK) as an array.
 	 * 
 	 * @return	An array containing the dimensions of the grid.

@@ -152,6 +152,7 @@ public class Species implements Serializable
 	{
 		// Name of the species as specified in the protocol file
 		speciesName = aSpRoot.getName();
+		LogFile.writeLogAlways("Initialising Species from XML: "+speciesName);
 		
 		// colour is used to distinguish agents in POV-Ray output images - read this from the protocol file
 		String colorName = aSpRoot.getParam("color");
@@ -199,6 +200,8 @@ public class Species implements Serializable
 	 */
 	public Species(SpecialisedAgent aProgenitor) 
 	{
+		LogFile.writeLogAlways("Initialising Species from progenitor: "
+													+aProgenitor.getName());
 		_progenitor = aProgenitor;
 		aProgenitor.setSpecies(this);
 	}
