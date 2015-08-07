@@ -13,15 +13,12 @@ import Jama.Matrix;
 
 import java.util.ArrayList;
 
-import idyno.Idynomics;
 import idyno.SimTimer;
 import simulator.diffusionSolver.multigrid.MultigridSolute;
 import simulator.Simulator;
 import simulator.SoluteGrid;
-import simulator.geometry.boundaryConditions.AllBC;
 import simulator.geometry.boundaryConditions.ConnectedBoundary;
 import simulator.geometry.Bulk;
-import simulator.geometry.Domain;
 import utils.ExtraMath;
 import utils.LogFile;
 import utils.XMLParser;
@@ -100,8 +97,13 @@ public class Solver_chemostat extends DiffusionSolver
 	/**
 	 * Relative tolerance of the calculated error. Used in the ODE solver
 	 */
-	protected double rtol;
-
+	protected Double rtol = null;
+	
+	/**
+	 * Absolute tolerance of the calculated error. Used in the ODE solver
+	 */
+	protected Double atol = null;
+	
 	/** 
 	 * 1D array of arraylists containing the list of reactions in which each of the solutes participates. 
 	 */
@@ -128,9 +130,7 @@ public class Solver_chemostat extends DiffusionSolver
 	@Override
 	public void init(Simulator aSimulator, XMLParser xmlRoot) 
 	{
-
 		super.init(aSimulator, xmlRoot);
-
 		// _soluteList and _reactions are in DiffusionSolver
 		nSolute = _soluteList.length;
 		nReaction = _reactions.size();
@@ -141,7 +141,13 @@ public class Solver_chemostat extends DiffusionSolver
 
 		// Initialise variables used by the ODE solvers
 		hmax = xmlRoot.getParamDbl("hmax");
-		rtol = xmlRoot.getParamDbl("rtol");
+		if ( xmlRoot.isParamGiven("rtol") )
+			rtol = xmlRoot.getParamDbl("rtol");
+		if ( xmlRoot.isParamGiven("atol") )
+			atol = xmlRoot.getParamDbl("atol");
+		if ( rtol == null && atol == null )
+			LogFile.writeLogAlways("WARNING! No tolerance set in the chemostat solver.");
+		
 		setDilutionAndY0();
 
 		// The soluteYield (constant) and allDiffReac (variable) will be used for 
@@ -251,7 +257,7 @@ public class Solver_chemostat extends DiffusionSolver
 	@Override
 	public void solveDiffusionReaction() 
 	{
-		odeSolver(SimTimer.getCurrentTime(), rtol, hmax);
+		odeSolver(SimTimer.getCurrentTime(), rtol, atol, hmax);
 		updateBulk();
 	}
 	
@@ -262,12 +268,11 @@ public class Solver_chemostat extends DiffusionSolver
 	 * @param rtol Relative tolerance of the calculated error.
 	 * @param hmax Maximum internal step of the solver.
 	 */
-	public void odeSolver(double t0, double rtol, double hmax)
+	public void odeSolver(double t0, Double rtol, Double atol, double hmax)
 	{
 		Matrix y       = new Matrix(nSolute, 1, 0.0);
 		Matrix ynext   = new Matrix(nSolute, 1, 0.0);
-		double t, tnext, tfinal;
-		double h, error;
+		double t, tnext, tfinal, h, tol, error, relError, absError;
 		Matrix f1      = new Matrix(nSolute, 1, 0.0);
 		Matrix f2      = new Matrix(nSolute, 1, 0.0);
 		Matrix W       = new Matrix(nSolute, nSolute, 0.0);
@@ -289,6 +294,7 @@ public class Solver_chemostat extends DiffusionSolver
 		tfinal =  SimTimer.getCurrentTimeStep();
 		// The error estimate is set back to zero for each global time-step.
 		error = 0.0;
+		tol = 0.0;
 		
 		for (int iSol = 0; iSol < nSolute; iSol++)
 			y.set(iSol, 0,  allSolute[iSol].grid[0][0][0]);
@@ -302,7 +308,10 @@ public class Solver_chemostat extends DiffusionSolver
 		while (hmax > tfinal)
 		{
 			hmax *= 0.5;
-			rtol *= 0.5;
+			if ( rtol != null )
+				rtol *= 0.5;
+			if ( atol != null )
+				atol *= 0.5;
 		}
 		
 		// hmax is our first attempted step - if it is too large then it will be reduced
@@ -385,20 +394,43 @@ public class Solver_chemostat extends DiffusionSolver
 					kaux.minusEquals( k1.minus(y).times(2) );
 					kaux.plusEquals( dFdT.times(h*d));
 					k3 = invW.times(kaux);
+					/*
+					 *[Rob ]
+					 */
 					// error = (h/6) * (k1 - 2*k2 + k3)/y
 					kaux.timesEquals(0.0);
 					/*
 					 * We now use kaux to estimate the error of this step.
 					 */
-					for (int i = 0; i < nSolute; i++)
-						kaux.set(i,0, 1/Math.min(y.get(i,0),ynext.get(i,0)));
 					kaux.arrayTimesEquals( k1.minus( k2.times(2) ).plus(k3).times(h/6) );
 					/*
 					 * We now calculate the error
 					 */
 					error = 0.0;
+					relError = 0.0;
+					absError = 0.0;
 					for (int i = 0; i < nSolute; i++)
-						error = Math.max(error, kaux.get(i,0));
+					{
+						absError = Math.max(error, kaux.get(i,0));
+						relError = Math.max(error, kaux.get(i,0) /
+										Math.min(y.get(i,0),ynext.get(i,0)));
+					}
+					/*
+					 * If only one of the tolerances is set, use that one.
+					 * Otherwise, determine which scheme has the largest
+					 * error.
+					 */
+					if ( atol == null || 
+							(rtol != null && relError/rtol > absError/atol) )
+					{
+						error = relError;
+						tol = rtol;
+					}
+					else
+					{
+						error = absError;
+						tol = atol;
+					}
 				}
 				catch (Exception e)
 				{
@@ -423,7 +455,7 @@ public class Solver_chemostat extends DiffusionSolver
 				 * Problems in Ordinary Differential Equations. Prentice-Hall,
 				 * Englewood Cliffs, N.J.
 				 */
-				if ( error > rtol )
+				if ( error > tol )
 				{ 
 					noFailed = false;
 					lastStep = false;
@@ -431,15 +463,15 @@ public class Solver_chemostat extends DiffusionSolver
 						break;
 					else
 					{
-						if (EPS*t > h * 0.9*(Math.pow((rtol/error), power)))
+						if (EPS*t > h * 0.9*(Math.pow((tol/error), power)))
 							usingHMin = true;
-						h =  Math.max(EPS*t, h * 0.9*(Math.pow((rtol/error), power)));
+						h =  Math.max(EPS*t, h * 0.9*(Math.pow((tol/error), power)));
 					}
 					// Note that EPS*t = hmin (variable previously used).
 				}
 				else
 					break;
-				LogFile.writeLog("error = "+error+", rtol = "+rtol+", h = "+h);
+				LogFile.writeLog("error = "+error+", tol = "+tol+", h = "+h);
 			}// End of while(true) 
 			/*
 			 * If there were no failures compute a new h. We use the same
@@ -454,7 +486,7 @@ public class Solver_chemostat extends DiffusionSolver
 			 */
 			if ( noFailed )
 			{
-				Double test = Math.pow((rtol/error), power);
+				Double test = Math.pow((tol/error), power);
 				h *= ( test < 1.2 ) ? test : 5.0;
 			}
 			/*

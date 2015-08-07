@@ -286,6 +286,7 @@
 			 for more details. -->
 		<param name="lowTonusCutoff">-1E308</param>
 		<param name="highTonusCutoff">-1E308</param>
+		<param name="maxGrowthRate">0.499</param>
 		<!-- Proportional to the speed at which cells are travelling: only
 			 applies in the chemostat. Set this to be the same in all
 			 PlasmidBac species. -->
@@ -330,6 +331,7 @@
 		<param name="epsMax">0.1</param>
 		<param name="lowTonusCutoff">-1E308</param>
 		<param name="highTonusCutoff">-1E308</param>
+		<param name="maxGrowthRate">0.499</param>
 		<!-- Value should be same as in BroadHost. -->
 		<param name="collisionCoeff">0.1</param>
 		<!-- Value should be same as in BroadHost. -->
