@@ -13,11 +13,7 @@ Time : hour
         <param name="quietMode">false</param>
 		<param name="restartPreviousRun">false</param>
 		<param name="randomSeed">35</param>
-		<param name="outputPeriod" unit="hour">2.0</param>
-
-		<!-- Specifies whether the simulation should check as to whether a new release is available -->
-		<param name="checkForReleaseUpdate">true</param>
-
+		<param name="outputPeriod" unit="hour">2</param>
 		<!-- CHEMOSTAT SITUATION: when simulating a chemostat one should set the global timeStep (timeStepIni)
 	to be around 0.10*(1/D), so that in average 10% of the agents will be removed from the system in each 
 	time step. But according to the tests performed, better results will be obtained with lower time steps
@@ -25,15 +21,10 @@ Time : hour
 		<timeStep>
 			<param name="adaptive">false</param>
 			<param name="timeStepIni" unit="hour">0.5</param>
-			<param name="timeStepMin" unit="hour">0.05</param>
-			<param name="timeStepMax" unit="hour">1.0</param>
-			<param name="endOfSimulation" unit="day">3.0</param>
+			<param name="timeStepMin" unit="hour">0.025</param>
+			<param name="timeStepMax" unit="hour">1</param>
+			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
-
-		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
-		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
-		<param name="attachment">onetime</param>
-
 		<!-- Set the flag "chemostat" to true. The default is false, i.e., if nothing is said a biofilm scenario is simulated-->
 		<param name="chemostat">true</param>
 		<!-- The AGENTTIMESTEP which should always be EQUAL or LOWER than the global time step -->
@@ -64,7 +55,7 @@ Time : hour
 	<!-- -->
 	<!-- ____________________________________________________________ -->
 	<particle name="biomass">
-		<param name="density" unit="g.L-1">150.0</param>
+		<param name="density" unit="g.L-1">150</param>
 	</particle>
 	<!-- ____________________________________________________________ -->
 
@@ -82,7 +73,7 @@ Time : hour
 			<solute name="o2d">
 				<param name="Sbulk" unit="g.L-1">1e-3</param>
 				<param name="Sin" unit="g.L-1">1e-3</param>
-				<!--<param name="isConstant">true</param>-->
+				<param name="isConstant">true</param>
 			</solute>
 			<solute name="nh4">
 				<param name="Sbulk" unit="g.L-1">1.5e-3</param>
@@ -100,12 +91,12 @@ Time : hour
 		<computationDomain name="chemostat">
 		
 			<grid nDim="1" nI="1" nJ="1" nK="1"/>
-			<param name="resolution" unit="um">2e3</param>
+			<param name="resolution" unit="um">5e4</param>
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
-					<param name="pointIn" i="-1" j="0" k="0"/>
-					<param name="vectorOut" i="-1" j="0" k="0"/>
+					<param name="pointIn" x="-1" y="0" z="0"/>
+					<param name="vectorOut" x="-1" y="0" z="0"/>
 				</shape>
 			</boundaryCondition>
 
@@ -115,30 +106,30 @@ Time : hour
 				<param name="activeForSolute">yes</param>
 				<param name="bulk">chemostat</param>
 				<shape class="Planar">
-					<param name="pointIn" i="1" j="0" k="0"/>
-					<param name="vectorOut" i="1" j="0" k="0"/>
+					<param name="pointIn" x="1" y="0" z="0"/>
+					<param name="vectorOut" x="1" y="0" z="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0z">
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="-1" k="0"/>
-					<param name="vectorOut" i="0" j="-1" k="0"/>
+					<param name="pointIn" x="0" y="-1" z="0"/>
+					<param name="vectorOut" x="0" y="-1" z="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="1" k="0"/>
-					<param name="vectorOut" i="0" j="1" k="0"/>
+					<param name="pointIn" x="0" y="1" z="0"/>
+					<param name="vectorOut" x="0" y="1" z="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="0" k="-1"/>
-					<param name="vectorOut" i="0" j="0" k="-1"/>
+					<param name="pointIn" x="0" y="0" z="-1"/>
+					<param name="vectorOut" x="0" y="0" z="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="0" k="1"/>
-					<param name="vectorOut" i="0" j="0" k="1"/>
+					<param name="pointIn" x="0" y="0" z="1"/>
+					<param name="vectorOut" x="0" y="0" z="1"/>
 				</shape>
 			</boundaryCondition>
 		</computationDomain>
@@ -154,12 +145,12 @@ Time : hour
 			<param name="Ks" unit="g.L-1">1.5e-3</param>
 		</kineticFactor>
 		<kineticFactor class="MonodKinetic" solute="o2d">
-			<param name="Ks" unit="g.L-1">5e-4</param>
+			<param name="Ks" unit="g.L-1">0.5e-3</param>
 		</kineticFactor>
 		<yield>
 			<param name="nh4" unit="g.g-1">-1.587</param>
 			<param name="o2d" unit="g.g-1">-6.25</param>
-			<param name="biomass" unit="g.L-1">1.0</param>
+			<param name="biomass" unit="g.L-1">1</param>
 		</yield>
 	</reaction>
 

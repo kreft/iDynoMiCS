@@ -1,6 +1,8 @@
 package simulator.agent.zoo;
 
+import idyno.SimTimer;
 import simulator.Simulator;
+import simulator.SpatialGrid;
 import utils.LogFile;
 import utils.XMLParser;
 
@@ -34,10 +36,16 @@ public class AgingParam extends BacteriumParam
 	 */
 	Double repY  = 0.8;
 	
+	/**
+	 * Toxicity parameter. Default value is False, which means that damage is not toxic.
+	 */
+	boolean isToxic = false;
+	
 	public AgingParam()
 	{
 		super();
 	}
+		
 	
 	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
@@ -81,5 +89,11 @@ public class AgingParam extends BacteriumParam
 		 */
 		value = getSpeciesParameterDouble("repY", aSpeciesRoot, speciesDefaults);
 		repY = Double.isFinite(value) ? value : repY;
+		/*
+		 * Whether damage is toxic
+		 */
+		Boolean boolTemp = getSpeciesParameterBool("isToxic",
+				aSpeciesRoot, speciesDefaults);
+		isToxic = (boolTemp == XMLParser.nullBool) ? isToxic : boolTemp;
 	}
 }

@@ -24,20 +24,13 @@
 		<param name="randomSeed">42</param>
 		<param name="outputPeriod" unit="hour">1</param>
 
-		<!-- Specifies whether the simulation should check as to whether a new release is available -->
-		<param name="checkForReleaseUpdate">true</param>
-
 		<timeStep>
 			<param name="adaptive">true</param>
 			<param name="timeStepIni" unit="hour">0.5</param>
-			<param name="timeStepMin" unit="hour">0.05</param>
+			<param name="timeStepMin" unit="hour">0.025</param>
 			<param name="timeStepMax" unit="hour">1</param>
-			<param name="endOfSimulation" unit="day">1</param>
+			<param name="endOfSimulation" unit="day">3</param>
 		</timeStep>
-
-		<!-- Attachment scenario - can be 'onetime', where the cells attach to the substratum initially (as in traditional iDynoMiCS)		
-		 or selfattach - where the cells start at the boundary layer and attach after a random walk to the substratum (new from Version 1.2) -->
-		<param name="attachment">onetime</param>
 
 		<param name="agentTimeStep" unit="hour">0.05</param>
         <param name="invComp">false</param> 
@@ -136,16 +129,16 @@
 
 		<computationDomain name="MyBiofilm">
 
-			<grid nDim="3" nI="17" nJ="17" nK="17"/>
+			<grid nDim="3" nI="33" nJ="33" nK="33"/>
 			<param name="resolution" unit="um">8</param>
-			<param name="boundaryLayer" unit="um">40</param>
+			<param name="boundaryLayer" unit="um">50</param>
 			<param name="biofilmDiffusivity">0.8</param>
 			<param name="specificArea" unit="m2.m-3">80</param>
 
 			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
 				<shape class="Planar">
-					<param name="pointIn" i="-1" j="0" k="0"/>
-					<param name="vectorOut" i="-1" j="0" k="0"/>
+					<param name="pointIn" x="-1" y="0" z="0"/>
+					<param name="vectorOut" x="-1" y="0" z="0"/>
 				</shape>
 			</boundaryCondition>
 
@@ -153,30 +146,30 @@
 				<param name="activeForSolute">yes</param>
 				<param name="bulk">MyTank</param>
 				<shape class="Planar">
-					<param name="pointIn" i="17" j="0" k="0"/>
-					<param name="vectorOut" i="1" j="0" k="0"/>
+					<param name="pointIn" x="33" y="0" z="0"/>
+					<param name="vectorOut" x="1" y="0" z="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0z">
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="-1" k="0"/>
-					<param name="vectorOut" i="0" j="-1" k="0"/>
+					<param name="pointIn" x="0" y="-1" z="0"/>
+					<param name="vectorOut" x="0" y="-1" z="0"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="17" k="0"/>
-					<param name="vectorOut" i="0" j="1" k="0"/>
+					<param name="pointIn" x="0" y="33" z="0"/>
+					<param name="vectorOut" x="0" y="1" z="0"/>
 				</shape>
 			</boundaryCondition>
 
 			<boundaryCondition class="BoundaryCyclic" name="x0y">
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="0" k="-1"/>
-					<param name="vectorOut" i="0" j="0" k="-1"/>
+					<param name="pointIn" x="0" y="0" z="-1"/>
+					<param name="vectorOut" x="0" y="0" z="-1"/>
 				</shape>
 				<shape class="Planar">
-					<param name="pointIn" i="0" j="0" k="17"/>
-					<param name="vectorOut" i="0" j="0" k="1"/>
+					<param name="pointIn" x="0" y="0" z="33"/>
+					<param name="vectorOut" x="0" y="0" z="1"/>
 				</shape>
 			</boundaryCondition>
 		</computationDomain>
@@ -338,7 +331,7 @@
 
 		<detachment class="DS_Quadratic">
 			<param name="kDet" unit="um-1.hour-1">5e-6</param>
-			<param name="maxTh" unit="um">80</param>
+			<param name="maxTh" unit="um">200</param>
 		</detachment>
 		<param name="sloughDetachedBiomass">true</param>
 		
@@ -368,8 +361,8 @@
 		<param name="deathRadiusCV">0.0</param>
 		<param name="babyMassFrac">0.5</param>
 		<param name="babyMassFracCV">0.0</param>
-		<param name="shoveFactor" unit="um">1.0</param>
-		<param name="shoveLimit" unit="um">0.0</param>
+		<param name="shoveFactor" unit="um">1</param>
+		<param name="shoveLimit" unit="um">0.</param>
 
 		<reaction name="MyHydrolysisEPS" status="active"/>
 	</species>
@@ -387,8 +380,8 @@
 		<param name="deathRadiusCV">0.0</param>
 		<param name="babyMassFrac">0.5</param>
 		<param name="babyMassFracCV">0.0</param>
-		<param name="shoveFactor" unit="um">1.0</param>
-		<param name="shoveLimit" unit="um">0.0</param>
+		<param name="shoveFactor" unit="um">1</param>
+		<param name="shoveLimit" unit="um">0.</param>
 
 		<reaction name="MyHydrolysisEPS" status="active"/>
 	</species>
@@ -421,15 +414,10 @@
 		<reaction name="MyMaintenanceAutotrophs" status="active"/>
 		<reaction name="MyInactivationAutotrophs" status="active"/>
 
-		<initArea number="25">
+		<initArea number="100">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="64" z="64"/>
-		</initArea>
-		<initArea number="25">
-			<param name="birthday" unit="hour">0</param>
-			<coordinates x="0" y="64" z="64"/>
-			<coordinates x="1" y="128" z="128"/>
+			<coordinates x="1" y="264" z="264"/>
 		</initArea>
 	</species>
 
@@ -462,15 +450,10 @@
 		<reaction name="MyMaintenanceHeterotrophs" status="active"/>
 		<reaction name="MyInactivationHeterotrophs" status="active"/>
 
-		<initArea number="25">
+		<initArea number="100">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="64" z="64"/>
-		</initArea>
-		<initArea number="25">
-			<param name="birthday" unit="hour">0</param>
-			<coordinates x="0" y="64" z="64"/>
-			<coordinates x="1" y="128" z="128"/>
+			<coordinates x="1" y="264" z="264"/>
 		</initArea>
 	</species>
 
@@ -530,15 +513,10 @@
 			-->
 		</reactionSwitch>
 
-		<initArea number="25">
+		<initArea number="100">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates x="0" y="0" z="0"/>
-			<coordinates x="1" y="64" z="64"/>
-		</initArea>
-		<initArea number="25">
-			<param name="birthday" unit="hour">0</param>
-			<coordinates x="0" y="64" z="64"/>
-			<coordinates x="1" y="128" z="128"/>
+			<coordinates x="1" y="264" z="264"/>
 		</initArea>
 	</species>
 	

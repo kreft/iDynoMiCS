@@ -2,6 +2,7 @@ package simulator.agent.zoo;
 
 import idyno.SimTimer;
 import simulator.Simulator;
+import simulator.SpatialGrid;
 import simulator.geometry.ContinuousVector;
 import utils.ExtraMath;
 import utils.LogFile;
@@ -328,8 +329,50 @@ public class AgingBac extends Bacterium
 	@Override
 	protected void updateGrowthRates()
 	{
-		super.updateGrowthRates();
+		if ( this.getSpeciesParam().isToxic )
+			this.toxicGrowthRates();
+		else
+			super.updateGrowthRates();
 		repair();
+	}
+	
+	protected void toxicGrowthRates()
+	{
+		for (int i = 0; i < particleMass.length; i++)
+			deltaParticle[i] = 0.0;
+		
+		Double tStep = SimTimer.getCurrentTimeStep();
+		Double pAct =  this.particleMass[0];
+		Double pDam = this.particleMass[1];
+		Double age = this.age;
+		Double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
+		Double a = allReactions[reactionActive.get(1)].getKinetic()[0];
+		/*
+		 * Growth
+		 */
+		deltaParticle[0] += pAct*Math.expm1(tStep*Mu*(1-age));
+		_netGrowthRate = pAct*Mu*(1-age);
+		/*
+		 * Aging & repair
+		 */
+		Double ageMass = pAct*Math.expm1(-a*tStep);
+		deltaParticle[0] += ageMass;
+		deltaParticle[1] -= ageMass;
+		repair();
+		/*
+		 * Removal
+		 */
+		if (allReactions.length > 3)
+		{
+			Double k2 = allReactions[3].getKinetic()[0];
+			Double k4 = allReactions[4].getKinetic()[0];
+			deltaParticle[0] += pAct * Math.expm1( - k2 * tStep );
+			deltaParticle[1] += pDam * Math.expm1( - k4 * tStep );
+			_netGrowthRate -= pAct * k2;
+			_netGrowthRate -= pDam * k4;
+		}
+		_netVolumeRate = _netGrowthRate/getSpeciesParam().particleDensity[0];
+		
 	}
 	
 	protected void repair()
@@ -353,6 +396,22 @@ public class AgingBac extends Bacterium
 		_netGrowthRate -= (1 - repY) * beta * pAct * rate;
 		_netVolumeRate -= (1 - repY) * beta * pAct * rate /
 										getSpeciesParam().particleDensity[0];
+	}
+	
+	@Override
+	public void fitMassOnGrid(SpatialGrid aSpG)
+	{
+		if ( this.getSpeciesParam().isToxic )
+		{
+			if ( isDead )
+				return;
+			Double value = (1-this.age)*_totalMass/aSpG.getVoxelVolume();
+			if (Double.isNaN(value) | Double.isInfinite(value))
+				value = 0.0;
+			aSpG.addValueAt(value, _location);
+		}
+		else
+			super.fitMassOnGrid(aSpG);
 	}
 	
 	/**
