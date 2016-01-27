@@ -24,7 +24,7 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 		<timeStep>
 			<param name="adaptive">false</param>
 			<param name="timeStepIni" unit="hour">0.01</param>
-			<param name="endOfSimulation" unit="day">500</param>
+			<param name="endOfSimulation" unit="day">1</param>
 		</timeStep>
 		<param name="chemostat">true</param>
 		<param name="agentTimeStep" unit="hour">0.01</param>
@@ -145,7 +145,7 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 	</agentGrid>
 
 	<!--SPECIES-->
-	<species class="AgingBac" name="OldieA">
+	<species class="ToxicAgingBac" name="OldieA">
 		<particle name="activeBiomass">
 			<param name="mass" unit="fg">0.0</param>
 		</particle>
@@ -169,8 +169,8 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
   		<param name="deathRadiusCV" unit="um">0</param>
 		<!--alpha=1.0 and beta=0.08 means that this is an Asymmetric strategy with 8% investment in repair.
 		This corresponds to the a08 in the filename-->
-		<param name="alpha">1.0</param> <!--damage segregtaion at division-->
-        <param name="beta">0.08</param> <!--investment in repair-->
+		<param name="alpha">0.0</param> <!--damage segregtaion at division-->
+        <param name="beta">0.10</param> <!--investment in repair-->
         <param name="repY">0.8</param> <!--repair yield-->
   		<!--Reactions-->
 		<reaction name="growthR" status="active"/>

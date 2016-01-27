@@ -8,8 +8,8 @@ Time : hour
 
 <!--
 This is an example protocol used to look for an optimal investment in repair, for a strategy
-segregating its damage Asymmetrically, in a constant environment with damage accumulation rate
-0.10 per hour when damage is inert.
+segregating its damage Symmetrically, in a dynamic environment (Chemostat) with Dilution rate
+of 0.3 per hour and damage accumulation rate 0.20 per hour, when damage is toxic.
 -->
 
 <idynomics>
@@ -19,12 +19,12 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 	    <param name="quietMode">false</param>
 		<param name="restartPreviousRun">false</param>
 		<param name="randomSeed">814</param>
-		<!--Analysis of the results is based on the population growth rate at day-intervals-->
+		<!--Analysis of the results is based on the glucose concentration at day-intervals-->
 		<param name="outputPeriod" unit="day">1</param>
 		<timeStep>
 			<param name="adaptive">false</param>
 			<param name="timeStepIni" unit="hour">0.01</param>
-			<param name="endOfSimulation" unit="day">500</param>
+			<param name="endOfSimulation" unit="day">1</param>
 		</timeStep>
 		<param name="chemostat">true</param>
 		<param name="agentTimeStep" unit="hour">0.01</param>
@@ -47,25 +47,26 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 	</particle>
 
 	<world>
-	    <!-- We use a chemostat with constant bulk concentrations to simulate the constant environment.
-		This corresponds to the ConstEnv in the filename-->
+	<!--BULK-->
+		<!--This is a chemostat with dilution rate 0.3 per hour, which corresponds to the D3...Chemo in the filename-->
 		<bulk name="chemostat">
 		
-			<param name="isConstant">true</param>
-			<param name="D" unit="h-1">0.0</param>
+			<param name="isConstant">false</param>
+			<param name="D" unit="h-1">0.3</param>
 
+			<!--Inflow concentration-->
 			<solute name="glucose">
-				<param name="Sbulk" unit="g.L-1">0.00234</param>
-				<param name="Sin" unit="g.L-1">0.00234</param>
+				<param name="Sbulk" unit="g.L-1">0.00324</param>
+				<param name="Sin" unit="g.L-1">0.00324</param>
 			</solute>
 
 		</bulk>
 
 	<!--DOMAIN-->
-	    <!--(unimportant in the constant environment)-->
 		<computationDomain name="chemostat">		
 			<grid nDim="1" nI="1" nJ="1" nK="1"/>
-			<param name="resolution" unit="um">2.15e3</param>
+			<!--The chemostat volume is 1 cubic micrometre-->
+			<param name="resolution" unit="um">1e3</param>
 
 			<boundaryCondition class="BoundaryBulk" name="yNz">
 				<param name="activeForSolute">yes</param>
@@ -108,19 +109,20 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 	</world>
 
 	<!--REACTIONS-->
-		<!--growth: muMax = 1.2*(1-0.08) because beta = 8%-->
-  	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="growthR">
-  		<param name="muMax" unit="hour-1">1.104</param>
+	    <!--growth: muMax = 1.2*(1-0.17) because beta = 17%-->
+  	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="growth">
+  		<param name="muMax" unit="hour-1">0.996</param>
   		<kineticFactor class="MonodKinetic" solute="glucose">
   			<param name="Ks" unit="g.L-1">2.34e-3</param>
   		</kineticFactor>
-    		<yield>
+    	<yield>
+  			<param name="glucose" unit="g.g-1">-2.25</param>
   			<param name="activeBiomass" unit="g.g-1">1.0</param>
   		</yield>
   	</reaction>
-		<!--damage accumulation rate a: the muMax=0.15 corresponds to the 15 in the filename-->
+		<!--damage accumulation rate a: the muMax=0.20 corresponds to the A20 in the filename-->
   	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="aging">
-  		<param name="muMax" unit="hour-1">0.10</param>
+  		<param name="muMax" unit="hour-1">0.20</param>
   		<kineticFactor class="FirstOrderKinetic"/>
   		<yield>
   			<param name="activeBiomass" unit="g.g-1">-1.0</param>
@@ -130,22 +132,24 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 
 	<!--SOLVER (Reactions)-->
     <solver class="Solver_chemostat" name="solver1" domain="chemostat">
-        <param name="rtol">1e-3</param>
+		<param name="rtol">1e-3</param>
 	 	<param name="hmax">1e-3</param>
 		<param name="active">true</param>
-		<reaction name="growthR"/>
+		<reaction name="growth"/>
 		<reaction name="aging"/>
 	</solver>
-	
+
   	<!--GRID-->
-  	<!-- erosionMethod=false tells iDynoMiCS to keep the population capped at 1000-->
+  	<!--(unimportant in the chemostat)-->
 	<agentGrid>
 		<param name="computationDomain">chemostat</param>
-        <param name="erosionMethod">false</param>
 	</agentGrid>
 
 	<!--SPECIES-->
-	<species class="AgingBac" name="OldieA">
+	<!--The Toxic in ToxicAgingBac tells iDynoMiCS that damage should be considered toxic.
+	This corresponds to the Tox in the filename-->
+
+	<species class="AgingBac" name="Oldie">
 		<particle name="activeBiomass">
 			<param name="mass" unit="fg">0.0</param>
 		</particle>
@@ -158,7 +162,7 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 		<param name="computationDomain">chemostat</param>
 		<!--Cells divide once they reach a radius of divRadius (all modelled as spheres)-->
 		<param name="divRadius" unit="um">0.8</param>
-		<param name="divRadiusCV">0.00</param>
+		<param name="divRadiusCV">0.0</param>
 		<!--The fraction of total biomass the newly-created cell receives at division.
 		This is allowed to vary randomly by a Gaussian distribution, mean babyMassFrac=0.5 and
 		standard deviation (babyMassFrac*babyMassFracCV)=0.025. This prevents synchronous growth-->
@@ -167,16 +171,18 @@ segregating its damage Asymmetrically, in a constant environment with damage acc
 		<!--Cells die once they reach a radius of deathRadius (all modelled as spheres)-->
   		<param name="deathRadius" unit="um">0</param>
   		<param name="deathRadiusCV" unit="um">0</param>
-		<!--alpha=1.0 and beta=0.08 means that this is an Asymmetric strategy with 8% investment in repair.
-		This corresponds to the a08 in the filename-->
-		<param name="alpha">1.0</param> <!--damage segregtaion at division-->
-        <param name="beta">0.08</param> <!--investment in repair-->
-        <param name="repY">0.8</param> <!--repair yield-->
+		<!--alpha=0.0 and beta=0.17 means that this is an Symmetric strategy with 17% investment in repair.
+		This corresponds to the s17 in the filename-->
+		<param name="alpha">0.0</param>
+        <param name="beta">0.17</param>
+        <param name="repY">0.8</param>
   		<!--Reactions-->
-		<reaction name="growthR" status="active"/>
+        <reaction name="growth" status="active"/>
 		<reaction name="aging" status="active"/>
+		<!--If damage is toxic, then this should change the growth-->
+		<param name="isToxic">true</param>
   	<!--INITIALISATION-->
-		<initArea number="1000">
+		<initArea number="2000">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates i="0" j="0" k="0"/>
 			<coordinates i="1" j="1" k="0"/>

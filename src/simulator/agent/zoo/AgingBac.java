@@ -329,28 +329,22 @@ public class AgingBac extends Bacterium
 	@Override
 	protected void updateGrowthRates()
 	{
-		if ( this.getSpeciesParam().isToxic )
-			this.toxicGrowthRates();
-		else
-			super.updateGrowthRates();
-		repair();
-	}
-	
-	protected void toxicGrowthRates()
-	{
 		for (int i = 0; i < particleMass.length; i++)
 			deltaParticle[i] = 0.0;
 		
-		Double tStep = SimTimer.getCurrentTimeStep();
-		Double pAct =  this.particleMass[0];
-		Double pDam = this.particleMass[1];
-		Double age = this.age;
-		Double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
-		Double a = allReactions[reactionActive.get(1)].getKinetic()[0];
+		double tStep = SimTimer.getCurrentTimeStep();
+		double pAct =  this.particleMass[0];
+		double pDam = this.particleMass[1];
+		double age = this.age;
+		double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
+		double a = allReactions[reactionActive.get(1)].getKinetic()[0];
 		/*
 		 * Growth
 		 */
-		deltaParticle[0] += pAct*Math.expm1(tStep*Mu*(1-age));
+		double exponent = tStep*Mu;
+		if ( this.getSpeciesParam().isToxic )
+			exponent *= (1-age);
+		deltaParticle[0] += pAct*Math.expm1(exponent);
 		_netGrowthRate = pAct*Mu*(1-age);
 		/*
 		 * Aging & repair
@@ -360,7 +354,7 @@ public class AgingBac extends Bacterium
 		deltaParticle[1] -= ageMass;
 		repair();
 		/*
-		 * Removal
+		 * Removal (Erjavec comparison)
 		 */
 		if (allReactions.length > 3)
 		{
@@ -372,7 +366,6 @@ public class AgingBac extends Bacterium
 			_netGrowthRate -= pDam * k4;
 		}
 		_netVolumeRate = _netGrowthRate/getSpeciesParam().particleDensity[0];
-		
 	}
 	
 	protected void repair()
@@ -399,19 +392,29 @@ public class AgingBac extends Bacterium
 	}
 	
 	@Override
+	public void fitMassOnGrid(SpatialGrid aSpG, int catalystIndex)
+	{
+		if ( isDead )
+			return;
+		Double value = particleMass[catalystIndex]/aSpG.getVoxelVolume();
+		if ( ! Double.isFinite(value) )
+			value = 0.0;
+		if ( this.getSpeciesParam().isToxic )
+			value *= (1-this.age);
+		aSpG.addValueAt(value, _location);
+	}
+	
+	@Override
 	public void fitMassOnGrid(SpatialGrid aSpG)
 	{
+		if ( isDead )
+			return;
+		Double value = _totalMass/aSpG.getVoxelVolume();
+		if ( ! Double.isFinite(value) )
+			value = 0.0;
 		if ( this.getSpeciesParam().isToxic )
-		{
-			if ( isDead )
-				return;
-			Double value = (1-this.age)*_totalMass/aSpG.getVoxelVolume();
-			if (Double.isNaN(value) | Double.isInfinite(value))
-				value = 0.0;
-			aSpG.addValueAt(value, _location);
-		}
-		else
-			super.fitMassOnGrid(aSpG);
+			value *= (1-this.age);
+		aSpG.addValueAt(value, _location);
 	}
 	
 	/**
