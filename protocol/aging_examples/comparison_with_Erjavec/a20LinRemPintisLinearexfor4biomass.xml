@@ -120,13 +120,13 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 	<!--REACTIONS-->
 	<!--time units in Erjavec et al (2005) seem to be of the order of magnitude of days-->
 		<!--growth-->
-  	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="growthN">
+  	<reaction catalyzedBy="activeBiomassGrowth" class="ReactionFactor" name="growthN">
   		<param name="muMax" unit="day-1">20000</param>
   		<kineticFactor class="MonodKinetic" solute="glucose">
   			<param name="Ks" unit="g.L-1">1</param>
   		</kineticFactor>
     		<yield>
-  			<param name="activeBiomass" unit="g.g-1">1.0</param>
+  			<param name="activeBiomassGrowth" unit="g.g-1">1.0</param>
   		</yield>
   	</reaction>
 		<!--Dummy reaction (not used)-->
@@ -140,28 +140,46 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
   		</yield>
   	</reaction>
 		<!--damage accumulation rate a: the muMax=2.0 corresponds to the 20 in the filename-->
-  	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="aging">
+  	<reaction catalyzedBy="activeBiomassGrowth" class="ReactionFactor" name="aging">
   		<param name="muMax" unit="day-1">2.0</param>
   		<kineticFactor class="FirstOrderKinetic"/>
   		<yield>
-  			<param name="activeBiomass" unit="g.g-1">-1.0</param>
-  			<param name="inactiveBiomass" unit="g.g-1">1.0</param>
+  			<param name="activeBiomassGrowth" unit="g.g-1">-1.0</param>
+  			<param name="activeBiomassRepair" unit="g.g-1">-1.0</param>
+  			<param name="inactiveBiomassGrowth" unit="g.g-1">1.0</param>
+  			<param name="inactiveBiomassRepair" unit="g.g-1">1.0</param>
   		</yield>
   	</reaction>
-        <!--Removal of active biomass-->
-  	<reaction catalyzedBy="activeBiomassGrowth" class="ReactionFactor" name="removalActive">
+        <!--Removal of active biomass for growth-->
+  	<reaction catalyzedBy="activeBiomassGrowth" class="ReactionFactor" name="removalActiveGrowth">
   		<param name="muMax" unit="day-1">0.6931</param>
   		<kineticFactor class="FirstOrderKinetic"/>
   		<yield>
-  			<param name="activeBiomass" unit="g.g-1">-1.0</param>
+  			<param name="activeBiomassGrowth" unit="g.g-1">-1.0</param>
   		</yield>
   	</reaction>
-        <!--Removal of damaged biomass-->
-  	<reaction catalyzedBy="inactiveBiomassGrowth" class="ReactionFactor" name="removalDamaged">
+  		<!--Removal of active biomass for repair-->
+  	<reaction catalyzedBy="activeBiomassRepair" class="ReactionFactor" name="removalActiveRepair">
   		<param name="muMax" unit="day-1">0.6931</param>
   		<kineticFactor class="FirstOrderKinetic"/>
   		<yield>
-  			<param name="inactiveBiomass" unit="g.g-1">-1.0</param>
+  			<param name="activeBiomassRepair" unit="g.g-1">-1.0</param>
+  		</yield>
+  	</reaction>
+        <!--Removal of damaged biomass for growth-->
+  	<reaction catalyzedBy="inactiveBiomassGrowth" class="ReactionFactor" name="removalDamagedGrowth">
+  		<param name="muMax" unit="day-1">0.6931</param>
+  		<kineticFactor class="FirstOrderKinetic"/>
+  		<yield>
+  			<param name="inactiveBiomassGrowth" unit="g.g-1">-1.0</param>
+  		</yield>
+  	</reaction>
+  	   	<!--Removal of damaged biomass for repair-->
+  	<reaction catalyzedBy="inactiveBiomassRepair" class="ReactionFactor" name="removalDamagedRepair">
+  		<param name="muMax" unit="day-1">0.6931</param>
+  		<kineticFactor class="FirstOrderKinetic"/>
+  		<yield>
+  			<param name="inactiveBiomassRepair" unit="g.g-1">-1.0</param>
   		</yield>
   	</reaction>
 
