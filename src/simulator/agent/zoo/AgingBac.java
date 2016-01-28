@@ -434,24 +434,20 @@ public class AgingBac extends Bacterium
 		/*
 		 * Growth
 		 */
-		double newProtein;
-		if ( this.getSpeciesParam().isLinear ) 
-		{
-			newProtein = (1-age)*Mu*tStep;
-			_netGrowthRate = (1-age)*Mu;
-		}
-		else
-		{
-			double exponent = tStep*Mu;
-			if ( this.getSpeciesParam().isToxic )
-				exponent *= (1-age);
-			newProtein = pActGrowth*Math.expm1(exponent);
-			_netGrowthRate = pActGrowth*Mu;
-		}
+		/* First work out the net rates (independent of tStep). */
+		double temp = Mu;
 		if ( this.getSpeciesParam().isToxic )
-			_netGrowthRate *= (1-age);
-		deltaParticle[0] += (1-beta) * newProtein;
-		deltaParticle[1] += beta * newProtein;
+			temp *= ( 1 - age );
+		_netGrowthRate = temp;
+		if ( ! this.getSpeciesParam().isLinear )
+			_netGrowthRate *= pActGrowth;
+		_netVolumeRate = _netGrowthRate/getSpeciesParam().particleDensity[0];
+		/* Now work out the deltaParticles and netVolumeRate. */
+		temp *= tStep;
+		if ( ! this.getSpeciesParam().isLinear )
+			temp = pActGrowth * Math.expm1(temp);
+		deltaParticle[0] += (1-beta) * temp;
+		deltaParticle[1] += beta * temp;
 		/*
 		 * Aging & repair
 		 */
