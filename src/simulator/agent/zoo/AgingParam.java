@@ -26,6 +26,12 @@ public class AgingParam extends BacteriumParam
 	Double beta  = 0.0;
 	
 	/**
+	 * Is investment in repair optimal? Default is false, so repair takes the value
+	 * for beta defined above
+	 */
+	boolean isOptimalRepair = false;
+	
+	/**
 	 * Damage repair maximum rate parameter. Default value is 1.
 	 */
 	Double rMax  = 1.0;
@@ -117,5 +123,11 @@ public class AgingParam extends BacteriumParam
 		boolTemp = getSpeciesParameterBool("isLinear",
 				aSpeciesRoot, speciesDefaults);
 		isLinear = (boolTemp == XMLParser.nullBool) ? isLinear : boolTemp;
+		/*
+		 * Whether beta is optimised
+		 */
+		boolTemp = getSpeciesParameterBool("isOptimalRepair",
+				aSpeciesRoot, speciesDefaults);
+		isOptimalRepair = (boolTemp == XMLParser.nullBool) ? isOptimalRepair : boolTemp;
 	}
 }
