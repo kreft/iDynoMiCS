@@ -8,10 +8,10 @@ Time : hour
 
 <!--
 This is an example protocol for comparison of our model with that or Erjavec et al (2005).
-Here we simulate a population of cells whose growth is linear and which divide once their 
+Here we simulate a population of cells whose growth is exponential and which divide once their 
 individual masses reach a threshold determined by active protein only. Both active and damaged
 protein is removed (degraded) at a constant temporal rate. It is a constant environment where
-damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
+damage is toxic and the damage accumulation rate is 1.0 per time unit (days).
 -->
 
 <idynomics>
@@ -30,10 +30,9 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 		</timeStep>
 		<param name="chemostat">true</param>
 		<param name="agentTimeStep" unit="hour">0.01</param>
-		<!--This is not a competition, so we want the simulation run for the entire duration-->
+        <!--This is not a competition, so we want the simulation run for the entire duration-->
         <param name="invComp">false</param> 
 	</simulator>
-
 	<!--SOLUTES-->
   	<solute domain="chemostat" name="glucose">
   		<param name="diffusivity" unit="m2.day-1">5.86e-5</param>
@@ -49,7 +48,7 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 	</particle>
 
 	<world>
-	    <!-- We use a chemostat with constant bulk concentrations to simulate the constant environment.
+	    <!--We use a chemostat with constant bulk concentrations to simulate the constant environment.
 		This corresponds to the ConstEnv in the filename-->
 		<bulk name="chemostat">
 		
@@ -113,7 +112,7 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 	<!--time units in Erjavec et al (2005) seem to be of the order of magnitude of days-->
 		<!--growth-->
   	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="growthN">
-  		<param name="muMax" unit="day-1">20000</param>
+  		<param name="muMax" unit="day-1">20</param>
   		<kineticFactor class="MonodKinetic" solute="glucose">
   			<param name="Ks" unit="g.L-1">1</param>
   		</kineticFactor>
@@ -131,16 +130,16 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
   			<param name="activeBiomass" unit="g.g-1">1.0</param>
   		</yield>
   	</reaction>
-		<!--damage accumulation rate a: the muMax=2.0 corresponds to the 20 in the filename-->
+		<!--damage accumulation rate a: the muMax=1.0 corresponds to the 10 in the filename-->
   	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="aging">
-  		<param name="muMax" unit="day-1">2.0</param>
+  		<param name="muMax" unit="day-1">1.0</param>
   		<kineticFactor class="FirstOrderKinetic"/>
   		<yield>
   			<param name="activeBiomass" unit="g.g-1">-1.0</param>
   			<param name="inactiveBiomass" unit="g.g-1">1.0</param>
   		</yield>
   	</reaction>
-        <!--Removal of active biomass-->
+        <!--removal of active biomass-->
   	<reaction catalyzedBy="activeBiomass" class="ReactionFactor" name="removalActive">
   		<param name="muMax" unit="day-1">0.6931</param>
   		<kineticFactor class="FirstOrderKinetic"/>
@@ -148,7 +147,7 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
   			<param name="activeBiomass" unit="g.g-1">-1.0</param>
   		</yield>
   	</reaction>
-        <!--Removal of damaged biomass-->
+        <!--removal of damaged biomass-->
   	<reaction catalyzedBy="inactiveBiomass" class="ReactionFactor" name="removalDamaged">
   		<param name="muMax" unit="day-1">0.6931</param>
   		<kineticFactor class="FirstOrderKinetic"/>
@@ -170,8 +169,8 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
         <reaction name="removalDamaged"/>
 	</solver>
 	
-  	<!--GRID-->
-  	<!-- erosionMethod=false tells iDynoMiCS to keep the population capped at 1000-->
+  	<!--GRID (Detachment & Shoving)-->
+  	<!-- erosionMethod=false tells iDynoMiCS to keep the population capped at 1000-->  	
 	<agentGrid>
 		<param name="computationDomain">chemostat</param>
         <param name="erosionMethod">false</param>
@@ -179,9 +178,9 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 
 	<!--SPECIES-->
 	
-    <!--Damage is toxic and cells divide once they reach a threshold based on only active
+	<!--Damage is toxic and cells divide once they reach a threshold based on only active
 	biomass (intact protein: "Pint") so we use ToxicPintAgingBac-->
-	<species class="LinearToxicPintAgingBac" name="Oldie">
+	<species class="AgingBac" name="Oldie">
 		<particle name="activeBiomass">
 			<param name="mass" unit="fg">0.0</param>
 		</particle>
@@ -199,12 +198,14 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 		<param name="babyMassFracCV">0.05</param>
   		<param name="deathRadius" unit="um">0</param>
   		<param name="deathRadiusCV" unit="um">0</param>
-  		<!--Asymmetric segregation of damage-->
-		<param name="alpha">1.0</param>
+        <!--Symmetric segregation of damage-->
+		<param name="alpha">0.0</param>
 		<!--No repair in the comparison with Erjavec et al (2005)-->
-        <param name="beta">0.00</param>
+        <param name="beta">0.000</param>
         <param name="repY">0.8</param>
-  		<!--Reactions-->
+        <param name="isPint">true</param>
+        <param name="isToxic">true</param>
+        <!--Reactions-->
 		<reaction name="growthN" status="active"/>
 		<reaction name="growthR" status="inactive"/>
 		<reaction name="aging" status="active"/>

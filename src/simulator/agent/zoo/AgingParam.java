@@ -41,6 +41,16 @@ public class AgingParam extends BacteriumParam
 	 */
 	boolean isToxic = false;
 	
+	/**
+	 * Pint parameter. Default value is false, which means that division occurs 
+	 * when total biomass reaches a certain parameter.
+	 */
+	boolean isPint = false;
+	/**
+	 * Linear growth paramater. Default value is false, which means that growth is exponential.
+	 */
+	boolean isLinear = false;
+	
 	public AgingParam()
 	{
 		super();
@@ -95,5 +105,17 @@ public class AgingParam extends BacteriumParam
 		Boolean boolTemp = getSpeciesParameterBool("isToxic",
 				aSpeciesRoot, speciesDefaults);
 		isToxic = (boolTemp == XMLParser.nullBool) ? isToxic : boolTemp;
+		/*
+		 * Whether division occurs at threshold value of total or active biomass
+		 */
+		boolTemp = getSpeciesParameterBool("isPint",
+				aSpeciesRoot, speciesDefaults);
+		isPint = (boolTemp == XMLParser.nullBool) ? isPint : boolTemp;
+		/*
+		 * Whether growth is linear
+		 */
+		boolTemp = getSpeciesParameterBool("isLinear",
+				aSpeciesRoot, speciesDefaults);
+		isLinear = (boolTemp == XMLParser.nullBool) ? isLinear : boolTemp;
 	}
 }

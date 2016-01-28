@@ -181,7 +181,7 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 	
     <!--Damage is toxic and cells divide once they reach a threshold based on only active
 	biomass (intact protein: "Pint") so we use ToxicPintAgingBac-->
-	<species class="LinearToxicPintAgingBac" name="Oldie">
+	<species class="AgingBac" name="Oldie">
 		<particle name="activeBiomass">
 			<param name="mass" unit="fg">0.0</param>
 		</particle>
@@ -204,6 +204,9 @@ damage is toxic and the damage accumulation rate is 2.0 per time unit (days).
 		<!--No repair in the comparison with Erjavec et al (2005)-->
         <param name="beta">0.00</param>
         <param name="repY">0.8</param>
+        <param name="isToxic">true</param>
+        <param name="isPint">true</param>
+        <param name="isLinear">true</param>
   		<!--Reactions-->
 		<reaction name="growthN" status="active"/>
 		<reaction name="growthR" status="inactive"/>

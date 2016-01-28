@@ -8,6 +8,25 @@ import utils.ExtraMath;
 import utils.LogFile;
 
 /**
+ * There are a couple of different ways to call the reactions , depending on what you want.
+ * reactionActive is a list of all of the active reactions, compiled from this. So you can
+ * either index the actual reaction that you want, or index the active reaction you want.
+ * Indexing starts at 0, and is [r][c]
+ * First two reactions in protocols are two different growth strategies and are called:
+ * 				allReactions[reactionActive.get(0)]
+ * 			growthN allReactions[0] 
+ * 			growthR allReactions[1]
+ * 			Growth can only be one or the other of these, so both are active reaction 0.
+ * Third reaction is aging rate, so could be called:
+ * 				allReactions[2] or allReactions[reactionActive.get(1)]
+ * Fourth reaction is removal of active biomass - this was for comparison with Erjavec and
+ * default value is false:
+ * 				allReactions[3] or allReactions[reactionActive.get(2)]
+ * Fifth reaction is removal of damaged biomass - again Erjavec and default false:
+ * 				allReactions[4] or allReactions[reactionActive.get(3)]
+ * 
+ * I will stick with using the active reaction index where possible. 
+ * 
  * Laurent Lardon wrote the prototype AgingBac
  * Modified by Jan Kreft (j.kreft@bham.ac.uk) 2009-06-18
  * Modified by Edd Miles
@@ -215,8 +234,8 @@ public class AgingBac extends Bacterium
 		}
 		if(Math.abs(this.particleMass[0]+baby.particleMass[0]-totalUndam) > 1E-9)
 		{
-			System.out.println("Error: Incorrect protein levels post partitioning! Parent's undamaged ("+this.particleMass[1]+")");
-			System.out.println(" + baby's undamaged ("+baby.particleMass[1]+") != mother's undamaged ("+totalDam+")");
+			System.out.println("Error: Incorrect protein levels post partitioning! Parent's undamaged ("+this.particleMass[0]+")");
+			System.out.println(" + baby's undamaged ("+baby.particleMass[0]+") != mother's undamaged ("+totalUndam+")");
 			System.exit(-1);
 		}	
 		/*
@@ -341,11 +360,19 @@ public class AgingBac extends Bacterium
 		/*
 		 * Growth
 		 */
-		double exponent = tStep*Mu;
-		if ( this.getSpeciesParam().isToxic )
-			exponent *= (1-age);
-		deltaParticle[0] += pAct*Math.expm1(exponent);
-		_netGrowthRate = pAct*Mu*(1-age);
+		if ( this.getSpeciesParam().isLinear ) 
+		{
+			deltaParticle[0] += (1-age)*Mu*tStep;
+			_netGrowthRate = (1-age)*Mu;
+		}
+		else
+		{
+			double exponent = tStep*Mu;
+			if ( this.getSpeciesParam().isToxic )
+				exponent *= (1-age);
+			deltaParticle[0] += pAct*Math.expm1(exponent);
+			_netGrowthRate = pAct*Mu*(1-age);
+		}
 		/*
 		 * Aging & repair
 		 */
@@ -416,6 +443,34 @@ public class AgingBac extends Bacterium
 			value *= (1-this.age);
 		aSpG.addValueAt(value, _location);
 	}
+	
+	@Override
+	public boolean willDivide()
+	{
+		// this ensures that the checks for when to divide don't occur too often;
+		// at most they will occur at the rate of AGENTTIMESTEP
+		_timeSinceLastDivisionCheck += SimTimer.getCurrentTimeStep();
+		if ( _timeSinceLastDivisionCheck < _agentGrid.getAgentTimeStep() )
+			return false;
+
+		// at this point we will actually check whether to divide
+		_timeSinceLastDivisionCheck = 0.0;
+		
+		double checkRad;
+		
+		if ( this.getSpeciesParam().isPint )
+		{
+			checkRad = ExtraMath.radiusOfASphere(particleMass[0] /
+										getSpeciesParam().particleDensity[0]);
+		}
+		else
+		{
+			checkRad = getRadius(false);
+		}
+		return checkRad  > this._myDivRadius;
+	}
+	
+	
 	
 	/**
 	 * Called at each time step (under the control of the method Step of the

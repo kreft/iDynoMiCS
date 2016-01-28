@@ -26,7 +26,7 @@ damage is toxic and the damage accumulation rate is 1.0 per time unit (days).
 		<timeStep>
 			<param name="adaptive">false</param>
 			<param name="timeStepIni" unit="hour">0.01</param>
-			<param name="endOfSimulation" unit="day">500</param>
+			<param name="endOfSimulation" unit="day">1</param>
 		</timeStep>
 		<param name="chemostat">true</param>
 		<param name="agentTimeStep" unit="hour">0.01</param>
