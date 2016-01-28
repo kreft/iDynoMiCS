@@ -1,8 +1,6 @@
 package simulator.agent.zoo;
 
-import idyno.SimTimer;
 import simulator.Simulator;
-import simulator.SpatialGrid;
 import utils.LogFile;
 import utils.XMLParser;
 

@@ -165,7 +165,7 @@ public class AgingBac extends Bacterium
 		Double totalDam = totalDamGrowth+totalDamRepair;
 		Double totalUndam = totalUndamGrowth+totalUndamRepair;
 		Double totalGrowth = totalUndamGrowth+totalDamGrowth;
-		Double totalRepair = totalUndamRepair+totalUndamRepair;
+		Double totalRepair = totalUndamRepair+totalDamRepair;
 		Double totalProt = totalDam+totalUndam;
 		/*
 		 *  babyMassFrac = R, mumMassFrac = (1-R)
@@ -183,19 +183,19 @@ public class AgingBac extends Bacterium
 		 * This is to make sure that we have no negative values. If running with stochasticity
 		 * then you may need to check that none of the other terms are negative also.
 		 */
-		if ( mumMassFrac*totalUndamGrowth < damFactorGrowth || mumMassFrac*totalUndamRepair
-																< damFactorRepair)
+		if ( mumMassFrac*totalUndamGrowth < damFactorGrowth || 
+								mumMassFrac*totalUndamRepair < damFactorRepair)
 		{
 			/* Warning note to log that an overflow has occurred. You can search
 			 * for this in the log0.txt file using the keyword "overflow" */
 			LogFile.writeLog("Warning: overflow of damage into younger sibling has occurred.");
 			
 			/* Baby's damaged growth = D-(1-R)T -> any overflow damage */
-			baby.particleMass[2] = totalDamRepair-mumMassFrac*totalGrowth;
+			baby.particleMass[2] = totalDamGrowth - mumMassFrac*totalGrowth;
 			/* Baby's damaged repair = D-(1-R)T -> any overflow damage */
-			baby.particleMass[3] = totalDamRepair-mumMassFrac*totalRepair;
+			baby.particleMass[3] = totalDamRepair - mumMassFrac*totalRepair;
 			/* Baby's undamaged growth = U -> all undamaged */
-			baby.particleMass[0] = totalUndamRepair;
+			baby.particleMass[0] = totalUndamGrowth;
 			/* Baby's undamaged repair = U -> all undamaged */
 			baby.particleMass[1] = totalUndamRepair;
 			/* Parents damaged growth = RT -> all possible damage */
@@ -210,21 +210,21 @@ public class AgingBac extends Bacterium
 		else
 		{
 			/* Baby's damaged growth = DR-DRa */
-			baby.particleMass[2] = totalDamGrowth*babyMassFrac-damFactorGrowth;
+			baby.particleMass[2] = totalDamGrowth*babyMassFrac - damFactorGrowth;
 			/* Baby's damaged repair = DR-DRa */
-			baby.particleMass[3] = totalDamRepair*babyMassFrac-damFactorRepair;
+			baby.particleMass[3] = totalDamRepair*babyMassFrac - damFactorRepair;
 			/* Baby's undamaged growth = UR +DRa */
-			baby.particleMass[0] = babyMassFrac*totalUndamGrowth+damFactorGrowth;
+			baby.particleMass[0] = babyMassFrac*totalUndamGrowth + damFactorGrowth;
 			/* Baby's undamaged repair = UR +DRa */
-			baby.particleMass[1] = babyMassFrac*totalUndamRepair+damFactorRepair;
+			baby.particleMass[1] = babyMassFrac*totalUndamRepair + damFactorRepair;
 			/* Parents damaged growth = D(1-R)+DRa */
-			this.particleMass[2] = totalDamGrowth*mumMassFrac+damFactorGrowth;
+			this.particleMass[2] = totalDamGrowth*mumMassFrac + damFactorGrowth;
 			/* Parents damaged repair = D(1-R)+DRa */
-			this.particleMass[3] = totalDamRepair*mumMassFrac+damFactorRepair;
+			this.particleMass[3] = totalDamRepair*mumMassFrac + damFactorRepair;
 			/* Parents undamaged growth = U(1-R)-DRa */
-			this.particleMass[0] = totalUndamGrowth*mumMassFrac-damFactorGrowth;
+			this.particleMass[0] = totalUndamGrowth*mumMassFrac - damFactorGrowth;
 			/* Parents undamaged repair = U(1-R)-DRa */
-			this.particleMass[1] = totalUndamRepair*mumMassFrac-damFactorRepair;
+			this.particleMass[1] = totalUndamRepair*mumMassFrac - damFactorRepair;
 		}
 		
 		/*
@@ -327,7 +327,8 @@ public class AgingBac extends Bacterium
 			die(true);
 			return;
 		}
-		age = (particleMass[2]+particleMass[3]) / (particleMass[0]+particleMass[1]+particleMass[2]+particleMass[3]);
+		age = (particleMass[2]+particleMass[3]) / 
+			 (particleMass[0]+particleMass[1]+particleMass[2]+particleMass[3]);
 	}
 
 
@@ -433,10 +434,10 @@ public class AgingBac extends Bacterium
 		/*
 		 * Growth
 		 */
+		double newProtein;
 		if ( this.getSpeciesParam().isLinear ) 
 		{
-			deltaParticle[0] += (1-age)*Mu*tStep;
-			deltaParticle[1] += (1-age)*Mu*tStep;
+			newProtein = (1-age)*Mu*tStep;
 			_netGrowthRate = (1-age)*Mu;
 		}
 		else
@@ -444,20 +445,21 @@ public class AgingBac extends Bacterium
 			double exponent = tStep*Mu;
 			if ( this.getSpeciesParam().isToxic )
 				exponent *= (1-age);
-			double newProtein = pActGrowth*Math.expm1(exponent);
-			deltaParticle[0] += (1-beta) * newProtein;
-			deltaParticle[1] += beta * newProtein;
+			newProtein = pActGrowth*Math.expm1(exponent);
 			_netGrowthRate = pActGrowth*Mu;
-			if ( this.getSpeciesParam().isToxic )
-				_netGrowthRate *= (1-age);
 		}
+		if ( this.getSpeciesParam().isToxic )
+			_netGrowthRate *= (1-age);
+		deltaParticle[0] += (1-beta) * newProtein;
+		deltaParticle[1] += beta * newProtein;
 		/*
 		 * Aging & repair
 		 */
-		Double ageMass = (pActGrowth+pActRepair)*Math.expm1(-a*tStep);
+		Double ageMass = pActGrowth * Math.expm1(-a*tStep);
 		deltaParticle[0] += ageMass;
-		deltaParticle[1] += ageMass;
 		deltaParticle[2] -= ageMass;
+		ageMass = pActRepair * Math.expm1(-a*tStep);
+		deltaParticle[1] += ageMass;
 		deltaParticle[3] -= ageMass;
 		repair();
 		/*
@@ -484,26 +486,20 @@ public class AgingBac extends Bacterium
 	{
 		double repY = getSpeciesParam().repY;
 		double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
-		double optB;
-			if ( this.getSpeciesParam().isToxic )
-				optB = (age/(1-age))*(Math.sqrt((repY/Mu)*(1/(1-age))-1));
-			else
-				optB = (age/(1-age))*(Math.sqrt(repY/Mu)-1);
-			return optB;
+		double optB = repY / Mu;
+		if ( this.getSpeciesParam().isToxic )
+			optB *= 1/(1-age);
+		return (age/(1-age)) * ( Math.sqrt(optB) - 1);
 	}
 	
 	
 	protected void repair()
 	{
-		double beta;
-		if ( this.getSpeciesParam().isOptimalRepair )
-			beta = optB();
-		else
-			beta = this.getSpeciesParam().beta;
+		Double pActRepair = this.particleMass[1];
 		Double pDamGrowth = this.particleMass[2];
 		Double pDamRepair = this.particleMass[3];
-		Double pDam = pDamGrowth+pDamRepair;
-		if ( beta == 0.0 || pDamGrowth + pDamRepair == 0.0 )
+		Double pDam = pDamGrowth + pDamRepair;
+		if ( pActRepair == 0.0 || pDam == 0.0 )
 			return;
 		/*
 		 * Apply the changes in active and damaged biomass. Note that here it
@@ -511,24 +507,20 @@ public class AgingBac extends Bacterium
 		 */
 		Double tStep = SimTimer.getCurrentTimeStep();
 		Double rMax = getSpeciesParam().rMax;
-		Double pActGrowth =  this.particleMass[0];
-		Double pActRepair = this.particleMass[1];
-		Double pAct = pActGrowth+pActRepair;
-		Double rateGrowth = rMax * pDamGrowth / (beta * pActGrowth + pDamGrowth);
-		Double rateRepair = rMax * pDamRepair / (beta * pActRepair + pDamRepair);
-		Double repMassGrowth = beta * pActGrowth * Math.expm1(tStep * rateGrowth);
-		Double repMassRepair = beta * pActRepair * Math.expm1(tStep * rateRepair);
+		Double specRate = rMax / ( pActRepair + pDam );
+		Double rateGrowth = pDamGrowth * specRate;
+		Double rateRepair = pDamRepair * specRate;
+		Double repMassGrowth = pActRepair * Math.expm1(tStep * rateGrowth);
+		Double repMassRepair = pActRepair * Math.expm1(tStep * rateRepair);
 		Double repY = getSpeciesParam().repY;
 		deltaParticle[0] += repY * repMassGrowth;
 		deltaParticle[1] += repY * repMassRepair;
 		deltaParticle[2] -= repMassGrowth;
 		deltaParticle[3] -= repMassRepair;
-		_netGrowthRate -= (1 - repY) * beta * pActGrowth * rateGrowth;
-		_netGrowthRate -= (1 - repY) * beta * pActRepair * rateRepair;
-		_netVolumeRate -= (1 - repY) * beta * pActGrowth * rateGrowth /
+		_netGrowthRate -= (1 - repY) * pActRepair * rateGrowth;
+		_netGrowthRate -= (1 - repY) * pActRepair * rateRepair;
+		_netVolumeRate -= (1 - repY) * pActRepair * (rateGrowth + rateRepair) /
 										getSpeciesParam().particleDensity[0];
-		_netVolumeRate -= (1 - repY) * beta * pActRepair * rateRepair /
-										getSpeciesParam().particleDensity[1];
 	}
 	
 	@Override
