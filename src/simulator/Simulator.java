@@ -420,7 +420,7 @@ public class Simulator
 			for ( Species aSpec : speciesList )
 				if ( aSpec.getPopulation() > 0 )
 					specAlive++;
-			if ( specAlive >= (invComp ? 2 : 1) )
+			if ( specAlive < (invComp ? 2 : 1) )
 				continueRunning = false;
 			// stop simulation if all cells are washed out, or if only species
 			// for invComp = true (invasion competition simulation)
