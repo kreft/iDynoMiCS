@@ -6,7 +6,7 @@ from matplotlib import rcParams
 from matplotlib import pyplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
-from PIL import Image
+#from PIL import Image
 #import Image
 from pylab import *
 import matplotlib.cbook as cbook

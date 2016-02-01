@@ -166,7 +166,6 @@ public class AgingBac extends Bacterium
 		Double totalUndam = totalUndamGrowth+totalUndamRepair;
 		Double totalGrowth = totalUndamGrowth+totalDamGrowth;
 		Double totalRepair = totalUndamRepair+totalDamRepair;
-		Double totalProt = totalDam+totalUndam;
 		/*
 		 *  babyMassFrac = R, mumMassFrac = (1-R)
 		 *  damFactor = DRa
@@ -206,6 +205,27 @@ public class AgingBac extends Bacterium
 			this.particleMass[0] = 0.0;
 			/* Parents undamaged repair = 0 -> no space for undamaged */
 			this.particleMass[1] = 0.0;
+			
+			/* 
+			 * If the baby has inherited negative damage, this restores proteins 
+			 * to the correct levels
+			 */
+			if (baby.particleMass[2] < 0.0)
+			{
+				double negativeBabyGrowth = baby.particleMass[2];
+				baby.particleMass[2] -= negativeBabyGrowth;
+				baby.particleMass[0] += negativeBabyGrowth;
+				this.particleMass[2] += negativeBabyGrowth;
+				this.particleMass[0] -= negativeBabyGrowth;
+			}
+			if (baby.particleMass[3] < 0.0)
+			{
+				double negativeBabyRepair = baby.particleMass[3];
+				baby.particleMass[3] -= negativeBabyRepair;
+				baby.particleMass[1] += negativeBabyRepair;
+				this.particleMass[3] += negativeBabyRepair;
+				this.particleMass[1] -= negativeBabyRepair;
+			}
 		}
 		else
 		{
