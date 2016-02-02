@@ -8,7 +8,7 @@ import utils.ExtraMath;
 import utils.LogFile;
 
 /**
- * There are a couple of different ways to call the reactions depending on what you want.
+ * There are a couple of different ways to call the reactions, depending on what you want.
  * reactionActive is a list of all of the active reactions, compiled from this. So you can
  * either index the actual reaction that you want, or index the active reaction you want.
  * Indexing starts at 0, and is [r][c]
