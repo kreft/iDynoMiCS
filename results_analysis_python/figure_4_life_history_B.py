@@ -1,7 +1,29 @@
-axisB = fig.add_subplot('B', 222)
-paths = ['an10_const_steady_results.xml', 'ao10_const_steady_results.xml', sys.argv[1]]
+#!/usr/bin/python
+from __future__ import division
+import aging_extras
+import os
+from pylab import *
+import toolbox_basic
+import toolbox_plotting
+import toolbox_results
+
+#base_path = os.path.join('~', 'Dropbox', 'EclipseWorkspace', 'iDynoAge')
+base_path = os.path.join('C:\\', 'Users', 'RJW598', 'git', 'iDynoMiCS')
+#base_path = os.path.join('~', 'git', 'iDynoMiCS')
+print base_path
+base_path = toolbox_basic.check_path(base_path)
+print base_path
+input_path = os.path.join(base_path, 'results')
+output_path = os.path.join(base_path, 'figure_4_life_history.pdf')
+
+fig = toolbox_plotting.BmcFigure(double_column=True, height='double')
+
+axisB = fig.add_subplot('', 111)
+paths = ['an10_const_steady_results.xml', 'ao10_const_steady_results.xml', 'T010AS12OBConstEnvH110D_results.xml']
 attributes = {'name':'specific growth rate population structure',
                     'starting_time':'2400', 'header':'bin,frequency'}
+colors = ['red','#F781F3','#fbbf07']
+fs = 8
 
 xlim, ylim = 0.082, 0.6
 
@@ -36,4 +58,12 @@ axisB.set_xticks([0.00, 0.02, 0.04, 0.06, 0.08])
 axisB.set_ylim([0, ylim])
 axisB.set_xlabel('Frequency in population')
 axisB.set_title('Growth Rate Distribution')
+axisB.set_ylabel(r'Cellular specific growth rate (h$^{-1}$)')
 setp( axisB.get_yticklabels(), visible=False)
+
+fig.process_subplots()
+#axisB.tick_params(left='off')
+#axisD.tick_params(left='off')
+#axisCD.tick_params(top="off", bottom="off", right="off", left="off")
+fig.subplots_adjust(left=0.09,right=0.99,top=0.96,bottom=0.08,wspace=0.0, hspace=0.35)
+fig.save(output_path)

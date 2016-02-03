@@ -162,7 +162,7 @@ class SpeciesOutput:
         self.attributes = new_header.split(',')
     def get_header(self):
         return self.agent_output.species[0].attrib['header']
-    def find_attribute_position(self, atttribute):
+    def find_attribute_position(self, attribute):
         position = -1
         for i, x in enumerate(self.header.split(',')):
             if str(x) == str(attribute):

@@ -13,7 +13,7 @@ import toolbox_results as results
 # Attribute should be something like 'glucose' or 'specific growth rate'
 # Output_type should something like  'agent_State' or 'env_Sum'
 def calc_mean_attribute(sim_dir_path, attribute, output_type, file_process,
-                                                        starting_time=240):
+                                                        starting_time=2400):
     attributes = {'name':attribute, 
                     'starting_time':str(starting_time),
                     'header':'mean,std'}
@@ -51,7 +51,7 @@ def calc_mean_attribute(sim_dir_path, attribute, output_type, file_process,
 # 'agent_State', 'agent_StateDeath', agent_Sum' or 'agent_SumDeath'
 def process_file_for_mean_agent_attribute(attribute, filename,
                          biomass_names=['activeBiomassGrowth','activeBiomassRepair',
-                                        'inactiveBiomassGrowth', 'inactiveBiomassRepair'], starting_time=240):
+                                        'inactiveBiomassGrowth', 'inactiveBiomassRepair'], starting_time=2400):
     output = results.AgentOutput(path=filename)
     if output.time >= starting_time:
         species = results.SpeciesOutput(output)
@@ -63,7 +63,7 @@ def process_file_for_mean_agent_attribute(attribute, filename,
 # This is for collating the single simulation results of calc_mean_attribute() 
 # that are together in a directory
 def collate_mean_attributes(set_dir_path, attribute, output_type, file_process,
-                                                        starting_time=240):
+                                                        starting_time=2400):
     set_dir_path = basic.check_path(set_dir_path)
     attributes = {'name':attribute, 
                     'starting_time':str(starting_time),
