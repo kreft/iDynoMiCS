@@ -11,6 +11,7 @@
  */
 package simulator;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import idyno.SimTimer;
@@ -754,13 +755,26 @@ public class AgentContainer
 			 */
 			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
-		
+		/*
+		 * this bit wants to be added back in after genealogy of old pole cell is complete!
 		for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
 		{
 			anAgent.isDead = true;
 			anAgent.death = "dilution";
 			anAgent.die(false);
 		}
+		*/
+		/* 
+		 * This bit can be removed after tracking of old pole cell is complete
+		 */
+		BigInteger zero = new BigInteger("0");
+		for ( SpecialisedAgent anAgent : agentList )
+			if ( anAgent.getGenealogy().compareTo(zero) == 1)
+			{
+				anAgent.isDead = true;
+				anAgent.death = "dilution";
+				anAgent.die(false);
+			}
 		agentList.removeAll(_agentToKill);
 	}
 	
