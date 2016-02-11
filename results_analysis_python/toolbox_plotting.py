@@ -115,7 +115,7 @@ class BmcFigure(JournalFigure):
         # the figure!
         self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height),
                                                              facecolor='white')
-    def process_subplots(self, label_pos=(-0.20, 1.01), padding=0.02):
+    def process_subplots(self, label_pos=(0, 1.07), padding=0.02):
         for axis, label in self.subplots.iteritems():
             xlim = axis.get_xlim()
             xdiff = 0.02*(xlim[1] - xlim[0])

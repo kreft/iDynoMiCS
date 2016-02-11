@@ -23,7 +23,7 @@ and the end of simulation is 72 hours, or 3 days.
 		<param name="outputPeriod" unit="hour">0.1</param>
 		<timeStep>
 			<param name="adaptive">false</param>
-			<param name="timeStepIni" unit="day">0.1</param>
+			<param name="timeStepIni" unit="hour">0.1</param>
 			<param name="endOfSimulation" unit="day">110</param>
 		</timeStep>
 		<param name="chemostat">true</param>
@@ -185,9 +185,9 @@ and the end of simulation is 72 hours, or 3 days.
 		<!--alpha=1.0 and beta=0.08 means that this is an Asymmetric strategy with 8% investment in repair.
 		This corresponds to the a08 in the filename-->
 		<param name="alpha">1.0</param> <!--damage segregation at division-->
-        <param name="beta">0.0</param> <!--investment in repair-->
+        <param name="beta">0.07</param> <!--investment in repair-->
         <param name="repY">0.8</param> <!--repair yield-->
-        <param name="isOptimalRepair">true</param> <!--is repair optimal-->
+        <param name="isOptimalRepair">false</param> <!--is repair optimal-->
         <param name="isToxic">true</param> <!--is damage toxic-->
   		<!--Reactions-->
 		<reaction name="growthR" status="active"/>

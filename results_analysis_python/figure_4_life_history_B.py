@@ -8,13 +8,13 @@ import toolbox_plotting
 import toolbox_results
 
 #base_path = os.path.join('~', 'Dropbox', 'EclipseWorkspace', 'iDynoAge')
-base_path = os.path.join('C:\\', 'Users', 'RJW598', 'git', 'iDynoMiCS')
-#base_path = os.path.join('~', 'git', 'iDynoMiCS')
+#base_path = os.path.join('C:\\', 'Users', 'RJW598', 'git', 'iDynoMiCS')
+base_path = os.path.join('~', 'git', 'iDynoMiCS')
 print base_path
 base_path = toolbox_basic.check_path(base_path)
 print base_path
 input_path = os.path.join(base_path, 'results')
-output_path = os.path.join(base_path, 'figure_4_life_history.pdf')
+output_path = os.path.join(input_path, 'figure_4_life_history.pdf')
 
 fig = toolbox_plotting.BmcFigure(double_column=True, height='double')
 
@@ -38,17 +38,19 @@ for i in range(3):
     x = [float(r.vars['frequency']) for r in result_set.members]
     y = [r.vars['mid_point'] for r in result_set.members]
     axisB.plot(x, y, color=colors[i])
-axisB.text(0.021, 0.575,'0', color=colors[0], fontsize=fs)
-axisB.text(0.055, 0.36, '1', color=colors[0], fontsize=fs)
-axisB.text(0.019, 0.245, '2', color=colors[0], fontsize=fs)
-axisB.text(0.009, 0.08, '3', color=colors[0], fontsize=fs)
-axisB.text(0.009, 0.0, '4', color=colors[0], fontsize=fs)
-axisB.text(0.03, 0.515,'0', color=colors[1], fontsize=fs)
-axisB.text(0.075, 0.38, '1', color=colors[1], fontsize=fs)
-axisB.text(0.012, 0.35, '2', color=colors[1], fontsize=fs)
-axisB.text(0.0155, 0.31, '3', color=colors[1], fontsize=fs)
-axisB.text(0.006, 0.24, '4', color=colors[1], fontsize=fs)
-axisB.text(0.003, 0.16, '5', color=colors[1], fontsize=fs)
+#This correlates to figure A and is to help the reader more than anything - these
+    #numbers were by eye, not calculated
+#axisB.text(0.021, 0.575,'0', color=colors[0], fontsize=fs)
+#axisB.text(0.055, 0.36, '1', color=colors[0], fontsize=fs)
+#axisB.text(0.019, 0.245, '2', color=colors[0], fontsize=fs)
+#axisB.text(0.009, 0.08, '3', color=colors[0], fontsize=fs)
+#axisB.text(0.009, 0.0, '4', color=colors[0], fontsize=fs)
+#axisB.text(0.03, 0.515,'0', color=colors[1], fontsize=fs)
+#axisB.text(0.075, 0.38, '1', color=colors[1], fontsize=fs)
+#axisB.text(0.012, 0.35, '2', color=colors[1], fontsize=fs)
+#axisB.text(0.0155, 0.31, '3', color=colors[1], fontsize=fs)
+#axisB.text(0.006, 0.24, '4', color=colors[1], fontsize=fs)
+#axisB.text(0.003, 0.16, '5', color=colors[1], fontsize=fs)
 aging_extras.draw_cell(axisB, 0.6*xlim, 0.7*xlim, 0.9*ylim, 0.05*xlim,
                                y2xscale=ylim/xlim, toxic=True, arrow=0.01*xlim)
 aging_extras.draw_const_env(axisB, 0.8*xlim, 0.8*ylim, xlim, ylim,
@@ -59,7 +61,7 @@ axisB.set_ylim([0, ylim])
 axisB.set_xlabel('Frequency in population')
 axisB.set_title('Growth Rate Distribution')
 axisB.set_ylabel(r'Cellular specific growth rate (h$^{-1}$)')
-setp( axisB.get_yticklabels(), visible=False)
+setp( axisB.get_yticklabels(), visible=True)
 
 fig.process_subplots()
 #axisB.tick_params(left='off')

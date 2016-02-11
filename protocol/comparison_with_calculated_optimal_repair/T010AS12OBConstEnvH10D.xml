@@ -20,11 +20,11 @@ and the end of simulation is 72 hours, or 3 days.
 		<param name="restartPreviousRun">false</param>
 		<param name="randomSeed">814</param>
 		<!--Analysis of the results is based on the population growth rate at hour-intervals-->
-		<param name="outputPeriod" unit="hour">0.1</param>
+		<param name="outputPeriod" unit="hour">1</param>
 		<timeStep>
 			<param name="adaptive">false</param>
-			<param name="timeStepIni" unit="day">0.1</param>
-			<param name="endOfSimulation" unit="day">110</param>
+			<param name="timeStepIni" unit="hour">0.01</param>
+			<param name="endOfSimulation" unit="day">10</param>
 		</timeStep>
 		<param name="chemostat">true</param>
 		<param name="agentTimeStep" unit="hour">0.01</param>
@@ -193,7 +193,7 @@ and the end of simulation is 72 hours, or 3 days.
 		<reaction name="growthR" status="active"/>
 		<reaction name="aging" status="active"/>
   	<!--INITIALISATION-->
-		<initArea number="1">
+		<initArea number="1000">
 			<param name="birthday" unit="hour">0</param>
 			<coordinates i="0" j="0" k="0"/>
 			<coordinates i="1" j="1" k="0"/>

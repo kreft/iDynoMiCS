@@ -9,7 +9,7 @@ import toolbox_fitness_RW as fitness
 
 #This part is used for Fig4B and works..
 def build_population_structure(sim_dir_path, attribute, 
-                        bins=numpy.linspace(0, 0.6, 121), starting_time=2400,
+                        bins=numpy.linspace(0, 0.6, 121), starting_time=240,
                         biomass_names=['activeBiomassGrowth', 'activeBiomassRepair',
                                        'inactiveBiomassGrowth', 'inactiveBiomassRepair']):
     attributes = {'name':attribute+' population structure',
@@ -53,7 +53,7 @@ def build_life_history(sim_dir_path, attribute1, attribute2, cell_id=(1,0),
     sim_dir_path = basic.check_path(sim_dir_path)
     #this must be value and not value1 for the first value so that the plotting
     #script can also plot older results at the same time
-    attributes = {'name':attribute1, 'name2':attribute2, 'header':'time,value,value2'}
+    attributes = {'name':attribute1, 'name2':attribute2, 'name3':'generation', 'header':'time,value,value2,value3'}
     results_file_path = os.path.join(sim_dir_path, 'life_history_results.xml')
     results_output = results.ResultsOutput(path=results_file_path)
     result_set = results.ResultSet(results_output, attributes)
@@ -70,33 +70,19 @@ def build_life_history(sim_dir_path, attribute1, attribute2, cell_id=(1,0),
         single_result = results.SingleResult()
         single_result.vars['time'] = output.time
         if len(cells) == 0:
-            single_result.vars['value'] = -1
-            single_result.vars['value2'] = -1
-            result_set.members.append(single_result)
-            break
+            continue
         cell = cells[0]
+        single_result.vars['value3'] = cell.vars['generation']
         if attribute1 == 'specific growth rate':
-            if cell.vars['hasDied'] == 'TRUE':
-                single_result.vars['value'] = -1
-            else:
-                single_result.vars['value'] = \
+            single_result.vars['value'] = \
                         cell.get_specific_growth_rate(biomass_names)
         else:
-            if cell.vars['hasDied'] == 'TRUE':
-                single_result.vars['value'] = -1          
-            else:
-                single_result.vars['value'] = cell.vars[attribute1]
+            single_result.vars['value'] = cell.vars[attribute1]
         if attribute2 == 'specific growth rate':
-            if cell.vars['hasDied'] == 'TRUE':
-                single_result.vars['value2'] = -1
-            else:
-                single_result.vars['value2'] = \
+            single_result.vars['value2'] = \
                         cell.get_specific_growth_rate(biomass_names)
         else:
-            if cell.vars['hasDied'] == 'TRUE':
-                single_result.vars['value2'] = -1
-            else:
-                single_result.vars['value2'] = cell.vars[attribute2]
+            single_result.vars['value2'] = cell.vars[attribute2]
         result_set.members.append(single_result)
     result_set.update_results_output()
     results_output.write(results_file_path)

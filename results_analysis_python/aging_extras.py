@@ -6,7 +6,7 @@ import os
 import toolbox_results
 import toolbox_schematic
 
-
+#This has currently been modified to do results for 10 days instead of the usual 100
 # By convention, in the main set of results the first character of the 
 # protocol/directory name refers to the segregation strategy, the second to the 
 # investment in repair, and the third & fourth to the damage accumulation rate
@@ -15,7 +15,7 @@ import toolbox_schematic
 # accumulation rates are multiplied by 100, so 15 refers to 0.15 h-1
 def process_default_results(results_path, attribute):
     attributes = {'header':'directory,mean,std',
-                  'starting_time':'2400', 'name':attribute}
+                  'starting_time':'240', 'name':attribute}
     results_output = toolbox_results.ResultsOutput(path=results_path)
     results_set = toolbox_results.ResultSet(results_output, attributes)
     for result in results_set.members:
@@ -34,7 +34,7 @@ def process_default_results(results_path, attribute):
 
 def process_erjavec_results(results_path):
     attributes = {'header':'directory,mean,std',
-                  'starting_time':'2400', 'name':'specific growth rate'}
+                  'starting_time':'240', 'name':'specific growth rate'}
     results_output = toolbox_results.ResultsOutput(path=results_path)
     results_set = toolbox_results.ResultSet(results_output, attributes)
     for result in results_set.members:
@@ -50,7 +50,7 @@ def process_erjavec_results(results_path):
 # This is for the set of results where investment in repair, beta, was varied 
 def process_beta_results(results_path):
     attributes = {'header':'directory,mean,std',
-                  'starting_time':'2400', 'name':'specific growth rate'}
+                  'starting_time':'240', 'name':'specific growth rate'}
     results_output = toolbox_results.ResultsOutput(path=results_path)
     result_set = toolbox_results.ResultSet(results_output, attributes)
     segregation = []
@@ -83,7 +83,7 @@ def process_yield_results(results_path, inflow=3.24):
     glucose_results = process_default_results(results_path, 'glucose')
     biomass_results = process_default_results(results_path, 'totalBiomass')
     attributes = {'header':'directory,mean,std',
-                  'starting_time':'2400', 'name':'yield'}
+                  'starting_time':'240', 'name':'yield'}
     results_output = toolbox_results.ResultsOutput(path=results_path)
     result_set = toolbox_results.ResultSet(results_output, attributes)
     for g_result in glucose_results.members:
@@ -113,7 +113,7 @@ def process_yield_results(results_path, inflow=3.24):
 
 def process_optima_results(results_path, attribute):
     attributes = {'header':'directory,mean,std',
-                  'starting_time':'2400', 'name':'optimum '+attribute}
+                  'starting_time':'240', 'name':'optimum '+attribute}
     results_output = toolbox_results.ResultsOutput(path=results_path)
     result_set = toolbox_results.ResultSet(results_output, attributes)
     for result in result_set.members:
@@ -280,7 +280,7 @@ def zoom_inset(axis, results_set, x_ticks, y_ticks, all_acc=True,
 def scatter_population(axis, species_output, x_attribute, y_attribute,
                     color='k', style='o', markersize=2):
     x_vals, y_vals = [], []
-    biomass_names = ['activeBiomass', 'inactiveBiomass']
+    biomass_names = ['activeBiomassGrowth', 'activeBiomassRepair', 'inactiveBiomassGrowth', 'inactiveBiomassRepair']
     for agent in species_output.members:
         if x_attribute == 'totalBiomass':
             x_vals.append(agent.get_total_biomass(biomass_names))
