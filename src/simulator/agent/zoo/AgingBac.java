@@ -351,14 +351,10 @@ public class AgingBac extends Bacterium
 		 * If damage is 0, age is also 0. This prevents it from returning NaN if there is no damage.
 		 */
 		if ( (particleMass[2]+particleMass[3]) <= 0.0 )
-		{
 			this.age = 0.0;
-		}
 		else
-		{
 			this.age = (particleMass[2]+particleMass[3]) / 
 					 (particleMass[0]+particleMass[1]+particleMass[2]+particleMass[3]);
-		}
 	}
 
 
