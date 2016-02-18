@@ -318,7 +318,7 @@ public class AgingBac extends Bacterium
 		}
 		/*
 		 * Age 0 is youngest, 1 oldest, fraction of inactive biomass
-		 * (particleMass[1]) over total biomass.
+		 * (particleMass[2]+particleMass[3]) over total biomass.
 		 */
 		this.updateAge(); 
 		baby.updateAge();
@@ -347,8 +347,18 @@ public class AgingBac extends Bacterium
 			die(true);
 			return;
 		}
-		age = (particleMass[2]+particleMass[3]) / 
-			 (particleMass[0]+particleMass[1]+particleMass[2]+particleMass[3]);
+		/*
+		 * If damage is 0, age is also 0. This prevents it from returning NaN if there is no damage.
+		 */
+		if ( (particleMass[2]+particleMass[3]) <= 0.0 )
+		{
+			this.age = 0.0;
+		}
+		else
+		{
+			this.age = (particleMass[2]+particleMass[3]) / 
+					 (particleMass[0]+particleMass[1]+particleMass[2]+particleMass[3]);
+		}
 	}
 
 
@@ -502,10 +512,22 @@ public class AgingBac extends Bacterium
 	{
 		double repY = getSpeciesParam().repY;
 		double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
+		double age = this.age;
+		if ( Mu == 0.0 )
+			return 0.0;
 		double optB = repY / Mu;
+		if (age == 0.0)
+			return 0.0;
+		if ( age >= 0.999 )
+			return 1.0;
 		if ( this.getSpeciesParam().isToxic )
-			optB *= 1/(1-age);
-		return (age/(1-age)) * ( Math.sqrt(optB) - 1);
+			optB /= (1-age);
+		double optimalBeta = (age/(1-age)) * ( Math.sqrt(optB) - 1);
+		if ( optimalBeta >= 1 )
+			optimalBeta = 1;
+		if ( optimalBeta <= 0 )
+			optimalBeta = 0;
+		return optimalBeta;
 	}
 	
 	
