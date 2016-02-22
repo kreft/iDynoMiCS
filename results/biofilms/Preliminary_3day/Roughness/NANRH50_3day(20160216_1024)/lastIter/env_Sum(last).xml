@@ -1,0 +1,20 @@
+<idynomics>
+ <simulation iterate="1441" time="72.04999999999805" unit="hour">
+<thickness domain="biofilm" unit="um">
+	<mean>50.61538461538461</mean>
+	<stddev>1.4432048491764395</stddev>
+	<max>54.0</max>
+</thickness>
+<globalProductionRate>
+<solute name="glucose" unit="g.hour">
+0.0</solute><solute name="pressure" unit="g.hour">
+0.0</solute></globalProductionRate>
+<bulk name="tank">
+<solute name="glucose" unit="g.L-1">0.014222</solute>
+<solute name="pressure" unit="g.L-1">0.0</solute>
+<uptake_rate name="glucose" unit="g.L-1.hour-1">0.0</uptake_rate>
+<uptake_rate name="pressure" unit="g.L-1.hour-1">0.0</uptake_rate>
+</bulk>
+
+</simulation>
+</idynomics>
