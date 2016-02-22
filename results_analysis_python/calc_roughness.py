@@ -5,8 +5,6 @@ import os
 import sys
 import toolbox_basic as basic
 import toolbox_results as results
-import toolbox_fitness_RW as fitness
-import toolbox_idynomics
 import calc_roughness_locations
 
 results_folder = sys.argv[1]
@@ -28,14 +26,9 @@ grid = calc_roughness_locations.get_grid_size(results_folder)
 nI = float(grid[0])
 nJ = float(grid[1])
 gridres = float(grid[3])
-sizeX = (nI-1)*gridres
-sizeY = (nJ-1)*gridres
 
-# check that these are right, for the axis being the wrong way round!
-numberY = int(sizeX/gridres)
-numberX = int(sizeY/gridres)
 # create a grid of zeros
-agentgrid = numpy.zeros((numberX+1, numberY+1), dtype=int)
+agentgrid = numpy.zeros((nI, nJ), dtype=int)
 
 base_path = os.path.join('~', 'git', 'iDynoMiCS')
 print base_path
@@ -54,157 +47,64 @@ for r in result_set.members:
     x, y = float(r.vars['X']), float(r.vars['Y'])
     x, y = x/gridres, y/gridres
     x, y = int(x), int(y)
-    i = 0
     if agentgrid[x, y] == 0:
             agentgrid[x, y] = 1  
 
 #set front cells to have a value of 2, making sure that they aren't on the edges where the biofilm wraps around
-for i in range(0, numberX):
-    for j in range(0, numberY):
-        if agentgrid[i][j] < 1:
+for (i, j) in zip(range(nI), range(nJ)):
+    if agentgrid[i][j] < 1:
             continue
-        if i > 0:
-            if agentgrid[i-1][j] == 0:
-                agentgrid[i][j] = 2
-            if (j%numberY) == 0:
-                if agentgrid[i][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][0] == 0:
-                    agentgrid[i][j] == 2
-                elif agentgrid[i-1][j-1] == 0:
-                    agentgrid[i][j] = 2
-            elif j == 0:
-                if agentgrid[i][len(numberY)] == 0:
-                    agentgrid[i][j] = 2
-                if agentgrid[i][j+1] == 0:
-                    agentgrid[i][j] = 2
-                if agentgrid[i-1][len(numberY)] == 0:
-                    agentgrid[i][j] = 2
-                if agentgrid[i-1][j+1] == 0:
-                    agentgrid[i][j] = 2
-            elif j > 0:
-                if agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j] == 0:
-                    agentgrid[i][j] = 2
-        
-        elif i == 0:
-            if agentgrid[i+1][j] == 0:
-                agentgrid[i][j] = 2
-            if (j%len(agentgrid[i])) == 0:
-                if agentgrid[i][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j-1] == 0:
-                    agentgrid[i][j] = 2
-            elif j == 0:
-                if agentgrid[i][len(agentgrid[i])] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][len(agentgrid[i])] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j+1] == 0:
-                    agentgrid[i][j] = 2
-            elif j > 0:
-                if agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j+1] == 0:
-                    agentgrid[i][j] = 2     
-        
-        elif i < len(numberX):
-            if agentgrid[i-1][j] == 0:
-                agentgrid[i][j] = 2
-            elif (j%len(numberY)) == 0:
-                if agentgrid[i][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j-1] == 0:
-                    agentgrid[i][j] = 2
-            elif j == 0:
-                if agentgrid[i][len(agentgrid[i])] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][len(agentgrid[i])] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][0] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j-1] == 0:
-                    agentgrid[i][j] = 2
-            elif j > 0:
-                if agentgrid[i][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i+1][j] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j+1] == 0:
-                    agentgrid[i][j] = 2
-                elif agentgrid[i-1][j-1] == 0:
-                    agentgrid[i][j] = 2
-                
-        else:
-            print ("Something went wrong with assigning two's to edge of biofilm!")
-
-frontgrid = numpy.zeros((numberX), dtype=int)
-for i in range(0, numberX):
-    for j in range(0, numberY):
-        if agentgrid[i][j] == 2:
-            frontgrid[i] += 1
-
-Cfx = []
-Pf = 0
-for i in range(0, numberX):
-    Cfx.append(0)
-    Cfx[i] += frontgrid[i]/int(numberY)
-for i in range(0, numberX):
-    Pf += Cfx[i]
-print ("Cfx = ", Cfx)
-
-num = 0
-for j in frontgrid:
-    if Cfx[j] == 0:
+    # Look at the level below, if we're not on the bottom
+    if i > 0:
+        if agentgrid[i-1][j] == 0:
+            agentgrid[i][j] = 2
+            continue
+        # Always apply cyclic search for left/right in the level below
+        if agentgrid[i-1][(j-1)%nJ] == 0:
+            agentgrid[i][j] = 2
+            continue
+        if agentgrid[i-1][(j+1)%nJ] == 0:
+            agentgrid[i][j] = 2
+            continue
+    # Look at the level above, if we're not at the top
+    if i < nI - 1:
+        if agentgrid[i+1][j] == 0:
+            agentgrid[i][j] = 2
+            continue
+        # Always apply cyclic search for left/right in the level above
+        if agentgrid[i+1][(j-1)%nJ] == 0:
+            agentgrid[i][j] = 2
+            continue
+        if agentgrid[i+1][(j+1)%nJ] == 0:
+            agentgrid[i][j] = 2
+            continue
+    # Always apply cyclic search for left/right in the same level
+    if agentgrid[i][(j-1)%nJ] == 0:
+        agentgrid[i][j] = 2
         continue
-    else:
-        num += j*Cfx[j]
+    if agentgrid[i][(j+1)%nJ] == 0:
+        agentgrid[i][j] = 2
+        continue
+
+frontgrid = numpy.zeros((nI), dtype=int)
+for (i, j) in zip(range(nI), range(nJ)):
+    if agentgrid[i, j] == 2:
+        frontgrid[i] += 1
+
+Cfx = numpy.zeros((nI), dtype=int)
+Pf = 0
+num = 0
+for i in range(0, nI):
+    temp = frontgrid[i]/nJ
+    Cfx[i] = temp
+    Pf += temp
+    num += i * temp
+print ("Cfx = ", Cfx)
 Xf = num/Pf
 
 Sigmaf = 0
 num2 = 0
-for j in range(int(numberX)):
+for j in range(nI):
     num2 += abs(j-Xf)*Cfx[j]
 Sigmaf = num2/Pf
 Sigma = Sigmaf/Xf
