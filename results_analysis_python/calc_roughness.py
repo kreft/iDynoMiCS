@@ -23,8 +23,8 @@ grid = calc_roughness_locations.get_grid_size(results_folder)
     
 
 # Get domain info
-nI = float(grid[0])
-nJ = float(grid[1])
+nI = int(grid[0])
+nJ = int(grid[1])
 gridres = float(grid[3])
 
 # create a grid of zeros
@@ -48,49 +48,50 @@ for r in result_set.members:
     x, y = x/gridres, y/gridres
     x, y = int(x), int(y)
     if agentgrid[x, y] == 0:
-            agentgrid[x, y] = 1  
-
+        agentgrid[x, y] = 1  
 #set front cells to have a value of 2, making sure that they aren't on the edges where the biofilm wraps around
 for (i, j) in zip(range(nI), range(nJ)):
-    if agentgrid[i][j] < 1:
-            continue
+    if agentgrid[i, j] < 1:
+        continue
     # Look at the level below, if we're not on the bottom
     if i > 0:
-        if agentgrid[i-1][j] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i-1, j] == 0:
+            agentgrid[i, j] = 2
             continue
         # Always apply cyclic search for left/right in the level below
-        if agentgrid[i-1][(j-1)%nJ] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i-1, (j-1)%nJ] == 0:
+            agentgrid[i, j] = 2
             continue
-        if agentgrid[i-1][(j+1)%nJ] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i-1, (j+1)%nJ] == 0:
+            agentgrid[i, j] = 2
             continue
     # Look at the level above, if we're not at the top
     if i < nI - 1:
-        if agentgrid[i+1][j] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i+1, j] == 0:
+            agentgrid[i, j] = 2
             continue
         # Always apply cyclic search for left/right in the level above
-        if agentgrid[i+1][(j-1)%nJ] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i+1, (j-1)%nJ] == 0:
+            agentgrid[i, j] = 2
             continue
-        if agentgrid[i+1][(j+1)%nJ] == 0:
-            agentgrid[i][j] = 2
+        if agentgrid[i+1, (j+1)%nJ] == 0:
+            agentgrid[i, j] = 2
             continue
     # Always apply cyclic search for left/right in the same level
-    if agentgrid[i][(j-1)%nJ] == 0:
-        agentgrid[i][j] = 2
+    if agentgrid[i, (j-1)%nJ] == 0:
+        agentgrid[i, j] = 2
         continue
-    if agentgrid[i][(j+1)%nJ] == 0:
-        agentgrid[i][j] = 2
+    if agentgrid[i,(j+1)%nJ] == 0:
+        agentgrid[i,j] = 2
         continue
 
 frontgrid = numpy.zeros((nI), dtype=int)
 for (i, j) in zip(range(nI), range(nJ)):
     if agentgrid[i, j] == 2:
         frontgrid[i] += 1
-
+print agentgrid[11]
+print agentgrid[12]
+print agentgrid[13]
 Cfx = numpy.zeros((nI), dtype=int)
 Pf = 0
 num = 0
@@ -98,14 +99,14 @@ for i in range(0, nI):
     temp = frontgrid[i]/nJ
     Cfx[i] = temp
     Pf += temp
-    num += i * temp
+    num += (i+1) * temp
 print ("Cfx = ", Cfx)
 Xf = num/Pf
 
 Sigmaf = 0
 num2 = 0
 for j in range(nI):
-    num2 += abs(j-Xf)*Cfx[j]
+    num2 += abs((j+1)-Xf)*Cfx[j]
 Sigmaf = num2/Pf
 Sigma = Sigmaf/Xf
 print ("Sigmaf = ", Sigmaf, "File = ", sys.argv[1])

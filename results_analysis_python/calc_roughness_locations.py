@@ -14,7 +14,7 @@ def get_grid_size(sim_dir_path):
     grid = [nI, nJ, nK, res]
     return grid
 
-def get_all_cells_location(sim_dir_path, starting_time=48):
+def get_all_cells_location(sim_dir_path, iter=480):
     sim_dir_path = basic.check_path(sim_dir_path)
     attributes = {'name':'locations', 'header':'X,Y'}
     results_file_path = os.path.join(sim_dir_path, 'cell_locations.xml')
@@ -26,7 +26,7 @@ def get_all_cells_location(sim_dir_path, starting_time=48):
     file_list = basic.file_list(file_dir)
     for filename in file_list:
         output = results.AgentOutput(path=filename)
-        if output.time >= starting_time:
+        if output.iterate == iter:
             output = results.AgentOutput(path=filename)
             cells = output.get_all_cells()
             #species = results.SpeciesOutput(output)
