@@ -9,7 +9,7 @@ import toolbox_fitness as fitness
 
 def build_population_structure(sim_dir_path, attribute, 
                         bins=numpy.linspace(0, 0.6, 121), starting_time=2400,
-                        biomass_names=['activeBiomass', 'inactiveBiomass']):
+                        biomass_names=['activeBiomassGrowth', 'activeBiomassRepair', 'inactiveBiomassGrowth', 'activeBiomassRepair']):
     attributes = {'name':attribute+' population structure',
                     'starting_time':str(starting_time),
                     'header':'bin,frequency'}
@@ -76,4 +76,3 @@ def build_life_history(sim_dir_path, attribute, cell_id=(1,0),
     return result_set
 
 
-build_life_history(sys.argv[1], 'specific growth rate')

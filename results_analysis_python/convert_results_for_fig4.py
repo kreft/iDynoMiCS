@@ -7,9 +7,9 @@ import toolbox_results as results
 import toolbox_fitness_RW as fitness
 
 
-#This part is used for Fig4B and works..
+#This part is used for Fig4B
 def build_population_structure(sim_dir_path, attribute, 
-                        bins=numpy.linspace(0, 0.6, 121), starting_time=240,
+                        bins=numpy.linspace(0, 0.6, 90), starting_time=2400,
                         biomass_names=['activeBiomassGrowth', 'activeBiomassRepair',
                                        'inactiveBiomassGrowth', 'inactiveBiomassRepair']):
     attributes = {'name':attribute+' population structure',
@@ -46,7 +46,7 @@ def build_population_structure(sim_dir_path, attribute,
     return result_set
 
 
-#This is the part that is used for Fig4A
+#This is the part that is used for Fig4A and 4C
 def build_life_history(sim_dir_path, attribute1, attribute2, cell_id=(1,0),
                         biomass_names=['activeBiomassGrowth', 'activeBiomassRepair',
                                        'inactiveBiomassGrowth', 'inactiveBiomassRepair']):
