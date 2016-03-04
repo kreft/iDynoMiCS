@@ -532,6 +532,11 @@ public class AgingBac extends Bacterium
 		Double pActRepair = this.particleMass[1];
 		Double pDamGrowth = this.particleMass[2];
 		Double pDamRepair = this.particleMass[3];
+		/*
+		*Double pStyrofoam = 0.0;
+		*if ( this.particleMass.length > 4 )
+		*	pStyrofoam = this.particleMass[4];
+		*/
 		Double pDam = pDamGrowth + pDamRepair;
 		if ( pActRepair == 0.0 || pDam == 0.0 )
 			return;
@@ -547,14 +552,22 @@ public class AgingBac extends Bacterium
 		Double repMassGrowth = pActRepair * Math.expm1(tStep * rateGrowth);
 		Double repMassRepair = pActRepair * Math.expm1(tStep * rateRepair);
 		Double repY = getSpeciesParam().repY;
+		Double styY = 1-repY;
 		deltaParticle[0] += repY * repMassGrowth;
 		deltaParticle[1] += repY * repMassRepair;
 		deltaParticle[2] -= repMassGrowth;
 		deltaParticle[3] -= repMassRepair;
+		if ( this.particleMass.length > 4 )
+		{
+			deltaParticle[4] += styY * (repMassGrowth + repMassRepair);
+		}
+		else
+		{
 		_netGrowthRate -= (1 - repY) * pActRepair * rateGrowth;
 		_netGrowthRate -= (1 - repY) * pActRepair * rateRepair;
 		_netVolumeRate -= (1 - repY) * pActRepair * (rateGrowth + rateRepair) /
 										getSpeciesParam().particleDensity[0];
+		}
 	}
 	
 	@Override

@@ -37,6 +37,8 @@ parser.add_option("-t", "--TimeOn", dest="timeon", default=False,
                         action="store_true", help="record the time in figures")
 parser.add_option("-T", "--TitleOn", dest="titleon", default=False,
                         action="store_true", help="turn the figure title on")
+parser.add_option("--TitleScript", help="script of the title",
+                   dest="titlescript", default=None)
 parser.add_option("-W", "--Width", dest="width", default=0,
                     type="int", help="figure width in inches")
 parser.add_option("-z", "--ZeroColorBar", dest="zero_color", default=False,
@@ -110,8 +112,10 @@ def plot(iter_info, min_max_concns):
                                                     interpolation='bicubic')
         if options.color_bar:
             toolbox_plotting.make_colorbar(axis, cs)
-    if options.titleon:
+    if options.titleon and options.titlescript is None:
         axis.set_title(r'Biofilm (%s g L$^{-1}$)'%(options.solute_name))
+    if not options.titlescript is None:
+        axis.set_title(options.titlescript)
     if options.frameon:
         axis.set_xlabel(r'x ($\mu$m)')
         axis.set_ylabel(r'y ($\mu$m)')
@@ -142,3 +146,4 @@ else:
     if options.zero_color:
         min_max_concns[options.solute_name][0] = 0.0
     plot(iter_info, min_max_concns)
+    sim.clean_up()

@@ -151,11 +151,17 @@ class SimulationDirectory:
         '''
 
     def clean_up(self):
+        if os.path.isdir( self.env_Sum ):
+            toolbox_basic.rm_dir(self.env_Sum)
+        if os.path.isdir( self.env_State ):
+            toolbox_basic.rm_dir(self.env_State)
+        if os.path.isdir( self.agent_Sum ):
+            toolbox_basic.rm_dir(self.agent_Sum)
+        if os.path.isdir( self.agent_State ):
+            toolbox_basic.rm_dir(self.agent_State)
         """
         Deletes all unzipped output folders TODO
         """
-        pass
-
 
 
 class ProtocolFile:
@@ -391,6 +397,8 @@ def solute_contour(axis, solute_output, interpolation='nearest', zorder=-10,
     cs = axis.imshow(array, interpolation=interpolation, origin='lower', 
                      cmap=cmap, extent=extent, zorder=zorder,
                      vmin=concn_range[0], vmax=concn_range[1])
+    print concn_range[0]
+    print concn_range[1]
     return cs
 
 
