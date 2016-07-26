@@ -107,7 +107,7 @@ public class BoundaryGasMembrane extends ConnectedBoundary
 			isPermeableTo[aSim.getSoluteIndex(soluteName)] = true;			
 			StringBuffer unit = new StringBuffer("");
 			Double paramValue = aBCMarkUp.getParamDbl("isPermeableTo", unit);
-			paramValue *= UnitConverter.time(unit.toString());
+			paramValue *= UnitConverter.time(unit.toString()); //jan: should not length unit conversion use division? Rob says the "-1" in the unit will be parsed as division
 			paramValue *= UnitConverter.length(unit.toString());
 			paramValue *= UnitConverter.length(unit.toString());			
 			permeability[aSim.getSoluteIndex(soluteName)] = paramValue;
