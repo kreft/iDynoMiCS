@@ -22,7 +22,7 @@ import utils.XMLParser;
 
 /**
  * \brief Bacterium class that can host a number of Plasmids of differing
- * species. 
+ * types. 
  * 
  * <p>Since this extends BactEPS, instances of this class may also produce and
  * excrete EPS.</p>
@@ -164,7 +164,8 @@ public class PlasmidBac extends BactEPS
 		 * Both daughter cells have an identical list of plasmids hosted.
 		 * Loss-at-division could happen to either but not both, so first
 		 * determine which daughter it could happen to, then determine if it
-		 * does actually happen.
+		 * does actually happen. Both daughter cells are equally likely to loose
+		 * the plasmid.
 		 */
 		for ( int i = 0; i < this._plasmidHosted.size(); i++ )
 			if ( ExtraMath.getUniRandDbl() < 0.5 )
@@ -368,6 +369,7 @@ public class PlasmidBac extends BactEPS
 	private void addPlasmidReactions(Plasmid aPlasmid)
 	{
 		for ( int reacIndex : aPlasmid.getReactionsEncoded() )
+			//jan: plasmids can only have active reactions or none
 			this.addActiveReaction(allReactions[reacIndex], true);
 	}
 	
@@ -429,7 +431,7 @@ public class PlasmidBac extends BactEPS
 			if ( aPlasmid.isReadyToConjugate() )
 			{
 				if ( ! Simulator.isChemostat )
-					potentials = buildNbh(aPlasmid.getPilusRange());
+					potentials = buildNbh(aPlasmid.getPilusLength());
 				this.searchConjugation(aPlasmid, potentials);
 			}
 	}
@@ -536,6 +538,7 @@ public class PlasmidBac extends BactEPS
 			 * sunlight as a function of distance from the Sun's surface). 
 			 */
 			if ( getSpeciesParam().scaleScanProb )
+				//jan: squaring the ratio correct for 3D but not 2D simulations
 				probVar = ExtraMath.sq( donorRadius / (donorRadius+distance));
 			out.put((Bacterium) recip, probVar);
 			cumulativeProb += probVar;
