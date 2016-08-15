@@ -70,7 +70,7 @@ public class Idynomics
 	 * Version number of this iteration of iDynoMiCS - required by update
 	 * procedure.
 	 */
-	public static Double version_number  = 1.2;
+	public static Double version_number  = 1.3;
 	
 	/**
 	 * Frame to display information regarding a software update, if there is
