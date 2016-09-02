@@ -25,14 +25,18 @@ def calc_roughness(sim_dir_path, iterate_number):
     
     #set elements of the grid that have a cell in to have a value of 1 - all other grids should remain as 0
     max_x = 0
+    newmax_x = 0
     for r in agent_output.get_all_cells():
         x, y = float(r.vars['locationX']), float(r.vars['locationY'])
+        newx = x
         x, y = x/gridres, y/gridres
         x, y = int(x), int(y)
         if agentgrid[x, y] == 0:
             agentgrid[x, y] = 1 
         if x > max_x:
             max_x = x
+        if newx > newmax_x:
+            newmax_x = newx
     #set front cells to have a value of 2, making sure that they aren't on the edges where the biofilm wraps around
     for i in range(max_x+2):
         for j in range(nJ):
@@ -94,7 +98,7 @@ def calc_roughness(sim_dir_path, iterate_number):
     Sigmaf = num2/Pf
     Sigma = Sigmaf/Xf
 
-    attributes = {'name':'Sigmaf', 'name2':'Sigma', 'name3':'Xf', 'name4':'Pf', 'header':'value,value2,value3,value4'}
+    attributes = {'name':'Sigmaf', 'name2':'Sigma', 'name3':'Xf', 'name4':'Pf', 'name5':'height', 'header':'value,value2,value3,value4,value5'}
     results_file_path = os.path.join(sim_dir_path, 'roughness.xml')
     results_output = toolbox_results.ResultsOutput(path=results_file_path)
     result_set = toolbox_results.ResultSet(results_output, attributes)
@@ -103,9 +107,10 @@ def calc_roughness(sim_dir_path, iterate_number):
     single_result.vars['value2'] = Sigma
     single_result.vars['value3'] = Xf
     single_result.vars['value4'] = Pf
+    single_result.vars['value5'] = max_x
     result_set.members.append(single_result)
     result_set.update_results_output()
     results_output.write(results_file_path)
-    return Sigmaf
+    #return Sigmaf, max_x
 
 #calc_roughness(sys.argv[1])

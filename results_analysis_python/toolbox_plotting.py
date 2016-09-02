@@ -125,7 +125,7 @@ class BmcFigure(JournalFigure):
             axis.set_ylim([ylim[0]-ydiff, ylim[1]+ydiff])
             axis.text(label_pos[0], label_pos[1], label,
                          transform=axis.transAxes,
-                         va='top', fontsize=20, fontweight='normal')
+                         va='top', fontsize=10, fontweight='normal')
             for line in axis.spines.itervalues():
                 line.set_linewidth(1)
             axis.tick_params(bottom='on', top='off', left='on', right='off')

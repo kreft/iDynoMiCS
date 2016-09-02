@@ -451,7 +451,8 @@ public class AgingBac extends Bacterium
 		double pDamRepair = this.particleMass[3];
 		double age = this.age;
 		double Mu = allReactions[reactionActive.get(0)].computeSpecGrowthRate(this);
-		double a = allReactions[reactionActive.get(1)].getKinetic()[0];
+		double a = (allReactions[reactionActive.get(1)].getKinetic()[0]); /* *Mu; This has been added to relate aging rate to current growth 
+		rate */
 		double beta;
 		if ( this.getSpeciesParam().isOptimalRepair )
 			beta = optB();
