@@ -149,8 +149,8 @@ public class Plasmid extends InfoAgent
 	{
 		this._species.notifyDeath();
 	}
-	
-	public double getPilusRange()
+
+	public double getPilusLength() //jan: method should be called getPilusLength
 	{
 		return this.getSpeciesParam().pilusLength;
 	}
@@ -174,7 +174,7 @@ public class Plasmid extends InfoAgent
 	 * \brief Set the copy number, time last received, and time last donated 
 	 * for this Plasmid.
 	 * 
-	 * <p>Should be used during PlamsidBac initialisation from results
+	 * <p>Should be used during PlasmidBac initialisation from results
 	 * file.</p>
 	 * 
 	 * @param copyNum int copy number.
@@ -288,7 +288,7 @@ public class Plasmid extends InfoAgent
 			aPB.welcomePlasmid(baby);
 			baby._copyNumber = this._copyNumber;
 			this._tLastDonated = baby._tReceived = SimTimer.getCurrentTime();
-			this._testTally = 0.0;
+			this._testTally = 0.0; //jan: I think this is wrong
 		}
 		catch (CloneNotSupportedException e)
 		{
@@ -322,6 +322,8 @@ public class Plasmid extends InfoAgent
 	/**
 	 * \brief This Plasmid should have been recently created through cell
 	 * division of its host: check to see if it has been lost in the process.
+	 * Before applySegregation is called, a coin is tossed to determine which
+	 * daughter cell looses its plasmid, see PlasmidBac.makeKid().
 	 */
 	public void applySegregation()
 	{

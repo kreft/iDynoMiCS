@@ -207,7 +207,7 @@ public class MultiEpisome extends InfoAgent
 	public MultiEpisome sendNewAgent() throws CloneNotSupportedException
 	{
 		MultiEpisome baby = (MultiEpisome) this.clone();
-		baby.init();
+		baby.init();//jan: will set _generation to 0 etc
 		return baby;
 	}
 
@@ -239,7 +239,7 @@ public class MultiEpisome extends InfoAgent
 	/* __________________________ CELL DIVISION ____________________________ */
 	
 	/**
-	 * Doesn't seem to be used
+	 * Doesn't seem to be used and does't do more than createNewAgent()
 	 */
 	@Override
 	public void makeKid() throws CloneNotSupportedException
@@ -293,7 +293,7 @@ public class MultiEpisome extends InfoAgent
 	public void segregation(MultiEpisome aPlasmid)
 	{
 		if ( ExtraMath.getUniRandDbl() > getSpeciesParam().lossProbability )
-			_nCopy = 1;
+			_nCopy = 1; //jan: bias, always same plasmid lost, would matter if daughter cells not identical
 		else
 			_nCopy = 0;
 		aPlasmid._nCopy = 1;

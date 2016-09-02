@@ -249,7 +249,7 @@ public class EpiBac extends BactEPS
 		LocatedAgent aLoc;
 		for ( int i = 0; i < maxTest; i++ )
 		{
-			aLoc = pickNeighbor();
+			aLoc = pickNeighbor();//jan: randomly the same nb can be picked several times!
 			if ( aLoc instanceof EpiBac )
 				tryToSendPlasmid(aPlasmid, (EpiBac) aLoc);
 		}

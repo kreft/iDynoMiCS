@@ -9,6 +9,10 @@ import simulator.SpatialGrid;
  * Modified by Edd Miles
  * Modified by Rob Clegg (rjc096@bham.ac.uk) Oct 2010 - Jan 2011
  * AgingBac is a bacterium with asymmetric or symmetric division driven by parameter alpha
+ * In the published version of the code, ToxicAgingBac was used for the case when the damage
+ * was toxic, but this has now been merged into AgingBac together with LinearToxicAgingBac
+ * and LinearToxicPintAgingBac. The file ToxicAgingBac is now obsolete but kept for backward
+ * compatibility.
  */
 public class ToxicAgingBac extends AgingBac
 {
