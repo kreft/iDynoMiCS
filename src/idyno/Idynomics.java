@@ -396,7 +396,7 @@ public class Idynomics
 				try 
 				{
 					FileOutputStream randomFileOutputStream = new
-						FileOutputStream(currentPath+File.separator+"random.state");
+						FileOutputStream(aSimulator.getResultPath()+File.separator+"random.state");
 					ObjectOutputStream randomObjectOutputStream = new ObjectOutputStream(randomFileOutputStream);
 					randomObjectOutputStream.writeObject(ExtraMath.random);
 					randomObjectOutputStream.close();

@@ -504,7 +504,7 @@ public class Simulator
 		 * Now we need to determine if a random.state file exists. This is
 		 * used to initialise the random number generator, if it exists.
 		 */
-		File randomFile = new File(Idynomics.currentPath+File.separator+"random.state");
+		File randomFile = new File(_resultPath+File.separator+"random.state");
 		if ( randomFile.exists() ) 
 		{
 			/* 
@@ -518,7 +518,7 @@ public class Simulator
 			try 
 			{
 				randomFileInputStream = new FileInputStream(
-						Idynomics.currentPath+File.separator+"random.state");
+						_resultPath+File.separator+"random.state");
 				randomObjectInputStream = new
 									ObjectInputStream(randomFileInputStream);
 				ExtraMath.random = (MTRandom)
