@@ -212,8 +212,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 	 * \brief Create an agent using information in a previous state or
 	 * initialization file.
 	 *
-	 * Reads in data from the end of the singleAgentData array and then passes
-	 * the remaining values onto the super class.
+	 * Reads in data from the last section of the singleAgentData array and then
+	 * lets the super class read in the previous section of the array.
 	 * 
 	 * @param aSim	The simulation object used to simulate the conditions
 	 * specified in the protocol file.
@@ -226,7 +226,7 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		/*
 		 * Find the position to start at.
 		 */
-		int nValsRead = 5;
+		int nValsRead = 7;
 		int iDataStart = singleAgentData.length - nValsRead;
 		/*
 		 * This is necessary for the case when agents in a biofilm
@@ -251,12 +251,14 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		_radius      = Double.parseDouble(singleAgentData[iDataStart+3]);
 		_totalRadius = Double.parseDouble(singleAgentData[iDataStart+4]);
 		/*
-		 * These are randomly generated.
+		 * We need to save the divRadius and the deathRadius so that they are not
+		 * re-assigned randomly when reading in agents from file.
+		 * This way, cells will divide at the same size whether the run is restarted or not.
 		 */
-		_myDivRadius = getDivRadius();
-		_myDeathRadius = getDeathRadius();
+		_myDivRadius = Double.parseDouble(singleAgentData[iDataStart+5]);
+		_myDeathRadius = Double.parseDouble(singleAgentData[iDataStart+6]);
 		/*
-		 * Now go up the hierarchy with the rest of the data.
+		 * Now go up the hierarchy to read the rest of the data.
 		 */
 		String[] remainingSingleAgentData = new String[iDataStart];
 		for (int i=0; i<iDataStart; i++)
@@ -908,15 +910,15 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		StringBuffer tempString = super.sendHeader();
 		
 		// location info and radius
-		tempString.append(",locationX,locationY,locationZ,radius,totalRadius");
+		tempString.append(",locationX,locationY,locationZ,radius,totalRadius,divisionRadius,deathRadius");
 		
 		return tempString;
 	}
 
 	/**
-	 * \brief Used in creation of results files - creates an output string of information generated on this particular agent
+	 * \brief Used in creation of results files - creates an output string of information for this particular agent
 	 * 
-	 * Used in creation of results files - creates an output string of information generated on this particular agent
+	 * Used in creation of results files - creates an output string of information for this particular agent
 	 * 
 	 * @return	String containing results associated with this agent
 	 */
@@ -928,7 +930,8 @@ public abstract class LocatedAgent extends ActiveAgent implements Cloneable
 		
 		// location info and radius
 		tempString.append(","+_location.x+","+_location.y+","+_location.z+",");
-		tempString.append(_radius+","+_totalRadius);
+		tempString.append(_radius+","+_totalRadius+","+_myDivRadius+","+_myDeathRadius);
+		
 		
 		return tempString;
 	}
