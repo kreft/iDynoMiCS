@@ -1,0 +1,7 @@
+Competition,4 cells,8 cells,16 cells,32 cells,4 cells stats,8 cells stats,16 cells stats,32 cells stats
+ASNR_SFR_end,4 of 5,4 of 5,2 of 5,0 of 5,0.375,0.375,1.0,0.0625
+SAR_ASNR_end,0 of 5,0 of 5,3 of 5,4 of 5,0.0625,0.0625,1.0,0.375
+SAR_SFR_end,0 of 5,0 of 5,0 of 5,1 of 5,0.0625,0.0625,0.0625,0.375
+control_ASNR_ASNR_end,3 of 5,4 of 5,3 of 5,2 of 5,1.0,0.375,1.0,1.0
+control_SFR_SFR_end,4 of 5,3 of 5,2 of 5,1 of 5,0.375,1.0,1.0,0.375
+control_SAR_SAR_end,1 of 5,2 of 5,3 of 5,2 of 5,0.375,1.0,1.0,1.0
