@@ -151,7 +151,7 @@ plot_all(dynamic, 0, 3, 'Log biomass ratio')
 
 fig.subplots_adjust(left=0.09,right=0.97,top=0.96,bottom=0.08,wspace=0.2, hspace=0.2)
 os.chdir('/Users/u1560915/Documents/OneDrive/Aging_of_Biofilms/Write up/paper_july_2018/const_chemo_comps/')
-plt.savefig('All ratios'+stype, bbox_inches='tight', dpi=600)
+plt.savefig('Fig_3'+stype, bbox_inches='tight', dpi=600)
 plt.close()
 
 printing = ['Constant', 'Dynamic']

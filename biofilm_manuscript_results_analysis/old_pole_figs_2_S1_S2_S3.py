@@ -176,7 +176,7 @@ for a in range(3):
     
     os.chdir('/Users/u1560915/Documents/OneDrive/Aging_of_Biofilms/Write up/paper_july_2018/following_old_cell/')
     fig.subplots_adjust(left=0.09,right=0.97,top=0.96,bottom=0.1,wspace=0.1, hspace=0.1)
-    fig.savefig('Fig_S4_'+str(a+1)+stype, bbox_inches='tight', dpi=600)
+    fig.savefig('Fig_S3_'+str(a+1)+stype, bbox_inches='tight', dpi=600)
     plt.close()
   
 times, generations, spec_growths, ages, inact_reps, act_reps, inact_gros, act_gros = [], [], [], [], [], [], [], []
@@ -442,7 +442,7 @@ def final_plot():
                         x, y = [], []
         os.chdir('/Users/u1560915/Documents/OneDrive/Aging_of_Biofilms/Write up/paper_july_2018/following_old_cell/')
         fig.subplots_adjust(left=0.09,right=0.97,top=0.96,bottom=0.08,wspace=0.0, hspace=0.2)
-        fig.savefig('Fig_1_'+str(b+1)+stype, bbox_inches='tight', dpi=600)
+        fig.savefig('Fig_1_S1_'+str(b+1)+stype, bbox_inches='tight', dpi=600)
         plt.close()
 final_plot()
 
@@ -655,7 +655,7 @@ def combined_plot():
                         x, y = [], []
         os.chdir('/Users/u1560915/Documents/OneDrive/Aging_of_Biofilms/Write up/paper_july_2018/following_old_cell/')
         fig.subplots_adjust(left=0.09,right=0.97,top=0.96,bottom=0.08,wspace=0.0, hspace=0.2)
-        fig.savefig('Fig_1_2_'+str(b+1)+stype, bbox_inches='tight', dpi=600)
+        fig.savefig('Fig_1_S2_'+str(b+1)+stype, bbox_inches='tight', dpi=600)
         plt.close()
 combined_plot()
 
