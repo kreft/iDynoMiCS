@@ -6,6 +6,7 @@ The full data for all simulations shown in this manuscript are over 2 TB. We hav
 −	The folder with the Python analysis scripts used and all of the iDynoMiCS files necessary to run this (see the above website and associated iDynoMiCS publication - Lardon et al. (2011) - for directions on this).
 
 Please contact Robyn Wright (robyn.wright@dal.ca) with any questions. 
+See README_rtf.rtf for more readable version of README.
 
 Below, we describe the files that we have used here, the main sections that these fall into and how the example protocol files may be edited to reproduce these. All toolbox_ files in the results analysis folder are modified from our previous study, Clegg et al. (2014).
 
