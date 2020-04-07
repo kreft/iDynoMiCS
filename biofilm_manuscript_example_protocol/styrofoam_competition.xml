@@ -23,7 +23,7 @@ Here, the damage accumulation rate is 0.22 and Mumax is 1.2. The environment is 
 		<timeStep>
 			<param name="adaptive">false</param>
 			<param name="timeStepIni" unit="hour">0.1</param>
-			<!--The end of the simulation is on day 25 if the maximum biofilm height has not yet been reached. 
+			<!--The end of the simulation is on day 25 if the maximum biofilm height has not yet been reached.-->
 			<param name="endOfSimulation" unit="day">25</param>
 		</timeStep>
 		<param name="agentTimeStep" unit="hour">0.1</param>
