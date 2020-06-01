@@ -49,8 +49,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- Determine parameters that give rise to typical biofilm structures. 
 	- Manuscript:
 		- Figure S4: Plot of roughness over different biofilm heights for different values of delta squared. 
-		- Plots of biofilms over time are shown in the supplementary Figshare file (https://figshare.com/articles/
-		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
+		- Plots of biofilms over time are shown in the supplementary [Figshare file](https://figshare.com/articles/Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
 	- Example protocol files:
 		- roughness_test.xml (Figure S4)
 		- agent_State_spacing.xml (input file giving initial placement of cells - these can be created using the script even_spacing_to_start.py)
@@ -66,8 +65,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- Figure 4: Damage segregation versus adaptive repair strategies in biofilms with and without ‘styrofoam’.
 		- Figure S5: Time courses of log biomass ratios for competitions between adaptive repair, fixed repair and damage segregation as well as 
 		  control competitions carried out between two cells of the same strategy in biofilms with and without ’styrofoam’. 
-		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary Figshare file (https://figshare.com/articles/
-		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
+		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary [Figshare file](https://figshare.com/articles/Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
 	- Example protocol file: 
 		- styrofoam_competition.xml
 	- Analysis files (and files created):
@@ -97,8 +95,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- Figure S7: Time courses of log biomass ratios as well as plots of biofilms for AR/DS (as shown in Figures 5 and 6) and control competitions 
 		  of AR/AR and DS/DS.
 		- Table S1: Results and statistics for all proportional biofilm competition outcomes.
-		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary Figshare file (https://figshare.com/articles/
-		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
+		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary [Figshare file](https://figshare.com/articles/Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
 	- Example protocol files: 
 		- proportional_competition.xml
 	- Analysis files (and files created):
