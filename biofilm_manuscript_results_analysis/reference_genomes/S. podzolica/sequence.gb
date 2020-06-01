@@ -1,0 +1,51 @@
+LOCUS       RSCD01000000              46 rc    DNA     linear   PLN 12-DEC-2018
+DEFINITION  Saitozyma podzolica strain DSM 27192, whole genome shotgun
+            sequencing project.
+ACCESSION   RSCD00000000
+VERSION     RSCD00000000.1
+DBLINK      BioProject: PRJNA506379
+            BioSample: SAMN10458779
+KEYWORDS    WGS.
+SOURCE      Saitozyma podzolica
+  ORGANISM  Saitozyma podzolica
+            Eukaryota; Fungi; Dikarya; Basidiomycota; Agaricomycotina;
+            Tremellomycetes; Tremellales; Trimorphomycetaceae; Saitozyma.
+REFERENCE   1  (bases 1 to 46)
+  AUTHORS   Aliyu,H., Gorte,O. and Ochsenreither,K.
+  TITLE     Genome sequence of Saitozyma podzolica DSM 27192
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 46)
+  AUTHORS   Aliyu,H., Gorte,O. and Ochsenreither,K.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (22-NOV-2018) Section II: Technical Biology, Institute of
+            Process Engineering in Life Science, Karlsruhe Institute of
+            Technology, Fritz-Haber-Weg 4, Karlsruhe 76131, Germany
+COMMENT     The Saitozyma podzolica whole genome shotgun (WGS) project has the
+            project accession RSCD00000000.  This version of the project (01)
+            has the accession number RSCD01000000, and consists of sequences
+            RSCD01000001-RSCD01000046.
+            'Annotated using funannotate v1.5.0-8f86f8c'.
+            
+            ##Genome-Assembly-Data-START##
+            Assembly Date          :: 24-NOV-2017
+            Assembly Method        :: HGAP v. 3
+            Genome Representation  :: Full
+            Expected Final Version :: No
+            Genome Coverage        :: 86.1x
+            Sequencing Technology  :: PacBio
+            ##Genome-Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..46
+                     /organism="Saitozyma podzolica"
+                     /mol_type="genomic DNA"
+                     /strain="DSM 27192"
+                     /isolation_source="peat bog soil"
+                     /culture_collection="DSM:27192"
+                     /db_xref="taxon:1890683"
+                     /country="Germany: Baden-Wuerttemberg, Karlsruhe"
+                     /lat_lon="48.720 N 8.471 E"
+                     /altitude="894.4 m"
+                     /collection_date="08-Jul-2012"
+WGS         RSCD01000001-RSCD01000046
+//
+
