@@ -27,7 +27,6 @@ Below, we describe the files that we have used here, the main sections that thes
 	- Example protocol files: 
 		- follow_old_pole_cell.xml (Figure 2A, 2B, S1, S2)
 		- constant_100_day_single.xml (Figure 2C, S1, S2, S3)
-	- Protocol files:
 
 	- Analysis files (and files created):
 		- old_pole_figs_2_S1_S2_S3.py
@@ -83,7 +82,6 @@ Below, we describe the files that we have used here, the main sections that thes
 		  is not proportional to specific growth rate.
 	- Manuscript:
 		- Figure S6: Plots of time in days versus population age, size or growth rate for varying damage accumulation rates.
-	- Example protocol file:
 
 	- Analysis files (and files created):
 		- aging_rate_fig_S6.py
