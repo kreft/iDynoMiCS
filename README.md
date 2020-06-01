@@ -1,6 +1,7 @@
-# Notes on replicating the results of Wright, Clegg, Coker & Kreft (2020) “Damage repair versus aging in biofilms using an individual-based model” - [preprint](https://doi.org/10.1101/2020.01.08.899740)
+# Notes on replicating the results of Wright, Clegg, Coker & Kreft (2020) “Damage repair versus aging in biofilms using an individual-based model”
+### [preprint](https://doi.org/10.1101/2020.01.08.899740)
 
-We used iDynoMiCS version 1.5 (https://www.birmingham.ac.uk/generic/idynomics/index.aspx), written in Java, for all simulations, and all analysis scripts were written in Python.
+We used [iDynoMiCS](https://www.birmingham.ac.uk/generic/idynomics/index.aspx) version 1.5, written in Java, for all simulations, and all analysis scripts were written in Python.
 
 The full data for all simulations shown in this manuscript are over 2 TB. We have therefore not provided these data, but have provided protocol files for each type of simulation run in this study:
 − The “biofilm_manuscript_example_protocol” folder contains commented protocol files that explain how these can be modified to produce all protocol files used.
@@ -10,7 +11,7 @@ The full data for all simulations shown in this manuscript are over 2 TB. We hav
 
 Below, we describe the files that we have used here, the main sections that these fall into and how the example protocol files may be edited to reproduce these. All toolbox_ files in the results analysis folder are modified from our previous study, Clegg et al. (2014).
 
-1. Comparison with Clegg et al. (2014) (where damage accumulation rate, 0.22, is proportional to specific growth rate, which has a maximum of 0.6 h-1)
+**1. Comparison with Clegg et al. (2014) (where damage accumulation rate, 0.22, is proportional to specific growth rate, which has a maximum of 0.6 h-1)**
 	- Aims of simulations:
 		- Compare the new adaptive repair mechanism with the fixed, optimal repair used by Clegg et al. (2014)
 		- Examine the effect of the new adaptive repair mechanism on the growth rates and investment into repair for all six possible repair/division strategies (listed in Figure 1) when growing on their own in the constant environment with no competition (i.e. only one cell is left in the simulation domain).
@@ -32,7 +33,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- old_pole_figs_2_S1_S2_S3.py
 		  Files contained in the biofilm_manuscript_results_analysis/following_old_cell folder
 
-2. Constant and chemostat competitions (where damage accumulation rate, 0.22 h-1, is proportional to specific growth rate, maximum 0.6 h-1; Fig. 3 of the manuscript)
+**2. Constant and chemostat competitions (where damage accumulation rate, 0.22 h-1, is proportional to specific growth rate, maximum 0.6 h-1; Fig. 3 of the manuscript)**
 	- Aims of simulations:
 		- Determine the fittest strategy for dealing with damage accumulation in spatially homogeneous environments (constant and chemostat)
 	- Manuscript:
@@ -44,7 +45,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- comps_fig_3.py
 		  Files contained in the biofilm_manuscript_results_analysis/const_chemo_comps folder
 
-3. Biofilm simulations with no damage accumulation or repair (where specific growth rate is 0.6 h-1 and parameters influencing diffusion and bulk transport are varied)
+**3. Biofilm simulations with no damage accumulation or repair (where specific growth rate is 0.6 h-1 and parameters influencing diffusion and bulk transport are varied)**
 	- Aims of simulations:
 		- Determine parameters that give rise to typical biofilm structures. 
 	- Manuscript:
@@ -58,7 +59,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- roughness_fig_s5_s6.py, roughness_graph.py
 		  Files contained in the biofilm_manuscript_results_analysis/roughness folder
 
-4. Biofilm competitions (where damage accumulation rate, 0.1 h-1, is not proportional to specific growth rate, maximum 0.6 h-1; Fig. 4 of the manuscript)
+**4. Biofilm competitions (where damage accumulation rate, 0.1 h-1, is not proportional to specific growth rate, maximum 0.6 h-1; Fig. 4 of the manuscript)**
 	- Aims of simulations:
 		- Determine the fittest strategy for cells growing in a biofilm. These were carried out prior to realising that damage accumulation rate must be 
 		  made proportional to specific growth rate. 
@@ -76,7 +77,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- all_stats_analysis_shrinking_styro.py
 		  Files contained in the biofilm_manuscript_results_analysis/stats folder
 
-5. Determination of which growth rate-proportional damage accumulation rate is equivalent to the previous constant damage accumulation rate (where maximum specific growth rate is set to 0.6 h-1 and damage accumulation rate is either 0.1 h-1 and is not proportional to specific growth rate or is varied between 0-0.25 h-1 and is proportional to specific growth rate)
+**5. Determination of which growth rate-proportional damage accumulation rate is equivalent to the previous constant damage accumulation rate (where maximum specific growth rate is set to 0.6 h-1 and damage accumulation rate is either 0.1 h-1 and is not proportional to specific growth rate or is varied between 0-0.25 h-1 and is proportional to specific growth rate)**
 	- Aims of simulations:
 		- Determine which proportional damage accumulation rate is equivalent to a damage accumulation rate of 0.1 h-1 when damage accumulation 
 		  is not proportional to specific growth rate.
@@ -88,7 +89,7 @@ Below, we describe the files that we have used here, the main sections that thes
 		- aging_rate_fig_S6.py
 		  Files contained in the biofilm_manuscript_results_analysis/aging_rate folder
 
-6. Biofilm competitions (where damage accumulation rate, 0.22, is proportional to specific growth rate, maximum 0.6 h-1; Figs. 5-6 of the manuscript)
+**6. Biofilm competitions (where damage accumulation rate, 0.22, is proportional to specific growth rate, maximum 0.6 h-1; Figs. 5-6 of the manuscript)**
 	- Aims of simulations:
 		- Determine the fittest strategy for cells growing in a biofilm where damage accumulation rate is proportional to specific growth rate.
 	- Manuscript:
