@@ -6,6 +6,7 @@
 **The full data for all simulations shown in this manuscript are over 2 TB. We have therefore not provided these data, but have provided protocol files for each type of simulation run in this study:**
 
 - The “biofilm_manuscript_example_protocol” folder contains commented protocol files that explain how these can be modified to produce all protocol files used.
+
 − The folder with the Python analysis scripts used and all of the iDynoMiCS files necessary to run this (see the above website and associated iDynoMiCS publication - [Lardon et al. (2011)](https://doi.org/10.1111/j.1462-2920.2011.02414.x) - for directions on this).
 
 **Please contact [Robyn Wright](mailto:robyn.wright@dal.ca) with any questions.**
