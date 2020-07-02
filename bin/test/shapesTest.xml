@@ -1,0 +1,8 @@
+<idynomics>
+
+	<shape class="Planar" name="plane0">
+		<param name="pointIn" i="-1" j="0" k="0"/>
+		<param name="vectorOut" i="-1" j="0" k="0"/>
+	</shape>
+
+</idynomics>

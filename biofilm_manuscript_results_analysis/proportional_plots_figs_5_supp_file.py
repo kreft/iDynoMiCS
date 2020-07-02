@@ -280,7 +280,7 @@ for a in range(len(comp_prop)):
         for c in range(len(files)):
             cells_prop_folder = folders[c]
             sim = files[c][b]
-            print cells_prop_folder+sim
+            print(cells_prop_folder+sim)
             color_cells_age_single(ax_age[c], ax_gro[c], cells_prop_folder, sim, species_color_dict, species_color_dict_2)
             print(datetime.now() - startTime)
         print('Saving figure')
