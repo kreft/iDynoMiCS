@@ -76,7 +76,6 @@ Below, we describe the files that we have used here, the main sections that thes
 		- Determine which proportional damage accumulation rate is equivalent to a damage accumulation rate of 0.1 h-1 when damage accumulation is not proportional to specific growth rate.
 	- **Manuscript:**
 		- *Figure S6:* Plots of time in days versus population age, size or growth rate for varying damage accumulation rates.
-
 	- **Analysis files (and files created):**
 		- aging_rate_fig_S6.py - Files contained in the biofilm_manuscript_results_analysis/aging_rate folder
 
