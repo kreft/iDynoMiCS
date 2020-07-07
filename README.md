@@ -6,7 +6,7 @@
 **The full data for all simulations shown in this manuscript are over 2 TB. We have therefore not provided these data, but have provided protocol files for each type of simulation run in this study. In this repository you can find:**
 1. The "biofilm_manuscript_example_protocol" folder contains commented protocol files that explain how these can be modified to produce all protocol files used.
 2. The "biofilm_manuscript_results_analysis" folder contains the Python analysis scripts used.
-3. All of the iDynoMiCS source code and files necessary to run this (see the above website and associated iDynoMiCS publication - [Lardon et al. (2011)](https://doi.org/10.1111/j.1462-2920.2011.02414.x) - for directions on this).
+3. All of the iDynoMiCS source code and files necessary to run this (see the [iDynoMiCS](https://www.birmingham.ac.uk/generic/idynomics/index.aspx), associated iDynoMiCS publication - [Lardon et al. (2011)](https://doi.org/10.1111/j.1462-2920.2011.02414.x) - and [Github wiki](https://github.com/kreft/iDynoMiCS/wiki) for directions on this).
 
 **Please contact [Robyn Wright](mailto:robyn.wright@dal.ca) with any questions.**
 
@@ -96,3 +96,24 @@ Below, we describe the files that we have used here, the main sections that thes
 	- **Analysis files (and files created):**
 		- proportional_plots.py - Files contained in the biofilm_manuscript_results_analysis/proportional_biofilms folder
 		- combined_biomass_plot_proportional_fig_6.py - biofilm_manuscript_results_analysis/proportional_biofilms/Biomass_time_courses.png
+
+7. **Additional biofilm simulations with varied parameters**
+	- **Aims of simulations:**
+		- Determine the effect of changing key growth parameters on the outcomes of competitions.
+	- **Manuscript:**
+		- *Figure S9:* Log biomass ratios for additional simulations with higher and lower parameters
+		- *Table S2:* Values for varied parameters used for biofilm simulations (and reasoning for chosen parameters)
+
+8. **Searches of the genomes of bacterial isolates for repair genes**
+	- **Aims of section:**
+		- Determine the prevalence and abundance of genes with a known repair function in the genomes of 20,000 bacterial isolates.
+	- **Manuscript:**
+		- *Figure S10:* Heatmap of prevalence and abundance 
+		- *Table S3:* Ten unicellular organisms for which genomes were searched for repair functions (with the largest number of assemblies in the NCBI database)
+		- *Table S4:* KEGG orthologs with a known repair function
+		- *Table S5:* Details of Prokka annotations and CheckM results for each of the 17 genomes initially found not to contain repair genes
+	- **Analysis:**
+		- This section searched the lists of KEGG orthologs contained in 20,000 bacterial genomes that are used in PICRUSt2 (see [publication](https://www.nature.com/articles/s41587-020-0548-6) and [Github repository](https://github.com/picrust/picrust2)) and are taken from the [JGI genome database](https://img.jgi.doe.gov/) for a selection of KEGG orthologs that are for known repair genes. 
+		- It also searched the representative genomes of the 10 bacteria in the NCBI database with the largest numbers of assemblies. These can be browsed and looked at by number of assemblies [here](https://www.ncbi.nlm.nih.gov/genome/browse#!/overview/). The genome annotations were downloaded from the [JGI genome database](https://img.jgi.doe.gov/).
+		- The R notebook used for this analysis (as well as output HTML file) can be found in the second supplementary [Figshare file](https://doi.org/10.6084/m9.figshare.12515526). 
+		- The 17 genomes of these 20,000 that did not contain repair genes were annotated using [Prokka](https://github.com/tseemann/prokka) and checked for completeness using [CheckM](https://github.com/Ecogenomics/CheckM/wiki). The results of these were searched manually for the KEGG orthologs. These genomes as well as the Prokka and CheckM results can be found in the second supplementary [Figshare file](https://doi.org/10.6084/m9.figshare.12515526), alongside an excel file with a summary of these results.
