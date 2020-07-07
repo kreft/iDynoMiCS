@@ -10,6 +10,10 @@ Time : hour
 <!--
 This is a protocol to look at the effect of adding styrofoam to cells when they repair in a biofilm. Instead of cells losing biomass based on the repair yield, it is instead converted to Styrofoam, an inert biomass type. This stops the cells from shrinking in an artificial manor.
 Here, the damage accumulation rate is 0.22 and Mumax is 1.2. The environment is biofilm, the output is hours, and the end of simulation is 25 days. This is a competition between the asymmetric strategy with no repair, and the symmetric strategy with adaptive repair.
+
+Note that for this, an edit should be made to the 'AgingBac.java' file (src>simulator>agent>zoo) - the lines 537-541 including the code"Double pStyrofoam = 0.0;
+		if ( this.particleMass.length > 4 )
+			pStyrofoam = this.particleMass[4];" should be uncommented
 -->
 
 <idynomics>

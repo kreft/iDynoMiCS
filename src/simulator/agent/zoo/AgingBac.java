@@ -35,6 +35,7 @@ import utils.LogFile;
  * Modified by Jan Kreft (j.kreft@bham.ac.uk) 2009-06-18
  * Modified by Edd Miles
  * Modified by Rob Clegg (rjc096@bham.ac.uk) Oct 2010 - Jan 2011
+ * Modified by Robyn Wright (robyn.wright@dal.ca) Jan 2016 - Mar 2016
  * AgingBac is a bacterium with asymmetric or symmetric division driven by parameter alpha
  */
 public class AgingBac extends Bacterium
@@ -533,11 +534,11 @@ public class AgingBac extends Bacterium
 		Double pActRepair = this.particleMass[1];
 		Double pDamGrowth = this.particleMass[2];
 		Double pDamRepair = this.particleMass[3];
-		/*
-		*Double pStyrofoam = 0.0;
-		*if ( this.particleMass.length > 4 )
-		*	pStyrofoam = this.particleMass[4];
-		*/
+		
+		Double pStyrofoam = 0.0;
+		if ( this.particleMass.length > 4 )
+			pStyrofoam = this.particleMass[4];
+			
 		Double pDam = pDamGrowth + pDamRepair;
 		if ( pActRepair == 0.0 || pDam == 0.0 )
 			return;
@@ -558,6 +559,7 @@ public class AgingBac extends Bacterium
 		deltaParticle[1] += repY * repMassRepair;
 		deltaParticle[2] -= repMassGrowth;
 		deltaParticle[3] -= repMassRepair;
+		deltaParticle[4] += styY * (repMassGrowth + repMassRepair)
 		if ( this.particleMass.length > 4 )
 		{
 			deltaParticle[4] += styY * (repMassGrowth + repMassRepair);
