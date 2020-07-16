@@ -307,7 +307,7 @@ for f in files:
 #This should be the only parameter to change to switch between growth rate and age plots
 #arate=True - plotting biofilms where cells are colored by age
 #arate=False - plotting biofilms where cells are colored by specific growth rate
-arate=False
+arate=True
 
 """
 #Start of biofilm individual plots
@@ -425,11 +425,11 @@ axs2b, axs3b = plt.subplot2grid((42,8), (26,3), colspan=2, rowspan=4), plt.subpl
 axs2c, axs3c = plt.subplot2grid((42,8), (30,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (30,5), colspan=2, rowspan=4)
 axs2d, axs3d = plt.subplot2grid((42,8), (34,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (34,5), colspan=2, rowspan=4)
 axs2e, axs3e = plt.subplot2grid((42,8), (38,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (38,5), colspan=2, rowspan=4)
-
+"""
 fol = os.listdir('/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side')
 fol_name = '/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side/'
 sets = ['5_Sbulk', '6_Ks', '7_aging']
-
+"""
 ax = [[axs1a, axs1b, axs1c, axs1d, axs1e], [axs2a, axs2b, axs2c, axs2d, axs2e], [axs3a, axs3b, axs3c, axs3d, axs3e]]
 axs1a.set_title('Substrate concentration'), axs2a.set_title('Substrate affinity'), axs3a.set_title('Proportional aging rate')
 axs1a.set_title('H', loc='left', fontweight='bold'), axs2a.set_title('I', loc='left', fontweight='bold'), axs3a.set_title('J', loc='left', fontweight='bold')
@@ -484,10 +484,11 @@ plt.subplots_adjust(hspace=0.65)
 os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
 plt.savefig('Log specgrowthrate ratios sbs '+calc+'.png', bbox_inches='tight', dpi=600)
 #End of log biomass ratios of side-by-side competitions
-
+"""
 #Individual biofilm plots for side-by-side simulations
 sets = ['5_Sbulk', '5_Sbulk', '6_Ks', '7_aging']
 for a in range(len(sets)):
+    if a != 1: continue
     fig = plt.figure(figsize=(12, 8))
     ax_high = [plt.subplot(2,3,1), plt.subplot(2,3,2)]
     ax_low = [plt.subplot(2,3,4), plt.subplot(2,3,5)]
@@ -502,16 +503,19 @@ for a in range(len(sets)):
         if a == 0:
             if 'ry100' in fol[b]: continue
         elif a == 1:
-            if 'ry100' not in fol[b]: continue
+            if 'ry100' not in fol[b] and 'styrofoam' not in fol[b]: continue
         if sets[a] in fol[b] and '.gif' not in fol[b]:
-            if 'higher' in fol[b]:
+            if 'higher' in fol[b] and 'styrofoam' not in fol[b]:
                 ax = ax_high[hc]
                 hc += 1
                 higher_label = symbol[a+4]+' = '+str(values[a+4][2])+' '+units[a+4]+'\n\n'
-            elif 'lower' in fol[b]:
+            elif 'lower' in fol[b] or 'styrofoam' in fol[b]:
                 ax = ax_low[lc]
                 lc += 1
                 lower_label = symbol[a+4]+' = '+str(values[a+4][1])+' '+units[a+4]+'\n\n'
+            if 'styrofoam' in fol[b]:
+                lower_label = 'With styrofoam\n'+symbol[a+4]+' = '+str(values[a+4][2])+' '+units[a+4]+'\n'
+                higher_label = r'$Y_{r}$ = 100%'+'\n'+symbol[a+4]+' = '+str(values[a+4][2])+' '+units[a+4]+'\n'
             plot_biofilm(ax, fol_name+fol[b], arate=arate)
     ax_high[1].text(1.1, 1.05, names[a+4]+'\n', ha='center', va='bottom', fontsize=fs2+2, fontweight='bold', transform=ax_high[0].transAxes)
     ax_high[0].set_ylabel(higher_label+r'y ($\mu$m)', fontsize=fs)
@@ -527,24 +531,28 @@ for a in range(len(sets)):
     else:
         plt.savefig('Side-by-side '+names[a+4]+'_growthRate.png', dpi=600, bbox_inches='tight')
     plt.close()
-"""
+
 
 calc = 'min'
 ax1 = plt.subplot(111)
 fol_name = '/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side/'
-ry100_high_conc = ['5_Sbulk_higher_ry100(20200701_1658)', '5_Sbulk_higher_ry100(20200701_2059)']
-for a in range(2):
+ry100_high_conc = ['5_Sbulk_higher_ry100(20200701_1658)', '5_Sbulk_higher_ry100(20200701_2059)', '5_Sbulk_higher_styrofoam(20200707_1439)', '5_Sbulk_higher_styrofoam(20200707_1737)']
+styrofoam = []
+for a in range(4):
     t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(fol_name, ry100_high_conc[a])
     #t_a, growthrate_ratio = get_specgrowth_ratios(fol_name, ry100_high_conc[a], calc=calc)
-    ax1.plot(t_a, growthrate_ratio, color='#B03A2E')
-    ax1.plot(t_a, biomass_ratio, color='#B03A2E')
+    color = '#CF6502'
+    if a > 1: color = '#019932'
+    #ax1.plot(t_a, growthrate_ratio, color=color)
+    ax1.plot(t_a, biomass_ratio, color=color)
     ax1.plot([0,40], [0,0], 'k--')
     ax1.set_xlim([0, 40])
     ax1.set_ylim([-2, 3])
     ax1.set_xlabel('Time (h)')
     #ax1.set_ylabel('Log(AR/DS) specific growth rate')
     ax1.set_ylabel('Log(AR/DS) biomass ratio')
+handles = [Patch(facecolor='#CF6502', edgecolor='k', label=r'$Y_{r}$ = 100%'), Patch(facecolor='#019932', edgecolor='k', label='With styrofoam')]
+ax1.legend(handles=handles, loc='upper left', bbox_to_anchor=(0,1))
 os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
 #plt.savefig('Yr100 specific growthrate '+calc+'.png', dpi=600, bbox_inches='tight')
 plt.savefig('Yr100 biomass.png', dpi=600, bbox_inches='tight')    
-    
