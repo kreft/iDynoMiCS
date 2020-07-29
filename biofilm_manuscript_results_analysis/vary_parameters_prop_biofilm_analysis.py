@@ -307,7 +307,7 @@ for f in files:
 #This should be the only parameter to change to switch between growth rate and age plots
 #arate=True - plotting biofilms where cells are colored by age
 #arate=False - plotting biofilms where cells are colored by specific growth rate
-arate=True
+arate=False
 
 """
 #Start of biofilm individual plots
@@ -486,9 +486,10 @@ plt.savefig('Log specgrowthrate ratios sbs '+calc+'.png', bbox_inches='tight', d
 #End of log biomass ratios of side-by-side competitions
 """
 #Individual biofilm plots for side-by-side simulations
-sets = ['5_Sbulk', '5_Sbulk', '6_Ks', '7_aging']
-for a in range(len(sets)):
-    if a != 1: continue
+sets = ['5_Sbulk', '6_Ks', '7_aging', '5_Sbulk']
+for z in range(len(sets)):
+    a = z
+    if a == 3: a = 0
     fig = plt.figure(figsize=(12, 8))
     ax_high = [plt.subplot(2,3,1), plt.subplot(2,3,2)]
     ax_low = [plt.subplot(2,3,4), plt.subplot(2,3,5)]
@@ -500,9 +501,9 @@ for a in range(len(sets)):
     get_colorbar(colbar, 'gray', 'Solute', 'left', arate=arate) #solute
     hc, lc = 0, 0
     for b in range(len(fol)):
-        if a == 0:
+        if z == 0:
             if 'ry100' in fol[b]: continue
-        elif a == 1:
+        elif z == 3:
             if 'ry100' not in fol[b] and 'styrofoam' not in fol[b]: continue
         if sets[a] in fol[b] and '.gif' not in fol[b]:
             if 'higher' in fol[b] and 'styrofoam' not in fol[b]:
@@ -525,14 +526,14 @@ for a in range(len(sets)):
     
     plt.subplots_adjust(hspace=0.2, wspace=0.2)
     os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
-    if a == 1: names[a+4] = names[a+4]+'_repy100'
+    if z == 3: names[a+4] = names[a+4]+'_repy100'
     if arate:
         plt.savefig('Side-by-side '+names[a+4]+'.png', dpi=600, bbox_inches='tight')
     else:
         plt.savefig('Side-by-side '+names[a+4]+'_growthRate.png', dpi=600, bbox_inches='tight')
     plt.close()
 
-
+"""
 calc = 'min'
 ax1 = plt.subplot(111)
 fol_name = '/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side/'
@@ -556,3 +557,4 @@ ax1.legend(handles=handles, loc='upper left', bbox_to_anchor=(0,1))
 os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
 #plt.savefig('Yr100 specific growthrate '+calc+'.png', dpi=600, bbox_inches='tight')
 plt.savefig('Yr100 biomass.png', dpi=600, bbox_inches='tight')    
+"""
