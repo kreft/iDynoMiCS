@@ -101,13 +101,16 @@ Below, we describe the files that we have used here, the main sections that thes
 		- Determine the effect of changing key growth parameters on the outcomes of competitions.
 	- **Manuscript:**
 		- *Figure S9:* Log biomass ratios for additional simulations with higher and lower parameters
+		- *Figure S10:* Plots for all biofilms at the end of simulations.
+		- *Figure S11:* Specific growth rate as a function of substrate concentration.
+		- *Figure S12:* Side-by-side biofilm plots at the end of simulations.
 		- *Table S2:* Values for varied parameters used for biofilm simulations (and reasoning for chosen parameters)
 
 8. **Searches of the genomes of bacterial isolates for repair genes**
 	- **Aims of section:**
 		- Determine the prevalence and abundance of genes with a known repair function in the genomes of 20,000 bacterial isolates.
 	- **Manuscript:**
-		- *Figure S10:* Heatmap of prevalence and abundance 
+		- *Figure S13:* Heatmap of prevalence and abundance 
 		- *Table S3:* Ten unicellular organisms for which genomes were searched for repair functions (with the largest number of assemblies in the NCBI database)
 		- *Table S4:* KEGG orthologs with a known repair function
 		- *Table S5:* Details of Prokka annotations and CheckM results for each of the 17 genomes initially found not to contain repair genes
