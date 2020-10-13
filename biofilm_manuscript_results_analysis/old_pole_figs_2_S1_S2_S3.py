@@ -137,7 +137,7 @@ for a in range(3):
     axisC.set_ylim([0.0, 1.0])
     axisC.set_xticks([300, 400, 500, 600])
     axisC.set_xlabel('Cellular total biomass (fg)', fontsize=10)
-    left, right = 500, 620
+    left, right = 550, 620
     top, bottom = 0.98, 0.78
     asym_y = 0.915
     sym_y = 0.825

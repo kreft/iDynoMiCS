@@ -361,7 +361,7 @@ for a in range(len(others)):
 plt.close()
 #End of biofilm individual plots
 """
-"""
+
 #Start of log biomass ratios plots
 fig = plt.figure(figsize=(16,18))
 
@@ -371,14 +371,14 @@ ax5, ax6, ax7 = plt.subplot2grid((42,8), (11,1), colspan=2, rowspan=9), plt.subp
 ax = [ax1, ax2, ax3, ax4, ax5, ax6, ax7]
 labs = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 #just change this line to change between plotting mean, median, max and min
-calc = 'min'
+calc = 'mean'
 
 orig_t, orig_biom = [], []
 for a in range(len(original)):
-    #t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(main_folder, original[a])
-    t_a, growthrate_ratio = get_specgrowth_ratios(main_folder, original[a], calc=calc)
+    t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(main_folder, original[a])
+    #t_a, growthrate_ratio = get_specgrowth_ratios(main_folder, original[a], calc=calc)
     orig_t.append(t_a)
-    orig_biom.append(growthrate_ratio)
+    orig_biom.append(biomass_ratio)
 
 for a in range(len(others)):
     ax[a].set_title(names[a])
@@ -398,10 +398,10 @@ for a in range(len(others)):
         elif 'lower' in others[a][c]:
             color = colors[0]
             cl += 1
-        #t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(main_folder, others[a][c])
-        t_a, growthrate_ratio = get_specgrowth_ratios(main_folder, others[a][c], calc=calc)
+        t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(main_folder, others[a][c])
+        #t_a, growthrate_ratio = get_specgrowth_ratios(main_folder, others[a][c], calc=calc)
         if t_a[-1] > ma: ma = t_a[-1]
-        ax[a].plot(t_a, growthrate_ratio, color=color)
+        ax[a].plot(t_a, biomass_ratio, color=color)
     handles = [Patch(facecolor=colors[c], edgecolor='k', label=labels[c]) for c in range(3)]
     handles.reverse()
     ax[a].legend(handles=handles, loc='upper left', fontsize=8)
@@ -413,10 +413,10 @@ for a in range(len(others)):
     if a != 0 and a != 4:
         plt.yticks([])
     ax[a].set_xlabel('Time (h)')
-ax[0].set_ylabel('Log(AR/DS) specific growth rate'), ax[4].set_ylabel('Log(AR/DS) specific growth rate')
+ax[0].set_ylabel('Log(AR/DS) biomass'), ax[4].set_ylabel('Log(AR/DS) biomass')
 
 os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
-plt.savefig('Log specgrowthrate ratios '+calc+'.png', bbox_inches='tight', dpi=600)
+plt.savefig('Log biomass ratios '+calc+'.png', bbox_inches='tight', dpi=600)
 #End of random initiation log biomass ratios
 
 axs1a, axs1b, axs1c, axs1d, axs1e = plt.subplot2grid((42,8), (22,1), colspan=2, rowspan=4), plt.subplot2grid((42,8), (26,1), colspan=2, rowspan=4), plt.subplot2grid((42,8), (30,1), colspan=2, rowspan=4), plt.subplot2grid((42,8), (34,1), colspan=2, rowspan=4), plt.subplot2grid((42,8), (38,1), colspan=2, rowspan=4)
@@ -425,11 +425,11 @@ axs2b, axs3b = plt.subplot2grid((42,8), (26,3), colspan=2, rowspan=4), plt.subpl
 axs2c, axs3c = plt.subplot2grid((42,8), (30,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (30,5), colspan=2, rowspan=4)
 axs2d, axs3d = plt.subplot2grid((42,8), (34,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (34,5), colspan=2, rowspan=4)
 axs2e, axs3e = plt.subplot2grid((42,8), (38,3), colspan=2, rowspan=4), plt.subplot2grid((42,8), (38,5), colspan=2, rowspan=4)
-"""
+
 fol = os.listdir('/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side')
 fol_name = '/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side/'
 sets = ['5_Sbulk', '6_Ks', '7_aging']
-"""
+
 ax = [[axs1a, axs1b, axs1c, axs1d, axs1e], [axs2a, axs2b, axs2c, axs2d, axs2e], [axs3a, axs3b, axs3c, axs3d, axs3e]]
 axs1a.set_title('Substrate concentration'), axs2a.set_title('Substrate affinity'), axs3a.set_title('Proportional aging rate')
 axs1a.set_title('H', loc='left', fontweight='bold'), axs2a.set_title('I', loc='left', fontweight='bold'), axs3a.set_title('J', loc='left', fontweight='bold')
@@ -439,13 +439,13 @@ for a in range(len(sets)):
     this_ax[0].plot([0,100], [0,0], 'k--')
     for b in range(len(fol)):
         if sets[a] in fol[b] and '.gif' not in fol[b] and 'ry100' not in fol[b]:
-            #t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(fol_name, fol[b])
-            t_a, growthrate_ratio = get_specgrowth_ratios(fol_name, fol[b], calc=calc)
+            t_a, [biomass_ratio, population_ratio, growthrate_ratio] = get_biomass_ratios(fol_name, fol[b])
+            #t_a, growthrate_ratio = get_specgrowth_ratios(fol_name, fol[b], calc=calc)
             if 'higher' in fol[b]:
                 col = '#B03A2E'
             else:
                 col = '#D4AC0D'
-            this_ax[0].plot(t_a, growthrate_ratio, color=col)
+            this_ax[0].plot(t_a, biomass_ratio, color=col)
             
             t_a, [prot_oa, dam_oa, rep_oa, age_oa], [prot_ob, dam_ob, rep_ob, age_ob] = get_prop_dam_rep(fol_name, fol[b])
             this_ax[1].plot(t_a, dam_ob, color=col) #plot adaptive repair damaged protein
@@ -459,7 +459,7 @@ for a in range(len(sets)):
     this_ax[3].set_xlim([0, 100]), this_ax[3].set_ylim([0, 1])
     this_ax[4].set_xlim([0, 100]), this_ax[4].set_ylim([-0.05, 0.05])
     if a == 0:
-        this_ax[0].text(-0.2, 0.5, 'Log(AR/DS)\nspecific growth rate', rotation=90, ha='left', va='center', transform=this_ax[0].transAxes)
+        this_ax[0].text(-0.2, 0.5, 'Log(AR/DS)\nbiomass', rotation=90, ha='center', va='center', transform=this_ax[0].transAxes)
         this_ax[1].text(-0.28, 0.5, '\n'+r'$P_{dam}/P_{tot}$', rotation=90, ha='left', va='center', transform=this_ax[1].transAxes)
         this_ax[1].text(-0.28, 0, 'Adaptive repair', rotation=90, ha='left', va='center', transform=this_ax[1].transAxes)
         this_ax[2].text(-0.28, 0.5, '\n'+r'$P_{rep}/P_{tot}$', rotation=90, ha='left', va='center', transform=this_ax[2].transAxes)
@@ -476,13 +476,13 @@ for a in range(len(sets)):
     this_ax[4].set_xlabel('Time (h)')
     s1, s2 = symbol[a+4]+'=', ' '+units[a+4]
     orig_lab, lo_lab, hi_lab = s1+str(values[a+4][0])+s2, s1+str(values[a+4][1])+s2, s1+str(values[a+4][2])+s2
-    colors, labels = ['#D4AC0D', '#2980B9', '#B03A2E'], [lo_lab, orig_lab, hi_lab]
-    handles = [Patch(facecolor=colors[c], edgecolor='k', label=labels[c]) for c in [0,2]]
+    colors, labels = ['#B03A2E', '#D4AC0D'], [hi_lab, lo_lab]
+    handles = [Patch(facecolor=colors[c], edgecolor='k', label=labels[c]) for c in range(len(colors))]
     this_ax[0].legend(handles=handles, loc='upper left', fontsize=8)
 
 plt.subplots_adjust(hspace=0.65)
 os.chdir('/Users/robynwright/Documents/GitHub/iDynoMiCS_1.5/biofilm_manuscript_results_analysis/vary_parameters')
-plt.savefig('Log specgrowthrate ratios sbs '+calc+'.png', bbox_inches='tight', dpi=600)
+plt.savefig('Log biomass ratios sbs '+calc+'.png', bbox_inches='tight', dpi=600)
 #End of log biomass ratios of side-by-side competitions
 """
 #Individual biofilm plots for side-by-side simulations
@@ -533,7 +533,7 @@ for z in range(len(sets)):
         plt.savefig('Side-by-side '+names[a+4]+'_growthRate.png', dpi=600, bbox_inches='tight')
     plt.close()
 
-"""
+
 calc = 'min'
 ax1 = plt.subplot(111)
 fol_name = '/Users/robynwright/Documents/OneDrive/Papers_writing/Aging of biofilms/Review 2/New simulations/results_files/side_by_side/'
