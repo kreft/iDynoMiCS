@@ -1,5 +1,5 @@
 # Notes on replicating the results of Wright, Clegg, Coker & Kreft (2020) “Damage repair versus aging in biofilms using an individual-based model”
-### [View preprint](https://doi.org/10.1101/2020.01.08.899740)
+### [Published in mSystems](https://msystems.asm.org/content/5/5/e00018-20)
 
 **We used [iDynoMiCS](https://www.birmingham.ac.uk/generic/idynomics/index.aspx) version 1.5, written in Java, for all simulations, and all analysis scripts were written in Python.**
 
