@@ -1,1 +1,9 @@
-results/vary_growth_parameters/*
+.idea
+.metadata
+.settings
+.DS_store
+results_analysis_python/*.pyc
+*.iml
+bin
+random.state
+results
