@@ -559,7 +559,7 @@ public class AgingBac extends Bacterium
 		deltaParticle[1] += repY * repMassRepair;
 		deltaParticle[2] -= repMassGrowth;
 		deltaParticle[3] -= repMassRepair;
-		deltaParticle[4] += styY * (repMassGrowth + repMassRepair)
+		deltaParticle[4] += styY * (repMassGrowth + repMassRepair);
 		if ( this.particleMass.length > 4 )
 		{
 			deltaParticle[4] += styY * (repMassGrowth + repMassRepair);
