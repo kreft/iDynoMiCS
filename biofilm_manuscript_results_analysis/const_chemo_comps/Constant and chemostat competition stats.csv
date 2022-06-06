@@ -1,7 +1,0 @@
-Environment,Competition,Statistic,P value
-Constant,AR/DS,inf,0.0
-Constant,FR/DS,inf,0.0
-Constant,AR/FR,-inf,0.0
-Dynamic,AR/DS,inf,0.0
-Dynamic,FR/DS,inf,0.0
-Dynamic,AR/FR,inf,0.0

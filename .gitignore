@@ -1,7 +1,6 @@
 .idea
 .metadata
 .settings
-.DS_store
 results_analysis_python/*.pyc
 *.iml
 bin
