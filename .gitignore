@@ -1,6 +1,1 @@
-.idea
-results_analysis_python/*.pyc
-*.iml
-bin
-random.state
-results
+results/vary_growth_parameters/*

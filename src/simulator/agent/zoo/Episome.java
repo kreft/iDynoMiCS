@@ -191,7 +191,7 @@ public class Episome extends InfoAgent
 		EpisomeParam param = getSpeciesParam();
 		Double triggerTime = Math.max(param.exchangeLag + lastExchange,
 										param.receptionLag + lastReception);
-		return triggerTime >= SimTimer.getCurrentTime();
+		return triggerTime >= SimTimer.getCurrentTime();//jan: this seems wrong!
 	}
 	
 	
@@ -233,7 +233,7 @@ public class Episome extends InfoAgent
 		}
 		else
 		{
-			_nCopy = 0;
+			_nCopy = 0; //jan: this introduces a bias, the 'old' cell always looses the plasmid. If the two daughter cells are not equal, then this is poor
 			aPlasmid._nCopy = 1;
 		}
 	}

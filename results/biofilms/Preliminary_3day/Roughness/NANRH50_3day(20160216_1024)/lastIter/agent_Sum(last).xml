@@ -1,0 +1,9 @@
+<idynomics>
+ <simulation iterate="1441" time="72.04999999999805" unit="hour">
+<grid resolution="4.0" nI="65" nJ="65" nK="1"/>
+<species name="OldieA" header="population,mass,growthRate" >
+6953,7781388.361133881,289870.88363067847;
+</species>
+
+</simulation>
+</idynomics>

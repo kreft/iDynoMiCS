@@ -9,10 +9,16 @@ import toolbox_plotting
 
 path = sys.argv[1]
 sim_dir = toolbox_idynomics.SimulationDirectory(path)
+muS = 0.3
+Yr = 0.8
 
-total_biomass = []
-time = []
+prep_ptot = []
+beta = []
 for iter_info in sim_dir.get_iterate_information():
+    act_grow = float(iter_info.agent_output.species_outputs[0].members[0].vars['biomass'])
+    
+    
+    
     time.append(iter_info.time)
     total_biomass.append(iter_info.agent_output.calc_total_attibute('biomass'))
     #total_biomass.append(math.log10(iter_info.agent_output.calc_total_attibute('biomass')))
