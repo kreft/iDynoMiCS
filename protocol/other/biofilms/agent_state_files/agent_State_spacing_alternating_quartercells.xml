@@ -1,0 +1,17 @@
+<idynomics>
+<simulation iterate="0" time="0.0" unit="hour">
+<grid resolution="4" nI="65" nJ="65" nK="1"/>
+<species name="OldieA" header="family,genealogy,generation,birthday,activeBiomassGrowth,activeBiomassRepair,inactiveBiomassGrowth,inactiveBiomassRepair,growthRate,volumeRate,locationX,locationY,locationZ,radius,totalRadius,birthX,birthY,birthZ,age,hasDied,deathX,deathY,deathZ,deathday">
+0,0,0,0,524.533485,0.000000,0.000000,0.000000,0,0,0.455705,8.000000,0.000000,0.455705,0.455705,0,0,0,0.000000,false,0,0,0,0; 
+1,0,0,0,530.849617,0.000000,0.000000,0.000000,0,0,0.458440,72.000000,0.000000,0.458440,0.458440,0,0,0,0.000000,false,0,0,0,0; 
+2,0,0,0,442.716080,0.000000,0.000000,0.000000,0,0,0.418658,136.000000,0.000000,0.418658,0.418658,0,0,0,0.000000,false,0,0,0,0; 
+3,0,0,0,340.383211,0.000000,0.000000,0.000000,0,0,0.367097,200.000000,0.000000,0.367097,0.367097,0,0,0,0.000000,false,0,0,0,0; 
+</species> 
+<species name="OldieB" header="family,genealogy,generation,birthday,activeBiomassGrowth,activeBiomassRepair,inactiveBiomassGrowth,inactiveBiomassRepair,growthRate,volumeRate,locationX,locationY,locationZ,radius,totalRadius,birthX,birthY,birthZ,age,hasDied,deathX,deathY,deathZ,deathday">
+0,0,0,0,368.676369,0.000000,0.000000,0.000000,0,0,0.382050,64.000000,0.000000,0.382050,0.382050,0,0,0,0.000000,false,0,0,0,0; 
+1,0,0,0,319.761288,0.000000,0.000000,0.000000,0,0,0.355803,128.000000,0.000000,0.355803,0.355803,0,0,0,0.000000,false,0,0,0,0; 
+2,0,0,0,441.059147,0.000000,0.000000,0.000000,0,0,0.417874,192.000000,0.000000,0.417874,0.417874,0,0,0,0.000000,false,0,0,0,0; 
+3,0,0,0,382.461612,0.000000,0.000000,0.000000,0,0,0.389127,256.000000,0.000000,0.389127,0.389127,0,0,0,0.000000,false,0,0,0,0; 
+</species> 
+</simulation> 
+</idynomics> 
