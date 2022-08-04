@@ -1,0 +1,245 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2512
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\ftech\fcharset77 Symbol;\f2\fswiss\fcharset0 Helvetica-BoldOblique;
+\f3\fswiss\fcharset0 Helvetica;\f4\fswiss\fcharset0 Helvetica-Oblique;\f5\froman\fcharset0 Times-Roman;
+}
+{\colortbl;\red255\green255\blue255;\red15\green121\blue165;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgenericrgb\c5882\c47451\c64706;\cssrgb\c0\c0\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+{\info
+{\author Jan Kreft}}\paperw11900\paperh16840\margl1440\margr1440\vieww35900\viewh20180\viewkind1\viewscale110
+\deftab720
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5437\tx5669\tx6236\tx6803\pardeftab720\ri0\partightenfactor0
+
+\f0\b\fs22 \cf0 Notes on replicating the results of Wright, Clegg, Coker & Kreft (2020) \'93Damage repair versus aging in biofilms using an individual-based model\'94 - preprint at \ul https://tinyurl.com/twnk895\
+\
+\ulnone We used iDynoMiCS version 1.5 (\ul https://www.birmingham.ac.uk/generic/idynomics/index.aspx\ulnone ), written in Java, for all simulations, and all analysis scripts were written in Python.\
+\pard\pardeftab720\ri0\partightenfactor0
+\cf0 The full data for all simulations shown in this manuscript are over 2 TB. We have therefore not provided these data, but have provided protocol files for each type of simulation run in this study:\
+\pard\pardeftab720\li720\fi-360\ri0\partightenfactor0
+\ls1\ilvl0
+\f1\b0 \cf0 \uc0\u8722 	
+\f0\b The \'93biofilm_manuscript_example_protocol\'94 folder contains commented protocol files that explain how these can be modified to produce all protocol files used.\
+\ls1\ilvl0
+\f1\b0 \uc0\u8722 	
+\f0\b The folder with the Python analysis scripts used and all of the iDynoMiCS files necessary to run this (see the above website and associated iDynoMiCS publication - Lardon 
+\f2\i et al. 
+\f0\i0 (2011) - for directions on this).\
+\pard\pardeftab720\ri0\partightenfactor0
+\cf0 \
+\pard\pardeftab720\ri0\partightenfactor0
+\cf2 Please contact Robyn Wright (robyn.wright@dal.ca) with any questions. \cf0 \
+\
+Below, we describe the files that we have used here, the main sections that these fall into and how the example protocol files may be edited to reproduce these. All toolbox_ files in the results analysis folder are modified from our previous study, Clegg et al. (2014).\
+\
+\pard\pardeftab720\ri0\partightenfactor0
+\cf2 \ul \ulc2 1. Comparison with Clegg 
+\f2\i et al.
+\f0\i0  (2014)
+\f3\b0 \cf0 \ulnone  (where damage accumulation rate, 0.22, is proportional to specific growth rate, which has a maximum of 0.6 h\super -1\nosupersub )\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Compare the new adaptive repair mechanism with the fixed, optimal repair used by Clegg et al. (2014)\
+		- Examine the effect of the new adaptive repair mechanism on the growth rates and investment into repair for all six possible repair/division strategies (listed in Figure 1) when growing on their own in the constant environment with no competition (i.e. only one cell is left in the simulation domain).\
+		- Look at the growth rate distributions for cells of a single strategy at day 100 of simulated growth.\
+	
+\f0\b - Manuscript:
+\f3\b0 \
+		- Figure 2: Characteristics of strategies in a constant environment (no competition) showing: (A) investment into repair for the new \
+		  adaptive strategy following the old pole cell over many divisions; (B) Specific growth rate of a single cell over consecutive cell divisions \
+		  over a 24 h period; and (C) distribution of specific growth rates in populations at steady state (100 days). \
+		- Figure S1: The investment into repair 
+\f4\i versus
+\f3\i0  the proportion of protein that has been invested into repair for symmetrically and \
+		  asymmetrically dividing cells of the adaptive repair strategy.\
+		- Figure S2: Computational replicates of Figure 2. \
+		- Figure S3: Age and size distributions (scatter plot) for computational replicates of all six strategies at steady state. \
+	
+\f0\b -
+\f3\b0  
+\f0\b Example protocol files: 
+\f3\b0 \
+		- follow_old_pole_cell.xml (Figure 2A, 2B, S1, S2)
+\f0\b \
+		
+\f3\b0 - constant_100_day_single.xml (Figure 2C, S1, S2, S3)
+\f0\b \
+	-
+\f3\b0  
+\f0\b Protocol files:
+\f3\b0 \
+\
+	
+\f0\b -
+\f3\b0  
+\f0\b Analysis files (and files created):\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 		- old_pole_figs_2_S1_S2_S3.py\
+		  Files contained in the biofilm_manuscript_results_analysis/following_old_cell folder\
+\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf2 \ul 2. Constant and chemostat competitions
+\f3\b0 \cf0 \ulnone  (where damage accumulation rate, 0.22 h\super -1\nosupersub , is proportional to specific growth rate, maximum 0.6 h\super -1\nosupersub ; Fig. 3 of the manuscript)\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Determine the fittest strategy for dealing with damage accumulation in spatially homogeneous environments (constant and chemostat)
+\f0\b \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 	
+\f0\b - Manuscript:\
+		
+\f3\b0 - Figure 3: Time courses showing log biomass ratios of competitions between aging strategies in constant and chemostat environments.\
+	
+\f0\b -
+\f3\b0  
+\f0\b Example protocol files
+\f3\b0 : \cf3 \
+		- constant_competition.xml (Figure 3A-C)\cf0 \
+		- chemostat_competition.xml (Figure 3D-F)\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf0 	- Analysis files (and files created):\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 		- comps_fig_3.py\
+		  Files contained in the biofilm_manuscript_results_analysis/const_chemo_comps folder\
+\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf2 \ul 3. Biofilm simulations with no damage accumulation or repair 
+\f3\b0 \cf0 \ulnone (where specific growth rate is 0.6 h\super -1\nosupersub  and parameters influencing diffusion and bulk transport are varied)\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Determine parameters that give rise to typical biofilm structures. 
+\f0\b \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 	
+\f0\b - Manuscript:\
+		
+\f3\b0 - Figure S4: Plot of roughness over different biofilm heights for different values of delta squared. \
+		- Plots of biofilms over time are shown in the supplementary Figshare file (https://figshare.com/articles/\
+		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)\
+	
+\f0\b -
+\f3\b0  
+\f0\b Example protocol files:
+\f3\b0 \
+		- \cf3 roughness_test.xml (Figure S4)\
+		- agent_State_spacing.xml (input file giving initial placement of cells - these can be created using the script even_spacing_to_start.py)\cf0 \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf0 	- Analysis files (and files created):
+\f3\b0 \
+		- roughness_fig_s5_s6.py, roughness_graph.py\
+		  Files contained in the biofilm_manuscript_results_analysis/roughness folder\
+\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf2 \ul 4. Biofilm competitions
+\f3\b0 \cf0 \ulnone  (where damage accumulation rate, 0.1 h\super -1\nosupersub , 
+\f2\i\b is not
+\f3\i0\b0  proportional to specific growth rate, maximum 0.6 h\super -1\nosupersub ; Fig. 4 of the manuscript)\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Determine the fittest strategy for cells growing in a biofilm. These were carried out prior to realising that damage accumulation rate must be \
+		  made proportional to specific growth rate. 
+\f0\b \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 	
+\f0\b - Manuscript:\
+		
+\f3\b0 - Figure 4: Damage segregation 
+\f4\i versus
+\f3\i0  adaptive repair strategies in biofilms with and without \'91styrofoam\'92.\
+		- Figure S5: Time courses of log biomass ratios for competitions between adaptive repair, fixed repair and damage segregation as well as \
+		  control competitions carried out between two cells of the same strategy in biofilms with and without \'92styrofoam\'92. \
+		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary Figshare file (https://figshare.com/articles/\
+		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)
+\f0\b \
+
+\f3\b0 	
+\f0\b - Example protocol file: 
+\f3\b0 \
+		- styrofoam_competition.xml\
+	
+\f0\b - Analysis files (and files created):\
+		
+\f3\b0 - shrinking_styrofoam_plots_figs_4_supp_file.py\
+		  Files contained in the biofilm_manuscript_results_analysis/shrinking_styro_biofilms folder\
+		- all_stats_analysis_shrinking_styro.py\
+		  Files contained in the biofilm_manuscript_results_analysis/stats folder\
+\
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf2 \ul 5. Determination of which growth rate-proportional damage accumulation rate is equivalent to the previous constant damage accumulation rate 
+\f3\b0 \cf0 \ulnone (where maximum specific growth rate is set to 0.6 h\super -1\nosupersub  and damage accumulation rate is either 0.1 h\super -1\nosupersub  and 
+\f2\i\b is not
+\f3\i0\b0  proportional to specific growth rate or is varied between 0-0.25 h\super -1\nosupersub  and 
+\f2\i\b is
+\f3\i0\b0  proportional to specific growth rate)\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Determine which proportional damage accumulation rate is equivalent to a damage accumulation rate of 0.1 h\super -1\nosupersub  when damage accumulation \
+		  is not proportional to specific growth rate.\
+	
+\f0\b - Manuscript:\
+		
+\f3\b0 - Figure S6: Plots of time in days versus population age, size or growth rate for varying damage accumulation rates.\
+	
+\f0\b - Example protocol file:\
+\
+	- Analysis files (and files created):\
+		
+\f3\b0 - aging_rate_fig_S6.py\
+		  Files contained in the biofilm_manuscript_results_analysis/aging_rate folder
+\f0\b \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f0\b \cf2 \ul 6. Biofilm competitions
+\f3\b0 \cf0 \ulnone  (where damage accumulation rate, 0.22, is proportional to specific growth rate, maximum 0.6 h\super -1\nosupersub ; Figs. 5-6 of the manuscript)\
+	
+\f0\b - Aims of simulations:\
+		
+\f3\b0 - Determine the fittest strategy for cells growing in a biofilm where damage accumulation rate is proportional to specific growth rate.
+\f0\b \
+\pard\pardeftab720\ri0\partightenfactor0
+
+\f3\b0 \cf0 	
+\f0\b - Manuscript:\
+
+\f3\b0 		- Figure 5: Damage segregation 
+\f4\i versus
+\f3\i0  adaptive repair strategies in biofilms, showing cells coloured by age and growth rate for one \
+		  representative biofilm. \
+		- Figure 6: Time courses of log biomass ratios between the two competed strategies.\
+		- Figure S7: Time courses of log biomass ratios as well as plots of biofilms for AR/DS (as shown in Figures 5 and 6) and control competitions \
+		  of AR/AR and DS/DS.\
+		- Table S1: Results and statistics for all proportional biofilm competition outcomes.\
+		- Plots of all replicate biofilms at the end of the simulations are shown in the supplementary Figshare file (https://figshare.com/articles/\
+		  Damage_repair_versus_aging_in_biofilms-File_S1_pdf/11520534/1)\
+	
+\f0\b - Example protocol files: 
+\f3\b0 \
+		- proportional_competition.xml\
+	
+\f0\b - Analysis files (and files created):\
+		
+\f3\b0 - proportional_plots.py\
+		  Files contained in the biofilm_manuscript_results_analysis/proportional_biofilms folder\
+		- combined_biomass_plot_proportional_fig_6.py\
+		  biofilm_manuscript_results_analysis/proportional_biofilms/Biomass_time_courses.png
+\f5 \
+}

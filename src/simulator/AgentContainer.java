@@ -11,6 +11,7 @@
  */
 package simulator;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import idyno.SimTimer;
@@ -143,6 +144,11 @@ public class AgentContainer
 	private final boolean DOSLOUGHING;
 	
 	/**
+	 * For use in aging studies, if true, the old pole cell will not be removed, see agentFlushedAway
+	 */
+	private final boolean KEEPOLDPOLE;
+	
+	/**
 	 * Limit to agent number that will cause the simulation to cease
 	 */
 	private final int maxPopLimit;
@@ -212,6 +218,11 @@ public class AgentContainer
 			EROSIONMETHOD = root.getParamBool("erosionMethod");
 		else
 			EROSIONMETHOD = true;
+		if ( root.isParamGiven("keepOldPole") ) {
+			KEEPOLDPOLE = root.getParamBool("keepOldPole");
+		}
+		else
+			KEEPOLDPOLE = false; // default is not to keep the old pole cell
 		if ( root.isParamGiven("sloughDetachedBiomass") )
 			DOSLOUGHING = root.getParamBool("sloughDetachedBiomass");
 		else
@@ -755,12 +766,33 @@ public class AgentContainer
 			agentsToDilute = Math.max(agentList.size() - 1000, 0);
 		}
 		
-		for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
-		{
-			anAgent.isDead = true;
-			anAgent.death = "dilution";
-			anAgent.die(false);
+		if (!KEEPOLDPOLE) { // don't keep old pole = normal method
+			/** Normal method
+			 * All cells equally likely to be flushed away, regardless of age
+			 */
+			for (SpecialisedAgent anAgent : agentList.subList(0, agentsToDilute))
+			{
+				anAgent.isDead = true;
+				anAgent.death = "dilution";
+				anAgent.die(false);
+			}
+		} else { // keepOldPole
+
+			/** Old-pole method
+			 *  This prevents flushing out of the old pole cell (AgingBac)
+			 *  Old pole cell has genealogy 0
+			 *  Use to show how the old pole cell ages over generations
+			 */
+			BigInteger zero = new BigInteger("0");
+			for ( SpecialisedAgent anAgent : agentList )
+				if ( anAgent.getGenealogy().compareTo(zero) > 0) 
+				{
+					anAgent.isDead = true;
+					anAgent.death = "dilution";
+					anAgent.die(false);
+				}
 		}
+
 		agentList.removeAll(_agentToKill);
 	}
 	

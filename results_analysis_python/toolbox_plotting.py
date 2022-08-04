@@ -6,7 +6,7 @@ from matplotlib import rcParams
 from matplotlib import pyplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
-from PIL import Image
+#from PIL import Image
 #import Image
 from pylab import *
 import matplotlib.cbook as cbook
@@ -115,7 +115,7 @@ class BmcFigure(JournalFigure):
         # the figure!
         self.fig = matplotlib.pyplot.figure(figsize=(self.width, self.height),
                                                              facecolor='white')
-    def process_subplots(self, label_pos=(-0.20, 1.01), padding=0.02):
+    def process_subplots(self, label_pos=(0, 1.07), padding=0.02):
         for axis, label in self.subplots.iteritems():
             xlim = axis.get_xlim()
             xdiff = 0.02*(xlim[1] - xlim[0])
@@ -125,7 +125,7 @@ class BmcFigure(JournalFigure):
             axis.set_ylim([ylim[0]-ydiff, ylim[1]+ydiff])
             axis.text(label_pos[0], label_pos[1], label,
                          transform=axis.transAxes,
-                         va='top', fontsize=12, fontweight='normal')
+                         va='top', fontsize=10, fontweight='normal')
             for line in axis.spines.itervalues():
                 line.set_linewidth(1)
             axis.tick_params(bottom='on', top='off', left='on', right='off')

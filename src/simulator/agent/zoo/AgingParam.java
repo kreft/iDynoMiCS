@@ -24,6 +24,12 @@ public class AgingParam extends BacteriumParam
 	Double beta  = 0.0;
 	
 	/**
+	 * Is investment in repair optimal? Default is false, so repair takes the value
+	 * for beta defined above
+	 */
+	boolean isOptimalRepair = false;
+	
+	/**
 	 * Damage repair maximum rate parameter. Default value is 1.
 	 */
 	Double rMax  = 1.0;
@@ -34,10 +40,26 @@ public class AgingParam extends BacteriumParam
 	 */
 	Double repY  = 0.8;
 	
+	/**
+	 * Toxicity parameter. Default value is False, which means that damage is not toxic.
+	 */
+	boolean isToxic = false;
+	
+	/**
+	 * Pint parameter. Default value is false, which means that division occurs 
+	 * when total biomass reaches a certain parameter.
+	 */
+	boolean isPint = false;
+	/**
+	 * Linear growth paramater. Default value is false, which means that growth is exponential.
+	 */
+	boolean isLinear = false;
+	
 	public AgingParam()
 	{
 		super();
 	}
+		
 	
 	@Override
 	public void init(Simulator aSim, XMLParser aSpeciesRoot, XMLParser speciesDefaults)
@@ -81,5 +103,29 @@ public class AgingParam extends BacteriumParam
 		 */
 		value = getSpeciesParameterDouble("repY", aSpeciesRoot, speciesDefaults);
 		repY = Double.isFinite(value) ? value : repY;
+		/*
+		 * Whether damage is toxic
+		 */
+		Boolean boolTemp = getSpeciesParameterBool("isToxic",
+				aSpeciesRoot, speciesDefaults);
+		isToxic = (boolTemp == XMLParser.nullBool) ? isToxic : boolTemp;
+		/*
+		 * Whether division occurs at threshold value of total or active biomass
+		 */
+		boolTemp = getSpeciesParameterBool("isPint",
+				aSpeciesRoot, speciesDefaults);
+		isPint = (boolTemp == XMLParser.nullBool) ? isPint : boolTemp;
+		/*
+		 * Whether growth is linear
+		 */
+		boolTemp = getSpeciesParameterBool("isLinear",
+				aSpeciesRoot, speciesDefaults);
+		isLinear = (boolTemp == XMLParser.nullBool) ? isLinear : boolTemp;
+		/*
+		 * Whether beta is optimised
+		 */
+		boolTemp = getSpeciesParameterBool("isOptimalRepair",
+				aSpeciesRoot, speciesDefaults);
+		isOptimalRepair = (boolTemp == XMLParser.nullBool) ? isOptimalRepair : boolTemp;
 	}
 }

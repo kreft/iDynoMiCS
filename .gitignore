@@ -1,4 +1,6 @@
 .idea
+.metadata
+.settings
 results_analysis_python/*.pyc
 *.iml
 bin

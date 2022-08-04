@@ -56,7 +56,7 @@ public class MultiEpiBac extends BactEPS
 	//sonia: conjResult: only the donor cell will contain the information about the conjugation event: who was
 	//its partner and where it is located
 	public boolean conjResult = false;
-	public static int conjugationEvents=0;
+	public static int conjugationEvents=0; //jan: note this is static, so all plasmid conjugations will be summed over all types of plasmids
 
 	//sonia 8-12-2010
 	//distance based probability ordering management
@@ -268,6 +268,7 @@ public class MultiEpiBac extends BactEPS
 	
 	/**
 	 * test if this cell can be a recipient for a given plasmid
+	 * tests compatibility with host (host range) and any resident plasmid
 	 * @param aPlasmid
 	 * @return true if this cell is compatible
 	 */
@@ -428,7 +429,7 @@ public class MultiEpiBac extends BactEPS
 
 		tP = aPlasmid.getSpeciesParam().transferProb;
 
-		conjugate &= (ExtraMath.getUniRandDbl()<=tP); 
+		conjugate &= (ExtraMath.getUniRandDbl()<=tP); //jan: why so complicated?
 
 		return (conjugate);
 	}
@@ -473,7 +474,7 @@ public class MultiEpiBac extends BactEPS
 			{
 				Double cumProbSum = 0.0;
 				for ( LocatedAgent agent : aPlasmid.nbhList )
-					cumProbSum += agent._distCumProb;
+					cumProbSum += agent._distCumProb; //jan: _distCumProb is already the sum of all _distProb
 				Double normRand = ExtraMath.getUniRandDbl()*cumProbSum;
 				/*
 				 * Find a neighbour to try conjugation with.
@@ -485,7 +486,7 @@ public class MultiEpiBac extends BactEPS
 					if( aLoc._distCumProb < normRand )
 					{
 						aLoc = aPlasmid.nbhList.remove(i);
-						break;
+						break; //jan: why break?
 					}
 				}
 				if ( aLoc != this && aLoc instanceof MultiEpiBac )
@@ -536,8 +537,13 @@ public class MultiEpiBac extends BactEPS
 			donorRadius = this.getRadius(false);
 			recipRadius = aLocAgent.getRadius(false);
 			dist = this.getDistance(aLocAgent) - donorRadius - recipRadius;
+			// dist is distance between cell surfaces, nbhRadius is pilusLength
 			if ( dist < nbhRadius )
 			{
+				//jan: distance related probability decreases with distance due to radial expansion of search space
+				//should be different for 2D and 3D
+				//2D: ratio of inner perimeter/outer perimeter (prob. propto (p_i/p_o)
+				//3D: surface area of sphere rather than perimeter (prob. propto (p_i/p_o)^2)
 				distProb = ExtraMath.sq(donorRadius/(donorRadius+dist));
 				aLocAgent._distProb = distProb;
 				test.put(distProb, aLocAgent);	
